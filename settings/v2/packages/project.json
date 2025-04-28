@@ -4,6 +4,62 @@
     {
       "name": "HEAD_LAYER",
       "value": 2
+    },
+    {
+      "name": "NAME_LAYER",
+      "value": 4
+    },
+    {
+      "name": "PLAYER",
+      "value": 1
+    },
+    {
+      "name": "MAP_BORDER",
+      "value": 8
+    },
+    {
+      "name": "UI_LAYER2",
+      "value": 16
     }
-  ]
+  ],
+  "general": {
+    "designResolution": {
+      "width": 256,
+      "height": 144,
+      "fitHeight": true,
+      "fitWidth": false
+    }
+  },
+  "custom_joint_texture_layouts": [],
+  "physics": {
+    "collisionGroups": [
+      {
+        "index": 1,
+        "name": "PLAYER"
+      },
+      {
+        "index": 2,
+        "name": "INTERACTABLE"
+      },
+      {
+        "index": 3,
+        "name": "COLLIDER_DETECT"
+      },
+      {
+        "index": 4,
+        "name": "PLAYER_WITH_PLAYER"
+      },
+      {
+        "index": 5,
+        "name": "ANIMAL"
+      }
+    ],
+    "collisionMatrix": {
+      "0": 9,
+      "1": 20,
+      "2": 2,
+      "3": 1,
+      "4": 18
+    }
+  }
 }

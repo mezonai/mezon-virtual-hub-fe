@@ -1,8 +1,11 @@
-import { _decorator, CCFloat, Component, EventKeyboard, Input, input, KeyCode, Vec3, Node, BoxCollider2D, Contact2DType, CCString, tween, PhysicsSystem2D, Vec2, Graphics, RigidBody2D, ERigidBody2DType, find, EventTouch } from 'cc';
+import { _decorator, CCFloat, Component, EventKeyboard, Input, input, KeyCode, Vec3, Node, BoxCollider2D, Contact2DType, CCString, tween, PhysicsSystem2D, Vec2, Graphics, RigidBody2D, ERigidBody2DType, find, EventTouch, Collider2D, IPhysics2DContact, ERaycast2DType, Tween } from 'cc';
 const { ccclass, property } = _decorator;
 import Colyseus from 'db://colyseus-sdk/colyseus.js';
 import { AnimationController } from '../AnimationController';
 import { instance, Joystick, JoystickDataType, SpeedType } from '../Joystick';
+import { Constants } from '../../../utilities/Constants';
+import { PlayerInput } from '../input/PlayerInput';
+import { Ability } from './Ability';
 
 enum InputMethod {
     KEYBOARD,
@@ -10,99 +13,53 @@ enum InputMethod {
 }
 
 @ccclass('MoveAbility')
-export class MoveAbility extends Component {
-    @property({ type: CCFloat }) normalSpeed: number = 100;
+export class MoveAbility extends Ability {
     @property({ type: CCFloat }) moveSpeed: number = 100;
-    @property({ type: AnimationController }) animationController: AnimationController = null;
-    isMoving: boolean = false;
-    lastPressedKey: KeyCode | null = null;
-    lastPosition: Vec3;
-    isColliding: boolean;
+    @property({ type: Node }) colliderDetectParent: Node = null;
+    @property({ type: Node }) colliderDetect: Node = null;
+    @property({ type: [PlayerInput] }) playerInputs: PlayerInput[] = [];
 
-    private moveDirection: Vec3 = new Vec3(0, 1, 0);
-
-    private inputMethod: InputMethod | null = null;
-    private _speedType: SpeedType = SpeedType.STOP;
-    private _moveSpeed = 0;
-    private stopSpeed = 0;
-    private fastSpeed = 200;
-    private rigidbody = false;
+    private lastPressedKey: KeyCode | null = null;
+    private lastPosition: Vec3;
     private currentDirection = new Vec3(1, 1, 1);
-    private _body: RigidBody2D | null = null;
+    private canMove: boolean = true;
+    public originMoveSpeed: number = 300;
 
-    @property({ type: Joystick }) joystick: Joystick;
-
-    private room: Colyseus.Room<any>;
-    @property({ type: CCString }) myID: string = "";
-
-    private get isMyClient() {
-        if (this.room == null || this.myID == "")
-            return false;
-
-        return this.room.sessionId == this.myID
+    protected onDestroy(): void {
+        input.off(Input.EventType.KEY_DOWN, this.onKeyDown, this);
+        input.off(Input.EventType.KEY_UP, this.onKeyUp, this);
     }
 
-    public init(sessionId, room) {
-        this.room = room;
-        this.myID = sessionId;
-        input.on(Input.EventType.KEY_DOWN, this.onKeyDown, this);
-        input.on(Input.EventType.KEY_UP, this.onKeyUp, this);
-        this.lastPosition = this.node.getPosition();
+    protected onDisable(): void {
+        input.off(Input.EventType.KEY_DOWN, this.onKeyDown, this);
+        input.off(Input.EventType.KEY_UP, this.onKeyUp, this);
+    }
 
+    protected start(): void {
+        this.originMoveSpeed = this.moveSpeed;
+    }
+
+    public override init(sessionId, playerController, room) {
+        super.init(sessionId, playerController, room);
+        this.lastPosition = this.node.position.clone();
+        this.setColliderDetectOffset(1);
         if (this.isMyClient) {
-            this.getJoystick();
+            this.playerInputs.forEach(input => {
+                input.init();
+            });
+            input.on(Input.EventType.KEY_DOWN, this.onKeyDown, this);
+            input.on(Input.EventType.KEY_UP, this.onKeyUp, this);
+            // this.getJoystick();
         }
+
+        this.moveSpeed = this.originMoveSpeed;
+        playerController.CanUpdateAnim = true;
     }
 
-    getJoystick() {
-        if (this.isMyClient) {
-            this.joystick = find("Canvas/Joystick").getComponent(Joystick);
-            instance.on(Input.EventType.TOUCH_START, this.onJoystickTouchStart, this);
-            instance.on(Input.EventType.TOUCH_MOVE, this.onJoystickTouchMove, this);
-            instance.on(Input.EventType.TOUCH_END, this.onJoystickTouchEnd, this);
-            if (this.joystick) {
-                this.joystick.node.active = true;
-            } else {
-                this.joystick.node.active = false;
-            }
-        }
-    }
-
-    //region JOYSTICK
-    onJoystickTouchStart() { }
-    onJoystickTouchMove(event: EventTouch, data: JoystickDataType) {
-        this._speedType = data.speedType;
-        this.moveDirection = data.moveVec;
-        this.onSetMoveSpeed(this._speedType);
-    }
-
-    onJoystickTouchEnd(event: EventTouch, data: JoystickDataType) {
-        this._speedType = data.speedType;
-        this.onSetMoveSpeed(this._speedType);
-        this.updateAction("idle");
-    }
-
-    onSetMoveSpeed(speedType: SpeedType) {
-        switch (speedType) {
-            case SpeedType.STOP:
-                this._moveSpeed = this.stopSpeed;
-                break;
-            case SpeedType.NORMAL:
-                this._moveSpeed = this.normalSpeed;
-                break;
-            case SpeedType.FAST:
-                this._moveSpeed = this.fastSpeed;
-                break;
-            default:
-                break;
-        }
-    }
 
     onKeyDown(event: EventKeyboard) {
         if (!this.isMyClient) return;
         this.lastPressedKey = event.keyCode;
-        this.isMoving = true;
-
         switch (event.keyCode) {
             case KeyCode.KEY_C: this.updateAction("kneel", true); break;
             case KeyCode.KEY_Z: this.updateAction("lie", true); break;
@@ -112,123 +69,133 @@ export class MoveAbility extends Component {
     }
 
     onKeyUp(event: EventKeyboard) {
-        if (!this.isMyClient) return;
-
         if (this.lastPressedKey === event.keyCode) {
             this.lastPressedKey = null;
-            this.isMoving = false;
             this.updateAction("idle");
         }
-        this.checkCollisionWithRay();
     }
 
-    checkCollisionWithRay(): boolean {
-        this.isColliding = false;
+    private isCollideWithST() {
+        return this.performRaycast();
+    }
 
-        let start = new Vec2(this.node.worldPosition.x, this.node.worldPosition.y);
-        let end = new Vec2(start.x + 100, start.y);
-
-        let results = PhysicsSystem2D.instance.raycast(start, end);
-
-        for (let result of results) {
-            let hitNode: Node = result.collider.node;
-
-            if (hitNode.name === "Player" && hitNode !== this.node) {
-                this.isColliding = true;
-                this.SetCanMoveInMyMap(hitNode);
-                return true;
+    performRaycast(): boolean {
+        const startPos = this.colliderDetectParent.worldPosition;
+        const endPos = this.colliderDetect.worldPosition;
+        const results = PhysicsSystem2D.instance.raycast(startPos, endPos, ERaycast2DType.All);
+        if (results && results.length > 0) {
+            for (let result of results) {
+                if ((result.collider.node.layer & Constants.BORDER_LAYER) !== 0) {
+                    return true;
+                }
             }
+        } else {
+            return false;
         }
-
-        return false;
     }
 
-    SetCanMoveInMyMap(hitNode: Node): void {
-        if (this.isMyClient)
-            hitNode.getComponent(RigidBody2D).type = ERigidBody2DType.Kinematic;
-        else
-            this.node.getComponent(RigidBody2D).type = ERigidBody2DType.Dynamic;
+    public setColliderDetectOffset(level) {
+        switch (level) {
+            case 1:
+                this.colliderDetect.setPosition(new Vec3(15, 0, 0));
+                break;
+            case 2:
+                this.colliderDetect.setPosition(new Vec3(40, 0, 0));
+                break;
+        }
     }
 
     protected update(dt: number): void {
-        if (this._speedType !== SpeedType.STOP) {
-            this.move();
-        }
+        if (!this.canMove) return;
 
-        let moveStep = this.normalSpeed * dt;
-        let newPosition = this.node.getPosition();
+        for (const input of this.playerInputs) {
+            let value = input.getInput();
+            if (value.lengthSqr() > 0) {
+                const angleDeg = Math.atan2(value.y, value.x) * (180 / Math.PI);
+                this.colliderDetectParent.angle = angleDeg;
 
-        if (this.inputMethod === InputMethod.JOYSTICK) {
-            // Di chuyển theo joystick
-            newPosition.x += this.moveDirection.x * moveStep;
-            newPosition.y += this.moveDirection.y * moveStep;
-        } else if (this.isMoving && this.lastPressedKey !== null) {
-            let moveStep = this.normalSpeed * dt;
-            let newPosition = this.node.getPosition();
+                if (this.isCollideWithST())
+                    return;
 
-            switch (this.lastPressedKey) {
-                case KeyCode.ARROW_LEFT:
-                case KeyCode.KEY_A:
-                    newPosition.x -= moveStep;
-                    this.currentDirection.x = -1;
-                    break;
-                case KeyCode.ARROW_RIGHT:
-                case KeyCode.KEY_D:
-                    newPosition.x += moveStep;
-                    this.currentDirection.x = 1;
-                    break;
-                case KeyCode.ARROW_UP:
-                case KeyCode.KEY_W:
-                    newPosition.y += moveStep;
-                    break;
-                case KeyCode.ARROW_DOWN:
-                case KeyCode.KEY_S:
-                    newPosition.y -= moveStep;
-                    break;
-            }
-
-            if (!this.lastPosition.equals(newPosition, 0.1)) {
-                this.node.setPosition(newPosition);
-                this.animationController.node.scale = this.currentDirection;
-                this.updateAction("move");
-                this.lastPosition = newPosition;
+                value.normalize();
+                this.currentDirection.x = value.x > 0 ? 1 : -1;
+                const move = value.multiplyScalar(this.moveSpeed * dt);
+                this.move(this.node.position.add(move));
+                break;
             }
         }
     }
 
-    move() {
-        if (this.rigidbody && this._body) {
-            const moveVec = this.moveDirection.clone().multiplyScalar(this._moveSpeed / 20);
-            const force = new Vec2(moveVec.x, moveVec.y);
-            this._body.applyForceToCenter(force, true);
-        } else {
-            const oldPos = this.node.getPosition();
-            const newPos = oldPos.add(
-                this.moveDirection.clone().multiplyScalar(this._moveSpeed / 60)
-            );
-            this.node.setPosition(newPos);
-        }
-
-        this.currentDirection.x = this.moveDirection.x > 0  ? 1 : -1;
-        let newPosition = this.node.getPosition();
-        if (!this.lastPosition.equals(newPosition, 0.1)) {
-            this.node.setPosition(newPosition);
-            this.animationController.node.scale = this.currentDirection;
-            this.updateAction("move");
-            this.lastPosition = newPosition;
-        }
+    move(targetPosition: Vec3) {
+        this.node.setPosition(targetPosition);
+        this.animationController.node.scale = this.currentDirection;
+        this.lastPosition = targetPosition;
+        this.updateAction("move");
     }
 
-    private updateAction(actionName, keepAction = false) {
-        this.animationController.play(actionName, keepAction);
-        this.room.send("move", { x: this.lastPosition.x, y: this.lastPosition.y, sX: this.currentDirection.x, anim: this.animationController.getCurrentAnim })
+    public forceUpdateMyPlayerPosition(newPosition: Vec3) {
+        this.node.setWorldPosition(newPosition);
+    }
+
+    public updateAction(actionName = "move", keepAction = false) {
+        if (this.playerController.CanUpdateAnim) {
+            this.animationController.play(actionName, keepAction);
+        }
+        else {
+            this.animationController.play("idle", keepAction);
+        }
+
+        const moveData = this.encodeMoveData(
+            this.lastPosition.x,
+            this.lastPosition.y,
+            this.currentDirection.x,
+            this.animationController.getCurrentAnim
+        );
+        this.room.send("move", moveData);
+
+    }
+
+    private encodeMoveData(x: number, y: number, sX: number, anim: string): ArrayBuffer {
+        const animBytes = new TextEncoder().encode(anim);
+        const buffer = new ArrayBuffer(5 + animBytes.length);
+        const view = new DataView(buffer);
+
+        view.setInt16(0, x, true);
+        view.setInt16(2, y, true);
+        view.setInt8(4, sX);
+
+        new Uint8Array(buffer, 5).set(animBytes);
+        return buffer;
     }
 
     public updateRemotePosition(data) {
         const { x, y, sX, anim } = data;
-        this.node.position = new Vec3(x, y);
+        let target = new Vec3(x, y);
+
+        if (this.lastPosition == null) {
+            this.lastPosition = target.clone();
+        }
+        if (target.clone().subtract(this.lastPosition).lengthSqr() > 1000) {
+            Tween.stopAllByTarget(this.node);
+            tween(this.node)
+                .to(0.1, { position: target.clone() })
+                .start();
+        }
+        else {
+            this.node.position = target.clone();
+        }
+
+        this.lastPosition = target.clone();
         this.currentDirection.x = sX;
         this.animationController.node.scale = this.currentDirection;
         this.animationController.play(anim);
+    }
+
+    public StopMove() {
+        this.canMove = false;
+    }
+
+    public startMove() {
+        this.canMove = true;
     }
 }

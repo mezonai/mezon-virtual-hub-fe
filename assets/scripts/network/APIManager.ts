@@ -3,7 +3,7 @@ import { APIConfig } from './APIConstant';
 export class APIManager{
 
     private static getPath(api: string): string {
-        return APIConfig.apiPath + "/" + api;
+        return APIConfig.apiPath + "/api/" + api;
     }
 
     public static getData(path, successCallback, errorCallback, needAuth) {
@@ -17,7 +17,7 @@ export class APIManager{
         });
     }
 
-    public static putData(param, path, successCallback, errorCallback, needAuth) {
+    public static putData(path, param, successCallback, errorCallback, needAuth) {
         let json = JSON.stringify(param);
         let out = this.callPut(this.getPath(path), json, needAuth)
         out.then(function (result) {
@@ -39,9 +39,9 @@ export class APIManager{
         });
     }
 
-    public static postDataPrivy(path, param, privyToken, callback, errorCallback) {
+    public static postDataPrivy(path, param, callback, errorCallback) {
         let json = JSON.stringify(param);
-        let out1 = this.callPost(this.getPath(path), json, false, true, privyToken)
+        let out1 = this.callPost(this.getPath(path), json, false)
         out1.then(function (result) {
             callback(result)
         }).catch(function (result) {
@@ -54,34 +54,28 @@ export class APIManager{
     private static callGet(url, param, needAuth = true) {
         return this.xmlBase('GET', url, param, needAuth);
     } 
-    private static callPost(url, param, needAuth = true, callPrivy = false, privyToken = null) {
-        return this.xmlBase('POST', url, param, needAuth, callPrivy, privyToken);
+    private static callPost(url, param, needAuth = true) {
+        return this.xmlBase('POST', url, param, needAuth);
     }
     private static callPut(url, param, needAuth = true) {
         return this.xmlBase('PUT', url, param, needAuth);
     }
 
-    private static xmlBase(method, url, param, needAuth = true, callPrivy = false, privyToken = null) {
+    private static xmlBase(method, url, param, needAuth = true) {
         return new Promise(function (resolve, reject) {
             let http = new XMLHttpRequest();
             http.open(method, url, true);
+            http.setRequestHeader('Accept', 'application/json');
             http.setRequestHeader('Content-type', 'application/json; charset=utf-8');
             if (needAuth) {
-                http.setRequestHeader('x-access-token', APIConfig.token);
+                http.setRequestHeader('Authorization', "Bearer " + APIConfig.token);
             }
-            else if (callPrivy) {
-                http.setRequestHeader('x-access-token', privyToken);
-            }
-            //http.setRequestHeader('X-Auth-Token', APIConfig.token);
-            // http.ontimeout = () => {
-            //     return reject(3)
-            // }
+         
             http.onerror = () => {
                 console.log('on error', http);
             }
             http.onreadystatechange = () => {
                 if (http.readyState == 4) {
-                    console.log('api log: ', http.responseText);
                     if (http.status >= 200 && http.status < 400) {
                         let out = JSON.parse(http.responseText)
                         return (resolve(out))

@@ -51,6 +51,9 @@ export default class UIScale extends Component {
         else if (ratio >= 2.2) {
             this.node.scale = this.defaultScale.clone().multiply(new Vec3(0.85 * this.multi, 0.85 * this.multi, 0.85 * this.multi));
         }
+        else if (ratio < 0.5) {
+            this.node.scale = this.defaultScale.clone().multiply(new Vec3(0.85 * this.multi, 0.85 * this.multi, 0.85 * this.multi));
+        }
         else {
             this.node.scale = this.defaultScale.clone();
         }

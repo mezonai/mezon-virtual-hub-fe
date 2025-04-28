@@ -1,7 +1,8 @@
-import { _decorator, Button, Component, Enum, Node, tween, Vec3 } from "cc";
+import { _decorator, Button, CCString, Component, Enum, Node, tween, Vec3 } from "cc";
 import { UIManager } from "../core/UIManager";
-import { SoundManager } from "../core/SoundManager";
+import { AudioType, SoundManager } from "../core/SoundManager";
 import { UIID } from "./enum/UIID";
+import { ServerManager } from "../core/ServerManager";
 
 const { ccclass, property, requireComponent } = _decorator;
 
@@ -9,20 +10,13 @@ const { ccclass, property, requireComponent } = _decorator;
 @requireComponent(Button)
 export default class CustomButton extends Component {
 
-    @property({
-        type: Enum(UIID)
-    }) public uiAttached: UIID = UIID.None;
-
-    @property({
-        type: Boolean
-    }) public isInteractEffect: boolean = true;
-
-    @property({
-        type: Node
-    }) public interactiveAttachs: Node[] = [];
+    @property({ type: Enum(UIID) }) uiAttached: UIID = UIID.None;
+    @property({ type: Boolean }) isInteractEffect: boolean = true;
+    @property({ type: Node }) interactiveAttachs: Node[] = [];
+    @property({ type: CCString }) emitEvent: string = "";
+    @property({ type: CCString }) localData: string = "";
 
     public button: Button;
-
     public defaultScale: Vec3;
 
     onLoad(): void {
@@ -40,7 +34,11 @@ export default class CustomButton extends Component {
                 this.tween_Shaking();
 
                 //Sound effect
-                SoundManager.instance.playSound("click");
+                SoundManager.instance.playSound(AudioType.Button);
+            }
+
+            if (this.emitEvent != "" && ServerManager.instance) {
+                ServerManager.instance.node.emit(this.emitEvent);
             }
         }
     };

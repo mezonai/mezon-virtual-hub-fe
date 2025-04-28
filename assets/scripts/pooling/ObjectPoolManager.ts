@@ -103,6 +103,7 @@ export class ObjectPoolManager extends Component {
         const objectToSpawn = this.poolDictionary[tag].shift();
         if (!objectToSpawn) return null;
 
+        objectToSpawn.active = true;
         return objectToSpawn;
     }
 

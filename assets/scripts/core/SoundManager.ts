@@ -1,6 +1,16 @@
-import { _decorator, AudioClip, AudioSource, CCFloat, Component, Node, randomRangeInt } from 'cc';
-import { GameManager } from './GameManager';
+import { _decorator, AudioClip, AudioSource, CCFloat, Component, Node, sys } from 'cc';
+import { EVENT_NAME } from '../network/APIConstant';
 const { ccclass, property } = _decorator;
+
+export enum AudioType {
+    SlotMachine = 0,
+    ReceiveReward = 1,
+    NoReward = 2,
+    Button = 3,
+    Notice = 4,
+    CountDown = 5,
+    Lose = 6
+}
 
 @ccclass('SoundManager')
 export class SoundManager extends Component {
@@ -9,87 +19,100 @@ export class SoundManager extends Component {
         return this._instance
     }
 
-    public assetDictionary: { [key: string]: AudioClip } = {};
+    @property({ type: [AudioClip] }) audioClips: AudioClip[] = [];
     @property({ type: AudioSource }) bgmSource: AudioSource = null;
-    @property({ type: AudioSource }) soundSource: AudioSource = null;
 
-    @property({ type: Node }) sfxSoundSourceParent: Node = null;
+    @property({ type: CCFloat }) originBgmVolume: number = 0.5;
+    @property({ type: CCFloat }) originSfxVolume: number = 0.5;
 
-    private sfxSources: AudioSource[] = [];
-    @property({ type: [AudioClip] }) bulletClips: AudioClip[] = [];
+    public currentSoundVolume = 0.5;
+    private currentMusicVolume = 0.5;
+    private readonly SOUND_VOLUME = "sound_volume";
+    private readonly MUSIC_VOLUME = "music_volume";
 
-    @property({ type: CCFloat }) originBgmVolume: number = 0.3;
-    @property({ type: CCFloat }) originSfxVolume: number = 0.3;
-    private isSoundEnable: boolean = false;
-
-
-    private bgmVolume: number = 0.3;
-    private sfxVolume: number = 0.3;
+    @property({ type: [AudioSource] }) sfxSources: AudioSource[] = [];
+    private sfxIndex: number = 0;
 
     onLoad() {
         if (SoundManager._instance == null) {
             SoundManager._instance = this;
         }
-    }
 
-    protected onEnable(): void {
-        this.sfxSources = this.sfxSoundSourceParent.getComponents(AudioSource);
-        // GameManager.instance.settingManager.node.on("toggle_sound", (value) => this.onToggleSound(value), this);
-        // GameManager.instance.settingManager.node.on("toggle_music", (value) => this.onToggleMusic(value), this);
-    }
+        this.currentSoundVolume = this.getSoundVolume();
+        this.currentMusicVolume = this.getMusicVolume();
 
-    private onToggleSound(value) {
-        this.isSoundEnable = value == 1;
-        this.sfxVolume = value == 1 ? this.originSfxVolume : 0;
-        this.soundSource.volume = this.sfxVolume;
-    }
-
-    private onToggleMusic(value) {
-        this.bgmVolume = value == 1 ? this.originBgmVolume : 0;
-        this.bgmSource.volume = this.bgmVolume;
-        this.playNormalBGM();
+        this.bgmSource.volume = this.currentMusicVolume;
+        this.updateVolume();
     }
 
     protected onDestroy(): void {
         SoundManager._instance = null;
     }
 
-    public playBulletSound() {
-        this.playSfx(this.bulletClips[randomRangeInt(0, this.bulletClips.length)]);
-    }
-
-    public playSound(clipName) {
-        if (this.assetDictionary[clipName] == null)
-            return;
-
-        this.playSfx(this.assetDictionary[clipName]);
-    }
-
-    public setAudioClip(assetDictionary) {
-        this.assetDictionary = assetDictionary;
-        this.playNormalBGM();
-    }
-
-    public playNormalBGM() {
-        this.bgmSource.clip = this.assetDictionary["bgm_1"];
-        if (this.isSoundEnable && this.bgmSource.clip != null) {
-            this.bgmSource.stop();
-            this.bgmSource.play();
+    private updateVolume() {
+        this.bgmSource.volume = this.currentMusicVolume;
+        for (let source of this.sfxSources) {
+            source.volume = this.currentSoundVolume;
         }
     }
 
-    private getSfxSourceFree() {
+    public playSound(audioType: AudioType, holdForSecond: number = -1) {
+        let clip: AudioClip = this.audioClips[audioType];
+        if (!clip || this.sfxSources.length === 0) return;
+        
+        const volume = this.currentSoundVolume;
+        const source = this.sfxSources[this.sfxIndex];
+        source.volume = volume;
+        if (!source || !clip) return;
+
+        if (holdForSecond > 0) {
+            source.clip = clip;
+            source.loop = true;
+            source.play();
+
+            setTimeout(() => {
+                if (source) {
+                    source.stop();
+                }
+            }, holdForSecond * 1000);
+        }
+        else {
+            source.loop = false;
+            source.playOneShot(clip);
+        }
+        this.sfxIndex = (this.sfxIndex + 1) % this.sfxSources.length;
+    }
+    
+    public stopSound(audioType: AudioType) {
+        let clip: AudioClip = this.audioClips[audioType];
         for (const source of this.sfxSources) {
-            if (!source.playing)
-                return source;
+            if (source.clip?.name == clip?.name) {
+                source.stop();
+                break;
+            }
         }
-
-        return null;
     }
 
-    public playSfx(clip: AudioClip) {
-        this.getSfxSourceFree()?.playOneShot(clip, this.sfxVolume);
+    public setBgmVolume(volume: number) {
+        this.currentMusicVolume = volume;
+        this.bgmSource.volume = volume;
+        sys.localStorage.setItem(this.MUSIC_VOLUME, volume.toString());
+    }
+
+    public setSfxVolume(volume: number) {
+        this.currentSoundVolume = volume;
+        this.updateVolume(); 
+        sys.localStorage.setItem(this.SOUND_VOLUME, volume.toString());
+        this.node.emit(EVENT_NAME.ON_SFX_VOLUMN_CHANGE, volume);
+    }
+
+    public getSoundVolume(): number {
+        const saved = sys.localStorage.getItem(this.SOUND_VOLUME);
+        return saved ? parseFloat(saved) : this.originSfxVolume;
+    }
+
+    public getMusicVolume(): number {
+        const saved = sys.localStorage.getItem(this.MUSIC_VOLUME);
+        return saved ? parseFloat(saved) : this.originBgmVolume;
     }
 }
-
-

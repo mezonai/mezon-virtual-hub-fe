@@ -1,9 +1,16 @@
-import { _decorator, Component, instantiate, JsonAsset, log, Node, Prefab, resources, Vec3 } from 'cc';
+import { _decorator, Component, log } from 'cc';
 const { ccclass, property } = _decorator;
-import Colyseus from 'db://colyseus-sdk/colyseus.js';
-import { PlayerController } from '../gameplay/player/PlayerController';
-import { APIConfig } from '../network/APIConstant';
+import Colyseus, { Room } from 'db://colyseus-sdk/colyseus.js';
 import { UserManager } from './UserManager';
+import { APIConfig, EVENT_NAME } from '../network/APIConstant';
+import { GameManager } from './GameManager';
+import { SceneManagerController } from '../utilities/SceneManagerController';
+import { SceneName } from '../utilities/SceneName';
+import { UIManager } from './UIManager';
+import { ItemColysesusObjectData, PlayerColysesusObjectData } from '../Model/Player';
+import { MapItemManger } from './MapItemManager';
+import { PopupManager } from '../PopUp/PopupManager';
+import { AudioType, SoundManager } from './SoundManager';
 
 @ccclass('ServerManager')
 export class ServerManager extends Component {
@@ -14,71 +21,263 @@ export class ServerManager extends Component {
 
     private client: Colyseus.Client;
     private room: Colyseus.Room<any>;
-
     protected onLoad(): void {
         if (ServerManager._instance == null) {
             ServerManager._instance = this;
         }
     }
 
+    public get Room(): Room {
+        return this.room;
+    }
+
     protected onDestroy(): void {
         ServerManager._instance = null;
     }
 
-    public async init() {
-        this.connectToServer();
+    public async init(roomName: string) {
+        this.connectToServer(roomName);
     }
 
-    private async connectToServer() {
+    private async connectToServer(roomName: string) {
         try {
-            console.log(APIConfig.websocketPath)
             this.client = new Colyseus.Client(APIConfig.websocketPath);
             log("Connecting to Colyseus server...");
-            this.joinRoom();
+            await this.joinRoom(roomName);
         } catch (error) {
             log("Connection error:", error);
         }
     }
 
-    public async joinRoom() {
+    public async joinRoom(roomName = "my_room") {
+        console.log("try to join ", roomName)
         // Join or create a room
-        this.room = await this.client.joinOrCreate("my_room");
-        log(`Joined room: ${this.room.id}`);
-
-        // Listen for messages from the server
-        this.room.onMessage("move", (message) => {
-            log(`Received move message:`, message);
+        this.room = await this.client.joinOrCreate(roomName, {
+            accessToken: APIConfig.token
         });
+        log(`Joined room: ${this.room.id}`);
 
         // Listen for state changes
         this.room.onStateChange((state) => {
             // log("Game State Updated:", state);
-
-            // console.log(state.players)
         });
 
         this.room.state.players.onAdd((player, sessionId) => {
-            log(`👤 New player joined: ${sessionId}`, player);
-            UserManager.instance.createPlayer(sessionId, this.room, player.x, player.y);
+            console.log(` New player joined: ${sessionId}`, player.user_id);
+            let playerData = new PlayerColysesusObjectData(sessionId, this.room, player.x, player.y, player.display_name, player.skin_set, player.user_id, player.is_show_name);
+            UserManager.instance.createPlayer(playerData);
+        });
+
+        this.room.state.items.onAdd((item, key) => {
+            console.log(item, key);
+            let itemData = new ItemColysesusObjectData(key, this.room, item.x, item.y, item.type, item.ownerId);
+            MapItemManger.instance.createItem(itemData);
+        });
+
+        this.room.onMessage("onPlayerUpdateSkin", (data) => {
+            UserManager.instance.updatePlayerSkinRemote(data);
+        });
+
+        this.room.onMessage("onUseItem", (data) => {
+            console.log(data)
+            MapItemManger.instance.onUseItem(data);
         });
 
         this.room.state.players.onRemove((player, sessionId) => {
-            log(`❌ Player left: ${sessionId}`);
+            log(`Player left: ${sessionId}`);
             UserManager.instance.onRemove(player, sessionId);
         });
 
-        this.room.onMessage("updatePosition", (data) => {
-            UserManager.instance.onMessagePosition(data);
+        this.room.onMessage("going-down", (data) => {
+            console.log(data);
         });
 
-        // Handle disconnection
+        this.room.onMessage("quizQuestion", (data) => {
+            console.log(data);
+        });
+
+        this.room.onMessage("noticeMessage", (data) => {
+            UIManager.Instance.showNoticePopup(null, data.message)
+            UserManager.instance.GetMyClientPlayer.p2PInteractManager.onRejectedActionFromOther(data);
+        });
+
+        this.room.onMessage("onP2pAction", (data) => {
+            UserManager.instance.GetMyClientPlayer.p2PInteractManager.onActionFromOther(data);
+        });
+
+        this.room.onMessage("onP2pActionSended", (data) => {
+            UserManager.instance.GetMyClientPlayer.p2PInteractManager.onCallbackAction(data);
+        });
+
+        this.room.onMessage("onP2pActionAccept", (data) => {
+            UserManager.instance.onP2PAction(data);
+        });
+
+        this.room.onMessage("serverBroadcast", (data) => {
+            SoundManager.instance.playSound(AudioType.Notice);
+            UIManager.Instance.showNoticePopup(null, data.message)
+        });
+
+        this.room.onMessage("onP2pActionResult", (data) => {
+            UserManager.instance.onP2PAction(data);
+        });
+
+        this.room.onMessage("onP2pGameError", (data) => {
+            UserManager.instance.onP2PGameError(data);
+        });
+
+        this.room.onMessage("onP2pActionReject", (data) => {
+            UserManager.instance.GetMyClientPlayer.p2PInteractManager.onRejectedActionFromOther(data);
+        });
+
+        this.room.onMessage("updatePosition", (buffer: ArrayBuffer) => {
+            UserManager.instance.onMessagePosition(this.decodeMoveData(buffer));
+        });
+
+        this.room.onMessage("onPlayerUpdateGold", (data) => {
+            UserManager.instance.onPlayerRemoteUpdateGold(data);
+        });
+
+        this.room.onMessage("mathProblem", (data) => {
+            this.node.emit(EVENT_NAME.ON_QUIZ, data);
+        });
+
+        this.room.onMessage("onAnswerMath", (data) => {
+            UserManager.instance.onAnswerMathCallback(data);
+            this.node.emit(EVENT_NAME.ON_QUIZ_ANSWER, data);
+        });
+
+        this.room.onMessage("userTargetJoined", (data) => {
+            if (GameManager.instance.uiMission) {
+                GameManager.instance.uiMission.showNotiTargetJoined();
+            };
+        });
+
+        this.room.onMessage("updateProgresCatchTargetUser", (data) => {
+            if (GameManager.instance.uiMission) {
+                GameManager.instance.uiMission.getMissionEventData();
+            };
+        });
+
+        this.room.onMessage("userTargetLeft", (data) => {
+            if (GameManager.instance.uiMission) {
+                GameManager.instance.uiMission.closeMissionEvent();
+            };
+        });
+
         this.room.onLeave((code) => {
-            log(`Disconnected from room. Code: ${code}`);
+            if (PopupManager.getInstance()) {
+                PopupManager.getInstance().closeAllPopups();
+            }
+            console.log("Disconnected from room. Code:", code);
+            if (code == 1006) {
+                if (UIManager.Instance) {
+                    UIManager.Instance.showNoticePopup(null, "Ta mất kết nối thật rồi bạn ơi!!!", () => {
+                        SceneManagerController.loadScene(SceneName.SCENE_GAME_MAP, null);
+                    })
+                }
+            }
+        });
+
+        this.room.onMessage("chat", (buffer: ArrayBuffer) => {
+            if (GameManager.instance.uiChat) {
+                const view = new DataView(buffer);
+
+                const senderLength = view.getUint8(0);
+                const senderBytes = new Uint8Array(buffer, 1, senderLength);
+                const sender = new TextDecoder().decode(senderBytes);
+
+                const messageBytes = new Uint8Array(buffer, 1 + senderLength);
+                const message = new TextDecoder().decode(messageBytes);
+
+                GameManager.instance.uiChat.showChatMessage(sender, message);
+            };
+        });
+
+        this.room.onMessage("onGlobalChat", (buffer: ArrayBuffer) => {
+            if (GameManager.instance.uiMission) {
+                const view = new DataView(buffer);
+
+                const senderLength = view.getUint8(0);
+                const senderBytes = new Uint8Array(buffer, 1, senderLength);
+                const sender = new TextDecoder().decode(senderBytes);
+
+                const messageBytes = new Uint8Array(buffer, 1 + senderLength);
+                const message = new TextDecoder().decode(messageBytes);
+                UserManager.instance.onGlobalChat(sender.split("/")[1])
+                GameManager.instance.uiMission.showNotiMission(`${sender.split("/")[0]}: ${message.replace(/\x00/g, '')}`);
+            };
         });
     }
 
+    private decodeMoveData(uint8Array: ArrayBuffer) {
+        const view = new DataView(uint8Array);
+        let offset = 0;
+        const x = view.getInt16(offset, true);
+        const y = view.getInt16(offset + 2, true);
+        const sX = view.getInt8(offset + 4);
 
+        offset += 5;
+        const sessionLength = view.getUint8(offset);
 
+        offset += 1;
+        const sessionBytes = uint8Array.slice(offset, offset + sessionLength);
+        const id = new TextDecoder().decode(sessionBytes);
+        offset += sessionLength;
+
+        const animBytes = uint8Array.slice(offset);
+        const anim = new TextDecoder().decode(animBytes);
+
+        return { id, x, y, sX, anim };
+    }
+
+    private encodeChatMessage(sender: string, message: string): ArrayBuffer {
+        const senderBytes = new TextEncoder().encode(sender);
+        const messageBytes = new TextEncoder().encode(message);
+
+        const buffer = new ArrayBuffer(2 + senderBytes.length + messageBytes.length);
+        const view = new DataView(buffer);
+
+        view.setUint8(0, senderBytes.length); // Ghi độ dài sender
+        new Uint8Array(buffer, 1, senderBytes.length).set(senderBytes); // Ghi sender
+        new Uint8Array(buffer, 1 + senderBytes.length).set(messageBytes); // Ghi message
+
+        return buffer;
+    }
+
+    sendMessage(message: string, userInfo: string) {
+        if (!this.room) return;
+        this.room.send("chat", this.encodeChatMessage(userInfo, message));
+    }
+
+    sendGlobalMessage(message: string, userInfo: string) {
+        if (!this.room) return;
+        this.room.send("globalChat", this.encodeChatMessage(userInfo, message));
+    }
+
+    public updatePlayerSkin(skinSet: string[]) {
+        this.room.send("playerUpdateSkin", { skin_set: skinSet.join("/") })
+    }
+
+    public playerUseItem(itemId, playerId, x = 0, y = 0) {
+        this.room.send("useItem", { itemId: itemId, playerId: playerId, x: x, y: y })
+    }
+
+    public playerUpdateGold(sessionId: string, newValue: number, oldValue: number, needUpdate: boolean = true) {
+        let data = {
+            newValue: newValue,
+            amountChange: newValue - oldValue,
+            needUpdate: needUpdate
+        }
+        this.room.send("onPlayerUpdateGold", data)
+    }
+
+    public answerMathQuestion(id, answer) {
+        let data = {
+            id: id,
+            answer: answer
+        }
+        console.log(data)
+        this.room.send("answerMath", data);
+    }
 }
-
-

@@ -11,7 +11,7 @@
     "speed": 1,
     "wrapMode": 2,
     "enableTrsBlending": false,
-    "_duration": 0.016666666666666666,
+    "_duration": 0.8333333333333334,
     "_hash": 500763545,
     "_tracks": [
       {
@@ -31,7 +31,20 @@
       }
     ],
     "_exoticAnimation": null,
-    "_events": [],
+    "_events": [
+      {
+        "frame": 0,
+        "func": "",
+        "params": []
+      },
+      {
+        "frame": 0,
+        "func": "onAnimationEvent",
+        "params": [
+          "lie-0"
+        ]
+      }
+    ],
     "_embeddedPlayers": [],
     "_additiveSettings": {
       "__id__": 46
@@ -79,15 +92,8 @@
   },
   {
     "__type__": "cc.ObjectCurve",
-    "_times": [
-      0
-    ],
-    "_values": [
-      {
-        "__uuid__": "680ffdf8-03f1-4d28-9c1f-42ea858c4ae0@f9941",
-        "__expectedType__": "cc.SpriteFrame"
-      }
-    ]
+    "_times": [],
+    "_values": []
   },
   {
     "__type__": "cc.animation.VectorTrack",
@@ -136,9 +142,22 @@
   {
     "__type__": "cc.RealCurve",
     "_times": [
-      0
+      0,
+      0.8333333333333334
     ],
     "_values": [
+      {
+        "__type__": "cc.RealKeyframeValue",
+        "interpolationMode": 0,
+        "tangentWeightMode": 0,
+        "value": -10.390999794006348,
+        "rightTangent": 0,
+        "rightTangentWeight": 1,
+        "leftTangent": 0,
+        "leftTangentWeight": 1,
+        "easingMethod": 0,
+        "__editorExtras__": null
+      },
       {
         "__type__": "cc.RealKeyframeValue",
         "interpolationMode": 0,
@@ -164,9 +183,22 @@
   {
     "__type__": "cc.RealCurve",
     "_times": [
-      0
+      0,
+      0.8333333333333334
     ],
     "_values": [
+      {
+        "__type__": "cc.RealKeyframeValue",
+        "interpolationMode": 0,
+        "tangentWeightMode": 0,
+        "value": -10.869999885559082,
+        "rightTangent": 0,
+        "rightTangentWeight": 1,
+        "leftTangent": 0,
+        "leftTangentWeight": 1,
+        "easingMethod": 0,
+        "__editorExtras__": null
+      },
       {
         "__type__": "cc.RealKeyframeValue",
         "interpolationMode": 0,
@@ -265,15 +297,8 @@
   },
   {
     "__type__": "cc.ObjectCurve",
-    "_times": [
-      0
-    ],
-    "_values": [
-      {
-        "__uuid__": "f74e8d27-0947-40cd-9134-d2b5a0b7ed49@f9941",
-        "__expectedType__": "cc.SpriteFrame"
-      }
-    ]
+    "_times": [],
+    "_values": []
   },
   {
     "__type__": "cc.animation.VectorTrack",

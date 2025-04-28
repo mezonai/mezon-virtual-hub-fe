@@ -1,66 +1,76 @@
-import { _decorator, Button, CCFloat, CCString, Component, Label, Node, ProgressBar, RichText, Sprite, SpriteFrame, sys, tween, Vec3, view, Widget } from 'cc';
 import UIPopup from '../ui/UI_Popup';
 import { UIID } from '../ui/enum/UIID';
 import { UIIdentify } from '../ui/UIIdentify';
 import { EVENT_NAME } from '../network/APIConstant';
 import Utilities from '../utilities/Utilities';
+import { _decorator, Component, Enum, view, Node, director, Button, View } from 'cc';
 const { ccclass, property } = _decorator;
-
-@ccclass('RankIconData')
-export class RankIconData {
-    @property({ type: CCString }) rankName: string = "";
-    @property({ type: SpriteFrame }) icon;
-    @property({ type: CCFloat }) offsetY: number = 0;
-}
 
 @ccclass('UIManager')
 export class UIManager extends Component {
     private static _instance: UIManager = null;
-    @property({ type: UIID }) public defaultUI: UIID = UIID.Home;
-    @property({ type: Node }) public mainCanvas: Node = null;
-    @property({ type: Node }) public buttonContainer: Node = null;
-    @property({ type: Label }) public goldText: Label = null;
-    @property({ type: Label }) public goldenHeartText: Label = null;
-    @property({ type: UIIdentify }) public lstPanel: UIIdentify[] = [];
-    @property({ type: UIPopup }) public popup: UIPopup;
+    @property({ type: Enum(UIID) }) defaultUI: UIID = UIID.Home;
+    @property({ type: [Node] }) listPanel: Node[] = [];
+    @property({ type: Node }) popupNode: Node;
+    @property({ type: Node }) bigPopupNode: Node;
+    @property({ type: Node }) fadePopupNode: Node;
+    @property({ type: Button }) outmapButton: Button;
+    private _popup: UIPopup = null;
+    private _bigPopup: UIPopup = null;
+    private _fadePopup: UIPopup = null;
 
-    @property({ type: Node }) public topUI: Node = null;
-    @property({ type: Node }) public footerUI: Node = null;
-    @property({ type: Node }) public topGamePlayUI: Node = null;
+    private get popup() {
+        if (this._popup == null) {
+            this._popup = this.popupNode.getComponent(UIPopup);
+        }
+
+        return this._popup;
+    }
+
+    private get bigPopup() {
+        if (this._bigPopup == null) {
+            this._bigPopup = this.bigPopupNode.getComponent(UIPopup);
+        }
+
+        return this._bigPopup;
+    }
+
+    private get fadePopup() {
+        if (this._fadePopup == null) {
+            this._fadePopup = this.fadePopupNode.getComponent(UIPopup);
+        }
+
+        return this._fadePopup;
+    }
+
+    private _listPanel: UIIdentify[] = [];
 
     public static get Instance(): UIManager {
         return this._instance
     }
-    private originTopUI: Vec3 = Vec3.ZERO;
-    private originFooterUI: Vec3 = Vec3.ZERO;
-    private originTopGamePlayUI: Vec3 = Vec3.ZERO;
-    private originTextScale: Vec3 = new Vec3(1, 1, 1);
-    private minTextScale: Vec3 = new Vec3(0.9, 0.9, 0.9);
-    private maxTextScale: Vec3 = new Vec3(1.1, 1.1, 1.1);
 
     onLoad() {
         if (UIManager._instance == null) {
             UIManager._instance = this;
         }
+
+        view.setResizeCallback(UIManager.Instance.onResize);
+    }
+
+    onResize() {
+        director.emit(EVENT_NAME.CANVAS_RESIZE);
     }
 
     protected onDestroy(): void {
         UIManager._instance = null;
     }
 
-    start() {
-        let that = this;
-        view.setResizeCallback(function () {
-            that.node.emit("ON_SCREEN_RESIZE", that);
+    public init() {
+        this.listPanel.forEach(panel => {
+            this._listPanel.push(panel.getComponent(UIIdentify));
         });
-        this.originTopUI = this.topUI.position.clone();
-        this.originFooterUI = this.footerUI.position.clone();
-        this.originTopGamePlayUI = this.topGamePlayUI.position.clone();
-    }
-
-    public init(userName: string, currentRank: number) {
         this.showUI(this.defaultUI, false);
-        this.lstPanel.forEach(panel => {
+        this._listPanel.forEach(panel => {
             panel.init();
         });
     }
@@ -71,8 +81,8 @@ export class UIManager extends Component {
         }
     }
 
-    public get isAnyPanelOpen () {
-        for (const panel of this.lstPanel) {
+    public get isAnyPanelOpen() {
+        for (const panel of this._listPanel) {
             if (panel.node.active) {
                 return true;
             }
@@ -98,37 +108,13 @@ export class UIManager extends Component {
         }, 1000);
     }
 
-    public updateGold(gold) {
-        this.goldText.node.scale = this.originTextScale;
-        tween(this.goldText.node)
-            .to(0.1, { scale: this.minTextScale })
-            .delay(0.1)
-            .to(0.1, { scale: this.maxTextScale })
-            .delay(0.1)
-            .to(0.1, { scale: this.originTextScale })
-            .start();
-        this.goldText.string = Utilities.convertBigNumberToStr(gold, false);
-    }
-
-    public updateGoldenHeart(heart) {
-        this.goldenHeartText.node.scale = this.originTextScale;
-        tween(this.goldenHeartText.node)
-            .to(0.1, { scale: this.minTextScale })
-            .delay(0.1)
-            .to(0.1, { scale: this.maxTextScale })
-            .delay(0.1)
-            .to(0.1, { scale: this.originTextScale })
-            .start();
-        this.goldenHeartText.string = Utilities.convertBigNumberToStr(heart, false);
-    }
-
     public showUI(id: UIID, pauseGame: boolean = true): Node {
         if (pauseGame) {
             this.node.emit(EVENT_NAME.ON_PAUSE_GAME);
         }
-        if (this.lstPanel == null) return;
+        if (this._listPanel == null) return;
         //Popup
-        for (const panel of this.lstPanel) {
+        for (const panel of this._listPanel) {
             if (panel && panel.id === id && panel.isPopup) {
                 panel.show();
                 return panel.node;
@@ -136,7 +122,7 @@ export class UIManager extends Component {
         }
         //Panel
         let tempPanel = null;
-        for (const panel of this.lstPanel) {
+        for (const panel of this._listPanel) {
             if (panel.node) {
                 if (panel.id == id) {
                     if (id == UIID.Home) {
@@ -156,23 +142,35 @@ export class UIManager extends Component {
     };
 
     public FindUIIndetify(id: UIID): UIIdentify {
-        for (const panel of this.lstPanel) {
+        for (const panel of this._listPanel) {
             if (panel.id == id) {
                 return panel;
             }
         }
     };
 
-    public showYesNoPopup(title: string, content: string, yesCallback, noCallback = null, txt_Yes: string = "Yes", txt_No: string = "No", isResetVisual = true): void {
-        this.popup.showYesNoPopup(title, content, yesCallback, txt_Yes, txt_No, noCallback, isResetVisual);
+    public showYesNoPopup(title: string, content: string, yesCallback, noCallback = null, txt_Yes: string = "Yes", txt_No: string = "No", closeAfter: number = -1): void {
+        this.popup.showYesNoPopup(title, content, yesCallback, txt_Yes, txt_No, noCallback, closeAfter);
     };
 
-    public showNoticePopup(title = "Warning", content = "", callback = null) {
-        this.popup.showOkPopup(title, content, callback);
+    public showNoticePopup(title = "Chú Ý", content = "", callback = null) {
+        this.popup.showOkPopup(title, content, callback, "OK");
+    }
+
+    public showBigNoticePopup(title = "Chú Ý", content = "", callback = null) {
+        this.bigPopup.showOkPopup(title, content, callback, "OK");
+    }
+
+    public showMessageTimeout(content: string, closeAfter: number) {
+        this.fadePopup.showMessageTimeout(content, closeAfter);
+    }
+
+    public hideMessageTimeout() {
+        this.fadePopup.hide();
     }
 
     public HideUI(id: UIID) {
-        for (const panel of this.lstPanel) {
+        for (const panel of this._listPanel) {
             if (panel.id == id) {
                 panel.hide();
             }
@@ -185,25 +183,6 @@ export class UIManager extends Component {
     //  "sineOut" | "sineInOut" | "sineOutIn" | "expoIn" | "expoOut" | "expoInOut" | "expoOutIn" | "circIn" |
     //  "circOut" | "circInOut" | "circOutIn" | "elasticIn" | "elasticOut" | "elasticInOut" | "elasticOutIn" |
     //  "backIn" | "backOut" | "backInOut" | "backOutIn" | "bounceIn" | "bounceOut" | "bounceInOut" | "bounceOutIn";
-
-
-    public activeUIWhenPlayGame(isActive: boolean) {
-
-        const movePosY = isActive ? 120 : 0;
-
-        tween(this.topUI)
-            .to(0.4, { position: (this.originTopUI.clone().add(new Vec3(0, movePosY, 0))) }, { easing: 'sineInOut' })
-            .start();
-        tween(this.footerUI)
-            .to(0.4, { position: (this.originFooterUI.clone().add(new Vec3(0, -movePosY, 0))) }, { easing: 'sineInOut' })
-            .start();
-
-
-        let movePos = isActive ? new Vec3(0, this.originTopGamePlayUI.y, 0) : this.originTopGamePlayUI;
-        tween(this.topGamePlayUI)
-            .to(0.4, { position: movePos }, { easing: 'sineInOut' })
-            .start();
-    }
 }
 
 

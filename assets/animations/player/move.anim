@@ -11,7 +11,7 @@
     "speed": 1,
     "wrapMode": 2,
     "enableTrsBlending": false,
-    "_duration": 0.38333333333333336,
+    "_duration": 0.36666666666666664,
     "_hash": 500763545,
     "_tracks": [
       {
@@ -31,7 +31,64 @@
       }
     ],
     "_exoticAnimation": null,
-    "_events": [],
+    "_events": [
+      {
+        "frame": 0,
+        "func": "",
+        "params": []
+      },
+      {
+        "frame": 0,
+        "func": "onAnimationEvent",
+        "params": [
+          "move-0"
+        ]
+      },
+      {
+        "frame": 0.08333333333333333,
+        "func": "",
+        "params": []
+      },
+      {
+        "frame": 0.08333333333333333,
+        "func": "playWalkClip1",
+        "params": []
+      },
+      {
+        "frame": 0.2,
+        "func": "",
+        "params": []
+      },
+      {
+        "frame": 0.2,
+        "func": "onAnimationEvent",
+        "params": [
+          "move-1"
+        ]
+      },
+      {
+        "frame": 0.3,
+        "func": "",
+        "params": []
+      },
+      {
+        "frame": 0.3,
+        "func": "playWalkClip2",
+        "params": []
+      },
+      {
+        "frame": 0.36666666666666664,
+        "func": "",
+        "params": []
+      },
+      {
+        "frame": 0.36666666666666664,
+        "func": "onAnimationEvent",
+        "params": [
+          "move-0"
+        ]
+      }
+    ],
     "_embeddedPlayers": [],
     "_additiveSettings": {
       "__id__": 46
@@ -79,25 +136,8 @@
   },
   {
     "__type__": "cc.ObjectCurve",
-    "_times": [
-      0,
-      0.2,
-      0.36666666666666664
-    ],
-    "_values": [
-      {
-        "__uuid__": "cabc462e-24df-432c-8f81-6caa33060c22@f9941",
-        "__expectedType__": "cc.SpriteFrame"
-      },
-      {
-        "__uuid__": "51ea7281-3043-4cfa-bfd4-c93cf70595b0@f9941",
-        "__expectedType__": "cc.SpriteFrame"
-      },
-      {
-        "__uuid__": "cabc462e-24df-432c-8f81-6caa33060c22@f9941",
-        "__expectedType__": "cc.SpriteFrame"
-      }
-    ]
+    "_times": [],
+    "_values": []
   },
   {
     "__type__": "cc.animation.ObjectTrack",
@@ -140,25 +180,8 @@
   },
   {
     "__type__": "cc.ObjectCurve",
-    "_times": [
-      0,
-      0.2,
-      0.36666666666666664
-    ],
-    "_values": [
-      {
-        "__uuid__": "fa618145-e1df-4172-afdd-f760dfe3c070@f9941",
-        "__expectedType__": "cc.SpriteFrame"
-      },
-      {
-        "__uuid__": "614167f3-92b1-49dd-839c-dc3ef0884c0c@f9941",
-        "__expectedType__": "cc.SpriteFrame"
-      },
-      {
-        "__uuid__": "fa618145-e1df-4172-afdd-f760dfe3c070@f9941",
-        "__expectedType__": "cc.SpriteFrame"
-      }
-    ]
+    "_times": [],
+    "_values": []
   },
   {
     "__type__": "cc.animation.VectorTrack",
@@ -207,9 +230,22 @@
   {
     "__type__": "cc.RealCurve",
     "_times": [
-      0
+      0,
+      0.36666666666666664
     ],
     "_values": [
+      {
+        "__type__": "cc.RealKeyframeValue",
+        "interpolationMode": 0,
+        "tangentWeightMode": 0,
+        "value": 0.7080000042915344,
+        "rightTangent": 0,
+        "rightTangentWeight": 1,
+        "leftTangent": 0,
+        "leftTangentWeight": 1,
+        "easingMethod": 0,
+        "__editorExtras__": null
+      },
       {
         "__type__": "cc.RealKeyframeValue",
         "interpolationMode": 0,
@@ -235,9 +271,22 @@
   {
     "__type__": "cc.RealCurve",
     "_times": [
-      0
+      0,
+      0.36666666666666664
     ],
     "_values": [
+      {
+        "__type__": "cc.RealKeyframeValue",
+        "interpolationMode": 0,
+        "tangentWeightMode": 0,
+        "value": -0.6119999885559082,
+        "rightTangent": 0,
+        "rightTangentWeight": 1,
+        "leftTangent": 0,
+        "leftTangentWeight": 1,
+        "easingMethod": 0,
+        "__editorExtras__": null
+      },
       {
         "__type__": "cc.RealKeyframeValue",
         "interpolationMode": 0,
@@ -342,9 +391,22 @@
   {
     "__type__": "cc.RealCurve",
     "_times": [
-      0
+      0,
+      0.36666666666666664
     ],
     "_values": [
+      {
+        "__type__": "cc.RealKeyframeValue",
+        "interpolationMode": 0,
+        "tangentWeightMode": 0,
+        "value": 2.0339999198913574,
+        "rightTangent": 0,
+        "rightTangentWeight": 1,
+        "leftTangent": 0,
+        "leftTangentWeight": 1,
+        "easingMethod": 0,
+        "__editorExtras__": null
+      },
       {
         "__type__": "cc.RealKeyframeValue",
         "interpolationMode": 0,
@@ -370,9 +432,22 @@
   {
     "__type__": "cc.RealCurve",
     "_times": [
-      0
+      0,
+      0.36666666666666664
     ],
     "_values": [
+      {
+        "__type__": "cc.RealKeyframeValue",
+        "interpolationMode": 0,
+        "tangentWeightMode": 0,
+        "value": -10.942000389099121,
+        "rightTangent": 0,
+        "rightTangentWeight": 1,
+        "leftTangent": 0,
+        "leftTangentWeight": 1,
+        "easingMethod": 0,
+        "__editorExtras__": null
+      },
       {
         "__type__": "cc.RealKeyframeValue",
         "interpolationMode": 0,
@@ -512,7 +587,7 @@
         "__type__": "cc.RealKeyframeValue",
         "interpolationMode": 0,
         "tangentWeightMode": 0,
-        "value": 25.378000259399414,
+        "value": 24,
         "rightTangent": 0,
         "rightTangentWeight": 1,
         "leftTangent": 0,

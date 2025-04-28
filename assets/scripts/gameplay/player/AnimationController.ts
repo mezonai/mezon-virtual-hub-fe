@@ -1,9 +1,11 @@
-import { _decorator, Component, Node, Animation, AnimationClip, AnimationState } from 'cc';
+import { _decorator, Component, Node, Animation, AnimationClip, AnimationState, AudioSource, AudioClip } from 'cc';
 const { ccclass, property } = _decorator;
 
 @ccclass('AnimationController')
 export class AnimationController extends Component {
     @property({ type: Animation }) animator: Animation = null;
+    @property({ type: AudioSource }) audioSource: AudioSource = null;
+    @property({ type: [AudioClip] }) walkClip: AudioClip[] = [];
 
     private lastAnimationName: string = "";
     private isKeepLastAnim: boolean = false;
@@ -24,5 +26,18 @@ export class AnimationController extends Component {
 
     public get getCurrentAnim() {
         return this.lastAnimationName;
+    }
+
+    public playWalkClip1() {
+        this.playWalkClip(this.walkClip[0]);
+    }
+
+    public playWalkClip2() {
+        this.playWalkClip(this.walkClip[1]);
+    }
+
+    private playWalkClip(clip: AudioClip) {
+        this.audioSource.clip = clip;
+        this.audioSource.play();
     }
 }

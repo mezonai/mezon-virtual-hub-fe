@@ -46,12 +46,15 @@ export class UIIdentify extends Component {
     }
 
     public hide(): void {
+        if (!this.panel.active) return;
         if (this.isPopup && this.panel.children[1] != null) {
             this.hidePopups();
         }
         else {
             this.panel.active = false;
-            UIManager.Instance.checkResumeGame();
+            if (UIManager.Instance) {
+                UIManager.Instance.checkResumeGame();
+            }
         }
     };
 
@@ -59,7 +62,7 @@ export class UIIdentify extends Component {
         this.attachNodes.forEach(attachNodeData => {
             let widget = attachNodeData.attachNode.getComponent(Widget);
             attachNodeData.widget = widget;
-            attachNodeData.originPosition = new Vec3(widget.left, widget.top, 0);
+            attachNodeData.originPosition = new Vec3(widget.right, widget.top, 0);
         });
 
     }
@@ -76,7 +79,7 @@ export class UIIdentify extends Component {
 
     showPopups() {
         this.attachNodes.forEach(attachNodeData => {
-            attachNodeData.widget.left = attachNodeData.originPosition.x + attachNodeData.movePosition.x;
+            attachNodeData.widget.right = attachNodeData.originPosition.x + attachNodeData.movePosition.x;
             attachNodeData.widget.top = attachNodeData.originPosition.y + attachNodeData.movePosition.y;
             attachNodeData.attachNode.active = false;
         });
@@ -90,23 +93,23 @@ export class UIIdentify extends Component {
             Tween.stopAllByTarget(attachNodeData.widget)
             if (!attachNodeData.movePosition.equals(Vec3.ZERO)) {
                 tween(attachNodeData.widget)
-                    .to(0.1, { left: attachNodeData.originPosition.x, top: attachNodeData.originPosition.y },)
+                    .to(0.1, { right: attachNodeData.originPosition.x, top: attachNodeData.originPosition.y },)
                     .call(() => {
-                        attachNodeData.widget.left = attachNodeData.originPosition.x;
+                        attachNodeData.widget.right = attachNodeData.originPosition.x;
                         attachNodeData.widget.top = attachNodeData.originPosition.y;
                     })
                     .start();
             }
             else if (attachNodeData.punchScaleIfNotMove){
-                attachNodeData.widget.alignMode = Widget.AlignMode.ALWAYS;
+                // attachNodeData.widget.alignMode = Widget.AlignMode.ALWAYS;
                 attachNodeData.attachNode.scale = Vec3.ZERO;
                 tween(attachNodeData.attachNode)
                     .to(0.1, { scale: new Vec3(1.1, 1.1, 1.1) },)
                     .to(0.05, { scale: new Vec3(0.95, 0.95, 0.95) },)
                     .to(0.05, { scale: Vec3.ONE })
-                    .call(() => {
-                        attachNodeData.widget.alignMode = Widget.AlignMode.ON_WINDOW_RESIZE;
-                    })
+                    // .call(() => {
+                    //     attachNodeData.widget.alignMode = Widget.AlignMode.ON_WINDOW_RESIZE;
+                    // })
                     .start();
             }
         });
@@ -138,7 +141,9 @@ export class UIIdentify extends Component {
 
     private checkClosePanel() {
         this.panel.active = false;
-        UIManager.Instance.checkResumeGame();
+        if (UIManager.Instance) {
+            UIManager.Instance.checkResumeGame();
+        }
     }
 
     hidePopups() {
@@ -163,6 +168,12 @@ export class UIIdentify extends Component {
             case PanelType.OutToTop:
                 this.outToTop(() => { callback() });
                 break;
+                case PanelType.InFromBottom:
+                    this.inFromBottom(() => { callback(); });
+                    break;
+                case PanelType.OutToBottom:
+                    this.outToBottom(() => { callback() });
+                    break;
         }
     }
 
@@ -182,6 +193,28 @@ export class UIIdentify extends Component {
         this.panel.children[1].position = new Vec3(0, 0, 0);
         tween(this.panel.children[1])
             .to(0.2, { position: new Vec3(0, 500, 0) },)
+            .call(() => {
+                callback();
+            })
+            .start();
+    }
+
+    private inFromBottom(callback) {
+        this.panel.children[1].position = new Vec3(0, -100, 0);
+        tween(this.panel.children[1])
+            .delay(0.01)
+            .to(0.1, { position: new Vec3(0, 10, 0) },)
+            .to(0.1, { position: new Vec3(0, 0, 0) },)
+            .call(() => {
+                callback();
+            })
+            .start();
+    }
+
+    private outToBottom(callback) {
+        this.panel.children[1].position = new Vec3(0, 0, 0);
+        tween(this.panel.children[1])
+            .to(0.2, { position: new Vec3(0, -100, 0) },)
             .call(() => {
                 callback();
             })

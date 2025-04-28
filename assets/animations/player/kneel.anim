@@ -31,7 +31,20 @@
       }
     ],
     "_exoticAnimation": null,
-    "_events": [],
+    "_events": [
+      {
+        "frame": 0,
+        "func": "",
+        "params": []
+      },
+      {
+        "frame": 0,
+        "func": "onAnimationEvent",
+        "params": [
+          "kneel-0"
+        ]
+      }
+    ],
     "_embeddedPlayers": [],
     "_additiveSettings": {
       "__id__": 46
@@ -79,15 +92,8 @@
   },
   {
     "__type__": "cc.ObjectCurve",
-    "_times": [
-      0
-    ],
-    "_values": [
-      {
-        "__uuid__": "0e2341ed-422f-472d-b08f-1dfc763f930e@f9941",
-        "__expectedType__": "cc.SpriteFrame"
-      }
-    ]
+    "_times": [],
+    "_values": []
   },
   {
     "__type__": "cc.animation.VectorTrack",
@@ -136,20 +142,35 @@
   {
     "__type__": "cc.RealCurve",
     "_times": [
-      0
+      0,
+      0.43333333333333335
     ],
     "_values": [
       {
         "__type__": "cc.RealKeyframeValue",
         "interpolationMode": 0,
         "tangentWeightMode": 0,
-        "value": 0.356,
+        "value": 0.35600000619888306,
         "rightTangent": 0,
         "rightTangentWeight": 1,
         "leftTangent": 0,
         "leftTangentWeight": 1,
         "easingMethod": 0,
         "__editorExtras__": null
+      },
+      {
+        "__type__": "cc.RealKeyframeValue",
+        "interpolationMode": 0,
+        "tangentWeightMode": 0,
+        "value": 0.35600000619888306,
+        "rightTangent": 0,
+        "rightTangentWeight": 1,
+        "leftTangent": 0,
+        "leftTangentWeight": 1,
+        "easingMethod": 0,
+        "__editorExtras__": {
+          "tangentMode": 0
+        }
       }
     ],
     "preExtrapolation": 1,
@@ -164,20 +185,35 @@
   {
     "__type__": "cc.RealCurve",
     "_times": [
-      0
+      0,
+      0.43333333333333335
     ],
     "_values": [
       {
         "__type__": "cc.RealKeyframeValue",
         "interpolationMode": 0,
         "tangentWeightMode": 0,
-        "value": -12.134,
+        "value": -12.133999824523926,
         "rightTangent": 0,
         "rightTangentWeight": 1,
         "leftTangent": 0,
         "leftTangentWeight": 1,
         "easingMethod": 0,
         "__editorExtras__": null
+      },
+      {
+        "__type__": "cc.RealKeyframeValue",
+        "interpolationMode": 0,
+        "tangentWeightMode": 0,
+        "value": -12.133999824523926,
+        "rightTangent": 0,
+        "rightTangentWeight": 1,
+        "leftTangent": 0,
+        "leftTangentWeight": 1,
+        "easingMethod": 0,
+        "__editorExtras__": {
+          "tangentMode": 0
+        }
       }
     ],
     "preExtrapolation": 1,
@@ -492,7 +528,7 @@
         "__type__": "cc.RealKeyframeValue",
         "interpolationMode": 0,
         "tangentWeightMode": 0,
-        "value": 2.74,
+        "value": 2.740000009536743,
         "rightTangent": 0,
         "rightTangentWeight": 1,
         "leftTangent": 0,
@@ -504,7 +540,7 @@
         "__type__": "cc.RealKeyframeValue",
         "interpolationMode": 0,
         "tangentWeightMode": 0,
-        "value": 2.467,
+        "value": 2.4670000076293945,
         "rightTangent": 0,
         "rightTangentWeight": 1,
         "leftTangent": 0,
@@ -533,7 +569,7 @@
         "__type__": "cc.RealKeyframeValue",
         "interpolationMode": 0,
         "tangentWeightMode": 0,
-        "value": -3.704,
+        "value": -3.7039999961853027,
         "rightTangent": 0,
         "rightTangentWeight": 1,
         "leftTangent": 0,
@@ -545,7 +581,7 @@
         "__type__": "cc.RealKeyframeValue",
         "interpolationMode": 0,
         "tangentWeightMode": 0,
-        "value": -3.647,
+        "value": -3.6470000743865967,
         "rightTangent": 0,
         "rightTangentWeight": 1,
         "leftTangent": 0,
@@ -652,15 +688,8 @@
   },
   {
     "__type__": "cc.ObjectCurve",
-    "_times": [
-      0
-    ],
-    "_values": [
-      {
-        "__uuid__": "cabc462e-24df-432c-8f81-6caa33060c22@f9941",
-        "__expectedType__": "cc.SpriteFrame"
-      }
-    ]
+    "_times": [],
+    "_values": []
   },
   {
     "__type__": "cc.AnimationClipAdditiveSettings",
