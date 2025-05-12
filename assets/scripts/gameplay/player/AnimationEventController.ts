@@ -2,7 +2,7 @@ import { _decorator, CCString, Component, Node, sp, Sprite, SpriteFrame, Vec3 } 
 import { LoadBundleController } from '../../bundle/LoadBundleController';
 import { UserMeManager } from '../../core/UserMeManager';
 import { ResourceManager } from '../../core/ResourceManager';
-import { Item } from '../../Model/Item';
+import { Item, ItemType } from '../../Model/Item';
 import { ServerManager } from '../../core/ServerManager';
 const { ccclass, property } = _decorator;
 
@@ -68,7 +68,7 @@ export class AnimationEventController extends Component {
         // reset the old offsets
         this.partOffsets = {};
         for (const skinId of skinSet) {
-            const localData = ResourceManager.instance.getAllLocalSkinById(skinId);
+            const localData = ResourceManager.instance.getLocalSkinById(skinId, ItemType.NULL);
             if (!localData) continue;
             if (localData.icons && Array.isArray(localData.icons)) {
                 this.partsName.push(...localData.icons);

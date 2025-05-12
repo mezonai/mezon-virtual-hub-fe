@@ -31,6 +31,8 @@ export class ShopUIItem extends BaseInventoryUIITem {
     }
 
     public isOwn() {
+        if (this.data.is_stackable) return false;
+        
         return UserMeManager.Get.inventories.find(x => x.item.id == this.data.id) != null;
     }
 

@@ -62,7 +62,7 @@ export class BaseInventoryManager extends Component {
         ObjectPoolManager.instance.returnArrayToPool(this.itemContainer.children);
         for (const item of this.groupedItems[tabName]) {
             let skinLocalData = this.getLocalData(item);
-            if (!skinLocalData)
+            if (!skinLocalData )
                 continue;
 
             let itemNode = ObjectPoolManager.instance.spawnFromPool(this.itemPrefab.name);

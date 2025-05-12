@@ -51,7 +51,7 @@ export class RewardUIController extends BaseInventoryManager {
         if (!item) {
             return null;
         }
-        return ResourceManager.instance.getLocalSkinById(UserMeManager.Get.user.gender, item.id, item.type);
+        return ResourceManager.instance.getLocalSkinById(item.id, item.type);
     }
 
     protected override async registUIItemData(itemNode: Node, item: RewardItemDTO, skinLocalData: LocalItemDataConfig) {

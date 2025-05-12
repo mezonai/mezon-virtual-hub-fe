@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, Sprite, SpriteFrame, Toggle, tween, Vec3 } from 'cc';
+import { _decorator, Component, Label, Node, Sprite, SpriteFrame, Toggle, tween, Vec3 } from 'cc';
 import { Item } from '../../../Model/Item';
 import { EVENT_NAME } from '../../../network/APIConstant';
 const { ccclass, property } = _decorator;
@@ -10,6 +10,7 @@ export class BaseInventoryUIITem extends Component {
     @property({ type: Sprite }) stasSprite: Sprite = null;
     @property({ type: [SpriteFrame] }) stasFrame: SpriteFrame[] = [];
     @property({ type: Toggle }) toggle: Toggle = null;
+    @property({ type: Label }) amountLabel: Label;
 
     protected lastTriggerTime = 0;
     public data: Item = null;

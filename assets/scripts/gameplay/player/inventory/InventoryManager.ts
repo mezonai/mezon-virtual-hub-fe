@@ -33,57 +33,69 @@ export class InventoryManager extends BaseInventoryManager {
         }
 
         UserMeManager.Get.inited = true;
-        let items: InventoryDTO[] = [
+        let maleItems: InventoryDTO[] = [
             {
                 id: null,
                 equipped: false,
                 item: {
-                    id: "1", name: "", gold: 0, iconSF: null, type: 1, mappingLocalData: null, gender: 0, is_equippable: true, is_static: false
+                    id: "1", name: "", gold: 0, iconSF: null, type: 1, mappingLocalData: null, gender: "male", is_equippable: true, is_static: false, is_stackable: false
                 }
             },
             {
                 id: null,
                 equipped: false,
-                item: { id: "-1", name: "", gold: 0, iconSF: null, type: 4, mappingLocalData: null, gender: -1, is_equippable: true, is_static: false },
+                item: { id: "3", name: "", gold: 0, iconSF: null, type: 5, mappingLocalData: null, gender: "male", is_equippable: true, is_static: false, is_stackable: false },
 
             },
             {
                 id: null,
                 equipped: false,
-                item: { id: "3", name: "", gold: 0, iconSF: null, type: 5, mappingLocalData: null, gender: 0, is_equippable: true, is_static: false },
+                item: { id: "4", name: "", gold: 0, iconSF: null, type: 6, mappingLocalData: null, gender: "male", is_equippable: true, is_static: false, is_stackable: false },
 
-            },
-            {
-                id: null,
-                equipped: false,
-                item: { id: "4", name: "", gold: 0, iconSF: null, type: 6, mappingLocalData: null, gender: 0, is_equippable: true, is_static: false },
-
-            },
-            {
-                id: null,
-                equipped: false,
-                item: { id: "8", name: "", gold: 0, iconSF: null, type: 1, mappingLocalData: null, gender: 1, is_equippable: true, is_static: false },
-
-            },
-            {
-                id: null,
-                equipped: false,
-                item: { id: "9", name: "", gold: 0, iconSF: null, type: 5, mappingLocalData: null, gender: 1, is_equippable: true, is_static: false },
-
-            },
-            {
-                id: null,
-                equipped: false,
-                item: { id: "10", name: "", gold: 0, iconSF: null, type: 6, mappingLocalData: null, gender: 1, is_equippable: true, is_static: false },
-
-            },
-            {
-                id: null,
-                equipped: false,
-                item: { id: "0", name: "", gold: 0, iconSF: null, type: 3, mappingLocalData: null, gender: -1, is_equippable: true, is_static: false },
             }
         ];
-        UserMeManager.Get.inventories.unshift(...items);
+
+        let femaleItems: InventoryDTO[] = [
+            {
+                id: null,
+                equipped: false,
+                item: { id: "8", name: "", gold: 0, iconSF: null, type: 1, mappingLocalData: null, gender: "female", is_equippable: true, is_static: false, is_stackable: false },
+
+            },
+            {
+                id: null,
+                equipped: false,
+                item: { id: "9", name: "", gold: 0, iconSF: null, type: 5, mappingLocalData: null, gender: "female", is_equippable: true, is_static: false, is_stackable: false },
+
+            },
+            {
+                id: null,
+                equipped: false,
+                item: { id: "10", name: "", gold: 0, iconSF: null, type: 6, mappingLocalData: null, gender: "female", is_equippable: true, is_static: false, is_stackable: false },
+
+            }
+        ];
+
+        let unisexItems: InventoryDTO[] = [
+            {
+                id: null,
+                equipped: false,
+                item: { id: "-1", name: "", gold: 0, iconSF: null, type: 4, mappingLocalData: null, gender: "not specified", is_equippable: true, is_static: false, is_stackable: false },
+
+            },
+            {
+                id: null,
+                equipped: false,
+                item: { id: "0", name: "", gold: 0, iconSF: null, type: 3, mappingLocalData: null, gender: "not specified", is_equippable: true, is_static: false, is_stackable: false },
+            }
+        ];
+        UserMeManager.Get.inventories.unshift(...unisexItems);
+        if (UserMeManager.Get.user.gender == "male") {
+            UserMeManager.Get.inventories.unshift(...maleItems);
+        }
+        else {
+            UserMeManager.Get.inventories.unshift(...femaleItems);
+        }
     }
 
     protected override initGroupData() {
@@ -113,7 +125,8 @@ export class InventoryManager extends BaseInventoryManager {
     }
 
     protected override getLocalData(item) {
-        return ResourceManager.instance.getLocalSkinById(UserMeManager.Get.user.gender, item.item.id, item.item.type);
+        if (item.item.gender != "not specified" && item.item.gender != UserMeManager.Get.user.gender) return null;
+        return ResourceManager.instance.getLocalSkinById(item.item.id, item.item.type);
     }
 
     protected override async registUIItemData(itemNode: Node, item: InventoryDTO, skinLocalData: LocalItemDataConfig) {

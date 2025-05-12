@@ -69,6 +69,7 @@ export class MoveAbility extends Ability {
     }
 
     onKeyUp(event: EventKeyboard) {
+        if (event.keyCode == KeyCode.ENTER) return;
         if (this.lastPressedKey === event.keyCode) {
             this.lastPressedKey = null;
             this.updateAction("idle");

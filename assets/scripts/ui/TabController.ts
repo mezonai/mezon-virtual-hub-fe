@@ -18,6 +18,7 @@ export class TabController extends Component {
         [ItemType.HAT, 'Mũ'],
         [ItemType.LOWER, 'Quần'],
         [ItemType.UPPER, 'Áo'],
+        [ItemType.PET_BAIT, "Mồi"]
     ]);
 
     protected reset() {

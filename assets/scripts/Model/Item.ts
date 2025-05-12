@@ -18,13 +18,14 @@ export class ItemDTO {
 export class Item extends BaseInventoryDTO{
     public id: string = "";
     public name: string = "";
-    public gender: number = 0;
+    public gender: string = "";
     public gold: number = 0;
     public type: ItemType = ItemType.HAIR;
     public is_equippable: boolean = false;
     public is_static: boolean = false;
     public iconSF: SpriteFrame[] = [];
     public mappingLocalData: LocalItemDataConfig = null;
+    public is_stackable: boolean = false;
 }
 
 export class RewardItemDTO {
@@ -45,6 +46,7 @@ export enum RewardType {
 }
 
 export enum ItemType {
+    NULL = 0,
     HAIR = 1,
     HAT = 2,
     FACE = 3,
@@ -52,5 +54,5 @@ export enum ItemType {
     UPPER = 5,
     LOWER = 6,
     GLASSES = 7,
-    PET_FOOD = 8
+    PET_BAIT = 8
 }

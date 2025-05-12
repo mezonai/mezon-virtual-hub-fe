@@ -14,9 +14,52 @@ export class ResourceManager extends Component {
         return ResourceManager._instance;
     }
 
-    private _itemDTO: ItemDTO;
+    private skinDataDict:  Map<string, LocalItemDataConfig> = new Map<string, LocalItemDataConfig>();
 
-    public LocalSkinConfig: LocalItemConfig;
+    private _itemDTO: ItemDTO;
+    private localSkinConfig: LocalItemConfig;
+
+    public set LocalSkinConfig (value: LocalItemConfig) {
+        this.localSkinConfig = value;
+        this.initSkinDict(value.female);
+        this.initSkinDict(value.male);
+        this.initSkinDict(value.unisex);
+    }
+
+    private initSkinDict(gender: LocalItemPartDataConfig) {
+        gender.equipment.forEach(e => {
+            this.skinDataDict.set(e.id, e)
+        });
+
+        gender.eyes.forEach(e => {
+            this.skinDataDict.set(e.id, e)
+        });
+
+        gender.face.forEach(e => {
+            this.skinDataDict.set(e.id, e)
+        });
+
+        gender.hair.forEach(e => {
+            this.skinDataDict.set(e.id, e)
+        });
+
+        gender.lower.forEach(e => {
+            this.skinDataDict.set(e.id, e)
+        });
+
+        gender.upper.forEach(e => {
+            this.skinDataDict.set(e.id, e)
+        });
+
+        gender.specialItem.forEach(e => {
+            this.skinDataDict.set(e.id, e)
+        });
+    }
+
+    public get LocalSkinConfig (): LocalItemConfig {
+        return this.localSkinConfig;
+    }
+
     public UserProfileData: MezonDTO;
     public FactData: FactData;
     public JokeData: JokeData;
@@ -47,65 +90,12 @@ export class ResourceManager extends Component {
         ResourceManager._instance = null;
     }
 
-    public getLocalSkinById(gender: string, id: string, type: ItemType, isUnisex: boolean = false): LocalItemDataConfig {
-        let item: LocalItemDataConfig = null;
-        if (!isUnisex) {
-            switch (gender) {
-                case "male":
-                    item = this.getLocalSkinPartById(id, type, this.LocalSkinConfig.male);
-                    break;
-                case "female":
-                    item = this.getLocalSkinPartById(id, type, this.LocalSkinConfig.female);
-                    break;
-            }
+    public getLocalSkinById(id: string, type: ItemType): LocalItemDataConfig {
+        if (this.skinDataDict.has(id)) {
+            return this.skinDataDict.get(id);
         }
-
-        if (!item) {
-            item = this.getLocalSkinPartById(id, type, this.LocalSkinConfig.unisex);
-        }
-
-        return item;
-    }
-
-    private getLocalSkinPartById(id: string, type: ItemType, listItem: LocalItemPartDataConfig): LocalItemDataConfig {
-        let arr: LocalItemDataConfig[] = [];
-        switch (type) {
-            case ItemType.EYES:
-                arr = listItem.eyes;
-                break;
-            case ItemType.HAT:
-                arr = listItem.equipment;
-                break;
-            case ItemType.HAIR:
-                arr = listItem.hair;
-                break;
-            case ItemType.FACE:
-                arr = listItem.face;
-                break;
-            case ItemType.UPPER:
-                arr = listItem.upper;
-                break;
-            case ItemType.LOWER:
-                arr = listItem.lower;
-                break;
-        }
-
-        return arr.find(x => x.id == id);
-    }
-
-    public getAllLocalSkinById(id: string) {
-        let item = null;
-        for (let i = 1; i <= 7; i++) {
-            item = this.getLocalSkinById("male", id, i);
-            if (item != null) {
-                return item;
-            }
-        }
-        for (let i = 1; i <= 7; i++) {
-            item = this.getLocalSkinById("female", id, i);
-            if (item != null) {
-                return item;
-            }
+        else {
+            return null;
         }
     }
 }

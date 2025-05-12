@@ -12,6 +12,7 @@ export class LocalItemPartDataConfig {
     face: LocalItemDataConfig[];
     upper: LocalItemDataConfig[];
     lower: LocalItemDataConfig[];
+    specialItem: LocalItemDataConfig[];
 }
 
 export class LocalItemDataConfig {

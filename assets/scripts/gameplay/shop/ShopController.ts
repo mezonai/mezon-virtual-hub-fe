@@ -111,7 +111,8 @@ export class ShopController extends BaseInventoryManager {
     }
 
     protected override getLocalData(item: Item) {
-        return ResourceManager.instance.getLocalSkinById(UserMeManager.Get.user.gender, item.id, item.type);
+        if (item.gender != "not specified" && item.gender != UserMeManager.Get.user.gender) return null;
+        return ResourceManager.instance.getLocalSkinById(item.id, item.type);
     }
 
     protected override async registUIItemData(itemNode: Node, item: Item, skinLocalData: LocalItemDataConfig) {
