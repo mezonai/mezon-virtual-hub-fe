@@ -46,17 +46,20 @@
         "__id__": 121
       },
       {
-        "__id__": 125
-      },
-      {
         "__id__": 127
       },
       {
+        "__id__": 129
+      },
+      {
         "__id__": 123
+      },
+      {
+        "__id__": 125
       }
     ],
     "_prefab": {
-      "__id__": 129
+      "__id__": 131
     },
     "_lpos": {
       "__type__": "cc.Vec3",
@@ -1332,7 +1335,7 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 28.997296797069826,
+      "width": 28.998055657036872,
       "height": 40.32
     },
     "_anchorPoint": {
@@ -1617,7 +1620,7 @@
     "_string": "",
     "_horizontalAlign": 1,
     "_verticalAlign": 1,
-    "_actualFontSize": 43.859375,
+    "_actualFontSize": 54.05555555555556,
     "_fontSize": 14,
     "_fontFamily": "Arial",
     "_lineHeight": 25.9,
@@ -2543,6 +2546,9 @@
     "contentBubbleChat": {
       "__id__": 68
     },
+    "petCatching": {
+      "__id__": 125
+    },
     "_id": ""
   },
   {
@@ -2602,7 +2608,7 @@
     "fileId": "2bfaxVlcBNXLJNtjSoZJ1H"
   },
   {
-    "__type__": "cc.RigidBody2D",
+    "__type__": "a97deAdlX9FX5VAkqk6Os2Z",
     "_name": "",
     "_objFlags": 0,
     "__editorExtras__": {},
@@ -2612,6 +2618,31 @@
     "_enabled": true,
     "__prefab": {
       "__id__": 126
+    },
+    "foodPrefab": {
+      "__uuid__": "be08cad3-abb2-4819-bc1d-0ce4115b8370",
+      "__expectedType__": "cc.Prefab"
+    },
+    "throwStartPosition": {
+      "__id__": 1
+    },
+    "_id": ""
+  },
+  {
+    "__type__": "cc.CompPrefabInfo",
+    "fileId": "74RNcJRctLS4jr1wHwgi8F"
+  },
+  {
+    "__type__": "cc.RigidBody2D",
+    "_name": "",
+    "_objFlags": 0,
+    "__editorExtras__": {},
+    "node": {
+      "__id__": 1
+    },
+    "_enabled": true,
+    "__prefab": {
+      "__id__": 128
     },
     "enabledContactListener": false,
     "bullet": true,
@@ -2645,7 +2676,7 @@
     },
     "_enabled": true,
     "__prefab": {
-      "__id__": 128
+      "__id__": 130
     },
     "tag": 0,
     "_group": 2,
@@ -2677,19 +2708,19 @@
     "instance": null,
     "targetOverrides": [
       {
-        "__id__": 130
+        "__id__": 132
       },
       {
-        "__id__": 133
+        "__id__": 135
       },
       {
-        "__id__": 136
-      },
-      {
-        "__id__": 139
+        "__id__": 138
       },
       {
         "__id__": 141
+      },
+      {
+        "__id__": 143
       }
     ],
     "nestedPrefabInstanceRoots": [
@@ -2704,7 +2735,7 @@
       "__id__": 99
     },
     "sourceInfo": {
-      "__id__": 131
+      "__id__": 133
     },
     "propertyPath": [
       "actionButtonParent"
@@ -2713,7 +2744,7 @@
       "__id__": 99
     },
     "targetInfo": {
-      "__id__": 132
+      "__id__": 134
     }
   },
   {
@@ -2734,7 +2765,7 @@
       "__id__": 99
     },
     "sourceInfo": {
-      "__id__": 134
+      "__id__": 136
     },
     "propertyPath": [
       "actionButtons",
@@ -2744,7 +2775,7 @@
       "__id__": 99
     },
     "targetInfo": {
-      "__id__": 135
+      "__id__": 137
     }
   },
   {
@@ -2765,7 +2796,7 @@
       "__id__": 99
     },
     "sourceInfo": {
-      "__id__": 137
+      "__id__": 139
     },
     "propertyPath": [
       "actionButtons",
@@ -2775,7 +2806,7 @@
       "__id__": 99
     },
     "targetInfo": {
-      "__id__": 138
+      "__id__": 140
     }
   },
   {
@@ -2801,7 +2832,7 @@
       "__id__": 99
     },
     "targetInfo": {
-      "__id__": 140
+      "__id__": 142
     }
   },
   {
@@ -2823,7 +2854,7 @@
       "__id__": 99
     },
     "targetInfo": {
-      "__id__": 142
+      "__id__": 144
     }
   },
   {

@@ -4,18 +4,20 @@ import { PlayerController } from '../player/PlayerController';
 import { UserMeManager } from '../../core/UserMeManager';
 import { ItemType } from '../../Model/Item';
 import { UIManager } from '../../core/UIManager';
+import { RandomlyMover } from '../../utilities/RandomlyMover';
+import { ServerManager } from '../../core/ServerManager';
+import { AnimalController } from '../../animal/AnimalController';
 const { ccclass, property } = _decorator;
 
 @ccclass('AnimalInteractManager')
 export class AnimalInteractManager extends Component {
     @property({ type: Node }) targetClicker: Node = null;
+    @property({ type: AnimalController }) animalController: AnimalController = null;
     @property({ type: Node }) tameButton: Node = null;
     @property({ type: CCFloat }) interactDistance: number = 60;
     @property({ type: Node }) actionButtonParent: Node = null;
-    @property(Node) bubbleChat: Node = null;
-    @property(Label) contentBubbleChat: Label = null;
-    private tweenAction: Tween<Node> | null = null;
-    private hideTimeout: number | null = null;
+    @property({ type: RandomlyMover }) randomlyMover: RandomlyMover = null;
+
     private lastActionTime: number = 0;
     private interactDelay: number = 1000;
 
@@ -50,14 +52,30 @@ export class AnimalInteractManager extends Component {
         this.tameButton.on(Node.EventType.TOUCH_START, this.onBeingTamed, this);
     }
 
-    protected onBeingTamed() {
+    protected async onBeingTamed() {
         this.toggleShowUI(false);
         let petFood = UserMeManager.Get.inventories.filter(x => x.item.type == ItemType.PET_FOOD);
-        if (petFood.length == 0) {
-            this.zoomBubbleChat("Vote cho game đi rồi cho bắt");
-        }
-    }
+        // if (petFood.length == 0) {
+        //     this.animalController.zoomBubbleChat("Bạn Không có đủ thức ăn");
+        // }
+        // else {
+        //     this.animalController.animalMover.randomlyMover.stopMove();
+        //     let data = {
+        //         player: UserMeManager.Get.user,
+        //         petId: this.animalController.Pet.id
+        //     }
+        //     await this.InteractTarget.petCatching.throwFoodToPet(this.animalController.node);
+        //     ServerManager.instance.sendCatchPet(data);
+        // }
+        this.animalController.animalMover.randomlyMover.stopMove();
+            let data = {
+                player: UserMeManager.Get.user,
+                petId: this.animalController.Pet.id
+            }
+            await this.InteractTarget.petCatching.throwFoodToPet(this.animalController.node);
+            ServerManager.instance.sendCatchPet(data);
 
+    }
 
     protected onDisable() {
         if (this.targetClicker) {
@@ -79,6 +97,7 @@ export class AnimalInteractManager extends Component {
     }
 
     public toggleShowUI(show: boolean) {
+        if (this.animalController == null || this.animalController?.Pet == null || this.animalController?.Pet.is_caught) return;
         this.lastActionTime = Date.now()
         this.actionButtonParent.active = show;
         if (show) {
@@ -97,42 +116,6 @@ export class AnimalInteractManager extends Component {
         }
     }
 
-    public shrinkBubbleChat(timeShrink: number) {
-        if (this.tweenAction) {
-            this.tweenAction.stop();
-        }
-    
-        this.tweenAction = tween(this.bubbleChat)
-            .to(timeShrink, { 
-                scale: new Vec3(0, 1, 1),
-            }, { easing: 'backIn' })
-            .call(() => { 
-                this.tweenAction = null; 
-            })
-            .start();
-    }
-
-    public zoomBubbleChat(contentChat: string) {
-        if (this.tweenAction) {
-            this.tweenAction.stop();
-        }
-    
-        if (this.hideTimeout !== null) {
-            clearTimeout(this.hideTimeout);
-            this.hideTimeout = null;
-        }
-    
-        this.bubbleChat.setScale(0, 1, 1);
-        this.contentBubbleChat.string = contentChat;
-        this.tweenAction = tween(this.bubbleChat)
-            .to(0.5, { 
-                scale: new Vec3(1, 1, 1),
-            }, { easing: 'backOut' })
-            .start();
-        this.hideTimeout = setTimeout(() => {
-            this.shrinkBubbleChat(0.5);
-        }, 4000);
-    }
 }
 
 

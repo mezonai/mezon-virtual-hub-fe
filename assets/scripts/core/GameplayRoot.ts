@@ -11,8 +11,6 @@ import { UserMeManager } from './UserMeManager';
 
 @ccclass('GameplayRoot')
 export class GameplayRoot extends Component {
-    @property(OfficeSceneController)
-    officeScene: OfficeSceneController;
     private totalCoreNeedLoad = 2;
     private _loadedCore = 0;
 
@@ -49,13 +47,13 @@ export class GameplayRoot extends Component {
         WebRequestManager.instance.toggleLoading(true);
         UIManager.Instance.init();
         await UserManager.instance.init();
-        await this.officeScene.LoadData();
+        await OfficeSceneController.instance.LoadData();
         this.initDataFromAPI();
     }
 
     private initGameComponent() {
         if (ResourceManager.instance.PetData) {
-            this.officeScene.spawnPet(ResourceManager.instance.PetData);
+            OfficeSceneController.instance.spawnPet(ResourceManager.instance.PetData);
         }
         let component = this.node.getComponent(GameManager);
         component.init();
