@@ -2,7 +2,7 @@ import { _decorator, Collider2D, IPhysics2DContact, randomRangeInt } from 'cc';
 import { MapItemController } from '../MapItem/MapItemController';
 import { UIManager } from '../../core/UIManager';
 import { UIID } from '../../ui/enum/UIID';
-import { SendTokenPanel } from '../../ui/SendTokenPanel';
+import { SendActionType, SendTokenPanel } from '../../ui/SendTokenPanel';
 import { ServerManager } from '../../core/ServerManager';
 import { EVENT_NAME } from '../../network/APIConstant';
 import { UserManager } from '../../core/UserManager';
@@ -20,9 +20,16 @@ export class InteractATM extends MapItemController {
 
     protected override async interact(playerSessionId: string) {
         let panel = UIManager.Instance.showUI(UIID.SendToken);
-        panel.getComponent(SendTokenPanel).setBuyCallback((data) => {
+        let panelComp = panel.getComponent(SendTokenPanel);
+
+        panelComp.setBuyCallback((data) => {
             this.onBuyClick(data);
         });
+        
+        panelComp.setWithdrawCallback((data) => {
+            this.onWithdrawClick(data);
+        });
+    
         this.handleEndContact(null, null, null);
     }
 
@@ -35,6 +42,18 @@ export class InteractATM extends MapItemController {
         
         if (ServerManager.instance) {
             ServerManager.instance.node.emit(EVENT_NAME.ON_BUY_TOKEN, data);
+        }
+    }
+
+    private onWithdrawClick(data: number) {
+        if (data <= 0) {
+            let chatContent = this.invalidGoldResponse[randomRangeInt(0, this.invalidGoldResponse.length)];
+            UserManager.instance.GetMyClientPlayer.zoomBubbleChat(chatContent);
+            return;
+        }
+    
+        if (ServerManager.instance) {
+            ServerManager.instance.node.emit(EVENT_NAME.ON_WITHDRAW_TOKEN, data);
         }
     }
 

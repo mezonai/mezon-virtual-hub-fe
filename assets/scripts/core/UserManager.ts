@@ -178,8 +178,8 @@ export class UserManager extends Component {
         let result2 = data.result2;
         let fee = data.fee;
         let winner = data.winner;
-        let p1Gold = data.fromGold;
-        let p2Gold = data.toGold;
+        let p1Gold = data.fromDiamond;
+        let p2Gold = data.toDiamond;
         if (action == ActionType.RPS.toString()) {
             if (p1.myID != this.GetMyClientPlayer.myID) {
                 p1.p2PInteractManager.showSpinRPS();
@@ -205,10 +205,10 @@ export class UserManager extends Component {
 
             if (UserMeManager.Get?.user) {
                 if (p1.myID == this.GetMyClientPlayer.myID && p1Gold != null) {
-                    UserMeManager.playerCoin = p1Gold;
+                    UserMeManager.playerDiamond = p1Gold;
                 }
                 else if (p2.myID == this.GetMyClientPlayer.myID && p2Gold != null) {
-                    UserMeManager.playerCoin = p2Gold;
+                    UserMeManager.playerDiamond = p2Gold;
                 }
             }
         }

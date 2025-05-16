@@ -13,9 +13,10 @@ const { ccclass, property } = _decorator;
 @ccclass('MyProfileHUD')
 export class MyProfileHUD extends BaseProfileManager {
     @property(Label) private fullName_txt: Label = null!;
-    @property(Label) private money_txt: Label = null!;
+    @property(Label) private gold_txt: Label = null!;
+    @property(Label) private dimond_txt: Label = null!;
     private inited: boolean = false;
-    @property({type: Vec3}) spawnTextEffectOffset: Vec3 = new Vec3();
+    @property({ type: Vec3 }) spawnTextEffectOffset: Vec3 = new Vec3();
 
     start(): void {
         director.on(EVENT_NAME.UPDATE_INFO_PROFILE, this.updateProfile, this);
@@ -23,21 +24,38 @@ export class MyProfileHUD extends BaseProfileManager {
 
         if (UserMeManager.Get) {
             UserMeManager.PlayerProperty.onChange("gold", (newCoin, oldValue) => {
-                this.onCoinChange(newCoin, oldValue);
+                this.onCoinChangeGold(newCoin, oldValue);
             });
-            this.onCoinChange(UserMeManager.playerCoin, UserMeManager.playerCoin);
+            this.onCoinChangeGold(UserMeManager.playerCoin, UserMeManager.playerCoin);
+        }
+
+        if (UserMeManager.Get) {
+            UserMeManager.PlayerProperty.onChange("diamond", (newDiamond, oldValue) => {
+                this.onCoinChangeDiamond(newDiamond, oldValue);
+            });
+            this.onCoinChangeDiamond(UserMeManager.playerDiamond, UserMeManager.playerDiamond);
         }
     }
 
-    protected onCoinChange(value, oldValue) {
-        console.log(value, oldValue)
-        this.money_txt.string = Utilities.convertBigNumberToStr(value);
+    protected onCoinChangeGold(value, oldValue) {
+        this.gold_txt.string = Utilities.convertBigNumberToStr(value);
 
         if (!this.inited) {
             this.inited = true;
         }
-        else if (UserManager.instance?.GetMyClientPlayer != null){
+        else if (UserManager.instance?.GetMyClientPlayer != null) {
             ServerManager.instance.playerUpdateGold(UserManager.instance?.GetMyClientPlayer.myID, value, oldValue, ExchangeCoinController.instance.buyAmount < 0);
+            EffectManager.instance.spawnPointEffect(value - oldValue, UserManager.instance?.GetMyClientPlayer.node.worldPosition.clone().add(new Vec3(randomRange(-this.spawnTextEffectOffset.x, this.spawnTextEffectOffset.x), this.spawnTextEffectOffset.y, this.spawnTextEffectOffset.z)))
+        }
+    }
+
+    protected onCoinChangeDiamond(value, oldValue) {
+        this.dimond_txt.string = Utilities.convertBigNumberToStr(value);
+        if (!this.inited) {
+            this.inited = true;
+        }
+        else if (UserManager.instance?.GetMyClientPlayer != null) {
+            ServerManager.instance.playerUpdateDiamond(UserManager.instance?.GetMyClientPlayer.myID, value, oldValue, ExchangeCoinController.instance.buyAmount < 0);
             EffectManager.instance.spawnPointEffect(value - oldValue, UserManager.instance?.GetMyClientPlayer.node.worldPosition.clone().add(new Vec3(randomRange(-this.spawnTextEffectOffset.x, this.spawnTextEffectOffset.x), this.spawnTextEffectOffset.y, this.spawnTextEffectOffset.z)))
         }
     }

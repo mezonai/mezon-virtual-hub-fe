@@ -10,6 +10,7 @@ export class User {
     positionY: number | null;
     avatar_url: string| null;
     gold: number | null;
+    diamond: number | null;
     gender: string | null;
     display_name: string | null;
     skin_set: string[] | null;

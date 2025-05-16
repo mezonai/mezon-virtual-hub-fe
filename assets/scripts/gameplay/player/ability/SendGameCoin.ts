@@ -44,7 +44,7 @@ export class SendGameCoin extends PlayerInteractAction {
     public onBeingInvited(data) {
         const { fromName, amount, currentGold } = data;
         SoundManager.instance.playSound(AudioType.Notice);
-        UIManager.Instance.showNoticePopup(null, `Nhận <color=#FF0000> ${amount} đồng</color> từ ${fromName}`, () => {
+        UIManager.Instance.showNoticePopup(null, `Nhận <color=#FF0000> ${amount} Dimond</color> từ ${fromName}`, () => {
             UserMeManager.playerCoin = currentGold;
         })
     }
@@ -83,10 +83,10 @@ export class SendGameCoin extends PlayerInteractAction {
 
     public actionResult(data) {
         super.actionResult(data);
-        const { toName, amount, currentGold } = data;
+        const { toName, amount, currentGold: currentDiamond } = data;
         SoundManager.instance.playSound(AudioType.ReceiveReward);
-        UIManager.Instance.showNoticePopup(null, `Gửi <color=#FF0000> ${amount} đồng</color> tới ${toName} thành công`, () => {
-            UserMeManager.playerCoin = currentGold;
+        UIManager.Instance.showNoticePopup(null, `Gửi <color=#FF0000> ${amount} Dimond</color> tới ${toName} thành công`, () => {
+            UserMeManager.playerDiamond = currentDiamond;
         })
     }
 
