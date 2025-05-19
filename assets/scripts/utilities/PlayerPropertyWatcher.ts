@@ -4,7 +4,7 @@ export class PlayerPropertyWatcher {
 
     constructor(initialGold: number = 0, initialDiamond: number = 0, initialName: string = "Player") {
         this.data = { gold: initialGold, diamond: initialDiamond, name: initialName };
-        this.watchers = new Map<string, ((newValue: any, oldValue: any) => void)[]>();
+        this.watchers = new Map<string, ((newValue: any) => void)[]>();
 
         this.watchers.set("gold", []);
         this.watchers.set("diamond", []);

@@ -42,10 +42,10 @@ export class SendGameCoin extends PlayerInteractAction {
     }
 
     public onBeingInvited(data) {
-        const { fromName, amount, currentGold } = data;
+        const { fromName, amount, currentDiamond } = data;
         SoundManager.instance.playSound(AudioType.Notice);
-        UIManager.Instance.showNoticePopup(null, `Nhận <color=#FF0000> ${amount} Dimond</color> từ ${fromName}`, () => {
-            UserMeManager.playerCoin = currentGold;
+        UIManager.Instance.showNoticePopup(null, `Nhận <color=#FF0000> ${amount} Diamond</color> từ ${fromName}`, () => {
+            UserMeManager.playerDiamond = currentDiamond;
         })
     }
 
@@ -55,7 +55,7 @@ export class SendGameCoin extends PlayerInteractAction {
             UserManager.instance.GetMyClientPlayer.zoomBubbleChat(chatContent);
             return;
         }
-        if (data > UserMeManager.playerCoin) {
+        if (data > UserMeManager.playerDiamond) {
             let chatContent = this.notEnoughGoldResponse[randomRangeInt(0, this.notEnoughGoldResponse.length)];
             UserManager.instance.GetMyClientPlayer.zoomBubbleChat(chatContent);
             return;
@@ -83,9 +83,9 @@ export class SendGameCoin extends PlayerInteractAction {
 
     public actionResult(data) {
         super.actionResult(data);
-        const { toName, amount, currentGold: currentDiamond } = data;
+        const { toName, amount, currentDiamond } = data;
         SoundManager.instance.playSound(AudioType.ReceiveReward);
-        UIManager.Instance.showNoticePopup(null, `Gửi <color=#FF0000> ${amount} Dimond</color> tới ${toName} thành công`, () => {
+        UIManager.Instance.showNoticePopup(null, `Gửi <color=#FF0000> ${amount} Diamond</color> tới ${toName} thành công`, () => {
             UserMeManager.playerDiamond = currentDiamond;
         })
     }

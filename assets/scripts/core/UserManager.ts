@@ -2,7 +2,7 @@ import { _decorator, Component, Node, PhysicsSystem2D, Prefab, randomRange, rand
 import { PlayerController } from '../gameplay/player/PlayerController';
 import { UserMeManager } from './UserMeManager';
 import { ObjectPoolManager } from '../pooling/ObjectPoolManager';
-import { Item } from '../Model/Item';
+import { Item, RewardType } from '../Model/Item';
 import { ServerManager } from './ServerManager';
 import { LoadBundleController } from '../bundle/LoadBundleController';
 import { PlayerColysesusObjectData } from '../Model/Player';
@@ -178,8 +178,8 @@ export class UserManager extends Component {
         let result2 = data.result2;
         let fee = data.fee;
         let winner = data.winner;
-        let p1Gold = data.fromDiamond;
-        let p2Gold = data.toDiamond;
+        let p1Diamond = data.fromDiamond;
+        let p2Diamond = data.toDiamond;
         if (action == ActionType.RPS.toString()) {
             if (p1.myID != this.GetMyClientPlayer.myID) {
                 p1.p2PInteractManager.showSpinRPS();
@@ -204,11 +204,11 @@ export class UserManager extends Component {
             }
 
             if (UserMeManager.Get?.user) {
-                if (p1.myID == this.GetMyClientPlayer.myID && p1Gold != null) {
-                    UserMeManager.playerDiamond = p1Gold;
+                if (p1.myID == this.GetMyClientPlayer.myID && p1Diamond != null) {
+                    UserMeManager.playerDiamond = p1Diamond;
                 }
-                else if (p2.myID == this.GetMyClientPlayer.myID && p2Gold != null) {
-                    UserMeManager.playerDiamond = p2Gold;
+                else if (p2.myID == this.GetMyClientPlayer.myID && p2Diamond != null) {
+                    UserMeManager.playerDiamond = p2Diamond;
                 }
             }
         }
@@ -229,8 +229,23 @@ export class UserManager extends Component {
         let player = this.players.get(sessionId);
 
         if (player && player.myID != this.GetMyClientPlayer.myID) {
-            EffectManager.instance.spawnPointEffect(amountChange, player.node.worldPosition.clone().add(new Vec3(randomRange(-10, 10), 0, 0)));
+            EffectManager.instance.spawnPointEffect(amountChange, player.node.worldPosition.clone().add(new Vec3(randomRange(-10, 10), 0, 0)), RewardType.GOLD);
         }
+    }
+
+    public onPlayerRemoteUpdateDiamond(data) {
+    if (!data) {
+        return;
+    }
+    const { sessionId, amountChange } = data;
+    if (!sessionId) {
+        return;
+    }
+
+    let player = this.players.get(sessionId);
+    if (player && player.myID != this.GetMyClientPlayer.myID) {
+        EffectManager.instance.spawnPointEffect(amountChange, player.node.worldPosition.clone().add(new Vec3(randomRange(-10, 10), 0, 0)), RewardType.DIAMOND);
+    }
     }
 
     public onAnswerMathCallback(data) {

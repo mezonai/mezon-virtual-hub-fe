@@ -43,6 +43,7 @@ export interface RewardResponse {
 export enum RewardType {
     ITEM = 'item',
     GOLD = 'gold',
+    DIAMOND = 'diamond',
 }
 
 export enum ItemType {

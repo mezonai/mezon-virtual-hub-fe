@@ -1,4 +1,4 @@
-import { _decorator, Color, director, Label, randomRange, Vec2, Vec3 } from 'cc';
+import { _decorator, director, Label, randomRange, Vec3 } from 'cc';
 import { BaseProfileManager } from './BaseProfileManager';
 import { UserMeManager } from '../core/UserMeManager';
 import { EVENT_NAME } from '../network/APIConstant';
@@ -7,6 +7,7 @@ import { EffectManager } from '../core/EffectManager';
 import { UserManager } from '../core/UserManager';
 import { ServerManager } from '../core/ServerManager';
 import { ExchangeCoinController } from '../core/ExchangeCoinController';
+import { RewardType } from '../Model/Item';
 
 const { ccclass, property } = _decorator;
 
@@ -45,7 +46,7 @@ export class MyProfileHUD extends BaseProfileManager {
         }
         else if (UserManager.instance?.GetMyClientPlayer != null) {
             ServerManager.instance.playerUpdateGold(UserManager.instance?.GetMyClientPlayer.myID, value, oldValue, ExchangeCoinController.instance.buyAmount < 0);
-            EffectManager.instance.spawnPointEffect(value - oldValue, UserManager.instance?.GetMyClientPlayer.node.worldPosition.clone().add(new Vec3(randomRange(-this.spawnTextEffectOffset.x, this.spawnTextEffectOffset.x), this.spawnTextEffectOffset.y, this.spawnTextEffectOffset.z)))
+            EffectManager.instance.spawnPointEffect(value - oldValue, UserManager.instance?.GetMyClientPlayer.node.worldPosition.clone().add(new Vec3(randomRange(-this.spawnTextEffectOffset.x, this.spawnTextEffectOffset.x), this.spawnTextEffectOffset.y, this.spawnTextEffectOffset.z)), RewardType.GOLD)
         }
     }
 
@@ -56,7 +57,7 @@ export class MyProfileHUD extends BaseProfileManager {
         }
         else if (UserManager.instance?.GetMyClientPlayer != null) {
             ServerManager.instance.playerUpdateDiamond(UserManager.instance?.GetMyClientPlayer.myID, value, oldValue, ExchangeCoinController.instance.buyAmount < 0);
-            EffectManager.instance.spawnPointEffect(value - oldValue, UserManager.instance?.GetMyClientPlayer.node.worldPosition.clone().add(new Vec3(randomRange(-this.spawnTextEffectOffset.x, this.spawnTextEffectOffset.x), this.spawnTextEffectOffset.y, this.spawnTextEffectOffset.z)))
+            EffectManager.instance.spawnPointEffect(value - oldValue, UserManager.instance?.GetMyClientPlayer.node.worldPosition.clone().add(new Vec3(randomRange(-this.spawnTextEffectOffset.x, this.spawnTextEffectOffset.x), this.spawnTextEffectOffset.y, this.spawnTextEffectOffset.z)), RewardType.DIAMOND)
         }
     }
 

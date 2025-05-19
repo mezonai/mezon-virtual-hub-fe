@@ -30,7 +30,6 @@ export class SendTokenPanel extends Component {
 
     private cbBuy: (amount: number) => void = null;
     private cbWithdraw: (amount: number) => void = null;
-    private cbGift: (amount: number) => void = null;
 
     protected start(): void {
         this.presetButton.forEach(button => {
@@ -59,7 +58,7 @@ export class SendTokenPanel extends Component {
         this.withdrawButton.active = this.isWithdraw;
         this.title.string = "Tặng Quà";
         this.sendButtonTitle.string = "Gửi";
-        this.cbGift = callback;
+        this.cbBuy = callback;
         this.noticePopup.node.active = false;
     }
 
@@ -149,7 +148,7 @@ export class SendTokenPanel extends Component {
                 this.cbWithdraw?.(this.sendValue);
                 break;
             case SendActionType.Gift:
-                this.cbGift?.(this.sendValue);
+                this.cbBuy?.(this.sendValue);
                 break;
             default:
                 break;
