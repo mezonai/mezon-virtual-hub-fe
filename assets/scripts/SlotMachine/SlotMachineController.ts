@@ -6,6 +6,7 @@ import { RewardUIController } from './RewardUIController';
 import { RewardFloatingText } from './RewardFloatingText';
 import { UserManager } from '../core/UserManager';
 import { AudioType, SoundManager } from '../core/SoundManager';
+import { UIManager } from '../core/UIManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('SlotMachineController')
@@ -121,6 +122,10 @@ export class SlotMachineController extends Component {
     }
 
     private async spinMachine() {
+        if (UserMeManager.playerCoin < this.minusCoin) {
+            UIManager.Instance.showNoticePopup("Chú ý","Bạn cần 10 coin để quay vòng quay many mắn")
+            return;
+        }
         if (this.spinButtonLabel) {
             this.rewardPopUp.node.active = false;
             this.rewardPopUp.HideNode();

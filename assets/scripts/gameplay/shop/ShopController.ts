@@ -36,8 +36,7 @@ export class ShopController extends BaseInventoryManager {
             }
 
         } catch (error) {
-            UIManager.Instance.showNoticePopup("Warning", error.message);
-            console.error("Giao dịch thất bại:", error);
+            UIManager.Instance.showNoticePopup("Chú ý", error.message);
         }
     }
 
@@ -63,13 +62,13 @@ export class ShopController extends BaseInventoryManager {
         UserMeManager.Get.inventories.push(response.data.inventory_data);
         GameManager.instance.inventoryController.addItemToInventory(response.data.inventory_data);
         UserMeManager.playerCoin = response.data.user_gold;
-        UIManager.Instance.showNoticePopup("Notice", "Mua thành công!");
+        UIManager.Instance.showNoticePopup("Thông báo", "Mua thành công!");
     }
 
     private async buyItem() {
         // Check if user has enough money
         if (UserMeManager.playerCoin < this.selectingUIItem.data.gold) {
-            throw new Error("Not enough money");
+            throw new Error("Không đủ tiền để mua");
         }
 
         try {
