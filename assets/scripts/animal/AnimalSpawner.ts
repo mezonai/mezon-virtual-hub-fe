@@ -1,19 +1,20 @@
 import { _decorator, Component, Prefab, instantiate, Vec3, randomRange, Node, UITransform, CCFloat, Vec2, Tween } from 'cc';
-import {  PetDTO } from '../Model/PetDTO';
+import { PetDTO } from '../Model/PetDTO';
 import { ObjectPoolManager } from '../pooling/ObjectPoolManager';
 import { RandomlyMover } from '../utilities/RandomlyMover';
+import { AnimalController, AnimalMoveType } from './AnimalController';
 
 const { ccclass, property } = _decorator;
 
 @ccclass('SpawnZone')
 export class SpawnZone {
-    @property({type: Node}) node: Node;
-    @property({type: CCFloat}) weight: number;
+    @property({ type: Node }) node: Node;
+    @property({ type: CCFloat }) weight: number;
 };
 @ccclass('AnimalSpawner')
 export class AnimalSpawner extends Component {
     @property({ type: [SpawnZone] }) spawnZones: SpawnZone[] = [];
-    private spawnedAnimals: Node[] = [];
+    @property spawnedAnimals: AnimalController[] = [];
 
     public spawnPet(petData: PetDTO[]) {
         for (const pet of petData) {
@@ -22,15 +23,16 @@ export class AnimalSpawner extends Component {
 
             let petObj = ObjectPoolManager.instance.spawnFromPool(pet.species);
             if (petObj) {
-                this.spawnedAnimals.push(petObj);
+
                 let petParent = this.getRandomZone();
                 petObj.setParent(petParent.node);
                 petObj.setPosition(this.getRandomPositionInZone(petParent.node));
                 let mover = petObj.getComponent(RandomlyMover);
                 const { bound } = this.getZoneBounds(petParent.node);
-                if (mover) {
-                    mover.areaSize = new Vec2(bound.x, bound.y);
-                    mover.move();
+                let animal = petObj.getComponent(AnimalController);
+                if (animal) {
+                    this.spawnedAnimals.push(animal);
+                    animal.setDataPet(pet,AnimalMoveType.RandomMove, null, new Vec2(bound.x, bound.y));
                 }
             }
         }
@@ -39,10 +41,27 @@ export class AnimalSpawner extends Component {
     protected onDisable(): void {
         this.spawnedAnimals.forEach(animal => {
             if (animal) {
-                Tween.stopAllByTarget(animal);
-                ObjectPoolManager.instance.returnToPool(animal);
+                this.closeAnimal(animal);
             }
         });
+    }
+
+    public closeAnimalById(id: string) {
+        this.spawnedAnimals.forEach(animal => {
+            if (animal.Pet.id === id) {
+                this.closeAnimal(animal);
+            }
+        });
+    }
+
+    closeAnimal(animal: AnimalController) {
+        if(animal == null) return;
+        Tween.stopAllByTarget(animal);
+        ObjectPoolManager.instance.returnToPool(animal.node);
+    }
+
+    public getAnimalById(id: string): AnimalController | null {
+        return this.spawnedAnimals.find(animal => animal.Pet.id === id) || null;
     }
 
     // get a random spawn zone based on weighted random selection

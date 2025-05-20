@@ -11,15 +11,27 @@ const { ccclass, property } = _decorator;
 
 @ccclass('OfficeSceneController')
 export class OfficeSceneController extends Component {
+    private static _instance: OfficeSceneController;
+    public static get instance() {
+        return OfficeSceneController._instance;
+    }
     @property(Button)
     backMapButton: Button;
     @property(Prefab)
     mapOffice: Prefab[] = [];
     @property(Node)
     mapParent: Node = null;
-    private previousPosition: OfficePosition = OfficePosition.NONE;
-    private currentPosition: OfficePosition = OfficePosition.NONE;
-    private currentMap: MapManagerBase = null;
+    @property currentMap: MapManagerBase = null;
+    
+    protected onLoad(): void {
+        if (OfficeSceneController._instance == null) {
+            OfficeSceneController._instance = this;
+        }
+    }
+
+    protected onDestroy(): void {
+        OfficeSceneController._instance = null;
+    }
     public async LoadData() {
         const param = SceneManagerController.getSceneParam<OfficeSenenParameter>();
         if (param != null) {
@@ -36,21 +48,6 @@ export class OfficeSceneController extends Component {
             }
 
             await ServerManager.instance.init(nameRoom);
-            //if (param.pointTarget == TeleportPosition.COMPLEXNCC) {
-            //    //const complexOfficeController = map.getComponent(ComplexOfficeController);
-            //    //if (complexOfficeController) {
-            //    //    complexOfficeController.updatePositionPlayOnComplex(param.pointStart);
-            //    //}
-            //}
-            //else if (param.pointTarget == TeleportPosition.SHOP1 || param.pointTarget == TeleportPosition.SHOP2) {
-            //    const shopMapController = map.getComponent(ShopMapController);
-            //    if (shopMapController) {
-            //        shopMapController.updatePositionPlayOnShop(param.pointTarget, param.pointTarget);
-            //    }
-            //}
-            // this.mapOffice.forEach((node, index) => {
-            //     node.active = (index === this.getOffice(param.officeBranch));
-            // });
         }
         else {
             console.log("No data received.");

@@ -11,6 +11,9 @@ import { ItemColysesusObjectData, PlayerColysesusObjectData } from '../Model/Pla
 import { MapItemManger } from './MapItemManager';
 import { PopupManager } from '../PopUp/PopupManager';
 import { AudioType, SoundManager } from './SoundManager';
+import { Office } from '../GameMap/Office';
+import { OfficeSceneController } from '../GameMap/OfficeScene/OfficeSceneController';
+import { UserMeManager } from './UserMeManager';
 
 @ccclass('ServerManager')
 export class ServerManager extends Component {
@@ -64,7 +67,7 @@ export class ServerManager extends Component {
 
         this.room.state.players.onAdd((player, sessionId) => {
             console.log(` New player joined: ${sessionId}`, player.user_id);
-            let playerData = new PlayerColysesusObjectData(sessionId, this.room, player.x, player.y, player.display_name, player.skin_set, player.user_id, player.is_show_name);
+            let playerData = new PlayerColysesusObjectData(sessionId, this.room, player.x, player.y, player.display_name, player.skin_set, player.user_id, player.is_show_name, player.animals);
             UserManager.instance.createPlayer(playerData);
         });
 
@@ -208,6 +211,22 @@ export class ServerManager extends Component {
                 GameManager.instance.uiMission.showNotiMission(`${sender.split("/")[0]}: ${message.replace(/\x00/g, '')}`);
             };
         });
+
+        this.room.onMessage("onCatchPetSuccess", (data) => {   
+             UserManager.instance.onCatchPetSuccess(data);            
+        });
+        this.room.onMessage("onPetAlreadyCaught", (data) => {   
+             UserManager.instance.onPetAlreadyCaught(data);            
+        });
+         this.room.onMessage("onCatchPetFail", (data) => {   
+             UserManager.instance.onCatchPetFail(data);            
+        });
+         this.room.onMessage("onSendOwnedPets", (data) => {   
+             UserManager.instance.onUpdateOwnedPetPlayer(data);            
+        });
+        this.room.onMessage("onPetFollowPlayer", (data) => {   
+             UserManager.instance.onPetFollowPlayer(data);            
+        });
     }
 
     private decodeMoveData(uint8Array: ArrayBuffer) {
@@ -279,5 +298,17 @@ export class ServerManager extends Component {
         }
         console.log(data)
         this.room.send("answerMath", data);
+    }
+
+    public sendCatchPet(data) {
+        this.room.send("catchPet", data);
+    }
+
+    public sendOwnedPets(data) {
+        this.room.send("sendOwnedPets", data);
+    }
+
+    public sendPetFollowPlayer(data) {
+        this.room.send("sendPetFollowPlayer", data);
     }
 }

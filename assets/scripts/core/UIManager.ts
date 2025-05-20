@@ -4,6 +4,8 @@ import { UIIdentify } from '../ui/UIIdentify';
 import { EVENT_NAME } from '../network/APIConstant';
 import Utilities from '../utilities/Utilities';
 import { _decorator, Component, Enum, view, Node, director, Button, View } from 'cc';
+import { PopupManager } from '../PopUp/PopupManager';
+import { PopupOwnedAnimals } from '../PopUp/PopupOwnedAnimals';
 const { ccclass, property } = _decorator;
 
 @ccclass('UIManager')
@@ -15,6 +17,7 @@ export class UIManager extends Component {
     @property({ type: Node }) bigPopupNode: Node;
     @property({ type: Node }) fadePopupNode: Node;
     @property({ type: Button }) outmapButton: Button;
+    @property({ type: Button }) showOwnedButton: Button;
     private _popup: UIPopup = null;
     private _bigPopup: UIPopup = null;
     private _fadePopup: UIPopup = null;
@@ -55,6 +58,7 @@ export class UIManager extends Component {
         }
 
         view.setResizeCallback(UIManager.Instance.onResize);
+         this.showOwnedButton.node.on(Button.EventType.CLICK, () => this.showPopupOwenedAnimal(), this);
     }
 
     onResize() {
@@ -175,6 +179,10 @@ export class UIManager extends Component {
                 panel.hide();
             }
         }
+    }
+
+    showPopupOwenedAnimal(){
+        PopupManager.getInstance().openAnimPopup('PopupOwnedAnimals', PopupOwnedAnimals, { message: "" });
     }
 
     // TweenEasing = "linear" | "smooth" | "fade" | "constant" | "quadIn" | "quadOut" | "quadInOut" |

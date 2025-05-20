@@ -54,5 +54,6 @@ export enum ItemType {
     UPPER = 5,
     LOWER = 6,
     GLASSES = 7,
-    PET_BAIT = 8
+    PET_BAIT = 8,
+    PET_FOOD = 9
 }

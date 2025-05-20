@@ -24,6 +24,10 @@ export class RandomlyMover extends Component {
     //     this.stop();
     // }
 
+    public stopMove() {
+        Tween.stopAllByTarget(this.node);
+    }
+
     public stop() {
         Tween.stopAllByTarget(this.node);
         this.toggleActiveAll(false);

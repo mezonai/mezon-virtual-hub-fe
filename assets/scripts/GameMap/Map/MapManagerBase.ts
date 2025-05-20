@@ -14,7 +14,7 @@ export abstract class MapManagerBase extends Component {
     @property({type: Node}) minBorder: Node = null;
     @property({type: Node}) maxBorder: Node = null;
     @property({type: RichText}) mapName: RichText = null;
-    private animalSpawner: AnimalSpawner = null;
+    @property animalSpawner: AnimalSpawner = null;
 
     public get AnimalSpawner() {
         if (!this.animalSpawner) {
