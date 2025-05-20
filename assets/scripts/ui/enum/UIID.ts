@@ -14,5 +14,4 @@ export enum UIID {
     MathProblem = 12,
     GlobalChat= 13,
     NoticeBig = 14,
-    PopupShowOwnedAnimal = 15
 }
