@@ -16,9 +16,7 @@ export class ExchangeCoinController extends Component {
     public static get instance() {
         return ExchangeCoinController._instance;
     }
-    public buyAmount: number = -1;
-    private currentAction: 'buy' | 'withdraw' | null = null;
-
+    public amount: number = -1;
     protected onLoad(): void {
         if (ExchangeCoinController._instance == null) {
             ExchangeCoinController._instance = this;
@@ -45,7 +43,7 @@ export class ExchangeCoinController extends Component {
             this.postWithdrawDiamond(amount);
         }, this)
 
-        ServerManager.instance.node.on(EVENT_NAME.ON_CHANGE_GOLD_TO_DIAMOND, (amount) => {
+        ServerManager.instance.node.on(EVENT_NAME.ON_CHANGE_DIAMOND_TO_COIN, (amount) => {
             this.postChangeGoldToDiamond(amount);
         }, this)
     }
@@ -53,7 +51,7 @@ export class ExchangeCoinController extends Component {
     public postExchangeDiamond(amount: number) {
         // amount: s, note: u, receiver_id: x, extra_attribute: w} = y.eventData || {};
         if (window.Mezon) {
-            this.buyAmount = amount;
+            this.amount = amount;
             console.log("post event")
             let sendData = {
                 amount: amount,
@@ -72,16 +70,16 @@ export class ExchangeCoinController extends Component {
 
     private onSendTokenSuccess(e, data) {
         SoundManager.instance.playSound(AudioType.ReceiveReward);
-        if (this.buyAmount > 0 && UserMeManager.Get) {
-            UIManager.Instance.showNoticePopup("Thông báo", `<color=#FF0000>${Utilities.convertBigNumberToStr(this.buyAmount)} Diamond</color> được cộng vào tài khoản`, () => {
-                UserMeManager.playerDiamond += this.buyAmount;
-                this.buyAmount = -1;
+        if (this.amount > 0 && UserMeManager.Get) {
+            UIManager.Instance.showNoticePopup("Thông báo", `<color=#FF0000>${Utilities.convertBigNumberToStr(this.amount)} Diamond</color> được cộng vào tài khoản`, () => {
+                UserMeManager.playerDiamond += this.amount;
+                this.amount = -1;
             })
         }
     }
 
     private onSendTokenFail(data) {
-        this.buyAmount = -1;
+        this.amount = -1;
         UIManager.Instance.showNoticePopup("Chú ý", "Không thể mua Diamond");
         SoundManager.instance.playSound(AudioType.NoReward);
     }
@@ -89,7 +87,7 @@ export class ExchangeCoinController extends Component {
     public postWithdrawDiamond(amount: number) {
         // amount: s, note: u, receiver_id: x, extra_attribute: w} = y.eventData || {};
         if (window.Mezon) {
-            this.buyAmount = amount;
+            this.amount = amount;
             let sendData = {
                 amount: amount,
                 note: "Rút Mezon VHub diamond",
@@ -104,9 +102,9 @@ export class ExchangeCoinController extends Component {
     public postChangeGoldToDiamond(amount: number) {
         // amount: s, note: u, receiver_id: x, extra_attribute: w} = y.eventData || {};
         if (window.Mezon) {
-            this.buyAmount = amount;
+            this.amount = amount;
             let sendData = {
-                coinAmount: amount
+                diamondTransfer: amount
             }
             ServerManager.instance.exchangeCoinToDiamond(UserManager.instance?.GetMyClientPlayer.myID, sendData);
         }
