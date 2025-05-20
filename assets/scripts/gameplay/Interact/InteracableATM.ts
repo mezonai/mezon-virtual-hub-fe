@@ -26,14 +26,14 @@ export class InteractATM extends MapItemController {
             this.onBuyClick(data);
         });
         
+        panelComp.setChangeDiamondToCoinCallback((data) => {
+            this.onChangeDiamondToCoinClick(data);
+        });
+        
         panelComp.setWithdrawCallback((data) => {
             this.onWithdrawClick(data);
         });
 
-        //TODO ExchangeCoinToDiamond
-        // panelComp.setChangeGoldToDiamondCallback((data) => {
-        //     this.onChangeGoldToDiamondClick(data);
-        // });
     
         this.handleEndContact(null, null, null);
     }
@@ -62,7 +62,7 @@ export class InteractATM extends MapItemController {
         }
     }
 
-      private onChangeGoldToDiamondClick(data: number) {
+      private onChangeDiamondToCoinClick(data: number) {
         if (data <= 0) {
             let chatContent = this.invalidGoldResponse[randomRangeInt(0, this.invalidGoldResponse.length)];
             UserManager.instance.GetMyClientPlayer.zoomBubbleChat(chatContent);
@@ -70,7 +70,7 @@ export class InteractATM extends MapItemController {
         }
     
         if (ServerManager.instance) {
-            ServerManager.instance.node.emit(EVENT_NAME. ON_CHANGE_GOLD_TO_DIAMOND, data);
+            ServerManager.instance.node.emit(EVENT_NAME. ON_CHANGE_DIAMOND_TO_COIN, data);
         }
     }
    
