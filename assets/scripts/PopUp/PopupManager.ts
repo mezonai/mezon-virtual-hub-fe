@@ -1,4 +1,4 @@
-import { _decorator, Component, director, instantiate, Node, Prefab, resources } from 'cc';
+import { _decorator, Component, director, instantiate, Node, Prefab, resources, tween, Vec3 } from 'cc';
 import { BasePopup } from './BasePopup';
 const { ccclass, property } = _decorator;
 
@@ -22,7 +22,7 @@ export class PopupManager extends Component {
             return;
         }
         PopupManager._instance = this;
-        this.node.setSiblingIndex(999); // Đưa lên trên cùng
+        //this.node.setSiblingIndex(0); // Đưa lên trên cùng
         director.addPersistRootNode(this.node); // Giữ lại khi đổi Scene
     }
 
@@ -80,11 +80,45 @@ export class PopupManager extends Component {
         return popupComponent;
     }
 
-    public async closePopup(uniqueKey: string) {
+    public async openAnimPopup<T extends Component>(popupName: string, componentType: { new (): T }, param?: any ): Promise<T | null> 
+    {
+        const popupNode = await this.loadPopupView(popupName);
+        if (!popupNode) return null;
+        this.showInFromTop(popupNode);
+        const uniqueKey = popupNode.uuid;
+        this.popupDict.set(uniqueKey, popupNode);
+
+        const popupComponent = popupNode.getComponent(componentType);
+        if (popupComponent && "init" in popupComponent) { 
+            (popupComponent as any).init(param);
+        }
+
+        return popupComponent;
+    }
+
+    private showInFromTop(popup: Node) {
+        popup.position = new Vec3(0, 500, 0);
+        tween(popup)
+            .delay(0.01)
+            .to(0.1, { position: new Vec3(0, -20, 0) },)
+            .to(0.1, { position: Vec3.ZERO },)
+            .start();
+    }
+
+     private HideoutToTop(popup: Node, callback) {
+        popup.position = new Vec3(0, 0, 0);
+        tween(popup)
+            .to(0.2, { position: new Vec3(0, 500, 0) },)
+            .call(() => {
+                callback();
+            })
+            .start();
+    }
+    public async closePopup(uniqueKey: string, isAnim : boolean = false) {
         const popupNode = this.popupDict.get(uniqueKey);
         if (!popupNode) return;
-
-        popupNode.destroy();
+        if(isAnim) this.HideoutToTop(popupNode, () =>{popupNode.destroy();})
+        else popupNode.destroy();
         this.popupDict.delete(uniqueKey);
     }
 

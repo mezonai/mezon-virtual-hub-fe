@@ -11,8 +11,12 @@ import { ActionType } from '../gameplay/player/ability/PlayerInteractAction';
 import { UIManager } from './UIManager';
 import { EffectManager } from './EffectManager';
 import { AudioType, SoundManager } from './SoundManager';
-import { AnimalController } from '../animal/AnimalController';
+import { AnimalController, AnimalMoveType } from '../animal/AnimalController';
 import { Constants } from '../utilities/Constants';
+import { OfficeSceneController } from '../GameMap/OfficeScene/OfficeSceneController';
+import { PetDTO } from '../Model/PetDTO';
+import ConvetData from './ConvertData';
+import { WebRequestManager } from '../network/WebRequestManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('UserManager')
@@ -78,7 +82,7 @@ export class UserManager extends Component {
         // Gắn vào parent & lưu map
         playerNode.setParent(this.playerParent);
         this.players.set(playerData.sessionId, playerNode.getComponent(PlayerController));
-        // this.spawnAnimal(playerController, playerData);
+        this.setAnimalOwned(playerController, playerData);
         // Gửi event khi player được tạo xong
         ServerManager.instance.node.emit(EVENT_NAME.ON_PLAYER_ADDED, playerData.sessionId);
 
@@ -89,14 +93,29 @@ export class UserManager extends Component {
         }
     }
 
-    private spawnAnimal(playerController: PlayerController, playerData: PlayerColysesusObjectData) {
-        for (let i = 0; i < 5; i++) {
-            const animal = ObjectPoolManager.instance.spawnFromPool(this.animalPrefabs[i].name);
-            let animalController = animal.getComponent(AnimalController);
-            animal.setPosition(new Vec3(playerData.x, playerData.y, 0));
-            animalController.setDataPet(i, playerController);
+    intantiatePetFollowPlayer(pets: PetDTO[], x: number, y: number, playerController: PlayerController) {
+        // Thu hồi tất cả các pet đang theo người chơi (nếu có)
+        if (playerController.petFollowPrefabs?.length > 0) {
+            playerController.petFollowPrefabs.forEach(pet => {
+                ObjectPoolManager.instance.returnToPool(pet);
+            });
+            playerController.petFollowPrefabs.length = 0;
+        }
+        for (const petDTO of pets) {
+            const animal = ObjectPoolManager.instance.spawnFromPool(petDTO.species);
+            const animalController = animal.getComponent(AnimalController);
+            animal.setPosition(new Vec3(x, y));
+            animalController.setDataPet(petDTO, AnimalMoveType.FollowTarget, playerController);
+            playerController.savePetFollow(animal);
             animal.setParent(this.animalParent);
         }
+    }
+
+    private setAnimalOwned(playerController: PlayerController, playerData: PlayerColysesusObjectData) {
+        let pets = ConvetData.ConvertPet(playerData.animals);
+        if (pets == null) return;
+        playerController.saveListOwnedPet(pets);
+        //this.intantiatePet(pets, playerData.x, playerData.y, playerController);
     }
 
     private async waitForPhysicsReady() {
@@ -263,6 +282,63 @@ export class UserManager extends Component {
         if (id == this.GetMyClientPlayer.myID) {
             UserMeManager.playerCoin -= Constants.WiSH_FEE;
             this.showTrollMessage();
+        }
+    }
+
+    public onCatchPetSuccess(data) {
+        OfficeSceneController.instance.currentMap.AnimalSpawner.closeAnimalById(data.petId)
+        if (data.playerCatchId === UserManager.instance.GetMyClientPlayer.myID) this.updateMyData();
+    }
+    public onPetAlreadyCaught(data) {
+        UIManager.Instance.showNoticePopup("Thông báo", `Thú cưng đã bị bắt. Chúc bạn may mắn lần sau`);
+    }
+    public onCatchPetFail(data) {
+        let animal = OfficeSceneController.instance.currentMap.AnimalSpawner.getAnimalById(data.petId);
+        if (animal == null) return;
+        animal.catchFail("Lêu lêu bắt hụt")
+    }
+
+    public onUpdateOwnedPetPlayer(data) {
+        let playerCaughtPet = this.players.get(data.playerCatchId);
+        let pets = ConvetData.ConvertPet(data.pet);
+        if (playerCaughtPet == null || pets == null) return;
+        const excludedIds = new Set(playerCaughtPet.petIdList);// ListPetCũ
+        const filteredPets = pets.filter(pet => !excludedIds.has(pet.id));//List mới sau khi đã bắt     
+        if (filteredPets.length == 0) return;
+        playerCaughtPet.saveListOwnedPet(pets);
+        if (data.playerId == UserManager.instance.myClientPlayer.myID) {
+            UIManager.Instance.showNoticePopup("Thông báo", `Bạn đã bắt thành công <color=#FF0000>${filteredPets[0].name}</color>`)
+        }
+    }
+
+    public onPetFollowPlayer(data) {
+        let playerTarget = this.players.get(data.playerIdFollowPet);
+        let pets = ConvetData.ConvertPet(data.pet);
+        if (playerTarget == null || pets == null) return;
+        let position = playerTarget.node.getPosition();
+        this.intantiatePetFollowPlayer(pets, position.x, position.y, playerTarget)
+    }
+    private updateMyData() {
+        WebRequestManager.instance.getUserProfile(
+            (response) => { this.onGetProfileSuccess(response) },
+            (error) => this.onError(error)
+        );
+    }
+
+    private onGetProfileSuccess(respone) {
+        UserMeManager.Set = respone.data;
+        const petString: string = JSON.stringify(UserMeManager.Get.animals);
+        let data = {
+            pets: petString
+        }
+        ServerManager.instance.sendOwnedPets(data);
+    }
+
+    private onError(error: any) {
+        console.error("Error occurred:", error);
+
+        if (error?.message) {
+            console.error("Error message:", error.message);
         }
     }
 }

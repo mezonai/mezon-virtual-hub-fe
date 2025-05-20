@@ -14,7 +14,6 @@ export class User {
     gender: string | null;
     display_name: string | null;
     skin_set: string[] | null;
-    pets: PetDTO[];
 }
 
 export class UserDataResponse {
@@ -22,6 +21,7 @@ export class UserDataResponse {
     user: User;
     inventories: InventoryDTO[];
     map: MapData | null;
+    animals: PetDTO[];
 }
 
 export class UserProfileDTO {
