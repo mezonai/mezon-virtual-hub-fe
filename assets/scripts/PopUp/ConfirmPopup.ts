@@ -11,7 +11,6 @@ export class ConfirmPopup extends BasePopup {
     closeButton: Button = null;
 
     public init(param?: { message: string }) {
-        super.init(param);
         if (this.messageLabel && param?.message) {
             this.messageLabel.string = param?.message;
         }

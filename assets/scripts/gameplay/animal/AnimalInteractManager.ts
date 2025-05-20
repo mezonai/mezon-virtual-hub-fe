@@ -7,6 +7,8 @@ import { UIManager } from '../../core/UIManager';
 import { RandomlyMover } from '../../utilities/RandomlyMover';
 import { ServerManager } from '../../core/ServerManager';
 import { AnimalController } from '../../animal/AnimalController';
+import { PopupManager } from '../../PopUp/PopupManager';
+import { PopupChooseFoodPet } from '../../PopUp/PopupChooseFoodPet';
 const { ccclass, property } = _decorator;
 
 @ccclass('AnimalInteractManager')
@@ -67,12 +69,21 @@ export class AnimalInteractManager extends Component {
         //     ServerManager.instance.sendCatchPet(data);
         // }
         this.animalController.randomlyMover.stopMove();
-            let data = {
-                player: UserMeManager.Get.user,
-                petId: this.animalController.Pet.id
+        let data = {
+            player: UserMeManager.Get.user,
+            petId: this.animalController.Pet.id
+        }
+        PopupManager.getInstance().openAnimPopup('PopupChooseFoodPet', PopupChooseFoodPet, {
+            petId: this.animalController.Pet.id, 
+            onThrowFood: async (quality: number) => {
+                return await this.InteractTarget.petCatching.throwFoodToPet(this.animalController.node, quality);
+            },
+            onCancelCatch: () => {
+                this.animalController.randomlyMover.move();
             }
-            await this.InteractTarget.petCatching.throwFoodToPet(this.animalController.node);
-            ServerManager.instance.sendCatchPet(data);
+        });
+        //await this.InteractTarget.petCatching.throwFoodToPet(this.animalController.node, 2);
+        //ServerManager.instance.sendCatchPet(data);
 
     }
 
