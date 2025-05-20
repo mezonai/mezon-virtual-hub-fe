@@ -11,6 +11,7 @@ import { ItemColysesusObjectData, PlayerColysesusObjectData } from '../Model/Pla
 import { MapItemManger } from './MapItemManager';
 import { PopupManager } from '../PopUp/PopupManager';
 import { AudioType, SoundManager } from './SoundManager';
+import Utilities from '../utilities/Utilities';
 import { Office } from '../GameMap/Office';
 import { OfficeSceneController } from '../GameMap/OfficeScene/OfficeSceneController';
 import { UserMeManager } from './UserMeManager';
@@ -24,6 +25,8 @@ export class ServerManager extends Component {
 
     private client: Colyseus.Client;
     private room: Colyseus.Room<any>;
+    private withAmount: number = -1;
+
     protected onLoad(): void {
         if (ServerManager._instance == null) {
             ServerManager._instance = this;
@@ -212,6 +215,39 @@ export class ServerManager extends Component {
             };
         });
 
+        this.room.onMessage("onWithdrawFailed", (data) => {
+            UIManager.Instance.showNoticePopup(null, data.reason);
+            SoundManager.instance.playSound(AudioType.NoReward);
+        });
+
+        this.room.onMessage("onWithrawDiamond", (data) => {
+            SoundManager.instance.playSound(AudioType.ReceiveReward);
+            if (this.withAmount > 0 && UserMeManager.Get) {
+                UIManager.Instance.showNoticePopup("Thông báo", `<color=#FF0000>${Utilities.convertBigNumberToStr(this.withAmount)} Diamond</color> được trừ từ tài khoản`, () => {
+                    UserMeManager.playerDiamond -= this.withAmount;
+                    this.withAmount = -1;
+                })
+            }
+        });
+
+        this.room.onMessage("onExchangeFailed", (data) => {
+            UIManager.Instance.showNoticePopup(null, data.reason);
+            SoundManager.instance.playSound(AudioType.NoReward);
+        });
+
+        this.room.onMessage("onExchangeCoinToDiamond", (data) => {
+            const { coinChange, diamondChange } = data;
+
+            SoundManager.instance.playSound(AudioType.ReceiveReward);
+            if (UserMeManager.Get) {
+                const msg = `<color=#FF0000>${Utilities.convertBigNumberToStr(-coinChange)} Coin</color> đã được chuyển thành <color=#00FF00>${diamondChange} Diamond</color>`;
+                UIManager.Instance.showNoticePopup("Thông báo", msg, () => {
+                    UserMeManager.playerCoin += coinChange;
+                    UserMeManager.playerDiamond += diamondChange;
+                });
+            }
+        });
+
         this.room.onMessage("onCatchPetSuccess", (data) => {   
              UserManager.instance.onCatchPetSuccess(data);            
         });
@@ -289,6 +325,25 @@ export class ServerManager extends Component {
             needUpdate: needUpdate
         }
         this.room.send("onPlayerUpdateGold", data)
+    }
+
+    public playerUpdateDiamond(sessionId: string, newValue: number, oldValue: number, needUpdate: boolean = true) {
+        let data = {
+            newValue: newValue,
+            amountChange: newValue - oldValue,
+            needUpdate: needUpdate
+        }
+        this.room.send("onPlayerUpdateDiamond", data)
+    }
+
+    public Withdraw(sessionId: string, sendData: any) {
+        this.withAmount = sendData.amount;
+        this.room.send("onWithrawDiamond", sendData)
+    }
+
+    public exchangeCoinToDiamond(sessionId: string, sendData: any) {
+        this.withAmount = sendData.amount;
+        this.room.send("onExchangeCoinToDiamond", sendData)
     }
 
     public answerMathQuestion(id, answer) {

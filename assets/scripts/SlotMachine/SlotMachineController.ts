@@ -1,19 +1,12 @@
-import { _decorator, AudioClip, AudioSource, Button, Component, director, EventKeyboard, Input, input, instantiate, JsonAsset, KeyCode, Label, math, Node, Prefab, randomRangeInt, resources, Sprite, SpriteFrame, Tween, tween, Vec3 } from 'cc';import { WebRequestManager } from '../network/WebRequestManager';
+import { _decorator, Button, Component, instantiate, Label, Node, Prefab} from 'cc';import { WebRequestManager } from '../network/WebRequestManager';
 import { Item, RewardItemDTO, RewardType } from '../Model/Item';
-import { EVENT_NAME } from '../network/APIConstant';
 import { BubbleRotation } from './BubbleRotation';
-import { ObjectPoolManager } from '../pooling/ObjectPoolManager';
-import { LoadBundleController } from '../bundle/LoadBundleController';
-import { RewardItem } from './RewardItem';
-import { LocalItemConfig, LocalItemDataConfig } from '../Model/LocalItemConfig';
-import { BaseInventoryManager } from '../gameplay/player/inventory/BaseInventoryManager';
-import { ResourceManager } from '../core/ResourceManager';
 import { UserMeManager } from '../core/UserMeManager';
 import { RewardUIController } from './RewardUIController';
-import { UIManager } from '../core/UIManager';
 import { RewardFloatingText } from './RewardFloatingText';
 import { UserManager } from '../core/UserManager';
 import { AudioType, SoundManager } from '../core/SoundManager';
+import { UIManager } from '../core/UIManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('SlotMachineController')
@@ -67,8 +60,6 @@ export class SlotMachineController extends Component {
 
     private onError(error: any) {
         this.bubbleRotation.stopRotation();
-        console.error("Error occurred:", error);
-
         if (error?.message) {
             console.error("Error message:", error.message);
         }
@@ -131,6 +122,10 @@ export class SlotMachineController extends Component {
     }
 
     private async spinMachine() {
+        if (UserMeManager.playerCoin < this.minusCoin) {
+            UIManager.Instance.showNoticePopup("Chú ý","Bạn cần 10 coin để quay vòng quay many mắn")
+            return;
+        }
         if (this.spinButtonLabel) {
             this.rewardPopUp.node.active = false;
             this.rewardPopUp.HideNode();
@@ -168,7 +163,7 @@ export class SlotMachineController extends Component {
         if (floatingText) {
             let message = '';
             message = `Mỗi lần quay bạn bị trừ -${coin}`;
-            floatingText.showReward(message, true);
+            floatingText.showReward(message, true, RewardType.GOLD);
         }
     }
     
@@ -176,9 +171,4 @@ export class SlotMachineController extends Component {
     private delay(ms: number): Promise<void> {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
-
-    private async spawnItem(listItem: RewardItemDTO[]) {
-        this.rewardPopUp.show(true, listItem);
-    }
-    
 }

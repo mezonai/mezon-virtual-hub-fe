@@ -22,18 +22,7 @@ export class RewardUIController extends BaseInventoryManager {
     private spawnCount: number = 0;
     private isCoin: boolean;
 
-    protected start(): void {
-        input.on(Input.EventType.KEY_DOWN, this.onKeyDown, this);
-    }
-
-    onKeyDown(event: EventKeyboard) {
-        switch (event.keyCode) {
-            case KeyCode.SPACE:
-                console.log('Pressed SPACE');
-                this.ShowTextFly();
-                break;
-
-        }
+    public override start(): void {
     }
 
     show(hasReward: boolean, listItem: RewardItemDTO[] = []) {
@@ -163,15 +152,15 @@ export class RewardUIController extends BaseInventoryManager {
                 }
             }
             
-            floatingText.showReward(message, this.isCoin);
+            floatingText.showReward(message, this.isCoin, RewardType.GOLD);
         }
     }
 
 
     public HideNode() {
         const bubbleChildren = this.bubbleRotation.node.children;
-        for (let i = 0; i < bubbleChildren.length; i++) {
-            const bubble = bubbleChildren[i];
+        for (const element of bubbleChildren) {
+            const bubble = element;
             const itemNode = bubble.getChildByName("RewardItem");
             if (itemNode) {
                 itemNode.active = false;

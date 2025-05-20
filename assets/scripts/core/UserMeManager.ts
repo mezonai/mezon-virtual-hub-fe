@@ -19,7 +19,7 @@ export class UserMeManager {
 
     public static set Set(me: UserDataResponse | null) {
         this.me = me;
-        this._playerProperty = new PlayerPropertyWatcher(me.user.gold, "");
+        this._playerProperty = new PlayerPropertyWatcher(me.user.gold, me.user.diamond, "");
     }
 
     public static set playerCoin(coin) {
@@ -28,6 +28,14 @@ export class UserMeManager {
 
     public static get playerCoin() {
         return UserMeManager.PlayerProperty.gold;
+    }
+
+    public static set playerDiamond(diamond) {
+        UserMeManager.PlayerProperty.diamond = diamond;
+    }
+
+    public static get playerDiamond() {
+        return UserMeManager.PlayerProperty.diamond;
     }
 }
 
