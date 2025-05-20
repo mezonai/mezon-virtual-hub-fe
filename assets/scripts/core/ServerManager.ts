@@ -215,11 +215,17 @@ export class ServerManager extends Component {
         this.room.onMessage("onCatchPetSuccess", (data) => {   
              UserManager.instance.onCatchPetSuccess(data);            
         });
+        this.room.onMessage("onPetAlreadyCaught", (data) => {   
+             UserManager.instance.onPetAlreadyCaught(data);            
+        });
          this.room.onMessage("onCatchPetFail", (data) => {   
              UserManager.instance.onCatchPetFail(data);            
         });
          this.room.onMessage("onSendOwnedPets", (data) => {   
              UserManager.instance.onUpdateOwnedPetPlayer(data);            
+        });
+        this.room.onMessage("onPetFollowPlayer", (data) => {   
+             UserManager.instance.onPetFollowPlayer(data);            
         });
     }
 
@@ -300,5 +306,9 @@ export class ServerManager extends Component {
 
     public sendOwnedPets(data) {
         this.room.send("sendOwnedPets", data);
+    }
+
+    public sendPetFollowPlayer(data) {
+        this.room.send("sendPetFollowPlayer", data);
     }
 }

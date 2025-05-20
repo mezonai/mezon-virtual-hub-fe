@@ -38,6 +38,7 @@ export class PlayerController extends Component {
     @property(Node) bubbleChat: Node = null;
     @property(Label) contentBubbleChat: Label = null;
     @property({type: PetCatchingController}) petCatching: PetCatchingController;   
+    @property petFollowPrefabs: Node[] = [];
     @property petIdList: string[] | null;
     private tweenAction: Tween<Node> | null = null;
     private hideTimeout: number | null = null;
@@ -90,6 +91,10 @@ export class PlayerController extends Component {
 
     saveListOwnedPet(pets: PetDTO[]){       
         this.petIdList =  pets.map(pet => pet.id);
+    }
+
+    savePetFollow(petPrefab: Node){       
+        this.petFollowPrefabs.push(petPrefab);
     }
 
     public async init(sessionId, room, name = "", skinSet: string, userID: string, isShowName : boolean) {

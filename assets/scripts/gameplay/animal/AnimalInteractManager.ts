@@ -16,7 +16,6 @@ export class AnimalInteractManager extends Component {
     @property({ type: Node }) tameButton: Node = null;
     @property({ type: CCFloat }) interactDistance: number = 60;
     @property({ type: Node }) actionButtonParent: Node = null;
-    @property({ type: RandomlyMover }) randomlyMover: RandomlyMover = null;
 
     private lastActionTime: number = 0;
     private interactDelay: number = 1000;
@@ -67,7 +66,7 @@ export class AnimalInteractManager extends Component {
         //     await this.InteractTarget.petCatching.throwFoodToPet(this.animalController.node);
         //     ServerManager.instance.sendCatchPet(data);
         // }
-        this.animalController.animalMover.randomlyMover.stopMove();
+        this.animalController.randomlyMover.stopMove();
             let data = {
                 player: UserMeManager.Get.user,
                 petId: this.animalController.Pet.id

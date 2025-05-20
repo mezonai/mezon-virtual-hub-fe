@@ -2,7 +2,7 @@ import { _decorator, Component, Prefab, instantiate, Vec3, randomRange, Node, UI
 import { PetDTO } from '../Model/PetDTO';
 import { ObjectPoolManager } from '../pooling/ObjectPoolManager';
 import { RandomlyMover } from '../utilities/RandomlyMover';
-import { AnimalController } from './AnimalController';
+import { AnimalController, AnimalMoveType } from './AnimalController';
 
 const { ccclass, property } = _decorator;
 
@@ -32,7 +32,7 @@ export class AnimalSpawner extends Component {
                 let animal = petObj.getComponent(AnimalController);
                 if (animal) {
                     this.spawnedAnimals.push(animal);
-                    animal.setDataPet(pet, null, new Vec2(bound.x, bound.y));
+                    animal.setDataPet(pet,AnimalMoveType.RandomMove, null, new Vec2(bound.x, bound.y));
                 }
             }
         }

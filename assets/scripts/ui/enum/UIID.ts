@@ -13,5 +13,6 @@ export enum UIID {
     AboutUs = 11,
     MathProblem = 12,
     GlobalChat= 13,
-    NoticeBig = 14
+    NoticeBig = 14,
+    PopupShowOwnedAnimal = 15
 }

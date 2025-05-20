@@ -1,37 +1,66 @@
 import { _decorator, Component, Label, Node, tween, Tween, Vec2, Vec3 } from 'cc';
-import { AnimalMover, AnimalMoveType } from './AnimalMover';
 import { PlayerController } from '../gameplay/player/PlayerController';
 import { PetDTO } from '../Model/PetDTO';
-import { AnimalInteractManager } from '../gameplay/animal/AnimalInteractManager';
+import { RandomlyMover } from '../utilities/RandomlyMover';
+import { FollowTargetUser } from './FollowTargetUser';
 const { ccclass, property } = _decorator;
-
+export enum AnimalMoveType {
+    RandomMove = 1,
+    FollowTarget = 2,
+    NoMove = 3,
+}
 @ccclass('AnimalController')
 export class AnimalController extends Component {
-    @property({ type: AnimalMover }) animalMover: AnimalMover | null = null;
     @property(Node) bubbleChat: Node = null;
     @property(Label) contentBubbleChat: Label = null;
+    @property(Node) spriteNode: Node = null!;
+    @property({ type: RandomlyMover }) randomlyMover: RandomlyMover = null;
+    @property(FollowTargetUser) followTargetUser: FollowTargetUser = null!;
+    private animalMoveType = AnimalMoveType.NoMove;
     private animalPlayer: PlayerController = null;
     private pet: PetDTO;
     private tweenAction: Tween<Node> | null = null;
     private hideTimeout: number | null = null;
 
-    setDataPet(pet: PetDTO, owner: PlayerController = null, newArea: Vec2 = new Vec2(0, 0)) {
-        this.animalPlayer = owner;
+    setDataPet(pet: PetDTO, moveType: AnimalMoveType, owner: PlayerController = null, newArea: Vec2 = new Vec2(0, 0)) {//Dùng cho Pet di chuyển
+
+        
         this.pet = pet;
-       
-        if (owner == null) {
-            this.animalMover.setRandomMove(newArea);
+        if (moveType == AnimalMoveType.NoMove) {
+            this. setDataSlot();
+            return;
         }
-        else {          
-            this.animalMover.setFollowOwnedUser(owner.node);
+        if (moveType == AnimalMoveType.RandomMove) {
+            this.setRandomMove(newArea);
+            return;
         }
+        this.setFollowTarget(owner);
+    }
+
+    setRandomMove(newArea: Vec2) {
+        this.animalMoveType = AnimalMoveType.RandomMove;
+        this.randomlyMover.areaSize = newArea;
+        this.randomlyMover.move();
+    }
+
+    setFollowTarget(owner: PlayerController) {
+        this.animalPlayer = owner;
+        this.animalMoveType = AnimalMoveType.FollowTarget;
+        this.followTargetUser.playFollowTarget(owner.node, this.spriteNode);
+    }
+
+    setDataSlot() {
+        this.animalMoveType = AnimalMoveType.NoMove;
+        this.randomlyMover.stopMove();
+        this.spriteNode.setScale(new Vec3(1, 1, 1));
+
     }
 
     catchFail(content: string) {
         this.showBubbleChat(content);
-       setTimeout(() => {
-        this.animalMover.randomlyMover.move();
-    }, 500);
+        setTimeout(() => {
+            this.randomlyMover.move();
+        }, 500);
     }
 
     showBubbleChat(content: string) {
