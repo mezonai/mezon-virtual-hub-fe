@@ -92,13 +92,14 @@ export class SendTokenPanel extends Component {
     }
 
     public setChangeGoldToDiamondCallback(callback: (amount: number) => void) {
-        this.isBuy = false;
-        this.isWithdraw = true;
-        this.withdrawButton.active = this.isWithdraw;
-        this.title.string = "Chuyển đổi Coin to Diamond";
-        this.sendButtonTitle.string = "Mua";
-        this.cbBuy = callback;
-        this.noticePopup.node.active = false;
+        //TODO ExchangeCoinToDiamond
+        // this.isBuy = false;
+        // this.isWithdraw = true;
+        // this.withdrawButton.active = this.isWithdraw;
+        // this.title.string = "Nạp/rút/Chuyển Dimond";
+        // this.sendButtonTitle.string = "Mua";
+        // this.cbBuy = callback;
+        // this.noticePopup.node.active = false;
     }
 
     protected onDisable(): void {

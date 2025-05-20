@@ -30,9 +30,10 @@ export class InteractATM extends MapItemController {
             this.onWithdrawClick(data);
         });
 
-        panelComp.setChangeGoldToDiamondCallback((data) => {
-            this.onChangeGoldToDiamondClick(data);
-        });
+        //TODO ExchangeCoinToDiamond
+        // panelComp.setChangeGoldToDiamondCallback((data) => {
+        //     this.onChangeGoldToDiamondClick(data);
+        // });
     
         this.handleEndContact(null, null, null);
     }
