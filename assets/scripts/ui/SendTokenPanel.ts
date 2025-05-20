@@ -7,7 +7,8 @@ export enum SendActionType {
     None = "NONE",
     Buy = "BUY",
     Withdraw = "WITHDRAW",
-    Gift = "GIFT"
+    Gift = "GIFT",
+    ChangeGoldToDiamond = "CHANGEGOLDTODIAMOND"
 }
 @ccclass('SendTokenPanel')
 export class SendTokenPanel extends Component {
@@ -18,6 +19,7 @@ export class SendTokenPanel extends Component {
     @property({ type: UIIdentify }) noticePopup: UIIdentify = null;
     @property({ type: Node }) sendButton: Node = null;
     @property({ type: Node }) withdrawButton: Node = null;
+    @property({ type: Node }) changeButton: Node = null;
     @property({ type: Node }) send2Button: Node = null;
     @property({ type: CCInteger }) maxLength: number = 10;
     @property({ type: Toggle }) noticeToggle: Toggle = null;
@@ -45,6 +47,11 @@ export class SendTokenPanel extends Component {
         this.withdrawButton.on(Node.EventType.TOUCH_START, () => {
             this.send(true, SendActionType.Withdraw);
         }, this);
+
+        //TODO ExchangeCoinToDiamond
+        // this.changeButton.on(Node.EventType.TOUCH_START, () => {
+        //     this.send(true, SendActionType.ChangeGoldToDiamond);
+        // }, this);
 
         this.send2Button.on(Node.EventType.TOUCH_START, () => {
             this.send(false, this.lastType);
@@ -81,6 +88,16 @@ export class SendTokenPanel extends Component {
         this.sendButtonTitle.string = "Mua";
         this.withdrawButton.active = true;
         this.cbWithdraw = callback;
+        this.noticePopup.node.active = false;
+    }
+
+    public setChangeGoldToDiamondCallback(callback: (amount: number) => void) {
+        this.isBuy = false;
+        this.isWithdraw = true;
+        this.withdrawButton.active = this.isWithdraw;
+        this.title.string = "Chuyển đổi Coin to Diamond";
+        this.sendButtonTitle.string = "Mua";
+        this.cbBuy = callback;
         this.noticePopup.node.active = false;
     }
 
@@ -148,6 +165,9 @@ export class SendTokenPanel extends Component {
                 this.cbWithdraw?.(this.sendValue);
                 break;
             case SendActionType.Gift:
+                this.cbBuy?.(this.sendValue);
+                break;
+            case SendActionType.ChangeGoldToDiamond:
                 this.cbBuy?.(this.sendValue);
                 break;
             default:

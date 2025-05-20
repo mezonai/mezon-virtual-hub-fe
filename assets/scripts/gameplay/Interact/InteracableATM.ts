@@ -29,6 +29,10 @@ export class InteractATM extends MapItemController {
         panelComp.setWithdrawCallback((data) => {
             this.onWithdrawClick(data);
         });
+
+        panelComp.setChangeGoldToDiamondCallback((data) => {
+            this.onChangeGoldToDiamondClick(data);
+        });
     
         this.handleEndContact(null, null, null);
     }
@@ -56,6 +60,19 @@ export class InteractATM extends MapItemController {
             ServerManager.instance.node.emit(EVENT_NAME.ON_WITHDRAW_TOKEN, data);
         }
     }
+
+      private onChangeGoldToDiamondClick(data: number) {
+        if (data <= 0) {
+            let chatContent = this.invalidGoldResponse[randomRangeInt(0, this.invalidGoldResponse.length)];
+            UserManager.instance.GetMyClientPlayer.zoomBubbleChat(chatContent);
+            return;
+        }
+    
+        if (ServerManager.instance) {
+            ServerManager.instance.node.emit(EVENT_NAME. ON_CHANGE_GOLD_TO_DIAMOND, data);
+        }
+    }
+   
 
     protected override canShowPopup(): boolean {
         return true;

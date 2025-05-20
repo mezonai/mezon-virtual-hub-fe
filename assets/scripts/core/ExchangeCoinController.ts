@@ -44,6 +44,10 @@ export class ExchangeCoinController extends Component {
         ServerManager.instance.node.on(EVENT_NAME.ON_WITHDRAW_TOKEN, (amount) => {
             this.postWithdrawDiamond(amount);
         }, this)
+
+        ServerManager.instance.node.on(EVENT_NAME.ON_CHANGE_GOLD_TO_DIAMOND, (amount) => {
+            this.postChangeGoldToDiamond(amount);
+        }, this)
     }
 
     public postExchangeDiamond(amount: number) {
@@ -86,13 +90,25 @@ export class ExchangeCoinController extends Component {
         // amount: s, note: u, receiver_id: x, extra_attribute: w} = y.eventData || {};
         if (window.Mezon) {
             this.buyAmount = amount;
-            console.log("post event")
             let sendData = {
                 amount: amount,
                 note: "Rút Mezon VHub diamond",
             }
-
             ServerManager.instance.Withdraw(UserManager.instance?.GetMyClientPlayer.myID, sendData);
+        }
+        else {
+            UIManager.Instance.showNoticePopup("Chú Ý", "Chỉ khả dụng trên Mezon");
+        }
+    }
+
+    public postChangeGoldToDiamond(amount: number) {
+        // amount: s, note: u, receiver_id: x, extra_attribute: w} = y.eventData || {};
+        if (window.Mezon) {
+            this.buyAmount = amount;
+            let sendData = {
+                coinAmount: amount
+            }
+            ServerManager.instance.exchangeCoinToDiamond(UserManager.instance?.GetMyClientPlayer.myID, sendData);
         }
         else {
             UIManager.Instance.showNoticePopup("Chú Ý", "Chỉ khả dụng trên Mezon");

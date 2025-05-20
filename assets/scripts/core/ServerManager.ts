@@ -227,6 +227,24 @@ export class ServerManager extends Component {
                 })
             }
         });
+
+        this.room.onMessage("onExchangeFailed", (data) => {
+            UIManager.Instance.showNoticePopup(null, data.reason);
+            SoundManager.instance.playSound(AudioType.NoReward);
+        });
+
+        this.room.onMessage("onExchangeCoinToDiamond", (data) => {
+            const { coinChange, diamondChange } = data;
+
+            SoundManager.instance.playSound(AudioType.ReceiveReward);
+            if (UserMeManager.Get) {
+                const msg = `<color=#FF0000>${Utilities.convertBigNumberToStr(-coinChange)} Coin</color> đã được chuyển thành <color=#00FF00>${diamondChange} Diamond</color>`;
+                UIManager.Instance.showNoticePopup("Thông báo", msg, () => {
+                    UserMeManager.playerCoin += coinChange;
+                    UserMeManager.playerDiamond += diamondChange;
+                });
+            }
+        });
     }
 
     private decodeMoveData(uint8Array: ArrayBuffer) {
@@ -303,6 +321,11 @@ export class ServerManager extends Component {
     public Withdraw(sessionId: string, sendData: any) {
         this.withAmount = sendData.amount;
         this.room.send("onWithrawDiamond", sendData)
+    }
+
+    public exchangeCoinToDiamond(sessionId: string, sendData: any) {
+        this.withAmount = sendData.amount;
+        this.room.send("onExchangeCoinToDiamond", sendData)
     }
 
     public answerMathQuestion(id, answer) {
