@@ -45,7 +45,7 @@ export class MyProfileHUD extends BaseProfileManager {
             this.inited = true;
         }
         else if (UserManager.instance?.GetMyClientPlayer != null) {
-            ServerManager.instance.playerUpdateGold(UserManager.instance?.GetMyClientPlayer.myID, value, oldValue, ExchangeCoinController.instance.buyAmount < 0);
+            ServerManager.instance.playerUpdateGold(UserManager.instance?.GetMyClientPlayer.myID, value, oldValue, ExchangeCoinController.instance.amount < 0);
             EffectManager.instance.spawnPointEffect(value - oldValue, UserManager.instance?.GetMyClientPlayer.node.worldPosition.clone().add(new Vec3(randomRange(-this.spawnTextEffectOffset.x, this.spawnTextEffectOffset.x), this.spawnTextEffectOffset.y, this.spawnTextEffectOffset.z)), RewardType.GOLD)
         }
     }
@@ -56,7 +56,7 @@ export class MyProfileHUD extends BaseProfileManager {
             this.inited = true;
         }
         else if (UserManager.instance?.GetMyClientPlayer != null) {
-            ServerManager.instance.playerUpdateDiamond(UserManager.instance?.GetMyClientPlayer.myID, value, oldValue, ExchangeCoinController.instance.buyAmount < 0);
+            ServerManager.instance.playerUpdateDiamond(UserManager.instance?.GetMyClientPlayer.myID, value, oldValue, ExchangeCoinController.instance.amount < 0);
             EffectManager.instance.spawnPointEffect(value - oldValue, UserManager.instance?.GetMyClientPlayer.node.worldPosition.clone().add(new Vec3(randomRange(-this.spawnTextEffectOffset.x, this.spawnTextEffectOffset.x), this.spawnTextEffectOffset.y, this.spawnTextEffectOffset.z)), RewardType.DIAMOND)
         }
     }

@@ -8,7 +8,7 @@ export enum SendActionType {
     Buy = "BUY",
     Withdraw = "WITHDRAW",
     Gift = "GIFT",
-    ChangeGoldToDiamond = "CHANGEGOLDTODIAMOND"
+    ChangeDiamondToCoin = "CHANGEDIAMONDTOCOIN"
 }
 @ccclass('SendTokenPanel')
 export class SendTokenPanel extends Component {
@@ -31,6 +31,7 @@ export class SendTokenPanel extends Component {
     private lastType: SendActionType = null;
 
     private cbBuy: (amount: number) => void = null;
+    private cbChange: (amount: number) => void = null;
     private cbWithdraw: (amount: number) => void = null;
 
     protected start(): void {
@@ -48,10 +49,9 @@ export class SendTokenPanel extends Component {
             this.send(true, SendActionType.Withdraw);
         }, this);
 
-        //TODO ExchangeCoinToDiamond
-        // this.changeButton.on(Node.EventType.TOUCH_START, () => {
-        //     this.send(true, SendActionType.ChangeGoldToDiamond);
-        // }, this);
+        this.changeButton.on(Node.EventType.TOUCH_START, () => {
+            this.send(true, SendActionType.ChangeDiamondToCoin);
+        }, this);
 
         this.send2Button.on(Node.EventType.TOUCH_START, () => {
             this.send(false, this.lastType);
@@ -63,6 +63,7 @@ export class SendTokenPanel extends Component {
         this.isBuy = false;
         this.isWithdraw = false;
         this.withdrawButton.active = this.isWithdraw;
+        this.changeButton.active = this.isWithdraw;
         this.title.string = "Tặng Quà";
         this.sendButtonTitle.string = "Gửi";
         this.cbBuy = callback;
@@ -72,9 +73,8 @@ export class SendTokenPanel extends Component {
     public setBuyCallback(callback: (amount: number) => void) {
         this.isBuy = true;
         this.isWithdraw = false;
-        this.withdrawButton.active = this.isWithdraw;
-        this.title.string = "Nạp/rút Dimond";
-        this.sendButtonTitle.string = "Mua";
+        this.title.string = "Nạp/Rút/Đổi Diamond";
+        this.sendButtonTitle.string = "Nạp";
         this.withdrawButton.active = true;
         this.cbBuy = callback;
         this.noticePopup.node.active = false;
@@ -83,23 +83,20 @@ export class SendTokenPanel extends Component {
     public setWithdrawCallback(callback: (amount: number) => void) {
         this.isBuy = false;
         this.isWithdraw = true;
-        this.withdrawButton.active = this.isWithdraw;
-        this.title.string = "Nạp/rút Dimond";
-        this.sendButtonTitle.string = "Mua";
+        this.title.string = "Nạp/Rút/Đổi Diamond";
+        this.sendButtonTitle.string = "Nạp";
         this.withdrawButton.active = true;
         this.cbWithdraw = callback;
         this.noticePopup.node.active = false;
     }
 
-    public setChangeGoldToDiamondCallback(callback: (amount: number) => void) {
-        //TODO ExchangeCoinToDiamond
-        // this.isBuy = false;
-        // this.isWithdraw = true;
-        // this.withdrawButton.active = this.isWithdraw;
-        // this.title.string = "Nạp/rút/Chuyển Dimond";
-        // this.sendButtonTitle.string = "Mua";
-        // this.cbBuy = callback;
-        // this.noticePopup.node.active = false;
+    public setChangeDiamondToCoinCallback(callback: (amount: number) => void) {
+        this.isBuy = false;
+        this.isWithdraw = false;
+        this.title.string = "Nạp/Rút/Đổi Diamond";
+        this.sendButtonTitle.string = "Nạp";
+        this.cbChange = callback;
+        this.noticePopup.node.active = false;
     }
 
     protected onDisable(): void {
@@ -168,8 +165,8 @@ export class SendTokenPanel extends Component {
             case SendActionType.Gift:
                 this.cbBuy?.(this.sendValue);
                 break;
-            case SendActionType.ChangeGoldToDiamond:
-                this.cbBuy?.(this.sendValue);
+            case SendActionType.ChangeDiamondToCoin:
+                this.cbChange?.(this.sendValue);
                 break;
             default:
                 break;

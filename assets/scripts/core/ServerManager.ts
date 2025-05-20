@@ -235,15 +235,15 @@ export class ServerManager extends Component {
             SoundManager.instance.playSound(AudioType.NoReward);
         });
 
-        this.room.onMessage("onExchangeCoinToDiamond", (data) => {
+        this.room.onMessage("onExchangeDiamondToCoin", (data) => {
             const { coinChange, diamondChange } = data;
 
             SoundManager.instance.playSound(AudioType.ReceiveReward);
             if (UserMeManager.Get) {
-                const msg = `<color=#FF0000>${Utilities.convertBigNumberToStr(-coinChange)} Coin</color> đã được chuyển thành <color=#00FF00>${diamondChange} Diamond</color>`;
+                const msg = `<color=#FF0000>${Utilities.convertBigNumberToStr(Utilities.convertBigNumberToStr(Math.abs(diamondChange)))} Diamond</color> đã được chuyển thành <color=#00FF00>${coinChange} coin</color>`;
                 UIManager.Instance.showNoticePopup("Thông báo", msg, () => {
+                    UserMeManager.playerDiamond -= diamondChange;
                     UserMeManager.playerCoin += coinChange;
-                    UserMeManager.playerDiamond += diamondChange;
                 });
             }
         });
@@ -343,7 +343,7 @@ export class ServerManager extends Component {
 
     public exchangeCoinToDiamond(sessionId: string, sendData: any) {
         this.withAmount = sendData.amount;
-        this.room.send("onExchangeCoinToDiamond", sendData)
+        this.room.send("onExchangeDiamondToCoin", sendData)
     }
 
     public answerMathQuestion(id, answer) {
