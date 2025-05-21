@@ -2,7 +2,7 @@ import { _decorator, Component, Prefab, instantiate, Vec3, randomRange, Node, UI
 import { PetDTO } from '../Model/PetDTO';
 import { ObjectPoolManager } from '../pooling/ObjectPoolManager';
 import { RandomlyMover } from '../utilities/RandomlyMover';
-import { AnimalController, AnimalMoveType } from './AnimalController';
+import { AnimalController, AnimalType } from './AnimalController';
 
 const { ccclass, property } = _decorator;
 
@@ -32,7 +32,7 @@ export class AnimalSpawner extends Component {
                 let animal = petObj.getComponent(AnimalController);
                 if (animal) {
                     this.spawnedAnimals.push(animal);
-                    animal.setDataPet(pet,AnimalMoveType.RandomMove, null, new Vec2(bound.x, bound.y));
+                    animal.setDataPet(pet,AnimalType.RandomMove, null, new Vec2(bound.x, bound.y));
                 }
             }
         }
@@ -41,23 +41,15 @@ export class AnimalSpawner extends Component {
     protected onDisable(): void {
         this.spawnedAnimals.forEach(animal => {
             if (animal) {
-                this.closeAnimal(animal);
+                animal.closeAnimal();
             }
         });
     }
 
-    public closeAnimalById(id: string) {
-        this.spawnedAnimals.forEach(animal => {
-            if (animal.Pet.id === id) {
-                this.closeAnimal(animal);
-            }
-        });
-    }
-
-    closeAnimal(animal: AnimalController) {
+    public setAnimalCaught(id: string){
+        let animal = this.getAnimalById(id);
         if(animal == null) return;
-        Tween.stopAllByTarget(animal);
-        ObjectPoolManager.instance.returnToPool(animal.node);
+        animal.closeAnimal(true);
     }
 
     public getAnimalById(id: string): AnimalController | null {

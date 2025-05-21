@@ -11,7 +11,7 @@ import { ActionType } from '../gameplay/player/ability/PlayerInteractAction';
 import { UIManager } from './UIManager';
 import { EffectManager } from './EffectManager';
 import { AudioType, SoundManager } from './SoundManager';
-import { AnimalController, AnimalMoveType } from '../animal/AnimalController';
+import { AnimalController, AnimalType } from '../animal/AnimalController';
 import { Constants } from '../utilities/Constants';
 import { OfficeSceneController } from '../GameMap/OfficeScene/OfficeSceneController';
 import { PetDTO } from '../Model/PetDTO';
@@ -99,23 +99,32 @@ export class UserManager extends Component {
             playerController.petFollowPrefabs.forEach(pet => {
                 ObjectPoolManager.instance.returnToPool(pet);
             });
-            playerController.petFollowPrefabs.length = 0;
         }
-        for (const petDTO of pets) {
-            const animal = ObjectPoolManager.instance.spawnFromPool(petDTO.species);
-            const animalController = animal.getComponent(AnimalController);
-            animal.setPosition(new Vec3(x, y));
-            animalController.setDataPet(petDTO, AnimalMoveType.FollowTarget, playerController);
-            playerController.savePetFollow(animal);
-            animal.setParent(this.animalParent);
-        }
+        const checkInterval = setInterval(() => {
+            const allInactive = playerController.petFollowPrefabs.every(p => !p.active);
+            if (allInactive) {
+                clearInterval(checkInterval);
+                playerController.petFollowPrefabs.length = 0;
+                for (const petDTO of pets) {
+                    const animal = ObjectPoolManager.instance.spawnFromPool(petDTO.species);
+                    const animalController = animal.getComponent(AnimalController);
+                    animal.setPosition(new Vec3(x, y));
+                    animalController.setDataPet(petDTO, AnimalType.FollowTarget, playerController);
+                    playerController.savePetFollow(animal);
+                    animal.setParent(this.animalParent);
+                }
+            }
+        }, 10)
     }
 
     private setAnimalOwned(playerController: PlayerController, playerData: PlayerColysesusObjectData) {
         let pets = ConvetData.ConvertPet(playerData.animals);
         if (pets == null) return;
         playerController.saveListOwnedPet(pets);
-        //this.intantiatePet(pets, playerData.x, playerData.y, playerController);
+        const broughtPets: PetDTO[] = pets.filter(pet => pet.is_brought);
+        if (broughtPets == null) return;
+        console.log("playerData.animals", broughtPets)
+        this.intantiatePetFollowPlayer(broughtPets, playerData.x, playerData.y, playerController);
     }
 
     private async waitForPhysicsReady() {
@@ -253,18 +262,18 @@ export class UserManager extends Component {
     }
 
     public onPlayerRemoteUpdateDiamond(data) {
-    if (!data) {
-        return;
-    }
-    const { sessionId, amountChange } = data;
-    if (!sessionId) {
-        return;
-    }
+        if (!data) {
+            return;
+        }
+        const { sessionId, amountChange } = data;
+        if (!sessionId) {
+            return;
+        }
 
-    let player = this.players.get(sessionId);
-    if (player && player.myID != this.GetMyClientPlayer.myID) {
-        EffectManager.instance.spawnPointEffect(amountChange, player.node.worldPosition.clone().add(new Vec3(randomRange(-10, 10), 0, 0)), RewardType.DIAMOND);
-    }
+        let player = this.players.get(sessionId);
+        if (player && player.myID != this.GetMyClientPlayer.myID) {
+            EffectManager.instance.spawnPointEffect(amountChange, player.node.worldPosition.clone().add(new Vec3(randomRange(-10, 10), 0, 0)), RewardType.DIAMOND);
+        }
     }
 
     public onAnswerMathCallback(data) {
@@ -286,7 +295,7 @@ export class UserManager extends Component {
     }
 
     public onCatchPetSuccess(data) {
-        OfficeSceneController.instance.currentMap.AnimalSpawner.closeAnimalById(data.petId)
+        OfficeSceneController.instance.currentMap.AnimalSpawner.setAnimalCaught(data.petId)
         if (data.playerCatchId === UserManager.instance.GetMyClientPlayer.myID) this.updateMyData();
     }
     public onPetAlreadyCaught(data) {

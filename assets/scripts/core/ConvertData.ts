@@ -23,6 +23,7 @@ export default class ConvetData {
             petDTO.name = data.name;
             petDTO.species = data.species;
             petDTO.is_caught = data.is_caught;
+            petDTO.is_brought = data.is_brought;
             petDTO.room_code = data.room_code;
             return petDTO;
         });
