@@ -42,6 +42,7 @@ export class Food extends BaseInventoryDTO {
 export class RewardItemDTO {
     public type: RewardType;
     public item?: Item; 
+    public food?: Food;
     public quantity?: number;
     public amount?: number;
 }
@@ -55,6 +56,7 @@ export enum RewardType {
     ITEM = 'item',
     GOLD = 'gold',
     DIAMOND = 'diamond',
+    FOOD = 'food',
 }
 
 export enum ItemType {

@@ -1,5 +1,5 @@
-import { _decorator, Button, Component, instantiate, Label, Node, Prefab} from 'cc';import { WebRequestManager } from '../network/WebRequestManager';
-import { Item, RewardItemDTO, RewardType } from '../Model/Item';
+import { _decorator, Button, Component, instantiate, Label, Node, Prefab } from 'cc'; import { WebRequestManager } from '../network/WebRequestManager';
+import { Food, Item, RewardItemDTO, RewardType } from '../Model/Item';
 import { BubbleRotation } from './BubbleRotation';
 import { UserMeManager } from '../core/UserMeManager';
 import { RewardUIController } from './RewardUIController';
@@ -29,9 +29,9 @@ export class SlotMachineController extends Component {
 
     @property(Prefab) rewardTextPrefab: Prefab = null;
     @property(Node) container: Node = null;
-    private minusCoin : number = 10;
+    private minusCoin: number = 10;
     private hasSpin: boolean = false;
-    
+
     protected start(): void {
         this.slotMachinePopUp.active = false;
         this.spinButton.node.on('click', this.spinMachine, this);
@@ -53,10 +53,10 @@ export class SlotMachineController extends Component {
         this.rewardPopUp.HideNode();
         this.hasSpin = false;
         this.closeButton.node.active = true;
-        if(!this.slotMachinePopUp.active) return;
+        if (!this.slotMachinePopUp.active) return;
         UserManager.instance.GetMyClientPlayer.get_MoveAbility.StopMove();
     }
-    
+
 
     private onError(error: any) {
         this.bubbleRotation.stopRotation();
@@ -92,19 +92,41 @@ export class SlotMachineController extends Component {
 
         return validData.map((data: any, index: number) => {
             const rewardItem = new RewardItemDTO();
-            rewardItem.type = data.type === RewardType.ITEM ? RewardType.ITEM : RewardType.GOLD;
 
-            if (rewardItem.type === RewardType.ITEM) {
-                rewardItem.item = this.parseItem(data.item);
-                rewardItem.quantity = data.quantity ?? 1;
-            } else {
-                rewardItem.amount = data.amount ?? 0;
+            switch (data.type) {
+                case RewardType.ITEM:
+                    rewardItem.type = RewardType.ITEM;
+                    rewardItem.item = this.parseItem(data.item);
+                    rewardItem.quantity = data.quantity ?? 1;
+                    break;
+
+                case RewardType.FOOD:
+                    rewardItem.type = RewardType.FOOD;
+                    rewardItem.food = this.parseFood(data.food);
+                    rewardItem.quantity = data.quantity ?? 1;
+                    break;
+
+                case RewardType.GOLD:
+                default:
+                    rewardItem.type = RewardType.GOLD;
+                    rewardItem.amount = data.amount ?? 0;
+                    break;
             }
 
             return rewardItem;
         });
     }
 
+    parseFood(foodData: any): Food {
+        const food = new Food();
+        food.id = foodData.id;
+        food.name = foodData.name;
+        food.type = foodData.type;
+        food.price = foodData.price;
+        food.purchase_method = foodData.purchase_method;
+        food.catch_rate_bonus = foodData.catch_rate_bonus;
+        return food;
+    }
 
     parseItem(itemData: any): Item {
         const item = new Item();
@@ -123,7 +145,7 @@ export class SlotMachineController extends Component {
 
     private async spinMachine() {
         if (UserMeManager.playerCoin < this.minusCoin) {
-            UIManager.Instance.showNoticePopup("Chú ý","Bạn cần 10 coin để quay vòng quay many mắn")
+            UIManager.Instance.showNoticePopup("Chú ý", "Bạn cần 10 coin để quay vòng quay many mắn")
             return;
         }
         if (this.spinButtonLabel) {
@@ -153,12 +175,12 @@ export class SlotMachineController extends Component {
             (error) => this.onError(error)
         );
     }
-    
 
-    showMinusCoinEffect(coin:Number) {
+
+    showMinusCoinEffect(coin: Number) {
         const rewardTextNode = instantiate(this.rewardTextPrefab);
         rewardTextNode.setParent(this.container);
-    
+
         const floatingText = rewardTextNode.getComponent(RewardFloatingText);
         if (floatingText) {
             let message = '';
@@ -166,7 +188,7 @@ export class SlotMachineController extends Component {
             floatingText.showReward(message, true, RewardType.GOLD);
         }
     }
-    
+
 
     private delay(ms: number): Promise<void> {
         return new Promise(resolve => setTimeout(resolve, ms));
