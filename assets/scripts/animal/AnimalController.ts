@@ -3,11 +3,13 @@ import { PlayerController } from '../gameplay/player/PlayerController';
 import { PetDTO } from '../Model/PetDTO';
 import { RandomlyMover } from '../utilities/RandomlyMover';
 import { FollowTargetUser } from './FollowTargetUser';
+import { ObjectPoolManager } from '../pooling/ObjectPoolManager';
 const { ccclass, property } = _decorator;
-export enum AnimalMoveType {
+export enum AnimalType {
     RandomMove = 1,
     FollowTarget = 2,
     NoMove = 3,
+    Caught = 4
 }
 @ccclass('AnimalController')
 export class AnimalController extends Component {
@@ -16,21 +18,21 @@ export class AnimalController extends Component {
     @property(Node) spriteNode: Node = null!;
     @property({ type: RandomlyMover }) randomlyMover: RandomlyMover = null;
     @property(FollowTargetUser) followTargetUser: FollowTargetUser = null!;
-    private animalMoveType = AnimalMoveType.NoMove;
+    private animalMoveType = AnimalType.NoMove;
     private animalPlayer: PlayerController = null;
     private pet: PetDTO;
     private tweenAction: Tween<Node> | null = null;
     private hideTimeout: number | null = null;
 
-    setDataPet(pet: PetDTO, moveType: AnimalMoveType, owner: PlayerController = null, newArea: Vec2 = new Vec2(0, 0)) {//Dùng cho Pet di chuyển
+    setDataPet(pet: PetDTO, moveType: AnimalType, owner: PlayerController = null, newArea: Vec2 = new Vec2(0, 0)) {//Dùng cho Pet di chuyển
 
-        
+
         this.pet = pet;
-        if (moveType == AnimalMoveType.NoMove) {
-            this. setDataSlot();
+        if (moveType == AnimalType.NoMove) {
+            this.setDataSlot();
             return;
         }
-        if (moveType == AnimalMoveType.RandomMove) {
+        if (moveType == AnimalType.RandomMove) {
             this.setRandomMove(newArea);
             return;
         }
@@ -38,22 +40,30 @@ export class AnimalController extends Component {
     }
 
     setRandomMove(newArea: Vec2) {
-        this.animalMoveType = AnimalMoveType.RandomMove;
+        this.animalMoveType = AnimalType.RandomMove;
         this.randomlyMover.areaSize = newArea;
         this.randomlyMover.move();
     }
 
     setFollowTarget(owner: PlayerController) {
         this.animalPlayer = owner;
-        this.animalMoveType = AnimalMoveType.FollowTarget;
+        this.animalMoveType = AnimalType.FollowTarget;
         this.followTargetUser.playFollowTarget(owner.node, this.spriteNode);
     }
 
     setDataSlot() {
-        this.animalMoveType = AnimalMoveType.NoMove;
+        this.animalMoveType = AnimalType.NoMove;
         this.randomlyMover.stopMove();
         this.spriteNode.setScale(new Vec3(1, 1, 1));
 
+    }
+
+    public closeAnimal(isCaught : boolean = false) {
+        if(isCaught){
+            this.animalMoveType = AnimalType.Caught;
+        }       
+        Tween.stopAllByTarget(this.node);
+        ObjectPoolManager.instance.returnToPool(this.node);
     }
 
     catchFail(content: string) {

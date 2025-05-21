@@ -1,5 +1,5 @@
 import { _decorator, Component, Layers, Node, Toggle, Vec3 } from 'cc';
-import { AnimalController, AnimalMoveType } from './AnimalController';
+import { AnimalController, AnimalType } from './AnimalController';
 import { PetDTO } from '../Model/PetDTO';
 import { ObjectPoolManager } from '../pooling/ObjectPoolManager';
 const { ccclass, property } = _decorator;
@@ -8,7 +8,6 @@ const { ccclass, property } = _decorator;
 export class ItemAnimalSlot extends Component {
     @property({ type: Node }) parentAnimal: Node = null;
     @property({ type: Toggle }) toggle: Toggle = null;
-    @property isSelected: boolean = false;
     @property animalController: AnimalController = null;
     private animalObject: Node = null;
     private defaultLayer = Layers.Enum.NONE;
@@ -24,11 +23,11 @@ export class ItemAnimalSlot extends Component {
                 }
             };
             this.toggle.node.on(Node.EventType.TOUCH_END, this.boundToggleCallback, this);
-            this.toggle.isChecked = this.isSelected;// this.isSelected sẽ được thay thế bằng trạng thái của Pet sau này
+            this.toggle.isChecked = pet.is_brought;
             if (this.toggle.isChecked && this.boundToggleCallback != null) this.boundToggleCallback();
             this.animalController = this.animalObject.getComponent(AnimalController);
             if (this.animalController == null) return;
-            this.animalController.setDataPet(pet, AnimalMoveType.NoMove);
+            this.animalController.setDataPet(pet, AnimalType.NoMove);
             this.defaultLayer = this.animalController.spriteNode.layer;
             this.setLayerAnimal(false);
         }

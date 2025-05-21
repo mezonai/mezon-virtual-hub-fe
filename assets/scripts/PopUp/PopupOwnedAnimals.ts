@@ -7,6 +7,7 @@ import { PopupManager } from './PopupManager';
 import { UIManager } from '../core/UIManager';
 import { ConfirmPopup } from './ConfirmPopup';
 import { ServerManager } from '../core/ServerManager';
+import { WebRequestManager } from '../network/WebRequestManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('PopupOwnedAnimals')
@@ -18,6 +19,7 @@ export class PopupOwnedAnimals extends BasePopup {
     @property({ type: ScrollView }) scrollView: ScrollView = null;
     private itemAnimalSlots: ItemAnimalSlot[] = [];
     private selectedToggles: Toggle[] = [];
+    private selectedPetInit: string[] = [];
     private maxSelected = 3;
     showDecription() {
         this.descriptionText.string = "Bạn Có thể chọn 3 thú cưng để dắt theo bên mình";
@@ -35,11 +37,12 @@ export class PopupOwnedAnimals extends BasePopup {
             itemPetSlot.setDataSlot(animals[i], this.onToggleChanged.bind(this));
             this.itemAnimalSlots.push(itemPetSlot);
         }
+        this.selectedPetInit = this.itemAnimalSlots
+            .filter(slot => slot.toggle?.isChecked)
+            .map(slot => slot.animalController.Pet.id);
     }
 
     onToggleChanged(toggled: Toggle) {
-       console.log(this.selectedToggles)
-        
         if (toggled.isChecked) {
             if (this.selectedToggles.length >= this.maxSelected) {
                 toggled.isChecked = false;
@@ -55,20 +58,44 @@ export class PopupOwnedAnimals extends BasePopup {
                 this.selectedToggles.splice(index, 1);
             }
         }
+
     }
 
     saveChange() {
-        const selectedAnimals = this.itemAnimalSlots
+        const selectedAnimalsId = this.itemAnimalSlots
             .filter(slot => slot.toggle?.isChecked)
-            .map(slot => slot.animalController.Pet);
-        const petString: string = JSON.stringify(selectedAnimals);
-        let data = {
-            pets: petString
+            .map(slot => slot.animalController.Pet.id);
+        if (
+            this.selectedPetInit.length === selectedAnimalsId.length &&
+            this.selectedPetInit.every(id => selectedAnimalsId.includes(id))
+        ) {
+            this.closePopup();
+            return;
         }
-        ServerManager.instance.sendPetFollowPlayer(data);
-       this.closePopup();
-    }
+        const pets = UserMeManager.Get.animals;
+        if (!pets || pets.length === 0) return;
 
+        // Cập nhật is_brought và tạo danh sách pet được chọn
+        const petFollowUser = pets.filter(pet => {
+            pet.is_brought = selectedAnimalsId.includes(pet.id);
+            return pet.is_brought;
+        });
+        console.log("petFollowUser", petFollowUser);
+        const petData = { pets: pets };
+        if (pets.length > 0) {
+            WebRequestManager.instance.updateListPetFollowUser(
+                petData,
+                (response) => {
+                    const data = {
+                        pets: JSON.stringify(petFollowUser)
+                    };
+                    ServerManager.instance.sendPetFollowPlayer(data);
+                    this.closePopup();
+                },
+                (error) => this.onError(error)
+            );
+        } else this.closePopup();
+    }
     public async init(param?) {
         super.init(param);
         this.showPopup();
@@ -80,7 +107,7 @@ export class PopupOwnedAnimals extends BasePopup {
         this.saveButton.node.on(Button.EventType.CLICK, this.saveChange, this);
     }
 
-    async closePopup(){
+    async closePopup() {
         for (let i = 0; i < this.itemAnimalSlots.length; i++) {
             const item = this.itemAnimalSlots[i];
             await item.resetAnimal();
@@ -91,6 +118,18 @@ export class PopupOwnedAnimals extends BasePopup {
 
     onButtonClick() {
         this.closePopup();
+    }
+
+    onUpdateSuccess(respone) {
+
+    }
+
+    private onError(error: any) {
+        console.error("Error occurred:", error);
+
+        if (error?.message) {
+            console.error("Error message:", error.message);
+        }
     }
 }
 

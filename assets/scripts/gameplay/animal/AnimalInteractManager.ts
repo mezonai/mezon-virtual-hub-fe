@@ -69,12 +69,8 @@ export class AnimalInteractManager extends Component {
         //     ServerManager.instance.sendCatchPet(data);
         // }
         this.animalController.randomlyMover.stopMove();
-        let data = {
-            player: UserMeManager.Get.user,
-            petId: this.animalController.Pet.id
-        }
         PopupManager.getInstance().openAnimPopup('PopupChooseFoodPet', PopupChooseFoodPet, {
-            petId: this.animalController.Pet.id, 
+            animal: this.animalController, 
             onThrowFood: async (quality: number) => {
                 return await this.InteractTarget.petCatching.throwFoodToPet(this.animalController.node, quality);
             },
