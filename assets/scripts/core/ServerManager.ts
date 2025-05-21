@@ -240,9 +240,9 @@ export class ServerManager extends Component {
 
             SoundManager.instance.playSound(AudioType.ReceiveReward);
             if (UserMeManager.Get) {
-                const msg = `<color=#FF0000>${Utilities.convertBigNumberToStr(Utilities.convertBigNumberToStr(Math.abs(diamondChange)))} Diamond</color> đã được chuyển thành <color=#00FF00>${coinChange} coin</color>`;
+                const msg = `<color=#FF0000>${Utilities.convertBigNumberToStr(Math.abs(diamondChange))} Diamond</color> đã được chuyển thành <color=#00FF00>${coinChange} coin</color>`;
                 UIManager.Instance.showNoticePopup("Thông báo", msg, () => {
-                    UserMeManager.playerDiamond -= diamondChange;
+                    UserMeManager.playerDiamond += diamondChange;
                     UserMeManager.playerCoin += coinChange;
                 });
             }
