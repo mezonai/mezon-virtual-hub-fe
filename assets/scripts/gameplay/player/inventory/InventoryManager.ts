@@ -1,5 +1,5 @@
 import { _decorator, Node } from 'cc';
-import { InventoryDTO, Item } from '../../../Model/Item';
+import { InventoryDTO, InventoryType, Item, ItemType } from '../../../Model/Item';
 import { EVENT_NAME } from '../../../network/APIConstant';
 import { UserMeManager } from '../../../core/UserMeManager';
 import { ResourceManager } from '../../../core/ResourceManager';
@@ -39,19 +39,20 @@ export class InventoryManager extends BaseInventoryManager {
                 equipped: false,
                 item: {
                     id: "1", name: "", gold: 0, iconSF: null, type: 1, mappingLocalData: null, gender: "male", is_equippable: true, is_static: false, is_stackable: false
-                }
+                },
+                inventory_type : InventoryType.ITEM,
             },
             {
                 id: null,
                 equipped: false,
                 item: { id: "3", name: "", gold: 0, iconSF: null, type: 5, mappingLocalData: null, gender: "male", is_equippable: true, is_static: false, is_stackable: false },
-
+                inventory_type : InventoryType.ITEM,
             },
             {
                 id: null,
                 equipped: false,
                 item: { id: "4", name: "", gold: 0, iconSF: null, type: 6, mappingLocalData: null, gender: "male", is_equippable: true, is_static: false, is_stackable: false },
-
+                inventory_type : InventoryType.ITEM,
             }
         ];
 
@@ -60,19 +61,19 @@ export class InventoryManager extends BaseInventoryManager {
                 id: null,
                 equipped: false,
                 item: { id: "8", name: "", gold: 0, iconSF: null, type: 1, mappingLocalData: null, gender: "female", is_equippable: true, is_static: false, is_stackable: false },
-
+                inventory_type : InventoryType.ITEM,
             },
             {
                 id: null,
                 equipped: false,
                 item: { id: "9", name: "", gold: 0, iconSF: null, type: 5, mappingLocalData: null, gender: "female", is_equippable: true, is_static: false, is_stackable: false },
-
+                inventory_type : InventoryType.ITEM,
             },
             {
                 id: null,
                 equipped: false,
                 item: { id: "10", name: "", gold: 0, iconSF: null, type: 6, mappingLocalData: null, gender: "female", is_equippable: true, is_static: false, is_stackable: false },
-
+                inventory_type : InventoryType.ITEM,
             }
         ];
 
@@ -81,12 +82,13 @@ export class InventoryManager extends BaseInventoryManager {
                 id: null,
                 equipped: false,
                 item: { id: "-1", name: "", gold: 0, iconSF: null, type: 4, mappingLocalData: null, gender: "not specified", is_equippable: true, is_static: false, is_stackable: false },
-
+                inventory_type : InventoryType.ITEM,
             },
             {
                 id: null,
                 equipped: false,
                 item: { id: "0", name: "", gold: 0, iconSF: null, type: 3, mappingLocalData: null, gender: "not specified", is_equippable: true, is_static: false, is_stackable: false },
+                inventory_type : InventoryType.ITEM,
             }
         ];
         UserMeManager.Get.inventories.unshift(...unisexItems);
@@ -162,10 +164,13 @@ export class InventoryManager extends BaseInventoryManager {
 
     protected override groupByCategory(items: InventoryDTO[]): Record<string, InventoryDTO[]> {
         return items.reduce((acc, item) => {
-            if (!acc[item.item.type]) {
-                acc[item.item.type] = [];
+            if (!!item.item) {
+                if (!acc[item.item?.type]) {
+                    acc[item.item?.type] = [];
+                }
+                acc[item.item.type].push(item);
             }
-            acc[item.item.type].push(item);
+
             return acc;
         }, {} as Record<string, InventoryDTO[]>);
     }

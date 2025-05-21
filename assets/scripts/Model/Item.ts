@@ -8,14 +8,16 @@ export class BaseInventoryDTO {
 export class InventoryDTO extends BaseInventoryDTO {
     public id: string;
     public equipped: boolean = false;
-    public item: Item;
+    public item?: Item;
+    public inventory_type: InventoryType;
+    public food?: Food;
 }
 
 export class ItemDTO {
     public data: Item[];
 }
 
-export class Item extends BaseInventoryDTO{
+export class Item extends BaseInventoryDTO {
     public id: string = "";
     public name: string = "";
     public gender: string = "";
@@ -26,6 +28,15 @@ export class Item extends BaseInventoryDTO{
     public iconSF: SpriteFrame[] = [];
     public mappingLocalData: LocalItemDataConfig = null;
     public is_stackable: boolean = false;
+}
+
+export class Food extends BaseInventoryDTO {
+    public id: string = "";
+    public name: string;
+    public type: FoodType;
+    public purchase_method: PurchaseMethod;
+    public price: number;
+    public catch_rate_bonus: number;
 }
 
 export class RewardItemDTO {
@@ -57,4 +68,21 @@ export enum ItemType {
     GLASSES = 7,
     PET_BAIT = 8,
     PET_FOOD = 9
+}
+
+export enum InventoryType {
+    ITEM = 'item',
+    FOOD = 'food',
+}
+
+export enum FoodType {
+    NORMAL = 'normal',
+    PREMIUM = 'premium',
+    ULTRA_PREMIUM = 'ultra-premium',
+}
+
+export enum PurchaseMethod {
+    GOLD = 'gold',
+    DIAMOND = 'diamond',
+    SLOT = 'slot',
 }
