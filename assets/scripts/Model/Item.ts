@@ -30,6 +30,10 @@ export class Item extends BaseInventoryDTO {
     public is_stackable: boolean = false;
 }
 
+export class FoodDTO {
+    public data: Food[];
+}
+
 export class Food extends BaseInventoryDTO {
     public id: string = "";
     public name: string;
@@ -37,11 +41,13 @@ export class Food extends BaseInventoryDTO {
     public purchase_method: PurchaseMethod;
     public price: number;
     public catch_rate_bonus: number;
+    public iconSF: SpriteFrame[] = [];
 }
 
 export class RewardItemDTO {
     public type: RewardType;
     public item?: Item; 
+    public food?: Food;
     public quantity?: number;
     public amount?: number;
 }
@@ -55,6 +61,7 @@ export enum RewardType {
     ITEM = 'item',
     GOLD = 'gold',
     DIAMOND = 'diamond',
+    FOOD = 'food',
 }
 
 export enum ItemType {

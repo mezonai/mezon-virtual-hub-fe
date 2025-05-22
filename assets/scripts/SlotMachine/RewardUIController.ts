@@ -1,4 +1,4 @@
-import { _decorator, EventKeyboard, Input, input, instantiate, KeyCode, Node, Prefab, tween, Vec3 } from 'cc';
+import { _decorator, EventKeyboard, Input, input, instantiate, KeyCode, Node, Prefab, SpriteFrame, tween, Vec3 } from 'cc';
 import { InventoryDTO, Item, RewardItemDTO, RewardType } from '../Model/Item';
 import { BubbleRotation } from './BubbleRotation';
 import { RewardItem } from './RewardItem';
@@ -21,8 +21,21 @@ export class RewardUIController extends BaseInventoryManager {
 
     private spawnCount: number = 0;
     private isCoin: boolean;
+    private readonly MAX_SLOT = 4;
+
+    @property(SpriteFrame) normalSpriteFrame: SpriteFrame = null;
+    @property(SpriteFrame) rareSpriteFrame: SpriteFrame = null;
+    @property(SpriteFrame) superSpriteFrame: SpriteFrame = null;
+
+    private foodIconMap: Record<string, SpriteFrame>;
 
     public override start(): void {
+        //TODO temp sprite food
+        this.foodIconMap = {
+            normal: this.normalSpriteFrame,
+            rare: this.rareSpriteFrame,
+            super: this.superSpriteFrame
+        };
     }
 
     show(hasReward: boolean, listItem: RewardItemDTO[] = []) {
@@ -61,7 +74,7 @@ export class RewardUIController extends BaseInventoryManager {
         const bubbleChildren = this.bubbleRotation.node.children;
 
         for (let i = listItem.length; i < bubbleChildren.length; i++) {
-           
+
 
             const bubble = bubbleChildren[i];
             const itemNode = bubble.getChildByName("RewardItem");
@@ -72,9 +85,6 @@ export class RewardUIController extends BaseInventoryManager {
 
         this.spawnItemSequential(0, listItem, bubbleChildren);
     }
-
-
-    private readonly MAX_SLOT = 4;
 
     private spawnItemSequential(index: number, listItem: RewardItemDTO[], bubbleChildren: Node[]) {
         if (index >= Math.min(this.MAX_SLOT, bubbleChildren.length)) return;
@@ -87,7 +97,7 @@ export class RewardUIController extends BaseInventoryManager {
             inventory.item = reward.item;
             GameManager.instance.inventoryController.addItemToInventory(inventory);
         }
-       
+
         const bubble = bubbleChildren[index];
         let itemNode = bubble.getChildByName("RewardItem");
         if (!itemNode) {
@@ -103,20 +113,35 @@ export class RewardUIController extends BaseInventoryManager {
             .delay(0.1 * index)
             .to(0.15, { scale: new Vec3(1.2, 1.2, 1.2) }, { easing: "backOut" })
             .call(() => {
-                const uiItem = itemNode.getComponent(RewardItem);
                 if (reward) {
                     SoundManager.instance.playSound(AudioType.ReceiveReward);
-                    if (reward.type === RewardType.ITEM) {
-                        const skinLocalData = this.getLocalData(reward);
-                        console.log(this.getLocalData(reward), reward)
-                        this.registUIItemData(itemNode, reward, skinLocalData);
-                    } else if (reward.type === RewardType.GOLD) {
-                        uiItem.setupGold(reward.amount);
+                    const uiItem = itemNode.getComponent(RewardItem);
+
+                    switch (reward.type) {
+                        case RewardType.ITEM: {
+                            const skinLocalData = this.getLocalData(reward);
+                            this.registUIItemData(itemNode, reward, skinLocalData);
+                            break;
+                        }
+                        case RewardType.GOLD:
+                        case RewardType.DIAMOND: 
+                        {
+                            uiItem.setupGoldOrDiamond(reward.amount, reward.type);
+                            break;
+                        }
+                        case RewardType.FOOD: {
+                            this.setupFoodReward(uiItem, reward.food);
+                            uiItem.setupFood(reward.quantity);
+                            break;
+                        }
+                        default: {
+                            SoundManager.instance.playSound(AudioType.NoReward);
+                            uiItem.setupEmpty?.();
+                            break;
+                        }
                     }
-                } else {
-                    SoundManager.instance.playSound(AudioType.NoReward);
-                    uiItem.setupEmpty?.();
                 }
+
             })
             .to(0.1, { scale: new Vec3(1, 1, 1) }, { easing: "quadOut" })
             .call(() => {
@@ -126,6 +151,12 @@ export class RewardUIController extends BaseInventoryManager {
             .start();
     }
 
+    setupFoodReward(uiItem: RewardItem, food: any) {
+        const sprite = this.foodIconMap[food.type];
+        if (sprite) {
+            uiItem.avatar.spriteFrame = sprite;
+        }
+    }
 
     ShowTextFly(reward?: RewardItemDTO) {
         const rewardTextNode = instantiate(this.rewardTextPrefab);
@@ -139,19 +170,22 @@ export class RewardUIController extends BaseInventoryManager {
         if (floatingText) {
             let message = '';
             if (reward) {
-                const rewardId = reward.item?.id ?? 'NO_ID';
-                const rewardType = reward.type === RewardType.GOLD ? 'GOLD' : 'ITEM';
-            
                 if (reward.type === RewardType.GOLD) {
                     message = `Bạn nhận được +${reward.amount}`;
                     this.isCoin = true;
-                } else if (reward.type === RewardType.ITEM && reward.item) {
+                } 
+                else if (reward.type === RewardType.ITEM && reward.item) {
                     const itemName = `${reward.item?.name} x ${reward.quantity} `;
                     message = `Bạn nhận được: ${itemName}`;
                     this.isCoin = false;
                 }
+                else if (reward.type === RewardType.FOOD && reward.food) {
+                    const itemName = `${reward.food?.name} x ${reward.quantity} `;
+                    message = `Bạn nhận được: ${itemName}`;
+                    this.isCoin = false;
+                }
             }
-            
+
             floatingText.showReward(message, this.isCoin, RewardType.GOLD);
         }
     }
