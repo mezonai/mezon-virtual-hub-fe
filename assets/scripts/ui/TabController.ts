@@ -2,7 +2,7 @@ import { _decorator, CCString, Component, Event, instantiate, Label, Node, Prefa
 import { EVENT_NAME } from '../network/APIConstant';
 const { ccclass, property } = _decorator;
 import { ObjectPoolManager } from '../pooling/ObjectPoolManager';
-import { ItemType } from '../Model/Item';
+import { FoodType, ItemType } from '../Model/Item';
 
 @ccclass('TabController')
 export class TabController extends Component {
@@ -21,10 +21,16 @@ export class TabController extends Component {
         [ItemType.PET_BAIT, "Mồi"]
     ]);
 
+    private tabNameMappingString: Map<string, string> = new Map([
+        [FoodType.NORMAL, 'Bình thường'],
+        [FoodType.PREMIUM, 'Cao cấp'],
+        [FoodType.ULTRA_PREMIUM, 'Siêu cao cấp']
+    ]);
+
     protected reset() {
         this.scrollView.content.setPosition(new Vec3(0, 0, 0));
     }
-      
+
 
     protected onEnable(): void {
         let toggles = this.toggleContainer.getComponentsInChildren(Toggle);
@@ -43,6 +49,9 @@ export class TabController extends Component {
             let tabName = tab;
             if (this.tabNameMapping.has(parseInt(tab))) {
                 tabName = this.tabNameMapping.get(parseInt(tab));
+            }
+            else if (this.tabNameMappingString.has(tab)) {
+                tabName = this.tabNameMappingString.get(tab);
             }
 
             tabItem.name = tab.toString();

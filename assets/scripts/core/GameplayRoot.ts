@@ -62,6 +62,7 @@ export class GameplayRoot extends Component {
 
     private initDataFromAPI() {
         WebRequestManager.instance.getAllItem((respone) => { this.onGetAllItem(respone) }, (error) => { this.onApiError(error); });
+        WebRequestManager.instance.getAllItemFood((respone) => { this.onGetAllFood(respone) }, (error) => { this.onApiError(error); });
         WebRequestManager.instance.getAllPetData(UserMeManager.Get.map.map_key, (respone) => { this.onGetAllPetData(respone) }, (error) => { this.onApiError(error); });
     }
 
@@ -72,6 +73,11 @@ export class GameplayRoot extends Component {
 
     private onGetAllItem(respone) {
         ResourceManager.instance.ItemData = respone;
+        this.loadedCore++;
+    }
+
+    private onGetAllFood(respone) {
+        ResourceManager.instance.FoodData = respone;
         this.loadedCore++;
     }
 

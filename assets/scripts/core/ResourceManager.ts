@@ -2,7 +2,7 @@ import { _decorator, Component, director } from 'cc';
 import { LocalItemConfig, LocalItemDataConfig, LocalItemPartDataConfig } from '../Model/LocalItemConfig';
 import { MezonDTO } from '../Model/Player';
 import { UserMeManager } from './UserMeManager';
-import { Item, ItemDTO, ItemType } from '../Model/Item';
+import { Food, FoodDTO, Item, ItemDTO, ItemType } from '../Model/Item';
 import { FactData, JokeData } from '../Model/NPCLocalData';
 import { PetDTO } from '../Model/PetDTO';
 const { ccclass, property } = _decorator;
@@ -17,6 +17,7 @@ export class ResourceManager extends Component {
     private skinDataDict:  Map<string, LocalItemDataConfig> = new Map<string, LocalItemDataConfig>();
 
     private _itemDTO: ItemDTO;
+    private _foodDTO: FoodDTO;
     private localSkinConfig: LocalItemConfig;
 
     public set LocalSkinConfig (value: LocalItemConfig) {
@@ -72,6 +73,14 @@ export class ResourceManager extends Component {
 
     public set ItemData(value) {
         this._itemDTO = value;
+    }
+
+    public get FoodData(): FoodDTO {
+        return this._foodDTO;
+    }
+
+    public set FoodData(value) {
+        this._foodDTO = value;
     }
 
     private get UserData() {

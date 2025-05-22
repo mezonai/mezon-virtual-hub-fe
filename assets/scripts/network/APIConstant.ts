@@ -15,6 +15,7 @@ export default class APIConstant {
     static COMPLETE = "complete"
     static ANIMAL = "animal";
     static BRING = "bring-pets";
+    static FOOD = "food";
 }
 
 export class APIConfig {
