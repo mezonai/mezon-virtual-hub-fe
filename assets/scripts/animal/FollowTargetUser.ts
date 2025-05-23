@@ -1,22 +1,24 @@
-import { _decorator, Component, Node, randomRange, tween, Tween, UITransform, Vec3 } from 'cc';
+import { _decorator, Component, Node, randomRange, tween, Tween, UITransform, v2, Vec2, Vec3 } from 'cc';
 const { ccclass, property } = _decorator;
 
 @ccclass('FollowTargetUser')
-export class FollowTargetUser extends Component {
-    @property followSpeedSlow: number = 50;
-    @property followSpeedFast: number = 100;
-    @property wanderSpeed: number = 50;
+export class FollowTargetUser extends Component {    
     private spriteNode: Node = null!;
     private userTarget: Node;
     private currentTween: Tween<Node> = null;
     private isWandering = false;
     private lastPlayerPos: Vec3 = new Vec3();
-    private stopDistance = 50;
-    private wanderRadius = 100;
+    private stopDistance = 30;
+    private wanderRadius = 80;
     private timeSchedule = 0.5;
-    public playFollowTarget(target: Node, spriteNode: Node) {
+    private parent: Node = null;
+    @property followSpeedFast: number = 150;
+    @property maxSpeed: number = 100;
+    @property minSpeed: number = 40;
+    public playFollowTarget(target: Node, spriteNode: Node, parentPetFollowUser: Node) {
         this.userTarget = target;
         this.spriteNode = spriteNode;
+        this.parent = parentPetFollowUser;
         if (this.userTarget == null) return;
         this.schedule(this.updateFollowLogic, this.timeSchedule);
     }
@@ -24,90 +26,64 @@ export class FollowTargetUser extends Component {
         this.unschedule(this.updateFollowLogic);
     }
     updateFollowLogic() {
-    const playerWorldPos = this.userTarget.worldPosition;
-    const petWorldPos = this.node.getWorldPosition();
-    const distance = Vec3.distance(playerWorldPos, petWorldPos);
-    const playerMoved = !playerWorldPos.equals(this.lastPlayerPos);
+        const playerWorldPos = this.userTarget.worldPosition;
+        const nodeWorldPos = this.node.getWorldPosition();
+        const distance = Vec3.distance(nodeWorldPos, playerWorldPos);
+        const playerMoved = !playerWorldPos.equals(this.lastPlayerPos);
 
-    // Ban đầu pet tự do lang thang nếu chưa bắt đầu
-    if (!this.isWandering && !this.currentTween) {
-        this.startWanderingAroundPlayer();
-        return;
-    }
-
-    if (playerMoved) {
-        // Player đang di chuyển
+        // Ban đầu pet tự do lang thang nếu chưa bắt đầu
+        if (!this.isWandering && !this.currentTween) {
+            this.startWanderingAroundPlayer();
+            return;
+        }
         if (distance > this.wanderRadius) {
-            this.stopTween();
-            this.followPlayerSmoothly(this.timeSchedule, petWorldPos, playerWorldPos, this.followSpeedFast);
+            this.followPlayerSmoothly(this.timeSchedule, this.followSpeedFast, playerMoved);
         }
-    } else {
-        // Player đứng yên → chỉ chạy tới gần nếu khoảng cách > wanderRadius
-        this.stopTween();
-        if (distance > this.wanderRadius) {         
-            this.followPlayerSmoothly(this.timeSchedule, petWorldPos, playerWorldPos, this.followSpeedFast);
-        } else {
-            this.followPlayerSmoothly(this.timeSchedule, petWorldPos, playerWorldPos, this.followSpeedSlow);
-        }
+
+        this.lastPlayerPos = playerWorldPos.clone();
     }
 
-    this.lastPlayerPos = playerWorldPos.clone();
-}
-
-    followPlayerSmoothly(dt: number, currentPos: Vec3, targetPos: Vec3, speed: number) {
+    followPlayerSmoothly(dt: number, speed: number, isMoved: boolean) {
+        this.stopTween();
         const direction = new Vec3();
+        const currentPos = this.node.getWorldPosition();
+        const targetPos = this.userTarget.worldPosition;
         Vec3.subtract(direction, targetPos, currentPos);
-        const distance = direction.length();
-
+        let distance = direction.length();
         if (distance < this.stopDistance) {
-            this.stopTween();
             if (!this.isWandering) {
                 this.startWanderingAroundPlayer();
             }
             return;
         }
-
+        distance -= this.stopDistance;
         // Tính tốc độ giảm dần khi gần player
-        const approachFactor = Math.min(1, distance / 50);
+        const approachFactor = Math.min(1, distance / 40);
         const adjustedSpeed = speed * approachFactor;
-
         direction.normalize();
         const moveStep = direction.multiplyScalar(adjustedSpeed * dt);
         const newWorldPos = currentPos.clone().add(moveStep);
-
-        const localPos = this.node.parent!.getComponent(UITransform)!.convertToNodeSpaceAR(newWorldPos);
-
+        const localPos = this.getTargetLocalPos(newWorldPos);
         // Cập nhật hướng lật pet
         this.spriteNode.setScale(new Vec3(direction.x < 0 ? -1 : 1, 1, 1));
-
-        this.stopTween();
-
         this.currentTween = tween(this.node)
             .to(dt, { position: localPos }, { easing: 'linear' })
             .call(() => {
                 // Khi đến gần player thì tự động bắt đầu lang thang
-                const petWorldPos = this.node.getWorldPosition();
-                const distToPlayer = Vec3.distance(petWorldPos, targetPos);
-                if(distToPlayer > this.wanderRadius){
-                    this.followPlayerSmoothly(this.timeSchedule, petWorldPos, targetPos, this.followSpeedFast);
-                }
-                else this.startWanderingAroundPlayer();
+                if (isMoved) this.followPlayerSmoothly(this.timeSchedule, this.followSpeedFast, isMoved);
+                else setTimeout(() => this.followPlayerSmoothly(this.timeSchedule, this.followSpeedFast, isMoved), 300 + Math.random() * 500);
+
             })
             .start();
     }
 
     startWanderingAroundPlayer() {
         this.isWandering = true;
-
-        const center = this.userTarget.worldPosition.clone();
+        const userWorldPos = this.userTarget.worldPosition.clone();
         const petWorldPos = this.node.getWorldPosition();
-
-        // Tính vector offset từ player tới pet
         let offsetVec = new Vec3();
-        Vec3.subtract(offsetVec, petWorldPos, center);
+        Vec3.subtract(offsetVec, petWorldPos, userWorldPos);
         const offsetDist = offsetVec.length();
-        const distance1 = Vec3.distance(center, petWorldPos);
-        // console.log("offsetDist: " + offsetDist + " distance1:", distance1);
         // Nếu pet đi quá bán kính, điều chỉnh lại vị trí mục tiêu trong bán kính
         if (offsetDist > this.wanderRadius) {
             offsetVec.normalize();
@@ -119,11 +95,13 @@ export class FollowTargetUser extends Component {
             offsetVec = new Vec3(Math.cos(angle) * radius, Math.sin(angle) * radius, 0);
         }
 
-        const targetWorldPos = center.clone().add(offsetVec);
-        const localTarget = this.node.parent!.getComponent(UITransform)!.convertToNodeSpaceAR(targetWorldPos);
-        const distance = Vec3.distance(this.node.worldPosition, localTarget);
-        const duration = distance / this.wanderSpeed;
-        this.spriteNode.setScale(new Vec3(offsetVec.x < 0 ? -1 : 1, 1, 1));
+        const targetWorldPos = userWorldPos.clone().add(offsetVec);
+        const localTarget = this.parent!.getComponent(UITransform)!.convertToNodeSpaceAR(targetWorldPos);
+        const distance = Vec3.distance(this.node.position, localTarget);
+        const speed = randomRange(this.minSpeed, this.maxSpeed);
+        const duration = distance / speed;
+        const direction = new Vec2(targetWorldPos.x - petWorldPos.x, targetWorldPos.y - petWorldPos.y);
+        this.spriteNode.scale = new Vec3(direction.x > 0 ? 1 : -1, 1); 
         this.currentTween = tween(this.node)
             .to(duration, { position: localTarget })
             .call(() => {
@@ -139,6 +117,11 @@ export class FollowTargetUser extends Component {
         }
         this.isWandering = false;
     }
+
+    getTargetLocalPos(positionWorld: Vec3): Vec3 {
+        return this.parent!.getComponent(UITransform)!.convertToNodeSpaceAR(positionWorld);
+    }
+    
 }
 
 

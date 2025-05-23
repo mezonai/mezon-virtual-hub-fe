@@ -8,6 +8,7 @@ export class BaseInventoryDTO {
 export class InventoryDTO extends BaseInventoryDTO {
     public id: string;
     public equipped: boolean = false;
+    public quantity: number;
     public item?: Item;
     public inventory_type: InventoryType;
     public food?: Food;

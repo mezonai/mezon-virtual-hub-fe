@@ -109,7 +109,7 @@ export class UserManager extends Component {
                     const animal = ObjectPoolManager.instance.spawnFromPool(petDTO.species);
                     const animalController = animal.getComponent(AnimalController);
                     animal.setPosition(new Vec3(x, y));
-                    animalController.setDataPet(petDTO, AnimalType.FollowTarget, playerController);
+                    animalController.setDataPet(petDTO, AnimalType.FollowTarget, playerController,null, this.animalParent);
                     playerController.savePetFollow(animal);
                     animal.setParent(this.animalParent);
                 }

@@ -14,9 +14,6 @@ export class ConfirmPopup extends BasePopup {
         if (this.messageLabel && param?.message) {
             this.messageLabel.string = param?.message;
         }
-    }
-
-    protected onLoad(): void {
         this.closeButton.node.on(Button.EventType.CLICK, this.onButtonClick, this);
     }
 
