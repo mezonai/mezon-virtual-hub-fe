@@ -2,7 +2,7 @@ import { _decorator, CCString, Component, Event, instantiate, Label, Node, Prefa
 import { EVENT_NAME } from '../network/APIConstant';
 const { ccclass, property } = _decorator;
 import { ObjectPoolManager } from '../pooling/ObjectPoolManager';
-import { FoodType, ItemType } from '../Model/Item';
+import { FoodType, InventoryDTO, InventoryType, ItemType } from '../Model/Item';
 
 @ccclass('TabController')
 export class TabController extends Component {
@@ -22,9 +22,8 @@ export class TabController extends Component {
     ]);
 
     private tabNameMappingString: Map<string, string> = new Map([
-        [FoodType.NORMAL, 'Bình thường'],
-        [FoodType.PREMIUM, 'Cao cấp'],
-        [FoodType.ULTRA_PREMIUM, 'Siêu cao cấp']
+        [InventoryType.FOOD, 'Thức ăn pet'],
+        [InventoryType.ITEM, 'Item'],
     ]);
 
     protected reset() {

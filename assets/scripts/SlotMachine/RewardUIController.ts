@@ -23,21 +23,6 @@ export class RewardUIController extends BaseInventoryManager {
     private isCoin: boolean;
     private readonly MAX_SLOT = 4;
 
-    @property(SpriteFrame) normalSpriteFrame: SpriteFrame = null;
-    @property(SpriteFrame) rareSpriteFrame: SpriteFrame = null;
-    @property(SpriteFrame) superSpriteFrame: SpriteFrame = null;
-
-    private foodIconMap: Record<string, SpriteFrame>;
-
-    public override start(): void {
-        //TODO temp sprite food
-        this.foodIconMap = {
-            normal: this.normalSpriteFrame,
-            rare: this.rareSpriteFrame,
-            super: this.superSpriteFrame
-        };
-    }
-
     show(hasReward: boolean, listItem: RewardItemDTO[] = []) {
         console.log(hasReward, listItem)
         this.node.active = true;
@@ -58,6 +43,7 @@ export class RewardUIController extends BaseInventoryManager {
 
     protected override async registUIItemData(itemNode: Node, item: RewardItemDTO, skinLocalData: LocalItemDataConfig) {
         let uiItem = itemNode.getComponent(RewardItem);
+        uiItem.resetData();
         if (item.item.iconSF.length == 0) {
             for (const icon of skinLocalData.icons) {
                 let spriteFrame = await this.setItemImage(skinLocalData.bundleName, icon);
@@ -124,13 +110,14 @@ export class RewardUIController extends BaseInventoryManager {
                             break;
                         }
                         case RewardType.GOLD:
-                        case RewardType.DIAMOND: 
-                        {
-                            uiItem.setupGoldOrDiamond(reward.amount, reward.type);
-                            break;
-                        }
+                        case RewardType.DIAMOND:
+                            {
+                                this.setupMoneyReward(uiItem, reward.type)
+                                uiItem.setupGoldOrDiamond(reward.amount);
+                                break;
+                            }
                         case RewardType.FOOD: {
-                            this.setupFoodReward(uiItem, reward.food);
+                            this.setupFoodReward(uiItem, reward.food.type);
                             uiItem.setupFood(reward.quantity);
                             break;
                         }
@@ -151,13 +138,6 @@ export class RewardUIController extends BaseInventoryManager {
             .start();
     }
 
-    setupFoodReward(uiItem: RewardItem, food: any) {
-        const sprite = this.foodIconMap[food.type];
-        if (sprite) {
-            uiItem.avatar.spriteFrame = sprite;
-        }
-    }
-
     ShowTextFly(reward?: RewardItemDTO) {
         const rewardTextNode = instantiate(this.rewardTextPrefab);
         rewardTextNode.setParent(this.container);
@@ -173,7 +153,7 @@ export class RewardUIController extends BaseInventoryManager {
                 if (reward.type === RewardType.GOLD) {
                     message = `Bạn nhận được +${reward.amount}`;
                     this.isCoin = true;
-                } 
+                }
                 else if (reward.type === RewardType.ITEM && reward.item) {
                     const itemName = `${reward.item?.name} x ${reward.quantity} `;
                     message = `Bạn nhận được: ${itemName}`;
@@ -190,6 +170,13 @@ export class RewardUIController extends BaseInventoryManager {
         }
     }
 
+    public override setupFoodReward(uiItem: any, foodType: string) {
+        const normalizedType = foodType.replace(/-/g, "");
+        const sprite = this.foodIconMap[normalizedType];
+        if (sprite) {
+            uiItem.iconFood.spriteFrame = sprite;
+        }
+    }
 
     public HideNode() {
         const bubbleChildren = this.bubbleRotation.node.children;

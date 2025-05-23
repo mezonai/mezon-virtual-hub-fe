@@ -1,5 +1,5 @@
 import { _decorator, Component, Label, Node, Sprite, SpriteFrame, Toggle, tween, Vec3 } from 'cc';
-import { Item } from '../../../Model/Item';
+import { Food, FoodType, Item } from '../../../Model/Item';
 import { EVENT_NAME } from '../../../network/APIConstant';
 const { ccclass, property } = _decorator;
 
@@ -14,6 +14,7 @@ export class BaseInventoryUIITem extends Component {
 
     protected lastTriggerTime = 0;
     public data: Item = null;
+    public dataFood: Food = null;
 
     protected start(): void {
         this.node.on("click", this.onItemClick, this);
@@ -37,15 +38,33 @@ export class BaseInventoryUIITem extends Component {
     }
 
     protected onItemClick() {
-        if (Date.now() > (this.lastTriggerTime + 500)) {
-            this.lastTriggerTime = Date.now();
-            if (this.data) {
-                this.node.emit(EVENT_NAME.ON_ITEM_CLICK, this, this.data);
-            }
+        const isFood = this.dataFood != null;
+        const isItem = this.data != null;
+        if (!isFood && !isItem) {
+            return;
+        }
+        const now = Date.now();
+        if (now - this.lastTriggerTime < 500) return;
+        this.lastTriggerTime = now;
+
+        if (isFood) {
+            this.node.emit(EVENT_NAME.ON_FOOD_CLICK, this, this.dataFood);
+        } else {
+            this.node.emit(EVENT_NAME.ON_ITEM_CLICK, this, this.data);
         }
     }
 
+    public resetData() {
+        this.data = null;
+        this.dataFood = null;
+    }
+
+
     public init(data) {
         this.data = data;
+    }
+
+    public initFood(data) {
+        this.dataFood = data;
     }
 }
