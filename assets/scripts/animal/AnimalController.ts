@@ -65,7 +65,10 @@ export class AnimalController extends Component {
         if(isCaught){
             this.animalMoveType = AnimalType.Caught;
         }       
+        this.followTargetUser.stopMove();
+        this.randomlyMover.stopMove();
         Tween.stopAllByTarget(this.node);
+        this.node.setPosition(Vec3.ZERO)
         ObjectPoolManager.instance.returnToPool(this.node);
     }
 

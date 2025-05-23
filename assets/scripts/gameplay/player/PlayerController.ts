@@ -18,6 +18,7 @@ import { MissionEvent } from '../../Interface/DataMapAPI';
 import { GoKart } from '../MapItem/GoKart';
 import { PetCatchingController } from './PetCatchingController';
 import { PetDTO } from '../../Model/PetDTO';
+import { AnimalController } from '../../animal/AnimalController';
 
 @ccclass('PlayerController')
 export class PlayerController extends Component {
@@ -38,7 +39,7 @@ export class PlayerController extends Component {
     @property(Node) bubbleChat: Node = null;
     @property(Label) contentBubbleChat: Label = null;
     @property({type: PetCatchingController}) petCatching: PetCatchingController;   
-    @property petFollowPrefabs: Node[] = [];
+    @property petFollowPrefabs: AnimalController[] = [];
     @property petIdList: string[] | null;
     private tweenAction: Tween<Node> | null = null;
     private hideTimeout: number | null = null;
@@ -93,7 +94,7 @@ export class PlayerController extends Component {
         this.petIdList =  pets.map(pet => pet.id);
     }
 
-    savePetFollow(petPrefab: Node){       
+    savePetFollow(petPrefab: AnimalController){       
         this.petFollowPrefabs.push(petPrefab);
     }
 
@@ -150,7 +151,23 @@ export class PlayerController extends Component {
         this.setPlayerName(data.fullname);
     }
 
-    public removePlayer() {
+    resetPets(onDone: () => void) {
+    if (this.petFollowPrefabs?.length > 0) {
+        this.petFollowPrefabs.forEach(pet => {
+            pet.closeAnimal();
+        });
+    }
+    const checkInterval = setInterval(() => {
+        const allInactive = this.petFollowPrefabs.every(p => !p.node.active);
+        if (allInactive) {
+            clearInterval(checkInterval);
+            this.petFollowPrefabs.length = 0;
+            onDone(); // Gọi callback
+        }
+    }, 10);
+}
+
+    public removePlayer() {       
         for (const attach of this.equipItemAnchor.children) {
             const goKart = attach.getComponent(GoKart);
             goKart.ResetSpeedPlayer();
@@ -161,6 +178,15 @@ export class PlayerController extends Component {
         ObjectPoolManager.instance.returnToPool(this.node);
     }
 
+    setPositonPet(){
+        setTimeout(() => {
+        this.petFollowPrefabs.forEach(x => {
+            x.node.active = true;
+            x.node.setPosition(this.node.getPosition());
+        });
+    }, 500); // chờ 0.5 giây
+    }
+
     public updateRemotePosition(data) {
         if (this.isMyClient) return;
 
@@ -168,7 +194,7 @@ export class PlayerController extends Component {
     }
 
     public leaveRoom() {
-        this.room.leave(false);
+        this.resetPets(() =>{this.room.leave(false)});        
     }
 
     public updateSkinLocal(skinData: Item, applyToPlayer: boolean) {

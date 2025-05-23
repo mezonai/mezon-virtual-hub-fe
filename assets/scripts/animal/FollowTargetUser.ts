@@ -23,10 +23,14 @@ export class FollowTargetUser extends Component {
         if (this.userTarget == null) return;
         this.schedule(this.updateFollowLogic, this.timeSchedule);
     }
-    onDisable() {
+
+    public stopMove(){
+        this.stopTween();
         this.unschedule(this.updateFollowLogic);
     }
+
     updateFollowLogic() {
+         if(this.userTarget == null) return;
         const playerWorldPos = this.userTarget.worldPosition;
         const nodeWorldPos = this.node.getWorldPosition();
         const distance = Vec3.distance(nodeWorldPos, playerWorldPos);
@@ -45,6 +49,7 @@ export class FollowTargetUser extends Component {
     }
 
     followPlayerSmoothly(dt: number, speed: number, isMoved: boolean) {
+         if(this.userTarget == null) return;
         this.stopTween();
         const direction = new Vec3();
         const currentPos = this.node.getWorldPosition();
@@ -79,6 +84,7 @@ export class FollowTargetUser extends Component {
     }
 
     startWanderingAroundPlayer() {
+        if(this.userTarget == null) return;
         this.isWandering = true;
         const userWorldPos = this.userTarget.worldPosition.clone();
         const petWorldPos = this.node.getWorldPosition();

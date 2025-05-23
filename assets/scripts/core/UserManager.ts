@@ -94,27 +94,18 @@ export class UserManager extends Component {
     }
 
     intantiatePetFollowPlayer(pets: PetDTO[], x: number, y: number, playerController: PlayerController) {
-        // Thu hồi tất cả các pet đang theo người chơi (nếu có)
-        if (playerController.petFollowPrefabs?.length > 0) {
-            playerController.petFollowPrefabs.forEach(pet => {
-                ObjectPoolManager.instance.returnToPool(pet);
-            });
-        }
-        const checkInterval = setInterval(() => {
-            const allInactive = playerController.petFollowPrefabs.every(p => !p.active);
-            if (allInactive) {
-                clearInterval(checkInterval);
-                playerController.petFollowPrefabs.length = 0;
-                for (const petDTO of pets) {
-                    const animal = ObjectPoolManager.instance.spawnFromPool(petDTO.species);
-                    const animalController = animal.getComponent(AnimalController);
-                    animal.setPosition(new Vec3(x, y));
-                    animalController.setDataPet(petDTO, AnimalType.FollowTarget, playerController,null, this.animalParent);
-                    playerController.savePetFollow(animal);
-                    animal.setParent(this.animalParent);
-                }
-            }
-        }, 10)
+        playerController.resetPets(() => {
+            for (const petDTO of pets) {
+                const animal = ObjectPoolManager.instance.spawnFromPool(petDTO.species);
+                const animalController = animal.getComponent(AnimalController);
+                if(animalController == null) continue;            
+                animalController.setDataPet(petDTO, AnimalType.FollowTarget, playerController, null, this.animalParent);
+                playerController.savePetFollow(animalController);
+                animal.setParent(this.animalParent);
+                animal.active = false;
+            } 
+            playerController.setPositonPet();          
+        });
     }
 
     private setAnimalOwned(playerController: PlayerController, playerData: PlayerColysesusObjectData) {
