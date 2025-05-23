@@ -3,6 +3,9 @@ const { ccclass, property } = _decorator;
 
 @ccclass('FollowTargetUser')
 export class FollowTargetUser extends Component {    
+    @property followSpeedFast: number = 150;
+    @property maxSpeed: number = 100;
+    @property minSpeed: number = 40;
     private spriteNode: Node = null!;
     private userTarget: Node;
     private currentTween: Tween<Node> = null;
@@ -12,9 +15,7 @@ export class FollowTargetUser extends Component {
     private wanderRadius = 80;
     private timeSchedule = 0.5;
     private parent: Node = null;
-    @property followSpeedFast: number = 150;
-    @property maxSpeed: number = 100;
-    @property minSpeed: number = 40;
+    
     public playFollowTarget(target: Node, spriteNode: Node, parentPetFollowUser: Node) {
         this.userTarget = target;
         this.spriteNode = spriteNode;
