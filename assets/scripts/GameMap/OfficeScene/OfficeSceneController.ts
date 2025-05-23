@@ -54,8 +54,10 @@ export class OfficeSceneController extends Component {
         }
         this.backMapButton.node.on(Button.EventType.CLICK, async () => {
             const param = { isBackMap: true };
-            UserManager.instance.GetMyClientPlayer.leaveRoom();
-            SceneManagerController.loadScene(SceneName.SCENE_GAME_MAP, param)
+            UserManager.instance.GetMyClientPlayer.leaveRoom(() =>{
+                SceneManagerController.loadScene(SceneName.SCENE_GAME_MAP, param)
+            });
+            
         });
     }
 

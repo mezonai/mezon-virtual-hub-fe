@@ -30,7 +30,7 @@ export class FollowTargetUser extends Component {
     }
 
     updateFollowLogic() {
-         if(this.userTarget == null) return;
+       if(this.userTarget == null) return;
         const playerWorldPos = this.userTarget.worldPosition;
         const nodeWorldPos = this.node.getWorldPosition();
         const distance = Vec3.distance(nodeWorldPos, playerWorldPos);
@@ -49,7 +49,7 @@ export class FollowTargetUser extends Component {
     }
 
     followPlayerSmoothly(dt: number, speed: number, isMoved: boolean) {
-         if(this.userTarget == null) return;
+        if(this.userTarget == null) return;
         this.stopTween();
         const direction = new Vec3();
         const currentPos = this.node.getWorldPosition();
@@ -84,10 +84,11 @@ export class FollowTargetUser extends Component {
     }
 
     startWanderingAroundPlayer() {
-        if(this.userTarget == null) return;
-        this.isWandering = true;
-        const userWorldPos = this.userTarget.worldPosition.clone();
+        
+        const userWorldPos = this.userTarget?.worldPosition?.clone?.();
+        if(!userWorldPos) return;
         const petWorldPos = this.node.getWorldPosition();
+        this.isWandering = true;
         let offsetVec = new Vec3();
         Vec3.subtract(offsetVec, petWorldPos, userWorldPos);
         const offsetDist = offsetVec.length();

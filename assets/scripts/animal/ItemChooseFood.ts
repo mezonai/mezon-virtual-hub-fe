@@ -18,7 +18,7 @@ export class ItemChooseFood extends Component {
         [FoodType.ULTRA_PREMIUM]: 2
     };  
         this.spriteicon.spriteFrame = this.spriteFramesFood[typeToIndexMap[food.type]];
-        const foodDTO = UserMeManager.GetFoods?.find(inv => inv.food?.type === food.type);
+        const foodDTO = UserMeManager.GetFoods?.find(inv => inv.food?.id === food.id);
         const quantity = foodDTO?.quantity ?? 0;
         this.quantity.string = quantity.toString();
         this.boundToggleCallback = () => {
