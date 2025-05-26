@@ -185,12 +185,10 @@ export class RewardUIController extends BaseInventoryManager {
         }
         for (const bubble of bubbleChildren) {
             if (!bubble) {
-                console.warn("HideNode: One of the children in bubbleChildren is null.");
                 continue;
             }
             const itemNode = bubble.getChildByName("RewardItem");
             if (!itemNode) {
-                console.warn(`HideNode: Could not find "RewardItem" under ${bubble.name}`);
             } else {
                 itemNode.active = false;
             }
