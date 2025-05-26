@@ -1,6 +1,7 @@
 import { _decorator, Component, Label, Node, Sprite, SpriteFrame, Toggle, tween, Vec3 } from 'cc';
 import { BaseInventoryUIITem } from './BaseInventoryUIItem';
 import { Food, Item } from '../../../Model/Item';
+import { UserMeManager } from '../../../core/UserMeManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('InventoryUIITem')
@@ -17,6 +18,8 @@ export class InventoryUIITem extends BaseInventoryUIITem {
 
     public override initFood(data: Food) {
         super.initFood(data);
-         this.amountLabel.string = "";
+        const foodDTO = UserMeManager.GetFoods?.find(inv => inv.food?.id === data.id);
+        const quantity = foodDTO?.quantity ?? 0;
+        this.amountLabel.string = quantity.toString();
     }
 }
