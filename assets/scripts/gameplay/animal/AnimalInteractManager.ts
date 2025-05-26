@@ -2,13 +2,10 @@ import { _decorator, CCFloat, Component, Label, Node, Tween, tween, Vec3 } from 
 import { UserManager } from '../../core/UserManager';
 import { PlayerController } from '../player/PlayerController';
 import { UserMeManager } from '../../core/UserMeManager';
-import { ItemType } from '../../Model/Item';
-import { UIManager } from '../../core/UIManager';
-import { RandomlyMover } from '../../utilities/RandomlyMover';
-import { ServerManager } from '../../core/ServerManager';
 import { AnimalController } from '../../animal/AnimalController';
 import { PopupManager } from '../../PopUp/PopupManager';
 import { PopupChooseFoodPet } from '../../PopUp/PopupChooseFoodPet';
+import { FoodType } from '../../Model/Item';
 const { ccclass, property } = _decorator;
 
 @ccclass('AnimalInteractManager')
@@ -55,32 +52,16 @@ export class AnimalInteractManager extends Component {
 
     protected async onBeingTamed() {
         this.toggleShowUI(false);
-        let petFood = UserMeManager.Get.inventories.filter(x => x.item.type == ItemType.PET_FOOD);
-        // if (petFood.length == 0) {
-        //     this.animalController.zoomBubbleChat("Bạn Không có đủ thức ăn");
-        // }
-        // else {
-        //     this.animalController.animalMover.randomlyMover.stopMove();
-        //     let data = {
-        //         player: UserMeManager.Get.user,
-        //         petId: this.animalController.Pet.id
-        //     }
-        //     await this.InteractTarget.petCatching.throwFoodToPet(this.animalController.node);
-        //     ServerManager.instance.sendCatchPet(data);
-        // }
         this.animalController.randomlyMover.stopMove();
         PopupManager.getInstance().openAnimPopup('PopupChooseFoodPet', PopupChooseFoodPet, {
-            animal: this.animalController, 
-            onThrowFood: async (quality: number) => {
-                return await this.InteractTarget.petCatching.throwFoodToPet(this.animalController.node, quality);
+            animal: this.animalController,
+            onThrowFood: async (foodType: FoodType) => {
+                return await this.InteractTarget.petCatching.throwFoodToPet(this.animalController.node, foodType);
             },
             onCancelCatch: () => {
                 this.animalController.randomlyMover.move();
             }
         });
-        //await this.InteractTarget.petCatching.throwFoodToPet(this.animalController.node, 2);
-        //ServerManager.instance.sendCatchPet(data);
-
     }
 
     protected onDisable() {

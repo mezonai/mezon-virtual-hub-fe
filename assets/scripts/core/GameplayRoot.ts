@@ -11,7 +11,7 @@ import { UserMeManager } from './UserMeManager';
 
 @ccclass('GameplayRoot')
 export class GameplayRoot extends Component {
-    private totalCoreNeedLoad = 2;
+    private totalCoreNeedLoad = 3;
     private _loadedCore = 0;
 
     private get loadedCore() {
@@ -60,10 +60,10 @@ export class GameplayRoot extends Component {
         game.emit(EVENT_NAME.ON_OFFICE_SCENE_LOADED);
     }
 
-    private initDataFromAPI() {
+    private initDataFromAPI() {       
         WebRequestManager.instance.getAllItem((respone) => { this.onGetAllItem(respone) }, (error) => { this.onApiError(error); });
-        WebRequestManager.instance.getAllItemFood((respone) => { this.onGetAllFood(respone) }, (error) => { this.onApiError(error); });
-        WebRequestManager.instance.getAllPetData(UserMeManager.Get.map.map_key, (respone) => { this.onGetAllPetData(respone) }, (error) => { this.onApiError(error); });
+        WebRequestManager.instance.getAllItemFood((respone) => { this.onGetAllFood(respone) }, (error) => { this.onApiError(error); });    
+        WebRequestManager.instance.getAllPetData(UserMeManager.Get.map.map_key, (respone) => { this.onGetAllPetData(respone) }, (error) => { this.onApiError(error); });    
     }
 
     private onGetAllPetData(respone) {

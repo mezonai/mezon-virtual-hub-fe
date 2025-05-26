@@ -18,27 +18,28 @@ import { MissionEvent } from '../../Interface/DataMapAPI';
 import { GoKart } from '../MapItem/GoKart';
 import { PetCatchingController } from './PetCatchingController';
 import { PetDTO } from '../../Model/PetDTO';
+import { AnimalController } from '../../animal/AnimalController';
 
 @ccclass('PlayerController')
 export class PlayerController extends Component {
     private room: Colyseus.Room<any>;
     @property({ type: CCString }) myID: string = "";
-    @property({ type: CCString }) userName : string = "";
-    @property({ type: CCString }) userId : string = "";
+    @property({ type: CCString }) userName: string = "";
+    @property({ type: CCString }) userId: string = "";
     private rigidbody = false;
     private _body: RigidBody2D | null = null;
-    @property({ type: Collider2D  }) collider: Collider2D  | null = null;
+    @property({ type: Collider2D }) collider: Collider2D | null = null;
     @property({ type: RichText }) playerNameText: RichText = null;
     @property({ type: MoveAbility }) moveAbility: MoveAbility = null;
     @property({ type: AnimationEventController }) animationEventController: AnimationEventController = null;
-    @property({ type: Node}) equipItemAnchor: Node = null;
-    @property({type: [Color]}) playerNameColor: Color[] = [];   
-    @property({type: P2PInteractManager}) p2PInteractManager: P2PInteractManager = null;
+    @property({ type: Node }) equipItemAnchor: Node = null;
+    @property({ type: [Color] }) playerNameColor: Color[] = [];
+    @property({ type: P2PInteractManager }) p2PInteractManager: P2PInteractManager = null;
     /////Bubble Chat
     @property(Node) bubbleChat: Node = null;
     @property(Label) contentBubbleChat: Label = null;
-    @property({type: PetCatchingController}) petCatching: PetCatchingController;   
-    @property petFollowPrefabs: Node[] = [];
+    @property({ type: PetCatchingController }) petCatching: PetCatchingController;
+    @property petFollowPrefabs: AnimalController[] = [];
     @property petIdList: string[] | null;
     private tweenAction: Tween<Node> | null = null;
     private hideTimeout: number | null = null;
@@ -63,7 +64,7 @@ export class PlayerController extends Component {
     }
 
     public get UserId() {
-        return this.userId ;
+        return this.userId;
     }
 
     protected start(): void {
@@ -89,15 +90,15 @@ export class PlayerController extends Component {
         this.showName(false);
     }
 
-    saveListOwnedPet(pets: PetDTO[]){       
-        this.petIdList =  pets.map(pet => pet.id);
+    saveListOwnedPet(pets: PetDTO[]) {
+        this.petIdList = pets.map(pet => pet.id);
     }
 
-    savePetFollow(petPrefab: Node){       
+    savePetFollow(petPrefab: AnimalController) {
         this.petFollowPrefabs.push(petPrefab);
     }
 
-    public async init(sessionId, room, name = "", skinSet: string, userID: string, isShowName : boolean) {
+    public async init(sessionId, room, name = "", skinSet: string, userID: string, isShowName: boolean) {
         this.room = room;
         this.myID = sessionId;
         this.userId = userID;
@@ -120,14 +121,14 @@ export class PlayerController extends Component {
         this.setPlayerName(this.userName);
         this.playerNameText.fontColor = this.isMyClient ? this.playerNameColor[0] : this.playerNameColor[1];
         this.showName(this.isMyClient || (!this.isMyClient && isShowName));
-        if(localStorage.getItem(Tutorial.tutorial_completed) != "true"){
+        if (localStorage.getItem(Tutorial.tutorial_completed) != "true") {
             this.zoomBubbleChat("Không khí thật trong lành, đi dạo một vòng nào !!!");
             sys.localStorage.setItem(Tutorial.tutorial_completed, true);
         }
     }
 
     public attachItem(item: Node) {
-       item.setParent(this.equipItemAnchor, true);
+        item.setParent(this.equipItemAnchor, true);
         return this.equipItemAnchor;
     }
 
@@ -140,7 +141,7 @@ export class PlayerController extends Component {
             this.moveAbility.moveSpeed = this.moveAbility.originMoveSpeed + Math.abs(speed);
         }
     }
- 
+
     private setPlayerName(name: string) {
         this.playerNameText.string = `<outline color=#000000 width=1>${name}</outline>`;
     }
@@ -150,6 +151,22 @@ export class PlayerController extends Component {
         this.setPlayerName(data.fullname);
     }
 
+    resetPets(onDone: () => void) {
+        if (this.petFollowPrefabs?.length > 0) {
+            this.petFollowPrefabs.forEach(pet => {
+                pet.closeAnimal();
+            });
+        }
+        const checkInterval = setInterval(() => {
+            const allInactive = this.petFollowPrefabs.every(p => !p.node.active);
+            if (allInactive) {
+                clearInterval(checkInterval);
+                this.petFollowPrefabs.length = 0;
+                onDone(); // Gọi callback
+            }
+        }, 10);
+    }
+
     public removePlayer() {
         for (const attach of this.equipItemAnchor.children) {
             const goKart = attach.getComponent(GoKart);
@@ -157,8 +174,17 @@ export class PlayerController extends Component {
             this.moveAbility.moveSpeed = 300;
             attach.parent = null;
         }
-        
+
         ObjectPoolManager.instance.returnToPool(this.node);
+    }
+
+    setPositonPet() {
+        setTimeout(() => {
+            this.petFollowPrefabs.forEach(x => {
+                x.node.active = true;
+                x.node.setPosition(this.node.getPosition());
+            });
+        }, 500); // chờ 0.5 giây
     }
 
     public updateRemotePosition(data) {
@@ -167,8 +193,14 @@ export class PlayerController extends Component {
         this.moveAbility.updateRemotePosition(data);
     }
 
-    public leaveRoom() {
-        this.room.leave(false);
+    public leaveRoom(onDone?: () => void) {
+        this.resetPets(async () => {
+            await this.room.leave();
+            console.log("Left Room");
+            if (onDone) {
+                onDone();
+            }
+        });
     }
 
     public updateSkinLocal(skinData: Item, applyToPlayer: boolean) {
@@ -193,7 +225,7 @@ export class PlayerController extends Component {
         this.moveAbility.updateAction(randomRange(0, 1) < 0.5 ? "kneel" : "lie", true);
         SoundManager.instance.playSound(AudioType.Lose);
     }
-    
+
     public updateSkinRemote(skinSet: string[]) {
         if (this.isMyClient) return;
 
@@ -204,13 +236,13 @@ export class PlayerController extends Component {
         if (this.tweenAction) {
             this.tweenAction.stop();
         }
-    
+
         this.tweenAction = tween(this.bubbleChat)
-            .to(timeShrink, { 
+            .to(timeShrink, {
                 scale: new Vec3(0, 1, 1),
             }, { easing: 'backIn' })
-            .call(() => { 
-                this.tweenAction = null; 
+            .call(() => {
+                this.tweenAction = null;
             })
             .start();
     }
@@ -219,16 +251,16 @@ export class PlayerController extends Component {
         if (this.tweenAction) {
             this.tweenAction.stop();
         }
-    
+
         if (this.hideTimeout !== null) {
             clearTimeout(this.hideTimeout);
             this.hideTimeout = null;
         }
-    
+
         this.bubbleChat.setScale(0, 1, 1);
         this.contentBubbleChat.string = contentChat;
         this.tweenAction = tween(this.bubbleChat)
-            .to(0.5, { 
+            .to(0.5, {
                 scale: new Vec3(1, 1, 1),
             }, { easing: 'backOut' })
             .start();
@@ -237,7 +269,7 @@ export class PlayerController extends Component {
         }, 4000);
     }
 
-     showName(isShow : boolean){
+    showName(isShow: boolean) {
         return;
         if (this.playerNameText) {
             this.playerNameText.node.active = isShow;
