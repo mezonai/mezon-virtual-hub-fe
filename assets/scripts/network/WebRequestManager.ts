@@ -112,6 +112,11 @@ export class WebRequestManager extends Component {
         APIManager.getData(this.combineWithSlash(APIConstant.FOOD), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
+    public postBuyFood(data, type, successCallback, errorCallback) {
+        const url = `${this.combineWithSlash(APIConstant.INVENTORY, APIConstant.BUY, data)}?type=${type}`;
+        APIManager.postData(url, {}, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    }
+
     private errorMessageMap: Map<number, string> = new Map([
         [400, 'Bad Request'],
         [401, 'Unauthorized'],

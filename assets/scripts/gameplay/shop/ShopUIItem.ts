@@ -1,44 +1,60 @@
 import { _decorator, Component, Node, Sprite, SpriteFrame, Toggle, tween, Vec3 } from 'cc';
 import { BaseInventoryUIITem } from '../player/inventory/BaseInventoryUIItem';
 import { UserMeManager } from '../../core/UserMeManager';
-import { Item } from '../../Model/Item';
+import { Food, FoodType, InventoryType, Item } from '../../Model/Item';
 const { ccclass, property } = _decorator;
 
 @ccclass('ShopUIItem')
 export class ShopUIItem extends BaseInventoryUIITem {
     @property({ type: Node }) blockOverlay: Node = null;
+
     public override toggleActive(isActive) {
         this.stasSprite.spriteFrame = isActive ? this.stasFrame[1] : this.stasFrame[0];
     }
 
     public override init(data: Item) {
         super.init(data);
-        this.checkOwn();
+        this.checkOwn(data);
     }
 
-    public checkOwn() {
-        if (this.isOwn()) {
-            this.blockOverlay.active = true;
-            this.toggle.interactable = false;
-            this.node.setSiblingIndex(this.node.parent.children.length);
-        }
-        else {
+    public override initFood(data: Food) {
+        super.initFood(data);
+        this.checkOwn(data);
+    }
+
+    public checkOwn(data: any) {
+        if (this.isFoodData(this.dataFood)) {
             this.blockOverlay.active = false;
             this.toggle.interactable = true;
-            this.node.setSiblingIndex(0);
+            return;
         }
 
+        const owned = this.isOwn(data);
+        this.blockOverlay.active = owned;
+        this.toggle.interactable = !owned;
+        this.node.setSiblingIndex(owned ? this.node.parent.children.length : 0);
     }
 
-    public isOwn() {
-        if (this.data.is_stackable) return false;
-        
-        return UserMeManager.Get.inventories.find(x => x.item.id == this.data.id) != null;
+    private isFoodData(data: any): boolean {
+        return (
+            data?.type === FoodType.NORMAL ||
+            data?.type === FoodType.PREMIUM ||
+            data?.type === FoodType.ULTRA_PREMIUM
+        );
+    }
+
+    public isOwn(data: Item): boolean {
+        if (data?.is_stackable) return false;
+        return UserMeManager.Get.inventories.some(x => x.item?.id === data.id);
+    }
+
+    public isOwnFood(data: Food): boolean {
+        return UserMeManager.Get.inventories.some(x => x.food?.id === data.id);
     }
 
     public reset() {
         this.toggleActive(false);
-        this.checkOwn();
+        this.checkOwn(this.data);
         this.toggle.isChecked = false;
     }
 }

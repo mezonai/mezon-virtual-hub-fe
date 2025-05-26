@@ -3,7 +3,8 @@ export enum MapItemType {
     DOOR = 2,
     BUY_SHOP = 3,
     ATM = 4,
-    GENERAL = 5
+    GENERAL = 5,
+    BUY_SHOP_FOOD = 6,
 }
 
 export enum MapItemAction {
@@ -19,4 +20,5 @@ export const InteractMessageMapping: Record<number, string> = {
     [MapItemType.BUY_SHOP + MapItemAction.NOTICE]: 'Để Mở Shop',
     [MapItemType.ATM + MapItemAction.NOTICE]: 'Để Mở ATM',
     [MapItemType.GENERAL + MapItemAction.NOTICE]: 'Để Tương Tác',
+    [MapItemType.BUY_SHOP_FOOD + MapItemAction.NOTICE]: 'Để Mở Shop Pet',
 };

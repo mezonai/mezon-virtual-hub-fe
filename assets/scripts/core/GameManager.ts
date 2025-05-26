@@ -4,6 +4,7 @@ import { InventoryManager } from '../gameplay/player/inventory/InventoryManager'
 import { UIChat } from '../gameplay/ChatBox/UIChat';
 import { UIMission } from '../gameplay/Mission/UIMission';
 import { SettingManager } from './SettingManager';
+import { ShopPetController } from '../gameplay/shop/ShopPetController';
 
 const { ccclass, property } = _decorator;
 
@@ -14,6 +15,7 @@ export class GameManager extends Component {
         return GameManager._instance;
     }
     @property({type: ShopController}) shopController: ShopController = null;
+    @property({type: ShopPetController}) shopPetController: ShopPetController = null;
     @property({type: InventoryManager}) inventoryController: InventoryManager = null;  
     @property({type: UIChat}) uiChat: UIChat = null;
     @property({type: UIMission}) uiMission: UIMission = null;
@@ -28,6 +30,7 @@ export class GameManager extends Component {
     public init() {
         this.shopController.init();
         this.inventoryController.init();
+        this.shopPetController.init();
         this.uiMission.getMissionEventData();
     }
 

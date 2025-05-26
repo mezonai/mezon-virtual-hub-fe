@@ -14,20 +14,16 @@ export class RewardItem extends BaseInventoryUIITem {
     @property({ type: Node }) go_Particle: Node = null;
     @property({ type: Prefab }) flyIcon: Prefab = null;
     @property({ type: Sprite }) iconFrame: Sprite = null;
-    @property({ type: [SpriteFrame] }) iconValue: SpriteFrame[] = []; // 0: Gold 1: Diamond
+    @property({ type: Sprite }) iconFood: Sprite = null;
 
     setupFood(foodReceive: number) {
-        this.go_Avartar.active = false;
         this.go_CoinReceive.active = false;
         this.go_foodReceive.active = true;
         this.foodReceive.string = "+" + foodReceive.toString();
         this.go_Particle.active = true;
     }
 
-    setupGoldOrDiamond(CoinReceive: number, rewardType: RewardType ) {
-        rewardType === RewardType.GOLD 
-        ? this.iconFrame.spriteFrame = this.iconValue[0]
-        : this.iconFrame.spriteFrame = this.iconValue[1];
+    setupGoldOrDiamond(CoinReceive: number) {
         this.go_Avartar.active = false;
         this.go_foodReceive.active = false;
         this.go_CoinReceive.active = true;
@@ -56,6 +52,7 @@ export class RewardItem extends BaseInventoryUIITem {
     protected onDisable(): void {
         this.go_Avartar.active = false;
         this.go_CoinReceive.active = false;
+        this.go_foodReceive.active = false;
     }
 
     spawnFlyIconBurst(count: number = 10, radius: number = 100) {

@@ -1,8 +1,8 @@
-import { _decorator, Node, RichText } from 'cc';
+import { _decorator, Node, RichText, Sprite } from 'cc';
 import { UserMeManager } from '../../core/UserMeManager';
 import { UIManager } from '../../core/UIManager';
 import { WebRequestManager } from '../../network/WebRequestManager';
-import { InventoryType, Item } from '../../Model/Item';
+import { Food, InventoryType, Item, PurchaseMethod } from '../../Model/Item';
 import { ResourceManager } from '../../core/ResourceManager';
 import { EVENT_NAME } from '../../network/APIConstant';
 import { ShopUIItem } from './ShopUIItem';
@@ -10,16 +10,18 @@ import { BaseInventoryManager } from '../player/inventory/BaseInventoryManager';
 import { LocalItemDataConfig } from '../../Model/LocalItemConfig';
 import UIPopup from '../../ui/UI_Popup';
 import Utilities from '../../utilities/Utilities';
-import { GameManager } from '../../core/GameManager';
 const { ccclass, property } = _decorator;
 
-@ccclass('ShopController')
-export class ShopController extends BaseInventoryManager {
+@ccclass('ShopPetController')
+export class ShopPetController extends BaseInventoryManager {
     @property({ type: UIPopup }) noticePopup: UIPopup = null;
     @property({ type: RichText }) itemPrice: RichText = null;
+    @property({ type: RichText }) catchRateBonusPrice: RichText = null;
     @property({ type: Node }) itemPriceContainer: Node = null;
-    protected override groupedItems: Record<string, Item[]> = null;
+    @property({ type: Node }) catchRateBonusPriceContainer: Node = null;
+    protected override groupedItems: Record<string, Food[]> = null;
     protected override selectingUIItem: ShopUIItem = null;
+    @property({ type: Sprite }) iconFrame: Sprite = null;
 
     protected override async actionButtonClick() {
         try {
@@ -44,7 +46,7 @@ export class ShopController extends BaseInventoryManager {
         let result = await new Promise<boolean>((resolve, reject) => {
             this.noticePopup.showYesNoPopup(
                 null,
-                Utilities.convertBigNumberToStr(this.selectingUIItem.data.gold),
+                Utilities.convertBigNumberToStr(this.selectingUIItem.dataFood.price),
                 () => {
                     resolve(true);
                 },
@@ -59,20 +61,21 @@ export class ShopController extends BaseInventoryManager {
     }
 
     private addItemToInventory(response) {
-        UserMeManager.Get.inventories.push(response.data.inventory_data);
-        GameManager.instance.inventoryController.addItemToInventory(response.data.inventory_data);
-        UserMeManager.playerCoin = response.data.user_gold;
+        UserMeManager.playerCoin = response.data.user_balance.gold;
+        UserMeManager.playerDiamond = response.data.user_balance.diamond;
         UIManager.Instance.showNoticePopup("Thông báo", "Mua thành công!");
     }
 
     private async buyItem() {
-        // Check if user has enough money
-        if (UserMeManager.playerCoin < this.selectingUIItem.data.gold) {
-            throw new Error("Không đủ tiền để mua");
+        const food = this.selectingUIItem?.dataFood;
+        if (!food) return;
+        if (food.purchase_method.toString() === PurchaseMethod.GOLD.toString()) {
+            this.checkGoldUser(food.price);
+        } else {
+            this.checkDiamondUser(food.price);
         }
-
         try {
-            const result = await this.postBuySkinAsync(this.selectingUIItem.data.id);
+            const result = await this.postBuyFoodAsync(this.selectingUIItem.dataFood.id, InventoryType.FOOD);
 
             return result;
         } catch (error) {
@@ -80,10 +83,23 @@ export class ShopController extends BaseInventoryManager {
         }
     }
 
-    private postBuySkinAsync(data: any): Promise<any> {
+    private postBuyFoodAsync(data: any, type: any): Promise<any> {
         return new Promise((resolve, reject) => {
-            WebRequestManager.instance.postBuySkin(data, resolve, reject);
+            WebRequestManager.instance.postBuyFood(data, type, resolve, reject);
         });
+    }
+
+
+    private checkGoldUser(price: number) {
+        if (UserMeManager.playerCoin < price) {
+            throw new Error("Không đủ vàng để mua.");
+        }
+    }
+
+    private checkDiamondUser(price: number) {
+        if (UserMeManager.playerDiamond < price) {
+            throw new Error("Không đủ kim cương để mua.");
+        }
     }
 
     public override init() {
@@ -92,72 +108,83 @@ export class ShopController extends BaseInventoryManager {
 
     protected override reset() {
         super.reset();
+        this.actionButton.interactable = true;
         this.itemPriceContainer.active = false;
+        this.catchRateBonusPriceContainer.active = false;
     }
 
     protected override initGroupData() {
-        this.groupedItems = this.groupByCategory(ResourceManager.instance.ItemData.data);
+
+        this.groupedItems = this.groupByCategory(ResourceManager.instance.FoodData.data);
         this.categories = [];
+
         for (const category in this.groupedItems) {
-            if(category === InventoryType.FOOD){
-                continue;
-            }
             this.categories.push(category);
+
             this.groupedItems[category].forEach((item, index) => {
                 item.iconSF = [];
             });
         }
         this.tabController.initTabData(this.categories);
-        this.tabController.node.on(EVENT_NAME.ON_CHANGE_TAB, (tabName) => {this.onTabChange(tabName); });
-        // this.previewPlayer.init([]);
+        this.tabController.node.on(EVENT_NAME.ON_CHANGE_TAB, (tabName) => { this.onTabChange(tabName); });
     }
+
 
     protected override getLocalData(item: Item) {
         if (item.gender != "not specified" && item.gender != UserMeManager.Get.user.gender) return null;
         return ResourceManager.instance.getLocalSkinById(item.id, item.type);
     }
 
-    protected override async registUIItemData(itemNode: Node, item: Item, skinLocalData: LocalItemDataConfig) {
+    protected override async registUIItemData(itemNode: Node, item: Food, skinLocalData: LocalItemDataConfig) {
         let uiItem = itemNode.getComponent(ShopUIItem);
         uiItem.resetData();
-        if (item.iconSF.length == 0) {
-            for (const icon of skinLocalData.icons) {
-                let spriteFrame = await this.setItemImage(skinLocalData.bundleName, icon);
-                item.iconSF.push(spriteFrame);
-            }
-        }
-        uiItem.avatar.spriteFrame = item.iconSF[0];
-        item.mappingLocalData = skinLocalData;
-        uiItem.init(item);
+        this.setupFoodReward(uiItem, item.type);
+        uiItem.initFood(item);
         uiItem.toggleActive(false);
+    }
+
+    public override setupFoodReward(uiItem: any, foodType: string) {
+        const normalizedType = foodType.replace(/-/g, "");
+        const sprite = this.foodIconMap[normalizedType];
+        if (sprite) {
+            uiItem.avatar.spriteFrame = sprite;
+        }
     }
 
     protected override resetSelectItem() {
         this.selectingUIItem.reset();
-        this.actionButton.interactable = false;
     }
 
-    protected override onUIItemClick(uiItem: ShopUIItem, data: Item) {
+    protected override onUIItemClickFood(uiItem: ShopUIItem, data: Food) {
         if (this.selectingUIItem) {
             this.selectingUIItem.toggleActive(false);
+
             if (this.selectingUIItem == uiItem) {
                 this.reset();
                 return;
             }
         }
-        super.onUIItemClick(uiItem, data);
-        this.itemPrice.string = Utilities.convertBigNumberToStr(data.gold);
+
+        super.onUIItemClickFood(uiItem, data);
+
+        this.descriptionText.string = data.name;
+        this.catchRateBonusPrice.string = Utilities.convertBigNumberToStr(data.catch_rate_bonus);
+        this.itemPrice.string = Utilities.convertBigNumberToStr(data.price);
         this.itemPriceContainer.active = true;
+        this.catchRateBonusPriceContainer.active = true;
+        this.setupMoneyReward(uiItem, data.purchase_method.toString())
         this.selectingUIItem.toggleActive(true);
     }
 
-    protected override groupByCategory(items: Item[]): Record<string, Item[]> {
-        return items.reduce((acc, item) => {
-            if (!acc[item.type]) {
-                acc[item.type] = [];
+    protected override groupByCategory(items: Food[]): Record<string, Food[]> {
+        const grouped = items.reduce((acc, item) => {
+            const key = InventoryType.FOOD;
+            if (!acc[key]) {
+                acc[key] = [];
             }
-            acc[item.type].push(item);
+            acc[key].push(item);
             return acc;
-        }, {} as Record<string, Item[]>);
+        }, {} as Record<string, Food[]>);
+        return grouped;
     }
 }
