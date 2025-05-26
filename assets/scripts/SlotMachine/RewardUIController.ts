@@ -21,7 +21,7 @@ export class RewardUIController extends BaseInventoryManager {
 
     private spawnCount: number = 0;
     private isCoin: boolean;
-    private readonly MAX_SLOT = 4;
+    private readonly MAX_SLOT = 3;
 
     show(hasReward: boolean, listItem: RewardItemDTO[] = []) {
         console.log(hasReward, listItem)
@@ -180,10 +180,18 @@ export class RewardUIController extends BaseInventoryManager {
 
     public HideNode() {
         const bubbleChildren = this.bubbleRotation.node.children;
-        for (const element of bubbleChildren) {
-            const bubble = element;
+        if (!this.bubbleRotation || !this.bubbleRotation.node || !bubbleChildren || bubbleChildren.length === 0) {
+            return;
+        }
+        for (const bubble of bubbleChildren) {
+            if (!bubble) {
+                console.warn("HideNode: One of the children in bubbleChildren is null.");
+                continue;
+            }
             const itemNode = bubble.getChildByName("RewardItem");
-            if (itemNode) {
+            if (!itemNode) {
+                console.warn(`HideNode: Could not find "RewardItem" under ${bubble.name}`);
+            } else {
                 itemNode.active = false;
             }
         }

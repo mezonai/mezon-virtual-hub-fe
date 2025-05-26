@@ -50,9 +50,9 @@ export class SlotMachineController extends Component {
         this.spinButton.interactable = isShow;
         this.spinButtonLabel.string = "Quay";
         this.rewardPopUp.node.active = !isShow;
-        this.rewardPopUp.HideNode();
         this.hasSpin = false;
         this.closeButton.node.active = true;
+        this.rewardPopUp.HideNode();
         if (!this.slotMachinePopUp.active) return;
         UserManager.instance.GetMyClientPlayer.get_MoveAbility.StopMove();
     }
@@ -97,13 +97,13 @@ export class SlotMachineController extends Component {
                 case RewardType.ITEM:
                     rewardItem.type = RewardType.ITEM;
                     rewardItem.item = this.parseItem(data.item);
-                    rewardItem.quantity = data.quantity ?? 1;
+                    rewardItem.quantity = 1;
                     break;
 
                 case RewardType.FOOD:
                     rewardItem.type = RewardType.FOOD;
                     rewardItem.food = this.parseFood(data.food);
-                    rewardItem.quantity = data.quantity ?? 1;
+                    rewardItem.quantity = 1;
                     break;
 
                 case RewardType.GOLD:
@@ -168,6 +168,7 @@ export class SlotMachineController extends Component {
                     SoundManager.instance.playSound(AudioType.SlotMachine);
                     await this.delay(3000);
                     this.getRewardsSpin(response);
+                    this.getAllFoodAsync();
                 } catch (error) {
                     this.onError(error);
                 }
@@ -189,6 +190,16 @@ export class SlotMachineController extends Component {
         }
     }
 
+    private getAllFoodAsync() {
+        WebRequestManager.instance.getUserProfile(
+            (response) => { UserMeManager.Set = response.data; },
+            (error) => this.onApiError(error)
+        );
+    }
+
+    private onApiError(error) {
+        UIManager.Instance.showNoticePopup("Waning", error.error_message);
+    }
 
     private delay(ms: number): Promise<void> {
         return new Promise(resolve => setTimeout(resolve, ms));

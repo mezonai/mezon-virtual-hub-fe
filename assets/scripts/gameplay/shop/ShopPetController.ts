@@ -33,6 +33,7 @@ export class ShopPetController extends BaseInventoryManager {
                 .catch(() => { })
             if (confirm) {
                 const result = await this.buyItem();
+                await this.getAllFoodAsync();
                 this.addItemToInventory(result);
                 this.resetSelectItem();
             }
@@ -89,6 +90,16 @@ export class ShopPetController extends BaseInventoryManager {
         });
     }
 
+    private getAllFoodAsync(){
+         WebRequestManager.instance.getUserProfile(
+            (response) => {UserMeManager.Set = response.data;},
+            (error) => this.onApiError(error)
+        );
+    }
+
+    private onApiError(error) {
+        UIManager.Instance.showNoticePopup("Waning", error.error_message);
+    }
 
     private checkGoldUser(price: number) {
         if (UserMeManager.playerCoin < price) {
@@ -172,8 +183,10 @@ export class ShopPetController extends BaseInventoryManager {
         this.itemPrice.string = Utilities.convertBigNumberToStr(data.price);
         this.itemPriceContainer.active = true;
         this.catchRateBonusPriceContainer.active = true;
-        this.setupMoneyReward(uiItem, data.purchase_method.toString())
-        this.selectingUIItem.toggleActive(true);
+        const sprite = this.moneyIconMap[data.purchase_method.toString()];
+        if (sprite) {
+            this.iconFrame.spriteFrame = sprite;
+        }
     }
 
     protected override groupByCategory(items: Food[]): Record<string, Food[]> {
