@@ -32,9 +32,9 @@ export class InteractTeleport extends Interactable {
             action: this.getRoomNameTeleport(this.roomTypeTeleport),
         });
     }
-  
+
     getRoomNameTeleport(roomType: RoomType): string {
-        if(this.officeChange == OfficePosition.OFFICEGENERAL){
+        if (this.officeChange == OfficePosition.OFFICEGENERAL) {
             return "Để Trở Về Chọn Bản Đồ";
         }
         switch (roomType) {
@@ -53,54 +53,57 @@ export class InteractTeleport extends Interactable {
     }
 
     moveTeleport() {
-        if (UserManager.instance.GetMyClientPlayer) {
-            UserManager.instance.GetMyClientPlayer.leaveRoom();
-        }
+        if (!UserManager.instance.GetMyClientPlayer) return;
+        UserManager.instance.GetMyClientPlayer.leaveRoom(() => {
+            this.teleport();
+        });
+    }
+
+    teleport() {
         if (this.officeChange == OfficePosition.OFFICEGENERAL) {
             const param = { isBackMap: true };
             SceneManagerController.loadScene(SceneName.SCENE_GAME_MAP, param)
             return;
         }
-        if(this.officeChange == OfficePosition.NONE || this.officeChange == this.currentOffice)
-        {
+        if (this.officeChange == OfficePosition.NONE || this.officeChange == this.currentOffice) {
             this.loadOfficeMap(this.currentOffice);
         }
-        else{
+        else {
             this.updateUserDataUserClient();
-        }  
+        }
     }
 
-     private updateUserDataUserClient() {
+    private updateUserDataUserClient() {
         UserMeManager.SetMap = Constants.GetMapData(this.officeChange);
-            let userMe = UserMeManager.Get;
-            let userData = {
-                "map_id": userMe.map.id,
-                "position_x": null,
-                "position_y": null,
-                "display_name": userMe.user.display_name != "" ? userMe.user.display_name : userMe.user.username,
-                "gender": userMe.user.gender,
-                "skin_set": UserMeManager.Get.user.skin_set
-             }
-            WebRequestManager.instance.updateProfile(
-                userData,
-                (response) => this.loadNextScene(response),
-                (error) => this.onError(error)
-            );
+        let userMe = UserMeManager.Get;
+        let userData = {
+            "map_id": userMe.map.id,
+            "position_x": null,
+            "position_y": null,
+            "display_name": userMe.user.display_name != "" ? userMe.user.display_name : userMe.user.username,
+            "gender": userMe.user.gender,
+            "skin_set": UserMeManager.Get.user.skin_set
+        }
+        WebRequestManager.instance.updateProfile(
+            userData,
+            (response) => this.loadNextScene(response),
+            (error) => this.onError(error)
+        );
     }
     private onError(error: any) {
         console.error("Error occurred:", error);
-    
+
         if (error?.message) {
             console.error("Error message:", error.message);
         }
     }
-    private loadNextScene(response){
-        this.loadOfficeMap(this.officeChange);     
+    private loadNextScene(response) {
+        this.loadOfficeMap(this.officeChange);
     }
 
-    private loadOfficeMap(officeMoved: OfficePosition ){
-        const param = new OfficeSenenParameter(officeMoved, this.currentRoomType, this.roomTypeTeleport, Constants.convertNameRoom(officeMoved,  this.roomTypeTeleport));   
-            SceneManagerController.loadScene(SceneName.SCENE_OFFICE, param)   
+    private loadOfficeMap(officeMoved: OfficePosition) {
+        const param = new OfficeSenenParameter(officeMoved, this.currentRoomType, this.roomTypeTeleport, Constants.convertNameRoom(officeMoved, this.roomTypeTeleport));
+        SceneManagerController.loadScene(SceneName.SCENE_OFFICE, param)
     }
 }
 

@@ -11,8 +11,8 @@ export class FollowTargetUser extends Component {
     private currentTween: Tween<Node> = null;
     private isWandering = false;
     private lastPlayerPos: Vec3 = new Vec3();
-    private stopDistance = 30;
-    private wanderRadius = 80;
+    private stopDistance = 25;
+    private wanderRadius = 35;
     private timeSchedule = 0.5;
     private parent: Node = null;
     
