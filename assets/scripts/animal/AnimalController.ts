@@ -19,14 +19,14 @@ export class AnimalController extends Component {
     @property(Node) spriteNode: Node = null!;
     @property({ type: RandomlyMover }) randomlyMover: RandomlyMover = null;
     @property(FollowTargetUser) followTargetUser: FollowTargetUser = null!;
-    @property({type: [Color]}) nameColor: Color[] = []; 
+    @property({ type: [Color] }) nameColor: Color[] = [];
     private animalMoveType = AnimalType.NoMove;
     private animalPlayer: PlayerController = null;
     private pet: PetDTO;
     private tweenAction: Tween<Node> | null = null;
     private hideTimeout: number | null = null;
 
-    setDataPet(pet: PetDTO, moveType: AnimalType, owner: PlayerController = null, newArea: Vec2 = new Vec2(0, 0), parentPetFollowUser : Node = null) {//Dùng cho Pet di chuyển
+    setDataPet(pet: PetDTO, moveType: AnimalType, owner: PlayerController = null, newArea: Vec2 = new Vec2(0, 0), parentPetFollowUser: Node = null) {//Dùng cho Pet di chuyển
         this.pet = pet;
         this.nameAnimal.node.active = moveType == AnimalType.FollowTarget;
         if (moveType == AnimalType.NoMove) {
@@ -37,7 +37,7 @@ export class AnimalController extends Component {
             this.setRandomMove(newArea);
             return;
         }
-        this.setFollowTarget(owner,parentPetFollowUser);
+        this.setFollowTarget(owner, parentPetFollowUser);
     }
 
     setRandomMove(newArea: Vec2) {
@@ -46,7 +46,7 @@ export class AnimalController extends Component {
         this.randomlyMover.move();
     }
 
-    setFollowTarget(owner: PlayerController, parentPetFollowUser : Node) {
+    setFollowTarget(owner: PlayerController, parentPetFollowUser: Node) {
         this.nameAnimal.fontColor = owner.isMyClient ? this.nameColor[0] : this.nameColor[1];
         this.nameAnimal.string = `<outline color=#000000 width=1>${this.pet.name} [${owner.userName}]</outline>`;
         this.animalPlayer = owner;
@@ -61,14 +61,21 @@ export class AnimalController extends Component {
 
     }
 
-    public closeAnimal(isCaught : boolean = false) {
-        if(isCaught){
+    public closeAnimal(isCaught: boolean = false) {
+        if (isCaught) {
             this.animalMoveType = AnimalType.Caught;
-        }       
-        this.followTargetUser.stopMove();
-        this.randomlyMover.stopMove();
+        }
+
+        if (this.followTargetUser) {
+            this.followTargetUser.stopMove();
+        }
+
+        if (this.randomlyMover) {
+            this.randomlyMover.stopMove();
+        }
+
         Tween.stopAllByTarget(this.node);
-        this.node.setPosition(Vec3.ZERO)
+        this.node.setPosition(Vec3.ZERO);
         ObjectPoolManager.instance.returnToPool(this.node);
     }
 

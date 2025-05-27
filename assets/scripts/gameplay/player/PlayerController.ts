@@ -157,8 +157,9 @@ export class PlayerController extends Component {
                 pet.closeAnimal();
             });
         }
+        console.log("this.petFollowPrefabs", this.petFollowPrefabs)
         const checkInterval = setInterval(() => {
-            const allInactive = this.petFollowPrefabs.every(p => !p.node.active);
+            const allInactive = this.petFollowPrefabs.every(p => p?.node && !p.node.active);
             if (allInactive) {
                 clearInterval(checkInterval);
                 this.petFollowPrefabs.length = 0;
