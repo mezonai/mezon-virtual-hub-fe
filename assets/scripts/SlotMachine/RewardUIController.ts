@@ -28,7 +28,6 @@ export class RewardUIController extends BaseInventoryManager {
     }
 
     show(hasReward: boolean, listItem: RewardItemDTO[] = []) {
-        console.log(hasReward, listItem)
         this.node.active = true;
         this.hasNoPrize_node.active = !hasReward;
 
@@ -83,7 +82,6 @@ export class RewardUIController extends BaseInventoryManager {
 
         if (reward?.item) {
             let inventory = new InventoryDTO();
-            console.log(reward)
             inventory.item = reward.item;
             GameManager.instance.inventoryController.addItemToInventory(inventory);
         }
