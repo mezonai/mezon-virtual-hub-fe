@@ -43,6 +43,7 @@ export class SlotMachineController extends Component {
         this.rewardPopUp.show(false, null);
         this.slotMachinePopUp.active = false;
         this.playerHub.active = true;
+        this.getAllFoodAsync();
     }
 
     showNoticeSpin(isShow: boolean) {
@@ -168,7 +169,6 @@ export class SlotMachineController extends Component {
                     SoundManager.instance.playSound(AudioType.SlotMachine);
                     await this.delay(3000);
                     this.getRewardsSpin(response);
-                    this.getAllFoodAsync();
                 } catch (error) {
                     this.onError(error);
                 }
