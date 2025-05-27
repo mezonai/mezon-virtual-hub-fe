@@ -23,8 +23,11 @@ export class RewardUIController extends BaseInventoryManager {
     private isCoin: boolean;
     private readonly MAX_SLOT = 3;
 
+    protected start(): void {
+        this.HideNode();
+    }
+
     show(hasReward: boolean, listItem: RewardItemDTO[] = []) {
-        console.log(hasReward, listItem)
         this.node.active = true;
         this.hasNoPrize_node.active = !hasReward;
 
@@ -79,7 +82,6 @@ export class RewardUIController extends BaseInventoryManager {
 
         if (reward?.item) {
             let inventory = new InventoryDTO();
-            console.log(reward)
             inventory.item = reward.item;
             GameManager.instance.inventoryController.addItemToInventory(inventory);
         }
@@ -179,19 +181,14 @@ export class RewardUIController extends BaseInventoryManager {
     }
 
     public HideNode() {
-        const bubbleChildren = this.bubbleRotation.node.children;
-        if (!this.bubbleRotation || !this.bubbleRotation.node || !bubbleChildren || bubbleChildren.length === 0) {
+        const bubbleChildren = this.bubbleRotation?.node?.children;
+        if (!bubbleChildren || bubbleChildren.length === 0) {
             return;
         }
+
         for (const bubble of bubbleChildren) {
-            if (!bubble) {
-                continue;
-            }
-            const itemNode = bubble.getChildByName("RewardItem");
-            if (!itemNode) {
-            } else {
-                itemNode.active = false;
-            }
+            const itemNode = bubble?.getChildByName("RewardItem");
+            itemNode && (itemNode.active = false);
         }
     }
 }
