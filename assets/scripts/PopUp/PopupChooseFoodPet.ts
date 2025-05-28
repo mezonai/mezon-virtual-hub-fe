@@ -64,7 +64,6 @@ export class PopupChooseFoodPet extends BasePopup {
                     const foodThrow = UserMeManager.GetFoods?.find(inv => inv.food.id === this.foodChoosen.id);
                     if (foodThrow && foodThrow.quantity > 0) {
                         foodThrow.quantity -= 1;
-                        console.log("UserMeManager.GetFoods", UserMeManager.GetFoods);
                     }
                     let data = {
                         player: UserMeManager.Get.user,
@@ -100,7 +99,7 @@ export class PopupChooseFoodPet extends BasePopup {
     checkPetsDistance(target: AnimalController) {
         const playePos = UserManager.instance?.GetMyClientPlayer?.node.getWorldPosition();      
         if (!playePos || !target) return;
-        if (target.animalMoveType == AnimalType.Disappeared) {
+        if (target.animalType == AnimalType.Disappeared) {
             this.showUiPetDisappeared();
             return;
         }

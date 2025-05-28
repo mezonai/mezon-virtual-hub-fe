@@ -1,4 +1,4 @@
-import { _decorator, Color, Component, Label, Node, RichText, tween, Tween, Vec2, Vec3 } from 'cc';
+import { _decorator, Collider2D, Color, Component, Label, Node, RichText, tween, Tween, Vec2, Vec3 } from 'cc';
 import { PlayerController } from '../gameplay/player/PlayerController';
 import { PetDTO } from '../Model/PetDTO';
 import { RandomlyMover } from '../utilities/RandomlyMover';
@@ -20,10 +20,11 @@ export class AnimalController extends Component {
     @property(Label) contentBubbleChat: Label = null;
     @property(RichText) nameAnimal: RichText = null;
     @property(Node) spriteNode: Node = null!;
+     @property(Collider2D) collider: Collider2D = null;
     @property({ type: RandomlyMover }) randomlyMover: RandomlyMover = null;
     @property(FollowTargetUser) followTargetUser: FollowTargetUser = null!;
     @property({ type: [Color] }) nameColor: Color[] = [];
-    animalMoveType = AnimalType.NoMove;
+    animalType = AnimalType.NoMove;
     private animalPlayer: PlayerController = null;
     private pet: PetDTO;
     private tweenAction: Tween<Node> | null = null;
@@ -32,8 +33,9 @@ export class AnimalController extends Component {
     setDataPet(pet: PetDTO, moveType: AnimalType, owner: PlayerController = null, newArea: Vec2 = new Vec2(0, 0), parentPetFollowUser: Node = null) {//Dùng cho Pet di chuyển
         this.pet = pet;
         this.nameAnimal.node.active = moveType == AnimalType.FollowTarget;
+        this.collider.enabled = true;
         if(moveType == AnimalType.RandomMoveOnServer) {
-            this.animalMoveType = AnimalType.RandomMoveOnServer;
+            this.animalType = AnimalType.RandomMoveOnServer;
             return;
         }
         if (moveType == AnimalType.NoMove) {
@@ -48,28 +50,30 @@ export class AnimalController extends Component {
     }
 
     setRandomMove(newArea: Vec2) {
-        this.animalMoveType = AnimalType.RandomMove;
+        this.animalType = AnimalType.RandomMove;
         this.randomlyMover.areaSize = newArea;
         this.randomlyMover.move();
     }
 
     setFollowTarget(owner: PlayerController, parentPetFollowUser: Node) {
+        this.collider.enabled = false;
         this.nameAnimal.fontColor = owner.isMyClient ? this.nameColor[0] : this.nameColor[1];
         this.nameAnimal.string = `<outline color=#000000 width=1>${this.pet.name} [${owner.userName}]</outline>`;
         this.animalPlayer = owner;
-        this.animalMoveType = AnimalType.FollowTarget;
+        this.animalType = AnimalType.FollowTarget;
         this.followTargetUser.playFollowTarget(owner.node, this.spriteNode, parentPetFollowUser);
     }
 
     setDataSlot() {
-        this.animalMoveType = AnimalType.NoMove;
+        this.animalType = AnimalType.NoMove;
+        this.collider.enabled = false;
         this.randomlyMover.stopMove();
         this.spriteNode.setScale(new Vec3(1, 1, 1));
 
     }
 
     public closeAnimal(moveType : AnimalType = AnimalType.NoMove) {
-        this.animalMoveType = moveType;
+        this.animalType = moveType;
         if (this.followTargetUser) {
             this.followTargetUser.stopMove();
         }
@@ -88,6 +92,7 @@ export class AnimalController extends Component {
 
     catchFail(content: string) {
         this.showBubbleChat(content);
+        if(this.animalType == AnimalType.RandomMoveOnServer) return;
         setTimeout(() => {
             this.randomlyMover.move();
         }, 500);

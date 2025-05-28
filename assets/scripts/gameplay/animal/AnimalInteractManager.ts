@@ -53,7 +53,7 @@ export class AnimalInteractManager extends Component {
     protected async onBeingTamed() {
         this.toggleShowUI(false);
         if (this.animalController) {
-            if (this.animalController.animalMoveType != AnimalType.RandomMoveOnServer)
+            if (this.animalController.animalType != AnimalType.RandomMoveOnServer)
                 this.animalController.randomlyMover.stopMove();
             PopupManager.getInstance().openAnimPopup('PopupChooseFoodPet', PopupChooseFoodPet, {
                 animal: this.animalController,
@@ -61,7 +61,7 @@ export class AnimalInteractManager extends Component {
                     return await this.InteractTarget.petCatching.throwFoodToPet(this.animalController.node, foodType);
                 },
                 onCancelCatch: () => {
-                    if (this.animalController.animalMoveType == AnimalType.RandomMoveOnServer) return;
+                    if (this.animalController.animalType == AnimalType.RandomMoveOnServer) return;
                     this.animalController.randomlyMover.move();
                 }
             });

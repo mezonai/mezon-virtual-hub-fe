@@ -1,4 +1,4 @@
-import { _decorator, Component, Layers, Node, Toggle, Vec3 } from 'cc';
+import { _decorator, Component, Layers, Node, Toggle, UITransform, Vec3 } from 'cc';
 import { AnimalController, AnimalType } from './AnimalController';
 import { PetDTO } from '../Model/PetDTO';
 import { ObjectPoolManager } from '../pooling/ObjectPoolManager';
@@ -12,6 +12,7 @@ export class ItemAnimalSlot extends Component {
     private animalObject: Node = null;
     private defaultLayer = Layers.Enum.NONE;
     private boundToggleCallback: () => void;
+    private limitSize: number = 80;
     setDataSlot(pet: PetDTO, onToggleClick: (toggleSelected: Toggle) => void) {
         this.animalObject = ObjectPoolManager.instance.spawnFromPool(pet.species);
         if (this.animalObject) {
@@ -27,6 +28,14 @@ export class ItemAnimalSlot extends Component {
             if (this.toggle.isChecked && this.boundToggleCallback != null) this.boundToggleCallback();
             this.animalController = this.animalObject.getComponent(AnimalController);
             if (this.animalController == null) return;
+            const uiTransform = this.animalController .spriteNode.getComponent(UITransform);
+            if (uiTransform) {
+                const size = uiTransform.contentSize;
+                if(size.width > this.limitSize && size.height > this.limitSize){
+                    this.animalObject.setScale(new Vec3(0.7, 0.7, 0.7));
+                }
+               
+            }
             this.animalController.setDataPet(pet, AnimalType.NoMove);
             this.defaultLayer = this.animalController.spriteNode.layer;
             this.setLayerAnimal(false);
@@ -44,6 +53,7 @@ export class ItemAnimalSlot extends Component {
         this.boundToggleCallback = null;
         return new Promise((resolve) => {
             this.setLayerAnimal(true);
+            this.animalObject.setScale(Vec3.ONE);
             ObjectPoolManager.instance.returnToPool(this.animalObject);
             resolve();
         });
