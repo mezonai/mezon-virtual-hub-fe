@@ -104,12 +104,10 @@ export class PopupChooseFoodPet extends BasePopup {
             this.showUiPetDisappeared();
             return;
         }
-        console.log("target: ", target.node);
         const targetPos = target.node?.getWorldPosition();
         const direction = new Vec3();
         Vec3.subtract(direction, targetPos, playePos);
         let distance = direction.length();
-        console.log("distance: ", distance);
         if (distance < this.stopDistance) {
             return;
         }
