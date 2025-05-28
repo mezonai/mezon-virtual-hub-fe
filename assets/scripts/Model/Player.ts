@@ -1,4 +1,5 @@
-import { _decorator, Component, Node } from 'cc';
+import { _decorator, Component, Node, Vec2 } from 'cc';
+import { PetDTO } from './PetDTO';
 const { ccclass, property } = _decorator;
 
 @ccclass('Player')
@@ -80,12 +81,21 @@ export class PlayerColysesusObjectData extends ColysesusObjectData{
     
 }
 
-
 export class ItemColysesusObjectData extends ColysesusObjectData{
     public ownerId: string
 
     constructor(sessionId: string, room: Colyseus.Room<any>, x: number, y: number, name: string, ownerId: string) {
         super(sessionId, room, x, y, name);
         this.ownerId = ownerId;
+    }
+}
+
+export class PetColysesusObjectData extends ColysesusObjectData{
+    public pet: PetDTO;
+    public angle: Vec2;
+    constructor(sessionId: string, room: Colyseus.Room<any>, x: number, y: number, name: string, angle: Vec2, pet: PetDTO) {
+        super(sessionId, room, x, y, name);
+        this.pet = pet;
+        this.angle = angle;
     }
 }

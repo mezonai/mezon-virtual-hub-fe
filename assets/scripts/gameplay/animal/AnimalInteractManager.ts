@@ -2,7 +2,7 @@ import { _decorator, CCFloat, Component, Label, Node, Tween, tween, Vec3 } from 
 import { UserManager } from '../../core/UserManager';
 import { PlayerController } from '../player/PlayerController';
 import { UserMeManager } from '../../core/UserMeManager';
-import { AnimalController } from '../../animal/AnimalController';
+import { AnimalController, AnimalType } from '../../animal/AnimalController';
 import { PopupManager } from '../../PopUp/PopupManager';
 import { PopupChooseFoodPet } from '../../PopUp/PopupChooseFoodPet';
 import { FoodType } from '../../Model/Item';
@@ -52,16 +52,20 @@ export class AnimalInteractManager extends Component {
 
     protected async onBeingTamed() {
         this.toggleShowUI(false);
-        this.animalController.randomlyMover.stopMove();
-        PopupManager.getInstance().openAnimPopup('PopupChooseFoodPet', PopupChooseFoodPet, {
-            animal: this.animalController,
-            onThrowFood: async (foodType: FoodType) => {
-                return await this.InteractTarget.petCatching.throwFoodToPet(this.animalController.node, foodType);
-            },
-            onCancelCatch: () => {
-                this.animalController.randomlyMover.move();
-            }
-        });
+        if (this.animalController) {
+            if (this.animalController.animalMoveType != AnimalType.RandomMoveOnServer)
+                this.animalController.randomlyMover.stopMove();
+            PopupManager.getInstance().openAnimPopup('PopupChooseFoodPet', PopupChooseFoodPet, {
+                animal: this.animalController,
+                onThrowFood: async (foodType: FoodType) => {
+                    return await this.InteractTarget.petCatching.throwFoodToPet(this.animalController.node, foodType);
+                },
+                onCancelCatch: () => {
+                    if (this.animalController.animalMoveType == AnimalType.RandomMoveOnServer) return;
+                    this.animalController.randomlyMover.move();
+                }
+            });
+        }
     }
 
     protected onDisable() {

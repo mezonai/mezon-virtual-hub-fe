@@ -4,12 +4,15 @@ import { PetDTO } from '../Model/PetDTO';
 import { RandomlyMover } from '../utilities/RandomlyMover';
 import { FollowTargetUser } from './FollowTargetUser';
 import { ObjectPoolManager } from '../pooling/ObjectPoolManager';
+import { PetColysesusObjectData } from '../Model/Player';
 const { ccclass, property } = _decorator;
 export enum AnimalType {
     RandomMove = 1,
     FollowTarget = 2,
     NoMove = 3,
-    Caught = 4
+    Caught = 4,
+    RandomMoveOnServer = 5,
+    Disappeared = 6,
 }
 @ccclass('AnimalController')
 export class AnimalController extends Component {
@@ -20,7 +23,7 @@ export class AnimalController extends Component {
     @property({ type: RandomlyMover }) randomlyMover: RandomlyMover = null;
     @property(FollowTargetUser) followTargetUser: FollowTargetUser = null!;
     @property({ type: [Color] }) nameColor: Color[] = [];
-    private animalMoveType = AnimalType.NoMove;
+    animalMoveType = AnimalType.NoMove;
     private animalPlayer: PlayerController = null;
     private pet: PetDTO;
     private tweenAction: Tween<Node> | null = null;
@@ -29,6 +32,10 @@ export class AnimalController extends Component {
     setDataPet(pet: PetDTO, moveType: AnimalType, owner: PlayerController = null, newArea: Vec2 = new Vec2(0, 0), parentPetFollowUser: Node = null) {//Dùng cho Pet di chuyển
         this.pet = pet;
         this.nameAnimal.node.active = moveType == AnimalType.FollowTarget;
+        if(moveType == AnimalType.RandomMoveOnServer) {
+            this.animalMoveType = AnimalType.RandomMoveOnServer;
+            return;
+        }
         if (moveType == AnimalType.NoMove) {
             this.setDataSlot();
             return;
@@ -36,7 +43,7 @@ export class AnimalController extends Component {
         if (moveType == AnimalType.RandomMove) {
             this.setRandomMove(newArea);
             return;
-        }
+        }       
         this.setFollowTarget(owner, parentPetFollowUser);
     }
 
@@ -61,11 +68,8 @@ export class AnimalController extends Component {
 
     }
 
-    public closeAnimal(isCaught: boolean = false) {
-        if (isCaught) {
-            this.animalMoveType = AnimalType.Caught;
-        }
-
+    public closeAnimal(moveType : AnimalType = AnimalType.NoMove) {
+        this.animalMoveType = moveType;
         if (this.followTargetUser) {
             this.followTargetUser.stopMove();
         }
@@ -74,9 +78,12 @@ export class AnimalController extends Component {
             this.randomlyMover.stopMove();
         }
 
-        Tween.stopAllByTarget(this.node);
-        this.node.setPosition(Vec3.ZERO);
-        ObjectPoolManager.instance.returnToPool(this.node);
+       
+        if (this.node){
+             Tween.stopAllByTarget(this.node);
+             this.node.setPosition(Vec3.ZERO);
+             ObjectPoolManager.instance.returnToPool(this.node);
+        }      
     }
 
     catchFail(content: string) {
@@ -131,6 +138,10 @@ export class AnimalController extends Component {
             .start();
     }
 
+    syncPositionServer(petData: PetColysesusObjectData){
+        this.node.setPosition(new Vec3(petData.x, petData.y, 0));
+        this.spriteNode.scale = new Vec3(petData.angle.x > 0 ? 1 : -1, 1);
+    }
 }
 
 

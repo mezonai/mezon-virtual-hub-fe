@@ -3,6 +3,7 @@ import { PetDTO } from '../Model/PetDTO';
 import { ObjectPoolManager } from '../pooling/ObjectPoolManager';
 import { RandomlyMover } from '../utilities/RandomlyMover';
 import { AnimalController, AnimalType } from './AnimalController';
+import { PetColysesusObjectData } from '../Model/Player';
 
 const { ccclass, property } = _decorator;
 
@@ -14,16 +15,18 @@ export class SpawnZone {
 @ccclass('AnimalSpawner')
 export class AnimalSpawner extends Component {
     @property({ type: [SpawnZone] }) spawnZones: SpawnZone[] = [];
+    @property({ type: Node }) spawnMap: Node;// Area nguyên map
     @property spawnedAnimals: AnimalController[] = [];
 
     public spawnPet(petData: PetDTO[]) {
-        for (const pet of petData) {
-            if (pet.is_caught)
+        for (const pet of petData) {           
+            if (pet.is_caught || pet.species == "DragonIce")
                 continue;
 
             let petObj = ObjectPoolManager.instance.spawnFromPool(pet.species);
+            console.log("SPAWN1", pet.species);
             if (petObj) {
-
+                console.log("SPAWN1");
                 let petParent = this.getRandomZone();
                 petObj.setParent(petParent.node);
                 petObj.setPosition(this.getRandomPositionInZone(petParent.node));
@@ -31,12 +34,36 @@ export class AnimalSpawner extends Component {
                 const { bound } = this.getZoneBounds(petParent.node);
                 let animal = petObj.getComponent(AnimalController);
                 if (animal) {
+                    console.log("SPAWN ", pet);
                     this.spawnedAnimals.push(animal);
-                    animal.setDataPet(pet,AnimalType.RandomMove, null, new Vec2(bound.x, bound.y));
+                    animal.setDataPet(pet, AnimalType.RandomMove, null, new Vec2(bound.x, bound.y));
                 }
             }
         }
     }
+
+    public updatePositionPetOnServer(petData: PetColysesusObjectData) {
+        if (!petData) return;
+        const petUpdate = this.spawnedAnimals.find(p => p.Pet.id === petData.pet.id);
+        if(!petUpdate) return;
+        petUpdate.syncPositionServer(petData);        
+    }
+
+    public spawnPetOnServer(pet: PetColysesusObjectData) {
+        if (!pet) return;
+        let petObj = ObjectPoolManager.instance.spawnFromPool(pet.pet.species);
+        if (petObj) {
+            let petParent = this.spawnZones[1];
+            petObj.setParent(this.spawnMap);
+            petObj.setPosition(new Vec3(pet.x, pet.y, 0));
+            let animal = petObj.getComponent(AnimalController);
+            if (animal) {
+                this.spawnedAnimals.push(animal);
+                animal.setDataPet(pet.pet, AnimalType.RandomMoveOnServer, null);
+            }
+        }
+    }
+
 
     protected onDisable(): void {
         this.spawnedAnimals.forEach(animal => {
@@ -46,10 +73,16 @@ export class AnimalSpawner extends Component {
         });
     }
 
-    public setAnimalCaught(id: string){
+    public setAnimalCaught(id: string) {
         let animal = this.getAnimalById(id);
-        if(animal == null) return;
-        animal.closeAnimal(true);
+        if (animal == null) return;
+        animal.closeAnimal(AnimalType.Caught);
+    }
+
+    public disappearedPet(id: string) {// trường hợp pet di chuyển giữa các room
+        let animal = this.getAnimalById(id);
+        if (animal == null) return;
+        animal.closeAnimal(AnimalType.Disappeared);
     }
 
     public getAnimalById(id: string): AnimalController | null {

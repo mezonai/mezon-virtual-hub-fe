@@ -1,4 +1,4 @@
-import { _decorator, Component, log } from 'cc';
+import { _decorator, Component, log, Vec2 } from 'cc';
 const { ccclass, property } = _decorator;
 import Colyseus, { Room } from 'db://colyseus-sdk/colyseus.js';
 import { UserManager } from './UserManager';
@@ -7,7 +7,7 @@ import { GameManager } from './GameManager';
 import { SceneManagerController } from '../utilities/SceneManagerController';
 import { SceneName } from '../utilities/SceneName';
 import { UIManager } from './UIManager';
-import { ItemColysesusObjectData, PlayerColysesusObjectData } from '../Model/Player';
+import { ItemColysesusObjectData, PetColysesusObjectData, PlayerColysesusObjectData } from '../Model/Player';
 import { MapItemManger } from './MapItemManager';
 import { PopupManager } from '../PopUp/PopupManager';
 import { AudioType, SoundManager } from './SoundManager';
@@ -248,21 +248,41 @@ export class ServerManager extends Component {
             }
         });
 
-        this.room.onMessage("onCatchPetSuccess", (data) => {   
-             UserManager.instance.onCatchPetSuccess(data);            
+        this.room.onMessage("onCatchPetSuccess", (data) => {
+            UserManager.instance.onCatchPetSuccess(data);
         });
-        this.room.onMessage("onPetAlreadyCaught", (data) => {   
-             UserManager.instance.onPetAlreadyCaught(data);            
+        this.room.onMessage("onPetAlreadyCaught", (data) => {
+            UserManager.instance.onPetAlreadyCaught(data);
         });
-         this.room.onMessage("onCatchPetFail", (data) => {   
-             UserManager.instance.onCatchPetFail(data);            
+        this.room.onMessage("onPetDisappear", (data) => {
+            UserManager.instance.onPetDisappear(data);
         });
-         this.room.onMessage("onSendOwnedPets", (data) => {   
-             UserManager.instance.onUpdateOwnedPetPlayer(data);            
+        this.room.onMessage("onCatchPetFail", (data) => {
+            UserManager.instance.onCatchPetFail(data);
         });
-        this.room.onMessage("onPetFollowPlayer", (data) => {   
-             UserManager.instance.onPetFollowPlayer(data);            
+        this.room.onMessage("onSendOwnedPets", (data) => {
+            UserManager.instance.onUpdateOwnedPetPlayer(data);
         });
+        this.room.onMessage("onPetFollowPlayer", (data) => {
+            UserManager.instance.onPetFollowPlayer(data);
+        });
+
+        this.room.onMessage("petPositionUpdate", (data) => {
+            if(!data) return;
+            data.forEach(pet => {
+            const petData = new PetColysesusObjectData(pet.id, this.room, pet.position.x, pet.position.y, pet.name, new Vec2(pet.angle.x, pet.angle.y), pet);
+            if (OfficeSceneController.instance.currentMap == null) return;            
+            OfficeSceneController.instance.currentMap.AnimalSpawner.updatePositionPetOnServer(petData);
+            });            
+        });
+
+        this.room.state.pets.onAdd((pet, key) => {
+            let petData = new PetColysesusObjectData(key, this.room, pet.position.x, pet.position.y, pet.name, new Vec2(pet.angle.x, pet.angle.y), pet);
+            console.log("onAdd: "+ petData.x + " " + petData.y );
+            if (OfficeSceneController.instance.currentMap == null) return; {
+                OfficeSceneController.instance.currentMap.AnimalSpawner.spawnPetOnServer(petData);
+            }
+        })    
     }
 
     private decodeMoveData(uint8Array: ArrayBuffer) {
