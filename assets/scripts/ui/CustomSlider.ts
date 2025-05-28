@@ -21,7 +21,7 @@ export class CustomSlider extends Component {
         this.node.off('slide', this.onSlide, this);
     }
 
-    private updateSliderHandleAndFill(progress: number) {
+    public updateSliderHandleAndFill(progress: number) {
         const sliderTransform = this.slider.node.getComponent(UITransform);
         const handleNode = this.slider.handle.node;
 

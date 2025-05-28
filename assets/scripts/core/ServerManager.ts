@@ -26,6 +26,7 @@ export class ServerManager extends Component {
     private client: Colyseus.Client;
     private room: Colyseus.Room<any>;
     private withAmount: number = -1;
+    private exchangeAmount: number = -1;
 
     protected onLoad(): void {
         if (ServerManager._instance == null) {
@@ -224,7 +225,11 @@ export class ServerManager extends Component {
             SoundManager.instance.playSound(AudioType.ReceiveReward);
             if (this.withAmount > 0 && UserMeManager.Get) {
                 UIManager.Instance.showNoticePopup("Thông báo", `<color=#FF0000>${Utilities.convertBigNumberToStr(this.withAmount)} Diamond</color> được trừ từ tài khoản`, () => {
+                    console.log("onWithrawDiamond UserMeManager.Get: " + UserMeManager.Get.user.display_name);
+                    console.log("onWithrawDiamond UserMeManager.playerDiamond: " + UserMeManager.playerDiamond);
+                    console.log("onWithrawDiamond UserMeManager.playerCoin: " + UserMeManager.playerCoin);
                     UserMeManager.playerDiamond -= this.withAmount;
+                    console.log("onWithrawDiamond UserMeManager.playerDiamond change: " + UserMeManager.playerDiamond);
                     this.withAmount = -1;
                 })
             }
@@ -236,18 +241,23 @@ export class ServerManager extends Component {
         });
 
         this.room.onMessage("onExchangeDiamondToCoin", (data) => {
-            const { coinChange, diamondChange } = data;
-
+           
             SoundManager.instance.playSound(AudioType.ReceiveReward);
-            if (UserMeManager.Get) {
-                const msg = `<color=#FF0000>${Utilities.convertBigNumberToStr(Math.abs(diamondChange))} Diamond</color> đã được chuyển thành <color=#00FF00>${coinChange} coin</color>`;
-                UIManager.Instance.showNoticePopup("Thông báo", msg, () => {
-                    UserMeManager.playerDiamond += diamondChange;
-                    UserMeManager.playerCoin += coinChange;
+            if (this.exchangeAmount > 0 && UserMeManager.Get) {
+                 const { coinChange, diamondChange } = data;
+                 const msg = `<color=#FF0000>${Utilities.convertBigNumberToStr(Math.abs(diamondChange))} Diamond</color> đã được chuyển thành <color=#00FF00>${coinChange} coin</color>`;
+                 UIManager.Instance.showNoticePopup("Thông báo", msg, () => {
+                     console.log("onExchangeDiamondToCoin UserMeManager.Get: " + UserMeManager.Get.user.display_name);
+                     console.log("onExchangeDiamondToCoin UserMeManager.playerDiamond: " + UserMeManager.playerDiamond);
+                     console.log("onExchangeDiamondToCoin UserMeManager.playerCoin: " + UserMeManager.playerCoin);
+                     UserMeManager.playerDiamond += diamondChange;
+                     UserMeManager.playerCoin += coinChange;
+                     console.log("onExchangeDiamondToCoin coinChange" + coinChange);
+                     console.log("onExchangeDiamondToCoin diamondChange " + diamondChange);
+                    this.exchangeAmount = -1;
                 });
             }
         });
-
         this.room.onMessage("onCatchPetSuccess", (data) => {
             UserManager.instance.onCatchPetSuccess(data);
         });
@@ -262,6 +272,10 @@ export class ServerManager extends Component {
         });
         this.room.onMessage("onSendOwnedPets", (data) => {
             UserManager.instance.onUpdateOwnedPetPlayer(data);
+        });       
+        this.room.onMessage("onPetFollowPlayer", (data) => {
+            UserManager.instance.onPetFollowPlayer(data);
+
         });
         this.room.onMessage("onPetFollowPlayer", (data) => {
             UserManager.instance.onPetFollowPlayer(data);
@@ -358,11 +372,13 @@ export class ServerManager extends Component {
 
     public Withdraw(sessionId: string, sendData: any) {
         this.withAmount = sendData.amount;
+        console.log("Withdraw sendData" + JSON.stringify(sendData, null, 2));
         this.room.send("onWithrawDiamond", sendData)
     }
 
     public exchangeCoinToDiamond(sessionId: string, sendData: any) {
-        this.withAmount = sendData.amount;
+        this.exchangeAmount = sendData.diamondTransfer;
+        console.log("exchangeCoinToDiamond sendData" + JSON.stringify(sendData, null, 2));
         this.room.send("onExchangeDiamondToCoin", sendData)
     }
 

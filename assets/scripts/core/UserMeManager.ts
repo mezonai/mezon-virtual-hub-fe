@@ -20,7 +20,12 @@ export class UserMeManager {
 
     public static set Set(me: UserDataResponse | null) {
         this.me = me;
-        this._playerProperty = new PlayerPropertyWatcher(me.user.gold, me.user.diamond, "");
+        if(this._playerProperty == null){
+            this._playerProperty = new PlayerPropertyWatcher(me.user.gold, me.user.diamond, "");
+            return;
+        }
+        this.PlayerProperty.gold = me.user.gold;
+        this.PlayerProperty.diamond = me.user.diamond;
     }
 
     public static get GetFoods():InventoryDTO[] | null {

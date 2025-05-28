@@ -1,4 +1,4 @@
-import { _decorator, EventKeyboard, Input, input, instantiate, KeyCode, Node, Prefab, SpriteFrame, tween, Vec3 } from 'cc';
+import { _decorator, EventKeyboard, Input, input, instantiate, KeyCode, Node, Prefab, SpriteFrame, Tween, tween, Vec3 } from 'cc';
 import { InventoryDTO, Item, RewardItemDTO, RewardType } from '../Model/Item';
 import { BubbleRotation } from './BubbleRotation';
 import { RewardItem } from './RewardItem';
@@ -23,8 +23,16 @@ export class RewardUIController extends BaseInventoryManager {
     private isCoin: boolean;
     private readonly MAX_SLOT = 3;
 
+    private onAllRewardsShownCallback: () => void = null;
+
+    public setOnRewardsShownCallback(callback: () => void) {
+        this.onAllRewardsShownCallback = callback;
+    }
+
     protected start(): void {
-        this.HideNode();
+        if (!this.bubbleRotation) {
+            return;
+        }
     }
 
     show(hasReward: boolean, listItem: RewardItemDTO[] = []) {
@@ -63,8 +71,6 @@ export class RewardUIController extends BaseInventoryManager {
         const bubbleChildren = this.bubbleRotation.node.children;
 
         for (let i = listItem.length; i < bubbleChildren.length; i++) {
-
-
             const bubble = bubbleChildren[i];
             const itemNode = bubble.getChildByName("RewardItem");
             if (itemNode) {
@@ -79,7 +85,6 @@ export class RewardUIController extends BaseInventoryManager {
         if (index >= Math.min(this.MAX_SLOT, bubbleChildren.length)) return;
 
         const reward = index < listItem.length ? listItem[index] : undefined;
-
         if (reward?.item) {
             let inventory = new InventoryDTO();
             inventory.item = reward.item;
@@ -135,6 +140,11 @@ export class RewardUIController extends BaseInventoryManager {
             .to(0.1, { scale: new Vec3(1, 1, 1) }, { easing: "quadOut" })
             .call(() => {
                 if (reward) this.ShowTextFly(reward);
+                if (index + 1 >= Math.min(this.MAX_SLOT, bubbleChildren.length)) {
+                    if (this.onAllRewardsShownCallback) {
+                        this.onAllRewardsShownCallback();
+                    }
+                }
                 this.spawnItemSequential(index + 1, listItem, bubbleChildren);
             })
             .start();
@@ -158,12 +168,12 @@ export class RewardUIController extends BaseInventoryManager {
                 }
                 else if (reward.type === RewardType.ITEM && reward.item) {
                     const itemName = `${reward.item?.name} x ${reward.quantity} `;
-                    message = `Bạn nhận được: ${itemName}`;
+                    message = `Bạn nhận được ${itemName}`;
                     this.isCoin = false;
                 }
                 else if (reward.type === RewardType.FOOD && reward.food) {
                     const itemName = `${reward.food?.name} x ${reward.quantity} `;
-                    message = `Bạn nhận được: ${itemName}`;
+                    message = `Bạn nhận được ${itemName}`;
                     this.isCoin = false;
                 }
             }
@@ -182,13 +192,11 @@ export class RewardUIController extends BaseInventoryManager {
 
     public HideNode() {
         const bubbleChildren = this.bubbleRotation?.node?.children;
-        if (!bubbleChildren || bubbleChildren.length === 0) {
-            return;
-        }
-
         for (const bubble of bubbleChildren) {
             const itemNode = bubble?.getChildByName("RewardItem");
-            itemNode && (itemNode.active = false);
+            if (itemNode) {
+                itemNode.active = false;
+            }
         }
     }
 }
