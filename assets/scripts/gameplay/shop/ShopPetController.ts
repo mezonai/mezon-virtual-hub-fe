@@ -10,6 +10,7 @@ import { BaseInventoryManager } from '../player/inventory/BaseInventoryManager';
 import { LocalItemDataConfig } from '../../Model/LocalItemConfig';
 import UIPopup from '../../ui/UI_Popup';
 import Utilities from '../../utilities/Utilities';
+import { GameManager } from '../../core/GameManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('ShopPetController')
@@ -22,6 +23,7 @@ export class ShopPetController extends BaseInventoryManager {
     protected override groupedItems: Record<string, Food[]> = null;
     protected override selectingUIItem: ShopUIItem = null;
     @property({ type: Sprite }) iconFrame: Sprite = null;
+    @property({ type: Sprite }) iconMoneyFrame: Sprite = null;
 
     protected override async actionButtonClick() {
         try {
@@ -90,9 +92,12 @@ export class ShopPetController extends BaseInventoryManager {
         });
     }
 
-    private getAllFoodAsync(){
-         WebRequestManager.instance.getUserProfile(
-            (response) => {UserMeManager.Set = response.data;},
+    private getAllFoodAsync() {
+        WebRequestManager.instance.getUserProfile(
+            (response) => {
+                UserMeManager.Set = response.data;
+                GameManager.instance.inventoryController.addFoodToInventory(UserMeManager.GetFoods);
+            },
             (error) => this.onApiError(error)
         );
     }
@@ -186,6 +191,7 @@ export class ShopPetController extends BaseInventoryManager {
         const sprite = this.moneyIconMap[data.purchase_method.toString()];
         if (sprite) {
             this.iconFrame.spriteFrame = sprite;
+            this.iconMoneyFrame.spriteFrame = sprite;
         }
     }
 
