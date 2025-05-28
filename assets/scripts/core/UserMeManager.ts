@@ -1,5 +1,4 @@
 import { UserDataResponse } from "../Interface/DataMapAPI";
-import { Food, InventoryDTO } from "../Model/Item";
 import { PlayerPropertyWatcher } from "../utilities/PlayerPropertyWatcher";
 
 export class UserMeManager {
@@ -20,14 +19,12 @@ export class UserMeManager {
 
     public static set Set(me: UserDataResponse | null) {
         this.me = me;
-        this._playerProperty = new PlayerPropertyWatcher(me.user.gold, me.user.diamond, "");
-    }
-
-    public static get GetFoods():InventoryDTO[] | null {
-       return this.me == null
-        ? null
-        : this.me.inventories
-            .filter((inv): inv is InventoryDTO & { food: Food } => inv.food != null)         
+        if(this._playerProperty == null){
+            this._playerProperty = new PlayerPropertyWatcher(me.user.gold, me.user.diamond, "");
+            return;
+        }
+        this.PlayerProperty.gold = me.user.gold;
+        this.PlayerProperty.diamond = me.user.diamond;
     }
 
     public static set playerCoin(coin) {
