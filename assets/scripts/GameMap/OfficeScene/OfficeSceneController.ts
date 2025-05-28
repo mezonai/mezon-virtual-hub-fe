@@ -62,7 +62,7 @@ export class OfficeSceneController extends Component {
     }
 
     public spawnPet(data) {
-        if (this.currentMap?.AnimalSpawner?.spawnZones.length > 0) {
+        if (this.currentMap?.AnimalSpawner?.spawnZones.length > 0) {           
             this.currentMap.AnimalSpawner.spawnPet(data);
         }
     }

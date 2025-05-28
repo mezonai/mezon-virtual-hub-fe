@@ -298,6 +298,10 @@ export class UserManager extends Component {
         animal.catchFail("Lêu lêu bắt hụt")
     }
 
+    public onPetDisappear(data) {
+         OfficeSceneController.instance.currentMap.AnimalSpawner.disappearedPet(data.petId)
+    }
+
     public onUpdateOwnedPetPlayer(data) {
         let playerCaughtPet = this.players.get(data.playerCatchId);
         let pets = ConvetData.ConvertPet(data.pet);
