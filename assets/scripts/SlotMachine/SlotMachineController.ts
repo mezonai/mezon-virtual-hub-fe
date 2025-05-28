@@ -8,6 +8,7 @@ import { RewardFloatingText } from './RewardFloatingText';
 import { UserManager } from '../core/UserManager';
 import { AudioType, SoundManager } from '../core/SoundManager';
 import { UIManager } from '../core/UIManager';
+import { GameManager } from '../core/GameManager';
 
 const { ccclass, property } = _decorator;
 
@@ -194,10 +195,13 @@ export class SlotMachineController extends Component {
     }
 
     private refreshUserData() {
-        // WebRequestManager.instance.getUserProfile(
-        //     (response) => { UserMeManager.Set = response.data; },
-        //     this.onApiError.bind(this)
-        // );
+        WebRequestManager.instance.getUserProfile(
+            (response) => { 
+                UserMeManager.Set = response.data; 
+                GameManager.instance.inventoryController.addFoodToInventory(UserMeManager.GetFoods);
+            },
+            this.onApiError.bind(this)
+        );
     }
 
     private onApiError(error: any) {

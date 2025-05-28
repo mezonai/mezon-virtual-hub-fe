@@ -133,6 +133,22 @@ export class InventoryManager extends BaseInventoryManager {
         this.groupedItems[item.item.type].push(item);
     }
 
+    public addFoodToInventory(items: InventoryDTO[]) {
+        delete this.groupedItems[InventoryType.FOOD];
+        if (!this.groupedItems[InventoryType.FOOD]) {
+            this.groupedItems[InventoryType.FOOD] = [];
+
+            const foodCategoryStr = InventoryType.FOOD.toString();
+            if (!this.categories.includes(foodCategoryStr)) {
+                this.categories.push(foodCategoryStr);
+            }
+        }
+
+        for (const item of items) {
+            this.groupedItems[InventoryType.FOOD].push(item);
+        }
+    }
+
     protected override getLocalData(item) {
         if (item.item.gender != "not specified" && item.item.gender != UserMeManager.Get.user.gender) return null;
         return ResourceManager.instance.getLocalSkinById(item.item.id, item.item.type);
