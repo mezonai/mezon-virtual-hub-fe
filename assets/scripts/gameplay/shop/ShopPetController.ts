@@ -179,7 +179,7 @@ export class ShopPetController extends BaseInventoryManager {
         super.onUIItemClickFood(uiItem, data);
 
         this.descriptionText.string = data.name;
-        this.catchRateBonusPrice.string = Utilities.convertBigNumberToStr(data.catch_rate_bonus);
+        this.catchRateBonusPrice.string = Utilities.convertBigNumberToStr(data.catch_rate_bonus) + " %";
         this.itemPrice.string = Utilities.convertBigNumberToStr(data.price);
         this.itemPriceContainer.active = true;
         this.catchRateBonusPriceContainer.active = true;
