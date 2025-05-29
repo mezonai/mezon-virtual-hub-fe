@@ -189,10 +189,15 @@ export class PlayerController extends Component {
 
     setPositonPet() {
         setTimeout(() => {
-            this.petFollowPrefabs.forEach(x => {
-                x.node.active = true;
-                x.node.setPosition(this.node.getPosition());
-            });
+            if (this.petFollowPrefabs?.length) {
+                this.petFollowPrefabs.forEach(x => {
+                    if (x?.node?.isValid) {
+                        x.node.active = true;
+                        x.node.setPosition(this.node.getPosition());
+                    }
+                });
+            }
+
         }, 500); // chờ 0.5 giây
     }
 
