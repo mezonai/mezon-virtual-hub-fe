@@ -42,6 +42,11 @@ export class RewardUIController extends BaseInventoryManager {
         if (hasReward && listItem.length > 0) {
             this.spawnItem(listItem);
         }
+        else {
+            if (this.onAllRewardsShownCallback) {
+                this.onAllRewardsShownCallback();
+            }
+        }
     }
 
     protected override getLocalData(reward: RewardItemDTO) {
