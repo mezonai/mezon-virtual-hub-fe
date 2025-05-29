@@ -51,6 +51,7 @@ export class MyProfileHUD extends BaseProfileManager {
     }
 
     protected onCoinChangeDiamond(value, oldValue) {
+        if (!this.dimond_txt) return;
         this.dimond_txt.string = Utilities.convertBigNumberToStr(value);
         if (!this.inited) {
             this.inited = true;
