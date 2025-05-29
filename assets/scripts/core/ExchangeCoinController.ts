@@ -52,7 +52,6 @@ export class ExchangeCoinController extends Component {
         // amount: s, note: u, receiver_id: x, extra_attribute: w} = y.eventData || {};
         if (window.Mezon) {
             this.amount = amount;
-            console.log("post event")
             let sendData = {
                 amount: amount,
                 note: "Mua Mezon VHub diamond",
