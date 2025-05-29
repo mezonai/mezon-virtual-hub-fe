@@ -62,8 +62,8 @@ export class SendTokenPanel extends Component {
     public setSendCallback(callback: (amount: number) => void) {
         this.isBuy = false;
         this.isWithdraw = false;
-        this.withdrawButton.active = this.isWithdraw;
-        this.changeButton.active = this.isWithdraw;
+        this.withdrawButton.active = false;
+        this.changeButton.active = false;
         this.title.string = "Tặng Quà";
         this.sendButtonTitle.string = "Gửi";
         this.cbBuy = callback;
@@ -76,6 +76,7 @@ export class SendTokenPanel extends Component {
         this.title.string = "Nạp/Rút/Đổi Diamond";
         this.sendButtonTitle.string = "Nạp";
         this.withdrawButton.active = true;
+        this.changeButton.active = true;
         this.cbBuy = callback;
         this.noticePopup.node.active = false;
     }
@@ -85,7 +86,6 @@ export class SendTokenPanel extends Component {
         this.isWithdraw = true;
         this.title.string = "Nạp/Rút/Đổi Diamond";
         this.sendButtonTitle.string = "Nạp";
-        this.withdrawButton.active = true;
         this.cbWithdraw = callback;
         this.noticePopup.node.active = false;
     }
@@ -100,7 +100,9 @@ export class SendTokenPanel extends Component {
     }
 
     protected onDisable(): void {
-        this.cb = null;
+        this.cbBuy = null;
+        this.cbWithdraw = null;
+        this.cbChange = null;
         this.sendValue = 0;
         if (this.sendEditBox) {
             this.sendEditBox.string = "0";

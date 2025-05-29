@@ -141,9 +141,13 @@ export class ServerManager extends Component {
             UserManager.instance.onMessagePosition(this.decodeMoveData(buffer));
         });
 
-        // this.room.onMessage("onPlayerUpdateGold", (data) => {
-        //     UserManager.instance.onPlayerRemoteUpdateGold(data);
-        // });
+        this.room.onMessage("onPlayerUpdateGold", (data) => {
+            UserManager.instance.onPlayerRemoteUpdateGold(data);
+        });
+
+        this.room.onMessage("onPlayerUpdateDiamond", (data) => {
+            UserManager.instance.onPlayerRemoteUpdateDiamond(data);
+        });
 
         this.room.onMessage("mathProblem", (data) => {
             this.node.emit(EVENT_NAME.ON_QUIZ, data);

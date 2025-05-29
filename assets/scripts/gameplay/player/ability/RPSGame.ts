@@ -55,8 +55,8 @@ export class RPSGame extends PlayerInteractAction {
 
     public override invite(): void {
         if (UserMeManager.Get) {
-            if (UserMeManager.playerCoin < this.fee)  {
-                UIManager.Instance.showNoticePopup(null, `Cần <color=#FF0000>${this.fee} đồng</color> để chơi`)
+            if (UserMeManager.playerDiamond < this.fee)  {
+                UIManager.Instance.showNoticePopup(null, `Cần <color=#FF0000>${this.fee} diamond</color> để chơi`)
                 return;
             }
         }
@@ -70,7 +70,7 @@ export class RPSGame extends PlayerInteractAction {
 
     public override onBeingInvited(data: any): void {
         SoundManager.instance.playSound(AudioType.Notice);
-        UIManager.Instance.showYesNoPopup(null, `${data.fromName} mời bạn chơi kéo búa bao. Phí <color=#FF0000> ${this.fee} đồng</color>`,
+        UIManager.Instance.showYesNoPopup(null, `${data.fromName} mời bạn chơi kéo búa bao. Phí <color=#FF0000> ${this.fee} diamond</color>`,
             () => {
                 this.startAction(data);
             },

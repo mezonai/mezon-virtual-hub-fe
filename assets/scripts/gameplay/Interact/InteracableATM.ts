@@ -70,7 +70,7 @@ export class InteractATM extends MapItemController {
         }
     
         if (ServerManager.instance) {
-            ServerManager.instance.node.emit(EVENT_NAME. ON_CHANGE_DIAMOND_TO_COIN, data);
+            ServerManager.instance.node.emit(EVENT_NAME.ON_CHANGE_DIAMOND_TO_COIN, data);
         }
     }
    

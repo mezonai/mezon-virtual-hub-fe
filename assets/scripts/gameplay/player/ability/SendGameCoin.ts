@@ -25,7 +25,7 @@ export class SendGameCoin extends PlayerInteractAction {
 
     protected override invite() {
         if (UserMeManager.Get) {
-            if (UserMeManager.playerCoin <= 0) {
+            if (UserMeManager.playerDiamond <= 0) {
                 UserManager.instance.GetMyClientPlayer.zoomBubbleChat("Tính năng chỉ dành cho người có tiền");
                 this.controller.toggleShowUI(false);
                 return;
