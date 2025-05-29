@@ -239,6 +239,13 @@ export class InventoryManager extends BaseInventoryManager {
                     acc[type] = [];
                 }
                 acc[type].push(item);
+            }
+            else if (item.food) {
+                const type = InventoryType.FOOD;
+                if (!acc[type]) {
+                    acc[type] = [];
+                }
+                acc[type].push(item);
             } 
             return acc;
         }, {} as Record<string, InventoryDTO[]>);

@@ -88,7 +88,7 @@ export class BaseInventoryManager extends Component {
 
     private async spawnFoodItems(items: any[]) {
         for (const item of items) {
-            if(item.quantity <= 0) return;
+            if (Number(item.quantity) <= 0) continue;
             let itemNode = ObjectPoolManager.instance.spawnFromPool(this.itemPrefab.name);
             itemNode.off(EVENT_NAME.ON_ITEM_CLICK);
             itemNode.off(EVENT_NAME.ON_FOOD_CLICK);
@@ -144,6 +144,7 @@ export class BaseInventoryManager extends Component {
         }
         this.equipingUIItem = this.selectingUIItem;
         this.actionButton.interactable = false;
+        this.selectingUIItem = null;
     }
 
     public init() {

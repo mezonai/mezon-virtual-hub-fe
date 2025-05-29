@@ -133,8 +133,17 @@ export class ShopController extends BaseInventoryManager {
     }
 
     protected override resetSelectItem() {
-        this.selectingUIItem.reset();
+        if (this.selectingUIItem) {
+            this.selectingUIItem.reset();
+            this.selectingUIItem.toggleActive(false);
+            this.selectingUIItem = null;
+        }
+        this.reset();
         this.actionButton.interactable = false;
+    }
+
+    protected onDisable(): void {
+        this.resetSelectItem();
     }
 
     protected override onUIItemClick(uiItem: ShopUIItem, data: Item) {
