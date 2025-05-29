@@ -127,7 +127,10 @@ export class InventoryManager extends BaseInventoryManager {
         item.item.mappingLocalData = null;
         if (this.groupedItems[item.item.type] == null) {
             this.groupedItems[item.item.type] = [];
-            this.categories.push(item.item.type.toString());
+            if (!this.categories.includes(item.item.type.toString())){
+                this.categories.push(item.item.type.toString());
+            }
+            this.tabController.initTabData(this.categories);
         }
 
         this.groupedItems[item.item.type].push(item);
@@ -137,10 +140,9 @@ export class InventoryManager extends BaseInventoryManager {
         delete this.groupedItems[InventoryType.FOOD];
         if (!this.groupedItems[InventoryType.FOOD]) {
             this.groupedItems[InventoryType.FOOD] = [];
-
-            const foodCategoryStr = InventoryType.FOOD.toString();
-            if (!this.categories.includes(foodCategoryStr)) {
-                this.categories.push(foodCategoryStr);
+            if (!this.categories.includes(InventoryType.FOOD)) {
+                this.categories.push(InventoryType.FOOD);
+                this.tabController.initTabData(this.categories);
             }
         }
 
@@ -230,24 +232,22 @@ export class InventoryManager extends BaseInventoryManager {
     }
 
     protected override groupByCategory(items: InventoryDTO[]): Record<string, InventoryDTO[]> {
-        return items.reduce((acc, item) => {
+        const result =  items.reduce((acc, item) => {
             if (item.item) {
                 const type = item.item.type;
                 if (!acc[type]) {
                     acc[type] = [];
                 }
                 acc[type].push(item);
-            } else if (item.food) {
-                const type = InventoryType.FOOD;
-                if (!acc[type]) {
-                    acc[type] = [];
-                }
-                acc[type].push(item);
-            }
+            } 
             return acc;
         }, {} as Record<string, InventoryDTO[]>);
-    }
 
+       if (!result[InventoryType.FOOD]) {
+        result[InventoryType.FOOD] = [];
+       }
+        return result;    
+    }
 }
 
 
