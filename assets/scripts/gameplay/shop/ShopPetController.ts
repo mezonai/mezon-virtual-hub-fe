@@ -124,7 +124,6 @@ export class ShopPetController extends BaseInventoryManager {
 
     protected override reset() {
         super.reset();
-        this.actionButton.interactable = true;
         this.itemPriceContainer.active = false;
         this.catchRateBonusPriceContainer.active = false;
     }
@@ -168,9 +167,19 @@ export class ShopPetController extends BaseInventoryManager {
     }
 
     protected override resetSelectItem() {
-        this.selectingUIItem.reset();
+        if (this.selectingUIItem) {
+            this.selectingUIItem.reset();
+            this.selectingUIItem.toggleActive(false);
+            this.selectingUIItem = null;
+        }
+        this.reset();
+        this.actionButton.interactable = false;
     }
 
+    protected onDisable(): void {
+        this.resetSelectItem();
+    }
+    
     protected override onUIItemClickFood(uiItem: ShopUIItem, data: Food) {
         if (this.selectingUIItem) {
             this.selectingUIItem.toggleActive(false);

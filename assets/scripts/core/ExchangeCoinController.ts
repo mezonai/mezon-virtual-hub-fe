@@ -79,7 +79,7 @@ export class ExchangeCoinController extends Component {
 
     private onSendTokenFail(data) {
         this.amount = -1;
-        UIManager.Instance.showNoticePopup("Chú ý", "Không thể mua Diamond");
+        UIManager.Instance.showNoticePopup("Chú ý", "Không thể nạp Diamond");
         SoundManager.instance.playSound(AudioType.NoReward);
     }
 

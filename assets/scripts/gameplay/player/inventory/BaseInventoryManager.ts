@@ -9,6 +9,7 @@ import Utilities from '../../../utilities/Utilities';
 import { ObjectPoolManager } from '../../../pooling/ObjectPoolManager';
 import { EVENT_NAME } from '../../../network/APIConstant';
 import { LocalItemDataConfig } from '../../../Model/LocalItemConfig';
+import { ResourceManager } from '../../../core/ResourceManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('BaseInventoryManager')
@@ -87,6 +88,7 @@ export class BaseInventoryManager extends Component {
 
     private async spawnFoodItems(items: any[]) {
         for (const item of items) {
+            if (Number(item.quantity) <= 0) continue;
             let itemNode = ObjectPoolManager.instance.spawnFromPool(this.itemPrefab.name);
             itemNode.off(EVENT_NAME.ON_ITEM_CLICK);
             itemNode.off(EVENT_NAME.ON_FOOD_CLICK);
@@ -142,6 +144,7 @@ export class BaseInventoryManager extends Component {
         }
         this.equipingUIItem = this.selectingUIItem;
         this.actionButton.interactable = false;
+        this.selectingUIItem = null;
     }
 
     public init() {
