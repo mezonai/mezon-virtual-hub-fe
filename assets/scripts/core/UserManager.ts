@@ -109,12 +109,11 @@ export class UserManager extends Component {
     }
 
     private setAnimalOwned(playerController: PlayerController, playerData: PlayerColysesusObjectData) {
-        let pets = ConvetData.ConvertPet(playerData.animals);
+        let pets = ConvetData.ConvertPets(playerData.animals);
         if (pets == null) return;
-        playerController.saveListOwnedPet(pets);
+        pets.forEach(x => {playerController.addOwnedPet(x);})
         const broughtPets: PetDTO[] = pets.filter(pet => pet.is_brought);
         if (broughtPets == null) return;
-        console.log("playerData.animals", broughtPets)
         this.intantiatePetFollowPlayer(broughtPets, playerData.x, playerData.y, playerController);
     }
 
@@ -287,7 +286,7 @@ export class UserManager extends Component {
 
     public onCatchPetSuccess(data) {
         OfficeSceneController.instance.currentMap.AnimalSpawner.setAnimalCaught(data.petId)
-        if (data.playerCatchId === UserManager.instance.GetMyClientPlayer.myID) this.updateMyData();
+        if (data.playerCatchId === UserManager.instance.GetMyClientPlayer.myID) this.updateMyData(data.petId);
     }
     public onPetAlreadyCaught(data) {
         UIManager.Instance.showNoticePopup("Thông báo", `Thú cưng đã bị bắt. Chúc bạn may mắn lần sau`);
@@ -304,38 +303,38 @@ export class UserManager extends Component {
 
     public onUpdateOwnedPetPlayer(data) {
         let playerCaughtPet = this.players.get(data.playerCatchId);
-        let pets = ConvetData.ConvertPet(data.pet);
-        if (playerCaughtPet == null || pets == null) return;
-        const excludedIds = new Set(playerCaughtPet.petIdList);// ListPetCũ
-        const filteredPets = pets.filter(pet => !excludedIds.has(pet.id));//List mới sau khi đã bắt     
-        if (filteredPets.length == 0) return;
-        playerCaughtPet.saveListOwnedPet(pets);
-        if (data.playerId == UserManager.instance.myClientPlayer.myID) {
-            UIManager.Instance.showNoticePopup("Thông báo", `Bạn đã bắt thành công <color=#FF0000>${filteredPets[0].name}</color>`)
-        }
+        // console.log("data.pet: ", data.pet);
+        let pet = ConvetData.ConvertPet(data.pet);
+        if (playerCaughtPet == null || pet == null) return;
+        playerCaughtPet.addOwnedPet(pet);
     }
 
     public onPetFollowPlayer(data) {
         let playerTarget = this.players.get(data.playerIdFollowPet);
-        let pets = ConvetData.ConvertPet(data.pet);
+        let pets = ConvetData.ConvertPets(data.pet);
         if (playerTarget == null || pets == null) return;
         let position = playerTarget.node.getPosition();
         this.intantiatePetFollowPlayer(pets, position.x, position.y, playerTarget)
     }
-    private updateMyData() {
+    private updateMyData(petCaughId: string) {
         WebRequestManager.instance.getUserProfile(
-            (response) => { this.onGetProfileSuccess(response) },
+            (response) => { this.onGetProfileSuccess(response, petCaughId) },
             (error) => this.onError(error)
         );
     }
 
-    private onGetProfileSuccess(respone) {
+    private onGetProfileSuccess(respone, petCaughId: string) {
         UserMeManager.Set = respone.data;
-        const petString: string = JSON.stringify(UserMeManager.Get.animals);
-        let data = {
-            pets: petString
+        const pet = UserMeManager.Get.animals.find(p => p.id === petCaughId);
+        if (UserManager.instance.GetMyClientPlayer) {
+            const content = pet != null ? `Bạn đã bắt thành công <color=#FF0000>${pet.name}</color>` : `Bạn đã bắt pet thành công`
+            UIManager.Instance.showNoticePopup("Thông báo", content);
         }
-        ServerManager.instance.sendOwnedPets(data);
+        const petString: string = JSON.stringify(pet);
+        let data = {
+            petCaught: petString
+        }
+        ServerManager.instance.sendPlayerCaughtPet(data);
     }
 
     private onError(error: any) {

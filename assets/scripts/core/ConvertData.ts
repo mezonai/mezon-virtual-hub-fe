@@ -15,7 +15,7 @@ export default class ConvetData {
             isLocked: mapItem.is_locked
         }));
     }
-    public static ConvertPet(petData: string): PetDTO[] {
+    public static ConvertPets(petData: string): PetDTO[] {
         const dataArray = JSON.parse(petData);
         return dataArray.map((data: any) => {
             const petDTO = new PetDTO();
@@ -27,6 +27,18 @@ export default class ConvetData {
             petDTO.room_code = data.room_code;
             return petDTO;
         });
+    }
+
+    public static ConvertPet(petData: string): PetDTO {
+        const data = JSON.parse(petData);
+        const petDTO = new PetDTO();
+        petDTO.id = data.id;
+        petDTO.name = data.name;
+        petDTO.species = data.species;
+        petDTO.is_caught = data.is_caught;
+        petDTO.is_brought = data.is_brought;
+        petDTO.room_code = data.room_code;
+        return petDTO;
     }
 }
 

@@ -388,7 +388,7 @@ export class ServerManager extends Component {
         this.room.send("catchPet", data);
     }
 
-    public sendOwnedPets(data) {
+    public sendPlayerCaughtPet(data) {
         this.room.send("sendOwnedPets", data);
     }
 
