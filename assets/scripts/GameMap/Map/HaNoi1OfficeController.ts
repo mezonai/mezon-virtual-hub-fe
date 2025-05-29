@@ -6,7 +6,7 @@ const { ccclass, property } = _decorator;
 export class HaNoi1OfficeController extends MapManagerBase {
     @property({type: Node}) meetingDoor: Node = null;
     getPositionPlayer(): Vec3 {
-        return new Vec3(0, -920, 0);
+        return new Vec3(72, -950, 0);
     }
 
     protected start(): void {
