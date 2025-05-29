@@ -82,8 +82,11 @@ export class AnimalInteractManager extends Component {
             }
         }
         else {
-            let content = "Lại gần hơn để tương tác với nó!";
-            this.InteractTarget.zoomBubbleChat(content);
+            if (this.animalController.animalType === AnimalType.RandomMove || this.animalController.animalType === AnimalType.RandomMoveOnServer) {
+                let content = "Lại gần hơn để tương tác với nó!";
+                this.InteractTarget.zoomBubbleChat(content);
+            }
+
         }
     }
 

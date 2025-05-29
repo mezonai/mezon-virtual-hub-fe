@@ -152,17 +152,25 @@ export class PlayerController extends Component {
     }
 
     resetPets(onDone: () => void) {
-        if (this.petFollowPrefabs?.length > 0) {
-            this.petFollowPrefabs.forEach(pet => {
-                pet.closeAnimal();
-            });
+        this.petFollowPrefabs ??= [];
+        // Nếu không có pet nào thì kết thúc luôn
+        if (this.petFollowPrefabs.length === 0) {
+            onDone();
+            return;
         }
+        this.petFollowPrefabs.forEach(pet => {
+            pet.closeAnimal();
+        });
         console.log("this.petFollowPrefabs", this.petFollowPrefabs)
         const checkInterval = setInterval(() => {
-            const allInactive = this.petFollowPrefabs.every(p => p?.node && !p.node.active);
+            const allInactive = this.petFollowPrefabs?.every(p => p?.node && !p.node.active) ?? true;
             if (allInactive) {
                 clearInterval(checkInterval);
-                this.petFollowPrefabs.length = 0;
+                if (!Array.isArray(this.petFollowPrefabs)) {
+                    this.petFollowPrefabs = [];
+                } else {
+                    this.petFollowPrefabs.length = 0;
+                }
                 onDone(); // Gọi callback
             }
         }, 10);
