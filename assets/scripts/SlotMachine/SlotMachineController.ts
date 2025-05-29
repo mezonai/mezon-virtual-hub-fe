@@ -92,7 +92,6 @@ export class SlotMachineController extends Component {
             async (response) => {
                 try {
                     UserMeManager.playerCoin -= this.minusCoin;
-                    this.showMinusCoinEffect(this.minusCoin);
                     this.bubbleRotation.startRotation();
                     SoundManager.instance.playSound(AudioType.SlotMachine);
                     await this.delay(2000);
