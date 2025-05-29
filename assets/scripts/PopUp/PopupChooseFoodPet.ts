@@ -32,17 +32,6 @@ export class PopupChooseFoodPet extends BasePopup {
     }
 
     showPopup(param?: any) {
-        this.checkCloseInterval = setInterval(() => {
-            this.checkPetsDistance(param.animal);
-        }, 5000);
-        for (let i = 0; i < ResourceManager.instance.FoodData.data.length; i++) {
-            let newitem = instantiate(this.iItemChooseFood);
-            newitem.setParent(this.scrollView.content);
-            let itemChooseFood = newitem.getComponent(ItemChooseFood);
-            if (itemChooseFood == null) continue;
-            itemChooseFood.setDataItem(ResourceManager.instance.FoodData.data[i], this.chooseFood.bind(this));
-            if (i == 0) itemChooseFood.boundToggleCallback();// gọi item đầu để lấy food;
-        }
         this.chooseButton.node.on(Button.EventType.CLICK, () => {
             (async () => {
                 if (param.animal.animalMoveType == AnimalType.Caught) {
@@ -80,6 +69,17 @@ export class PopupChooseFoodPet extends BasePopup {
             if (param.onCancelCatch) param.onCancelCatch();
             this.closePopup();
         }, this);
+        this.checkCloseInterval = setInterval(() => {
+            this.checkPetsDistance(param.animal);
+        }, 5000);
+        for (let i = 0; i < ResourceManager.instance.FoodData.data.length; i++) {
+            let newitem = instantiate(this.iItemChooseFood);
+            newitem.setParent(this.scrollView.content);
+            let itemChooseFood = newitem.getComponent(ItemChooseFood);
+            if (itemChooseFood == null) continue;
+            itemChooseFood.setDataItem(ResourceManager.instance.FoodData.data[i], this.chooseFood.bind(this));
+            if (i == 0) itemChooseFood.boundToggleCallback();// gọi item đầu để lấy food;
+        }        
     }
 
     chooseFood(food: Food, quantity: number) {

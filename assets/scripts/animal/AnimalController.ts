@@ -20,7 +20,7 @@ export class AnimalController extends Component {
     @property(Label) contentBubbleChat: Label = null;
     @property(RichText) nameAnimal: RichText = null;
     @property(Node) spriteNode: Node = null!;
-     @property(Collider2D) collider: Collider2D = null;
+    @property(Collider2D) collider: Collider2D = null;
     @property({ type: RandomlyMover }) randomlyMover: RandomlyMover = null;
     @property(FollowTargetUser) followTargetUser: FollowTargetUser = null!;
     @property({ type: [Color] }) nameColor: Color[] = [];
@@ -34,7 +34,7 @@ export class AnimalController extends Component {
         this.pet = pet;
         this.nameAnimal.node.active = moveType == AnimalType.FollowTarget;
         this.collider.enabled = true;
-        if(moveType == AnimalType.RandomMoveOnServer) {
+        if (moveType == AnimalType.RandomMoveOnServer) {
             this.animalType = AnimalType.RandomMoveOnServer;
             return;
         }
@@ -45,7 +45,7 @@ export class AnimalController extends Component {
         if (moveType == AnimalType.RandomMove) {
             this.setRandomMove(newArea);
             return;
-        }       
+        }
         this.setFollowTarget(owner, parentPetFollowUser);
     }
 
@@ -72,7 +72,7 @@ export class AnimalController extends Component {
 
     }
 
-    public closeAnimal(moveType : AnimalType = AnimalType.NoMove) {
+    public closeAnimal(moveType: AnimalType = AnimalType.NoMove) {
         this.animalType = moveType;
         if (this.followTargetUser) {
             this.followTargetUser.stopMove();
@@ -82,31 +82,31 @@ export class AnimalController extends Component {
             this.randomlyMover.stopMove();
         }
 
-       
-        if (this.node){
-             Tween.stopAllByTarget(this.node);
-             this.node.setPosition(Vec3.ZERO);
-             ObjectPoolManager.instance.returnToPool(this.node);
-        }      
+
+        if (this.node) {
+            Tween.stopAllByTarget(this.node);
+            this.node.setPosition(Vec3.ZERO);
+            ObjectPoolManager.instance.returnToPool(this.node);
+        }
     }
 
     catchFail(content: string) {
-        this.showBubbleChat(content);
-        if(this.animalType == AnimalType.RandomMoveOnServer) return;
+        this.showBubbleChat(content, 1000);
+        if (this.animalType == AnimalType.RandomMoveOnServer) return;
         setTimeout(() => {
             this.randomlyMover.move();
         }, 500);
     }
 
-    showBubbleChat(content: string) {
-        this.zoomBubbleChat(content);
+    showBubbleChat(content: string, duration: number) {
+        this.zoomBubbleChat(content, duration);
     }
 
     public get Pet(): PetDTO | null {
         return this.pet;
     }
 
-    public zoomBubbleChat(contentChat: string) {
+    public zoomBubbleChat(contentChat: string, duration: number) {
         if (this.tweenAction) {
             this.tweenAction.stop();
         }
@@ -125,7 +125,7 @@ export class AnimalController extends Component {
             .start();
         this.hideTimeout = setTimeout(() => {
             this.shrinkBubbleChat(0.5);
-        }, 4000);
+        }, duration);
     }
 
     public shrinkBubbleChat(timeShrink: number) {
@@ -143,7 +143,7 @@ export class AnimalController extends Component {
             .start();
     }
 
-    syncPositionServer(petData: PetColysesusObjectData){
+    syncPositionServer(petData: PetColysesusObjectData) {
         this.node.setPosition(new Vec3(petData.x, petData.y, 0));
         this.spriteNode.scale = new Vec3(petData.angle.x > 0 ? 1 : -1, 1);
     }

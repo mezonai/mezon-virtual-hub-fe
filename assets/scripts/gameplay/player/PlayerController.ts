@@ -40,7 +40,7 @@ export class PlayerController extends Component {
     @property(Label) contentBubbleChat: Label = null;
     @property({ type: PetCatchingController }) petCatching: PetCatchingController;
     @property petFollowPrefabs: AnimalController[] = [];
-    @property petIdList: string[] | null;
+    @property petIdList: string[] = [];
     private tweenAction: Tween<Node> | null = null;
     private hideTimeout: number | null = null;
     private showNameTimer: number | null = null;
@@ -90,8 +90,8 @@ export class PlayerController extends Component {
         this.showName(false);
     }
 
-    saveListOwnedPet(pets: PetDTO[]) {
-        this.petIdList = pets.map(pet => pet.id);
+    addOwnedPet(pet: PetDTO) {
+        this.petIdList.push(pet.id);
     }
 
     savePetFollow(petPrefab: AnimalController) {
@@ -189,10 +189,15 @@ export class PlayerController extends Component {
 
     setPositonPet() {
         setTimeout(() => {
-            this.petFollowPrefabs.forEach(x => {
-                x.node.active = true;
-                x.node.setPosition(this.node.getPosition());
-            });
+            if (this.petFollowPrefabs?.length) {
+                this.petFollowPrefabs.forEach(x => {
+                    if (x?.node?.isValid) {
+                        x.node.active = true;
+                        x.node.setPosition(this.node.getPosition());
+                    }
+                });
+            }
+
         }, 500); // chờ 0.5 giây
     }
 
