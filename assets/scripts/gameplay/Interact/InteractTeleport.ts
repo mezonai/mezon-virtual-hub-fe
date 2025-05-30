@@ -39,7 +39,7 @@ export class InteractTeleport extends Interactable {
         }
         switch (roomType) {
             case RoomType.OFFICE:
-                return `Để Dịch Chuyển Đến Văn Phòng${Constants.convertNameOffice(this.currentOffice)}`;;
+                return `Để Dịch Chuyển Đến Văn Phòng ${Constants.convertNameOffice(this.currentOffice)}`;;
             case RoomType.COMPLEXNCC:
                 return "Để Dịch Chuyển Đến Khu Phức Hợp";
             case RoomType.SHOP1:
