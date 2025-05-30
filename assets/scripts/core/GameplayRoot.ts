@@ -47,7 +47,7 @@ export class GameplayRoot extends Component {
         WebRequestManager.instance.toggleLoading(true);
         UIManager.Instance.init();
         await UserManager.instance.init();
-        await OfficeSceneController.instance.LoadData();
+        await this.loadMapUntilSuccess();
         this.initDataFromAPI();
     }
 
@@ -60,10 +60,10 @@ export class GameplayRoot extends Component {
         game.emit(EVENT_NAME.ON_OFFICE_SCENE_LOADED);
     }
 
-    private initDataFromAPI() {       
+    private initDataFromAPI() {
         WebRequestManager.instance.getAllItem((respone) => { this.onGetAllItem(respone) }, (error) => { this.onApiError(error); });
-        WebRequestManager.instance.getAllItemFood((respone) => { this.onGetAllFood(respone) }, (error) => { this.onApiError(error); });    
-        WebRequestManager.instance.getAllPetData(UserMeManager.Get.map.map_key, (respone) => { this.onGetAllPetData(respone) }, (error) => { this.onApiError(error); });    
+        WebRequestManager.instance.getAllItemFood((respone) => { this.onGetAllFood(respone) }, (error) => { this.onApiError(error); });
+        WebRequestManager.instance.getAllPetData(OfficeSceneController.instance.nameCode, (respone) => { this.onGetAllPetData(respone) }, (error) => { this.onApiError(error); });
     }
 
     private onGetAllPetData(respone) {
@@ -84,6 +84,15 @@ export class GameplayRoot extends Component {
     private onApiError(error) {
         UIManager.Instance.showNoticePopup("Waning", error.error_message);
     }
+
+    async loadMapUntilSuccess(delay = 1000) {
+    while (true) {
+        const success = await OfficeSceneController.instance.LoadData();
+        if (success) break;
+        console.warn("Thử lại LoadData sau 1 giây...");
+        await new Promise(res => setTimeout(res, delay));
+    }
+}
 }
 
 

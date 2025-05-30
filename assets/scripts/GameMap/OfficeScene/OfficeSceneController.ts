@@ -22,7 +22,7 @@ export class OfficeSceneController extends Component {
     @property(Node)
     mapParent: Node = null;
     @property currentMap: MapManagerBase = null;
-    
+    nameCode : string = "";
     protected onLoad(): void {
         if (OfficeSceneController._instance == null) {
             OfficeSceneController._instance = this;
@@ -32,10 +32,10 @@ export class OfficeSceneController extends Component {
     protected onDestroy(): void {
         OfficeSceneController._instance = null;
     }
-    public async LoadData() {
+    public async LoadData() : Promise<boolean>{
         const param = SceneManagerController.getSceneParam<OfficeSenenParameter>();
         if (param != null) {
-            let nameRoom = param.nameRoomServer;
+            let nameRoom = this.nameCode = param.nameRoomServer;
             let map = instantiate(this.mapOffice[this.getOffice(param.currentOffice, nameRoom)]);
             map.setParent(this.mapParent);
             let mapManager =map.getComponent("MapManagerBase") as MapManagerBase;
@@ -45,9 +45,9 @@ export class OfficeSceneController extends Component {
                 mapManager.setCurrentOffice(param.currentOffice, param.roomStart);
             } else {
                 console.error("MapManagerBase not found on instantiated map!");
+                return false;
             }
-
-            await ServerManager.instance.init(nameRoom);
+            await ServerManager.instance.init(nameRoom);          
         }
         else {
             console.log("No data received.");
@@ -59,10 +59,11 @@ export class OfficeSceneController extends Component {
             });
             
         });
+        return true;
     }
 
     public spawnPet(data) {
-        if (this.currentMap?.AnimalSpawner?.spawnZones.length > 0) {           
+        if (this.currentMap?.AnimalSpawner?.spawnZones.length > 0) {                   
             this.currentMap.AnimalSpawner.spawnPet(data);
         }
     }
