@@ -22,11 +22,8 @@ export class AnimalSpawner extends Component {
         for (const pet of petData) {           
             if (pet.is_caught || pet.species == "DragonIce")
                 continue;
-
             let petObj = ObjectPoolManager.instance.spawnFromPool(pet.species);
-            console.log("SPAWN1", pet.species);
             if (petObj) {
-                console.log("SPAWN1");
                 let petParent = this.getRandomZone();
                 petObj.setParent(petParent.node);
                 petObj.setPosition(this.getRandomPositionInZone(petParent.node));
@@ -34,7 +31,6 @@ export class AnimalSpawner extends Component {
                 const { bound } = this.getZoneBounds(petParent.node);
                 let animal = petObj.getComponent(AnimalController);
                 if (animal) {
-                    console.log("SPAWN ", pet);
                     this.spawnedAnimals.push(animal);
                     animal.setDataPet(pet, AnimalType.RandomMove, null, new Vec2(bound.x, bound.y));
                 }

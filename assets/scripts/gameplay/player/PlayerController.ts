@@ -138,6 +138,7 @@ export class PlayerController extends Component {
     }
 
     private setPlayerName(name: string) {
+        this.userName = name;
         this.playerNameText.string = `<outline color=#000000 width=1>${name}</outline>`;
     }
 
