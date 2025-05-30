@@ -40,7 +40,6 @@ export class PlayerController extends Component {
     @property(Label) contentBubbleChat: Label = null;
     @property({ type: PetCatchingController }) petCatching: PetCatchingController;
     @property petFollowPrefabs: AnimalController[] = [];
-    @property petIdList: string[] = [];
     private tweenAction: Tween<Node> | null = null;
     private hideTimeout: number | null = null;
     private showNameTimer: number | null = null;
@@ -88,10 +87,6 @@ export class PlayerController extends Component {
 
     private onPreventOutMap() {
         this.showName(false);
-    }
-
-    addOwnedPet(pet: PetDTO) {
-        this.petIdList.push(pet.id);
     }
 
     savePetFollow(petPrefab: AnimalController) {
@@ -143,6 +138,7 @@ export class PlayerController extends Component {
     }
 
     private setPlayerName(name: string) {
+        this.userName = name;
         this.playerNameText.string = `<outline color=#000000 width=1>${name}</outline>`;
     }
 
@@ -161,7 +157,6 @@ export class PlayerController extends Component {
         this.petFollowPrefabs.forEach(pet => {
             pet.closeAnimal();
         });
-        console.log("this.petFollowPrefabs", this.petFollowPrefabs)
         const checkInterval = setInterval(() => {
             const allInactive = this.petFollowPrefabs?.every(p => p?.node && !p.node.active) ?? true;
             if (allInactive) {

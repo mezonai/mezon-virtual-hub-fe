@@ -82,7 +82,11 @@ export class UserManager extends Component {
         // Gắn vào parent & lưu map
         playerNode.setParent(this.playerParent);
         this.players.set(playerData.sessionId, playerNode.getComponent(PlayerController));
-        this.setAnimalOwned(playerController, playerData);
+        const pets = JSON.parse(playerData.animals);
+        if (pets != null) {
+            this.intantiatePetFollowPlayer(playerController, pets);
+        }
+
         // Gửi event khi player được tạo xong
         ServerManager.instance.node.emit(EVENT_NAME.ON_PLAYER_ADDED, playerData.sessionId);
 
@@ -93,28 +97,28 @@ export class UserManager extends Component {
         }
     }
 
-    intantiatePetFollowPlayer(pets: PetDTO[], x: number, y: number, playerController: PlayerController) {
+    intantiatePetFollowPlayer(playerController: PlayerController, pets: any) {
+        if (pets == null) return;
         playerController.resetPets(() => {
-            for (const petDTO of pets) {
-                const animal = ObjectPoolManager.instance.spawnFromPool(petDTO.species);
+            for (const pet of pets) {
+                const animal = ObjectPoolManager.instance.spawnFromPool(pet.species);
                 const animalController = animal.getComponent(AnimalController);
-                if(animalController == null) continue;            
-                animalController.setDataPet(petDTO, AnimalType.FollowTarget, playerController, null, this.animalParent);
+                if (animalController == null) continue;
+                const petDto = Object.assign(new PetDTO(), {
+                    id: pet.id,
+                    name: pet.name,
+                    species: pet.species,
+                    is_caught: true,
+                    is_brought: true,
+                    room_code: ''
+                });
+                animalController.setDataPet(petDto, AnimalType.FollowTarget, playerController, null, this.animalParent);
                 playerController.savePetFollow(animalController);
                 animal.setParent(this.animalParent);
                 animal.active = false;
-            } 
-            playerController.setPositonPet();          
+            }
+            playerController.setPositonPet();
         });
-    }
-
-    private setAnimalOwned(playerController: PlayerController, playerData: PlayerColysesusObjectData) {
-        let pets = ConvetData.ConvertPets(playerData.animals);
-        if (pets == null) return;
-        pets.forEach(x => {playerController.addOwnedPet(x);})
-        const broughtPets: PetDTO[] = pets.filter(pet => pet.is_brought);
-        if (broughtPets == null) return;
-        this.intantiatePetFollowPlayer(broughtPets, playerData.x, playerData.y, playerController);
     }
 
     private async waitForPhysicsReady() {
@@ -127,6 +131,7 @@ export class UserManager extends Component {
     public onRemove(player, sessionId) {
         if (this.players.has(sessionId)) {
             let player = this.players.get(sessionId);
+            player.resetPets(() =>{});
             player.removePlayer();
         } else {
             console.warn(`No player found with sessionId: ${sessionId}`);
@@ -298,23 +303,14 @@ export class UserManager extends Component {
     }
 
     public onPetDisappear(data) {
-         OfficeSceneController.instance.currentMap.AnimalSpawner.disappearedPet(data.petId)
-    }
-
-    public onUpdateOwnedPetPlayer(data) {
-        let playerCaughtPet = this.players.get(data.playerCatchId);
-        // console.log("data.pet: ", data.pet);
-        let pet = ConvetData.ConvertPet(data.pet);
-        if (playerCaughtPet == null || pet == null) return;
-        playerCaughtPet.addOwnedPet(pet);
+        OfficeSceneController.instance.currentMap.AnimalSpawner.disappearedPet(data.petId)
     }
 
     public onPetFollowPlayer(data) {
         let playerTarget = this.players.get(data.playerIdFollowPet);
         let pets = ConvetData.ConvertPets(data.pet);
         if (playerTarget == null || pets == null) return;
-        let position = playerTarget.node.getPosition();
-        this.intantiatePetFollowPlayer(pets, position.x, position.y, playerTarget)
+        this.intantiatePetFollowPlayer(playerTarget, pets)
     }
     private updateMyData(petCaughId: string) {
         WebRequestManager.instance.getUserProfile(
@@ -330,11 +326,6 @@ export class UserManager extends Component {
             const content = pet != null ? `Bạn đã bắt thành công <color=#FF0000>${pet.name}</color>` : `Bạn đã bắt pet thành công`
             UIManager.Instance.showNoticePopup("Thông báo", content);
         }
-        const petString: string = JSON.stringify(pet);
-        let data = {
-            petCaught: petString
-        }
-        ServerManager.instance.sendPlayerCaughtPet(data);
     }
 
     private onError(error: any) {

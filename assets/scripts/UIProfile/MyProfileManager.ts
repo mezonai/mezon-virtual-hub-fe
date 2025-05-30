@@ -94,6 +94,10 @@ export class MyProfileManager extends BaseProfileManager {
     }
 
     protected updateProfile() {
+        if (!this.validateUsernameInput(this.fullName_EBox.string)){
+            UIManager.Instance.showNoticePopup(null, "Tên không hợp lệ. Tên không thể chứa ký tự đặc biệt và khoảng trắng");
+            return;
+        }
         if (this.fullName_EBox.string.length < 5) {
             UIManager.Instance.showNoticePopup(null, "Độ dài của tên phải lớn hơn 5");
             this.setEditingState(false);
@@ -180,5 +184,9 @@ export class MyProfileManager extends BaseProfileManager {
     private clearInputFields() {
         this.fullName_EBox.string = "";
         this.gender_txt_Choose.string = this.genderOptions[this.selectedGenderIndex];
+    }
+
+    validateUsernameInput(value: string): boolean {
+        return /^[a-zA-Z0-9]+$/.test(value);
     }
 }

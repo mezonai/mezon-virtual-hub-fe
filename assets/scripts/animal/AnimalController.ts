@@ -1,10 +1,11 @@
-import { _decorator, Collider2D, Color, Component, Label, Node, RichText, tween, Tween, Vec2, Vec3 } from 'cc';
+import { _decorator, Collider2D, Color, Component, director, Label, Node, RichText, tween, Tween, Vec2, Vec3 } from 'cc';
 import { PlayerController } from '../gameplay/player/PlayerController';
 import { PetDTO } from '../Model/PetDTO';
 import { RandomlyMover } from '../utilities/RandomlyMover';
 import { FollowTargetUser } from './FollowTargetUser';
 import { ObjectPoolManager } from '../pooling/ObjectPoolManager';
 import { PetColysesusObjectData } from '../Model/Player';
+import { EVENT_NAME } from '../network/APIConstant';
 const { ccclass, property } = _decorator;
 export enum AnimalType {
     RandomMove = 1,
@@ -26,7 +27,7 @@ export class AnimalController extends Component {
     @property({ type: [Color] }) nameColor: Color[] = [];
     animalType = AnimalType.NoMove;
     private animalPlayer: PlayerController = null;
-    private pet: PetDTO;
+    private pet: PetDTO | null = null;
     private tweenAction: Tween<Node> | null = null;
     private hideTimeout: number | null = null;
 
@@ -56,12 +57,21 @@ export class AnimalController extends Component {
     }
 
     setFollowTarget(owner: PlayerController, parentPetFollowUser: Node) {
+        if(owner.isMyClient){
+            director.off(EVENT_NAME.UPDATE_INFO_PROFILE, this.updateNameOwnedUser, this);
+            director.on(EVENT_NAME.UPDATE_INFO_PROFILE, this.updateNameOwnedUser, this);
+        }       
         this.collider.enabled = false;
         this.nameAnimal.fontColor = owner.isMyClient ? this.nameColor[0] : this.nameColor[1];
         this.nameAnimal.string = `<outline color=#000000 width=1>${this.pet.name} [${owner.userName}]</outline>`;
         this.animalPlayer = owner;
         this.animalType = AnimalType.FollowTarget;
         this.followTargetUser.playFollowTarget(owner.node, this.spriteNode, parentPetFollowUser);
+    }
+
+    updateNameOwnedUser(data: any) {
+        if (!data || !data.fullname) return;
+        this.nameAnimal.string = `<outline color=#000000 width=1>${this.pet.name} [${data.fullname}]</outline>`;
     }
 
     setDataSlot() {
