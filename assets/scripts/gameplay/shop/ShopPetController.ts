@@ -133,7 +133,7 @@ export class ShopPetController extends BaseInventoryManager {
     private setupQuantityHandlers() {
         this.increaseQuantityBtn.node.on(Button.EventType.CLICK, this.onIncreaseQuantity, this);
         this.decreaseQuantityBtn.node.on(Button.EventType.CLICK, this.onDecreaseQuantity, this);
-        this.quantityItemFood.node.on(EditBox.EventType.EDITING_DID_ENDED, this.onQuantityChanged, this);
+        this.quantityItemFood.node.on(EditBox.EventType.TEXT_CHANGED, this.onQuantityChanged, this);
     }
 
     private onIncreaseQuantity() {
@@ -146,14 +146,14 @@ export class ShopPetController extends BaseInventoryManager {
         this.updateQuantityUI();
     }
 
-    private onQuantityChanged() {
-        const value = parseInt(this.quantityItemFood.string);
-
-        if (isNaN(value) || value < this.quantityLimit) {
-            this.quantity = this.quantityLimit;
-        } else {
-            this.quantity = value;
+    private onQuantityChanged(editbox: EditBox) {
+       const cleanString = editbox.string.replace(/[^0-9]/g, '');
+        if (editbox.string !== cleanString) {
+            editbox.string = cleanString;
         }
+
+        const value = parseInt(cleanString);
+        this.quantity = isNaN(value) || value < this.quantityLimit ? this.quantityLimit : value;
 
         this.updateQuantityUI();
     }
@@ -235,7 +235,7 @@ export class ShopPetController extends BaseInventoryManager {
     protected onDisable(): void {
         this.resetSelectItem();
     }
-    
+
     protected override onUIItemClickFood(uiItem: ShopUIItem, data: Food) {
         if (this.selectingUIItem) {
             this.selectingUIItem.toggleActive(false);

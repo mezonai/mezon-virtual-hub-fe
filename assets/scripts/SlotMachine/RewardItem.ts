@@ -33,7 +33,7 @@ export class RewardItem extends BaseInventoryUIITem {
 
     setupAvatar() {
         this.go_CoinReceive.active = false;
-        this.go_foodReceive.active = true;
+        this.go_foodReceive.active = false;
         this.go_Avartar.active = true;
         this.go_Particle.active = true;
         this.spawnFlyIconBurst();
