@@ -33,6 +33,7 @@ export class ShopPetController extends BaseInventoryManager {
 
     private quantity: number = 1;
     private quantityLimit: number = 1;
+    private quantityIncreaseBtn: number = 1;
 
     protected override async actionButtonClick() {
         try {
@@ -47,7 +48,6 @@ export class ShopPetController extends BaseInventoryManager {
                 await this.getAllFoodAsync();
                 this.addItemToInventory(result);
                 this.ResetQuantity();
-                //this.resetSelectItem();
             }
 
         } catch (error) {
@@ -137,12 +137,12 @@ export class ShopPetController extends BaseInventoryManager {
     }
 
     private onIncreaseQuantity() {
-        this.quantity += 1;
+        this.quantity += this.quantityIncreaseBtn;
         this.updateQuantityUI();
     }
 
     private onDecreaseQuantity() {
-        this.quantity = Math.max(this.quantity - 1, 1);
+        this.quantity = Math.max(this.quantity - this.quantityIncreaseBtn, this.quantityLimit);
         this.updateQuantityUI();
     }
 
