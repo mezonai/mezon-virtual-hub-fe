@@ -112,8 +112,8 @@ export class WebRequestManager extends Component {
         APIManager.getData(this.combineWithSlash(APIConstant.FOOD), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
-    public postBuyFood(data, type, successCallback, errorCallback) {
-        const url = `${this.combineWithSlash(APIConstant.INVENTORY, APIConstant.BUY, data)}?type=${type}`;
+    public postBuyFood(foodId, quantity, type, successCallback, errorCallback) {
+        const url = `${APIConstant.INVENTORY}/${APIConstant.BUY}/${foodId}?quantity=${quantity}&type=${type}`;
         APIManager.postData(url, {}, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
