@@ -284,7 +284,7 @@ export class UserManager extends Component {
 
     public onGlobalChat(id) {
         if (id == this.GetMyClientPlayer.myID) {
-            UserMeManager.playerCoin -= Constants.WiSH_FEE;
+            //UserMeManager.playerCoin -= Constants.WiSH_FEE;
             this.showTrollMessage();
         }
     }

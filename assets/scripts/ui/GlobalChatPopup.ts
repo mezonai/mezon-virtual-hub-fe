@@ -9,10 +9,16 @@ const { ccclass, property } = _decorator;
 export class GlobalChatPopup extends Component {
     @property({type: EditBox}) content: EditBox = null;
     @property({type: Node}) sendButton: Node = null;
+    @property({type: Node}) closeButton: Node = null;
     @property({type: UIIdentify}) panel: UIIdentify = null;
 
     protected start(): void {
         this.sendButton.on(Node.EventType.TOUCH_START, this.onSend,this);
+        this.closeButton.on(Node.EventType.TOUCH_START, this.onClose,this);
+    }
+
+    public onClose(){
+        this.panel.hide();
     }
 
     public onSend() {
