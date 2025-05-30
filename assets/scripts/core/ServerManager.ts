@@ -225,9 +225,9 @@ export class ServerManager extends Component {
             SoundManager.instance.playSound(AudioType.NoReward);
         });
 
-        this.room.onMessage("onWithrawDiamond", (data) => {
-            SoundManager.instance.playSound(AudioType.ReceiveReward);
+         this.room.onMessage("onWithrawDiamond", (data) => {
             if (this.withAmount > 0 && UserMeManager.Get) {
+                SoundManager.instance.playSound(AudioType.ReceiveReward);
                 UIManager.Instance.showNoticePopup("Thông báo", `<color=#FF0000>${Utilities.convertBigNumberToStr(this.withAmount)} Diamond</color> được trừ từ tài khoản`, () => {
                     UserMeManager.playerDiamond -= this.withAmount;
                     this.withAmount = -1;
@@ -241,18 +241,18 @@ export class ServerManager extends Component {
         });
 
         this.room.onMessage("onExchangeDiamondToCoin", (data) => {
-           
-            SoundManager.instance.playSound(AudioType.ReceiveReward);
             if (this.exchangeAmount > 0 && UserMeManager.Get) {
-                 const { coinChange, diamondChange } = data;
-                 const msg = `<color=#FF0000>${Utilities.convertBigNumberToStr(Math.abs(diamondChange))} Diamond</color> đã được chuyển thành <color=#00FF00>${coinChange} coin</color>`;
-                 UIManager.Instance.showNoticePopup("Thông báo", msg, () => {
-                     UserMeManager.playerDiamond += diamondChange;
-                     UserMeManager.playerCoin += coinChange;
+                SoundManager.instance.playSound(AudioType.ReceiveReward);
+                const { coinChange, diamondChange } = data;
+                const msg = `<color=#FF0000>${Utilities.convertBigNumberToStr(Math.abs(diamondChange))} Diamond</color> đã được chuyển thành <color=#00FF00>${coinChange} coin</color>`;
+                UIManager.Instance.showNoticePopup("Thông báo", msg, () => {
+                    UserMeManager.playerDiamond += diamondChange;
+                    UserMeManager.playerCoin += coinChange;
                     this.exchangeAmount = -1;
                 });
             }
         });
+        
         this.room.onMessage("onCatchPetSuccess", (data) => {
             UserManager.instance.onCatchPetSuccess(data);
         });
