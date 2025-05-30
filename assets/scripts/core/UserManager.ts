@@ -247,7 +247,7 @@ export class UserManager extends Component {
         let player = this.players.get(sessionId);
 
         if (player && player.myID != this.GetMyClientPlayer.myID) {
-            EffectManager.instance.spawnPointEffect(amountChange, player.node.worldPosition.clone().add(new Vec3(randomRange(-10, 10), 0, 0)), RewardType.GOLD);
+            //EffectManager.instance.spawnPointEffect(amountChange, player.node.worldPosition.clone().add(new Vec3(randomRange(-10, 10), 0, 0)), RewardType.GOLD);
         }
     }
 
@@ -262,7 +262,7 @@ export class UserManager extends Component {
 
         let player = this.players.get(sessionId);
         if (player && player.myID != this.GetMyClientPlayer.myID) {
-            EffectManager.instance.spawnPointEffect(amountChange, player.node.worldPosition.clone().add(new Vec3(randomRange(-10, 10), 0, 0)), RewardType.DIAMOND);
+            //EffectManager.instance.spawnPointEffect(amountChange, player.node.worldPosition.clone().add(new Vec3(randomRange(-10, 10), 0, 0)), RewardType.DIAMOND);
         }
     }
 
