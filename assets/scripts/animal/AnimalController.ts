@@ -26,7 +26,7 @@ export class AnimalController extends Component {
     @property({ type: [Color] }) nameColor: Color[] = [];
     animalType = AnimalType.NoMove;
     private animalPlayer: PlayerController = null;
-    private pet: PetDTO;
+    private pet: PetDTO | null = null;
     private tweenAction: Tween<Node> | null = null;
     private hideTimeout: number | null = null;
 

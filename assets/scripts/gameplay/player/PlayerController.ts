@@ -40,7 +40,6 @@ export class PlayerController extends Component {
     @property(Label) contentBubbleChat: Label = null;
     @property({ type: PetCatchingController }) petCatching: PetCatchingController;
     @property petFollowPrefabs: AnimalController[] = [];
-    @property petIdList: string[] = [];
     private tweenAction: Tween<Node> | null = null;
     private hideTimeout: number | null = null;
     private showNameTimer: number | null = null;
@@ -88,10 +87,6 @@ export class PlayerController extends Component {
 
     private onPreventOutMap() {
         this.showName(false);
-    }
-
-    addOwnedPet(pet: PetDTO) {
-        this.petIdList.push(pet.id);
     }
 
     savePetFollow(petPrefab: AnimalController) {

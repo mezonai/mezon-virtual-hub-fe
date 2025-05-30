@@ -264,9 +264,6 @@ export class ServerManager extends Component {
         });
         this.room.onMessage("onCatchPetFail", (data) => {
             UserManager.instance.onCatchPetFail(data);
-        });
-        this.room.onMessage("onSendOwnedPets", (data) => {
-            UserManager.instance.onUpdateOwnedPetPlayer(data);
         });       
         this.room.onMessage("onPetFollowPlayer", (data) => {
             UserManager.instance.onPetFollowPlayer(data);
@@ -287,7 +284,6 @@ export class ServerManager extends Component {
 
         this.room.state.pets.onAdd((pet, key) => {
             let petData = new PetColysesusObjectData(key, this.room, pet.position.x, pet.position.y, pet.name, new Vec2(pet.angle.x, pet.angle.y), pet);
-            console.log("onAdd: "+ petData.x + " " + petData.y );
             if (OfficeSceneController.instance.currentMap == null) return; {
                 OfficeSceneController.instance.currentMap.AnimalSpawner.spawnPetOnServer(petData);
             }
@@ -386,10 +382,6 @@ export class ServerManager extends Component {
 
     public sendCatchPet(data) {
         this.room.send("catchPet", data);
-    }
-
-    public sendPlayerCaughtPet(data) {
-        this.room.send("sendOwnedPets", data);
     }
 
     public sendPetFollowPlayer(data) {
