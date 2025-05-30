@@ -28,6 +28,7 @@ export class SendTokenPanel extends Component {
     private cb = null;
     private isBuy: boolean = false;
     private isWithdraw: boolean = false;
+    private isExchange: boolean = false;
     private lastType: SendActionType = null;
 
     private cbBuy: (amount: number) => void = null;
@@ -35,6 +36,7 @@ export class SendTokenPanel extends Component {
     private cbWithdraw: (amount: number) => void = null;
 
     protected start(): void {
+        localStorage.removeItem("dont_show_buy_notice");
         this.presetButton.forEach(button => {
             button.node.on(Node.EventType.TOUCH_START, () => {
                 this.onPresetButtonClick(button.localData);
@@ -62,6 +64,7 @@ export class SendTokenPanel extends Component {
     public setSendCallback(callback: (amount: number) => void) {
         this.isBuy = false;
         this.isWithdraw = false;
+        this.isExchange = false;
         this.withdrawButton.active = false;
         this.changeButton.active = false;
         this.title.string = "Tặng Quà";
@@ -73,6 +76,7 @@ export class SendTokenPanel extends Component {
     public setBuyCallback(callback: (amount: number) => void) {
         this.isBuy = true;
         this.isWithdraw = false;
+        this.isExchange = false;
         this.title.string = "Nạp/Rút/Đổi Diamond";
         this.sendButtonTitle.string = "Nạp";
         this.withdrawButton.active = true;
@@ -84,6 +88,7 @@ export class SendTokenPanel extends Component {
     public setWithdrawCallback(callback: (amount: number) => void) {
         this.isBuy = false;
         this.isWithdraw = true;
+        this.isExchange = false;
         this.title.string = "Nạp/Rút/Đổi Diamond";
         this.sendButtonTitle.string = "Nạp";
         this.cbWithdraw = callback;
