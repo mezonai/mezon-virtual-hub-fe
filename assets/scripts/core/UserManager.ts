@@ -131,6 +131,7 @@ export class UserManager extends Component {
     public onRemove(player, sessionId) {
         if (this.players.has(sessionId)) {
             let player = this.players.get(sessionId);
+            player.resetPets(() =>{});
             player.removePlayer();
         } else {
             console.warn(`No player found with sessionId: ${sessionId}`);

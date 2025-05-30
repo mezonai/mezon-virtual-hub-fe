@@ -119,6 +119,7 @@ export class FollowTargetUser extends Component {
     }
 
     stopTween() {
+        Tween.stopAllByTarget(this.node);
         if (this.currentTween) {
             this.currentTween.stop();
             this.currentTween = null;
