@@ -98,6 +98,7 @@ export class SendTokenPanel extends Component {
     public setChangeDiamondToCoinCallback(callback: (amount: number) => void) {
         this.isBuy = false;
         this.isWithdraw = false;
+        this.isExchange = true;
         this.title.string = "Nạp/Rút/Đổi Diamond";
         this.sendButtonTitle.string = "Nạp";
         this.cbChange = callback;
@@ -150,11 +151,11 @@ export class SendTokenPanel extends Component {
             type = this.lastType;
         }
 
-        if (openpopup && (this.isBuy || this.isWithdraw) && localStorage.getItem("dont_show_buy_notice") != "true") {
+        if (openpopup && (this.isBuy || this.isWithdraw || this.isExchange) && localStorage.getItem("dont_show_buy_notice") != "true") {
             this.lastType = type;
             this.noticePopup.show();
             return;
-        } else if (this.isBuy || this.isWithdraw) {
+        } else if (this.isBuy || this.isWithdraw || this.isExchange) {
             localStorage.setItem("dont_show_buy_notice", this.noticeToggle.isChecked ? "true" : "false");
         }
 
