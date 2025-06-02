@@ -56,14 +56,28 @@ export class UIManager extends Component {
         if (UIManager._instance == null) {
             UIManager._instance = this;
         }
+        const visibleSize = view.getVisibleSize();
+        const designSize = view.getDesignResolutionSize();
+
+        console.log('Canvas resized!');
+        console.log('Visible Size:', visibleSize.width, visibleSize.height);
+        console.log('Design Resolution:', designSize.width, designSize.height);
 
         view.setResizeCallback(UIManager.Instance.onResize);
-         this.showOwnedButton.node.on(Button.EventType.CLICK, () => this.showPopupOwenedAnimal(), this);
+        this.showOwnedButton.node.on(Button.EventType.CLICK, () => this.showPopupOwenedAnimal(), this);
     }
 
     onResize() {
+        const visibleSize = view.getVisibleSize();
+        const designSize = view.getDesignResolutionSize();
+
+        console.log('Canvas resized!');
+        console.log('Visible Size:', visibleSize.width, visibleSize.height);
+        console.log('Design Resolution:', designSize.width, designSize.height);
+
         director.emit(EVENT_NAME.CANVAS_RESIZE);
     }
+
 
     protected onDestroy(): void {
         UIManager._instance = null;
@@ -181,7 +195,7 @@ export class UIManager extends Component {
         }
     }
 
-    showPopupOwenedAnimal(){
+    showPopupOwenedAnimal() {
         PopupManager.getInstance().openAnimPopup('PopupOwnedAnimals', PopupOwnedAnimals, { message: "" });
     }
 
