@@ -6,6 +6,7 @@ import { AnimalController, AnimalType } from '../../animal/AnimalController';
 import { PopupManager } from '../../PopUp/PopupManager';
 import { PopupChooseFoodPet } from '../../PopUp/PopupChooseFoodPet';
 import { FoodType } from '../../Model/Item';
+import { ServerManager } from '../../core/ServerManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('AnimalInteractManager')
@@ -18,7 +19,7 @@ export class AnimalInteractManager extends Component {
 
     private lastActionTime: number = 0;
     private interactDelay: number = 1000;
-
+    
     protected get InteractTarget(): PlayerController {
         if (UserManager.instance?.GetMyClientPlayer != null) {
             return UserManager.instance.GetMyClientPlayer;
@@ -75,6 +76,15 @@ export class AnimalInteractManager extends Component {
     }
 
     onTouchStart(event) {
+        if (this.animalController?.Pet.is_caught) {
+            // const username = (this.animalController && this.animalController.animalPlayer)
+            //     ? this.animalController.animalPlayer.userName || ""
+            //     : "";
+            // const compliment = this.getRandomCompliment(username);
+            // this.animalController?.showBubbleChat?.(compliment, 2000);
+            this.touchPetAlreadyOwner();
+            return;
+        }
         if (this.CanShowUI) {
             if (Date.now() - this.lastActionTime > this.interactDelay) {
                 this.lastActionTime = Date.now()
@@ -110,6 +120,23 @@ export class AnimalInteractManager extends Component {
         }
     }
 
+    
+
+    touchPetAlreadyOwner() {
+        const player = this.animalController?.animalPlayer;
+        // const isOwner = player?.myID === UserManager.instance.GetMyClientPlayer.myID;
+        // const username = player?.userName || "";
+        // const message = isOwner
+        //     ? this.getRandomCompliment(username)
+        //     : this.getRandomProvokeLine(username);
+        const data = {
+            touchPlayerId: player?.myID ?? 0,// ID của người đang chạm vào pet
+            targetPetId: this.animalController.Pet.id,// ID của pet bị chạm
+            lengthCompliment: this.animalController.petCompliments.length,
+            lengthProvokeLine: this.animalController.provokeLines.length,
+        };
+        ServerManager.instance.sendTouchPet(data);
+    }
 }
 
 

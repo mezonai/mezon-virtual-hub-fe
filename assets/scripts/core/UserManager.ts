@@ -131,7 +131,7 @@ export class UserManager extends Component {
     public onRemove(player, sessionId) {
         if (this.players.has(sessionId)) {
             let player = this.players.get(sessionId);
-            player.resetPets(() =>{});
+            player.resetPets(() => { });
             player.removePlayer();
         } else {
             console.warn(`No player found with sessionId: ${sessionId}`);
@@ -312,6 +312,21 @@ export class UserManager extends Component {
         if (playerTarget == null || pets == null) return;
         this.intantiatePetFollowPlayer(playerTarget, pets)
     }
+
+    public onSendTouchPet(data) {
+        if (data == null) return;
+        const { targetPetId, playerTouchingPetId, isOwnerTouching, randomIndex} = data;
+        let playerTarget = this.players.get(playerTouchingPetId);
+        if(playerTarget == null) return;
+        const targetPet = playerTarget.petFollowPrefabs.find(pet => pet.Pet.id === targetPetId);
+        if(targetPet == null) return;
+        if(isOwnerTouching){
+            targetPet.getRandomCompliment(playerTarget.userName, randomIndex);
+            return;
+        }
+        targetPet.getRandomProvokeLine(playerTarget.userName, randomIndex);
+    }
+
     private updateMyData(petCaughId: string) {
         WebRequestManager.instance.getUserProfile(
             (response) => { this.onGetProfileSuccess(response, petCaughId) },

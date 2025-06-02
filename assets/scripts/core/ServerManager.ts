@@ -91,6 +91,7 @@ export class ServerManager extends Component {
         });
 
         this.room.state.players.onRemove((player, sessionId) => {
+
             log(`Player left: ${sessionId}`);
             UserManager.instance.onRemove(player, sessionId);
         });
@@ -225,9 +226,9 @@ export class ServerManager extends Component {
             SoundManager.instance.playSound(AudioType.NoReward);
         });
 
-         this.room.onMessage("onWithrawDiamond", (data) => {
+        this.room.onMessage("onWithrawDiamond", (data) => {
+            SoundManager.instance.playSound(AudioType.ReceiveReward);
             if (this.withAmount > 0 && UserMeManager.Get) {
-                SoundManager.instance.playSound(AudioType.ReceiveReward);
                 UIManager.Instance.showNoticePopup("Thông báo", `<color=#FF0000>${Utilities.convertBigNumberToStr(this.withAmount)} Diamond</color> được trừ từ tài khoản`, () => {
                     UserMeManager.playerDiamond -= this.withAmount;
                     this.withAmount = -1;
@@ -241,8 +242,9 @@ export class ServerManager extends Component {
         });
 
         this.room.onMessage("onExchangeDiamondToCoin", (data) => {
+
+            SoundManager.instance.playSound(AudioType.ReceiveReward);
             if (this.exchangeAmount > 0 && UserMeManager.Get) {
-                SoundManager.instance.playSound(AudioType.ReceiveReward);
                 const { coinChange, diamondChange } = data;
                 const msg = `<color=#FF0000>${Utilities.convertBigNumberToStr(Math.abs(diamondChange))} Diamond</color> đã được chuyển thành <color=#00FF00>${coinChange} coin</color>`;
                 UIManager.Instance.showNoticePopup("Thông báo", msg, () => {
@@ -252,7 +254,6 @@ export class ServerManager extends Component {
                 });
             }
         });
-        
         this.room.onMessage("onCatchPetSuccess", (data) => {
             UserManager.instance.onCatchPetSuccess(data);
         });
@@ -264,22 +265,26 @@ export class ServerManager extends Component {
         });
         this.room.onMessage("onCatchPetFail", (data) => {
             UserManager.instance.onCatchPetFail(data);
-        });       
+        });
         this.room.onMessage("onPetFollowPlayer", (data) => {
             UserManager.instance.onPetFollowPlayer(data);
 
         });
         this.room.onMessage("onPetFollowPlayer", (data) => {
             UserManager.instance.onPetFollowPlayer(data);
+        });
+
+        this.room.onMessage("onSendTouchPet", (data) => {
+            UserManager.instance.onSendTouchPet(data);
         });
 
         this.room.onMessage("petPositionUpdate", (data) => {
-            if(!data) return;
+            if (!data) return;
             data.forEach(pet => {
-            const petData = new PetColysesusObjectData(pet.id, this.room, pet.position.x, pet.position.y, pet.name, new Vec2(pet.angle.x, pet.angle.y), pet);
-            if (OfficeSceneController.instance.currentMap == null) return;            
-            OfficeSceneController.instance.currentMap.AnimalSpawner.updatePositionPetOnServer(petData);
-            });            
+                const petData = new PetColysesusObjectData(pet.id, this.room, pet.position.x, pet.position.y, pet.name, new Vec2(pet.angle.x, pet.angle.y), pet);
+                if (OfficeSceneController.instance.currentMap == null) return;
+                OfficeSceneController.instance.currentMap.AnimalSpawner.updatePositionPetOnServer(petData);
+            });
         });
 
         this.room.state.pets.onAdd((pet, key) => {
@@ -287,7 +292,7 @@ export class ServerManager extends Component {
             if (OfficeSceneController.instance.currentMap == null) return; {
                 OfficeSceneController.instance.currentMap.AnimalSpawner.spawnPetOnServer(petData);
             }
-        })    
+        })
     }
 
     private decodeMoveData(uint8Array: ArrayBuffer) {
@@ -386,5 +391,9 @@ export class ServerManager extends Component {
 
     public sendPetFollowPlayer(data) {
         this.room.send("sendPetFollowPlayer", data);
+    }
+
+    public sendTouchPet(data) {
+        this.room.send("sendTouchPet", data);
     }
 }

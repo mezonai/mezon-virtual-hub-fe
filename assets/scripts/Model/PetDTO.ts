@@ -6,3 +6,10 @@ export class PetDTO{
     public is_brought: boolean;
     public room_code: string;
 }
+
+export enum AnimalRarity {
+  COMMON = 'common',
+  RARE = 'rare',
+  EPIC = 'epic',
+  LEGENDARY = 'legendary',
+}

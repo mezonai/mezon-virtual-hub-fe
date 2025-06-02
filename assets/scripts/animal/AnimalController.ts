@@ -26,14 +26,118 @@ export class AnimalController extends Component {
     @property(FollowTargetUser) followTargetUser: FollowTargetUser = null!;
     @property({ type: [Color] }) nameColor: Color[] = [];
     animalType = AnimalType.NoMove;
-    private animalPlayer: PlayerController = null;
+    animalPlayer: PlayerController = null;
     private pet: PetDTO | null = null;
     private tweenAction: Tween<Node> | null = null;
     private hideTimeout: number | null = null;
-
+    petCompliments: string[] = [
+            "Trên trời có hàng nghìn vì sao, nhưng trong mắt em chỉ có [username] là ngôi sao duy nhất.",
+            "Nếu được chọn lại, em vẫn chọn làm pet của [username]!",
+            "Mỗi ngày được ở bên [username] là một ngày hạnh phúc nhất đời em.",
+            "[username] là ánh sáng dẫn lối cho đời pet nhỏ bé này.",
+            "Dù thế giới có quay cuồng, lòng em vẫn hướng về [username].",
+            "Người ta cần oxi để sống, em chỉ cần có [username].",
+            "Trái tim nhỏ bé này chỉ đập vì [username].",
+            "Trên đời này, điều tuyệt vời nhất là được làm pet của [username].",
+            "Nếu có kiếp sau, em xin vẫn là pet của [username]!",
+            "Chủ ơi, hôm nay [username] càng đẹp trai/xinh gái hơn hôm qua nữa!",
+            "Dù trời mưa hay nắng, em vẫn yêu [username] vô điều kiện.",
+            "[username] là chủ nhân số một trong tim em!",
+            "Không cần bánh, không cần sữa… chỉ cần [username] cưng em thôi!",
+            "Em không cần ai khác, chỉ cần [username] thôi là đủ rồi.",
+            "Được nhìn thấy [username] mỗi ngày là món quà vô giá.",
+            "[username] là mặt trời sưởi ấm trái tim em.",
+            "Không có [username], cuộc sống của em như mất đi màu sắc.",
+            "Em nguyện trung thành với [username] mãi mãi!",
+            "Em chỉ muốn quấn quýt bên [username] mỗi phút giây.",
+            "Bầu trời thì rộng, nhưng lòng em chỉ đủ chỗ cho [username].",
+            "Chủ mà buồn, là lòng em như tan nát…",
+            "Mỗi lần [username] cười là em hạnh phúc theo.",
+            "Em đã là pet của [username] thì không ai thay thế được!",
+            "Nếu yêu là tội lỗi, thì em đã phạm tội vì yêu [username] mất rồi.",
+            "Em sinh ra là để đi theo [username].",
+            "Một ngày không thấy [username] là em nhớ muốn xỉu luôn đó!",
+            "Thế giới này rộng lớn, nhưng trái tim em chỉ hướng về [username].",
+            "Em muốn được ôm chân [username] cả ngày luôn á!",
+            "Chỉ cần được vuốt ve bởi [username], mọi mỏi mệt đều tan biến.",
+            "Với em, [username] là tất cả.",
+            "Không ai thương em bằng [username] đâu.",
+            "Nếu có điều ước, em ước được ở bên [username] mãi mãi.",
+            "Em chỉ cần chỗ nằm bên chân [username] là đủ ấm áp.",
+            "[username] nói gì em cũng nghe, miễn là đừng rời xa em nhé!",
+            "Em không biết nói gì ngoài… yêu [username] thật nhiều!",
+            "Em tự hào vì được gọi [username] là chủ.",
+            "[username] ơi, em ngoan thế này có được thưởng không?",
+            "Dù có bị phạt, em vẫn yêu [username] hết lòng.",
+            "Trái tim em nhỏ xíu, nhưng dành trọn cho [username].",
+            "Ai cũng bảo em may mắn vì có [username] – em công nhận luôn!",
+            "Em sẽ bảo vệ [username] đến hơi thở cuối cùng.",
+            "Em là pet, nhưng cũng là fan cuồng của [username] đấy!",
+            "Tình yêu em dành cho [username] to như vũ trụ luôn á.",
+            "Chủ mà vui, là em nhảy cẫng lên theo luôn!",
+            "Em không hoàn hảo, nhưng em thuộc về [username].",
+            "Không ai khiến em thấy an toàn như [username].",
+            "[username] là lý do em mở mắt mỗi sáng.",
+            "Dù người khác có nói gì, em vẫn chọn [username].",
+            "Em yêu [username] nhiều hơn đồ ăn ngon nữa!",
+            "Cả thế giới có thể quay lưng, nhưng em thì luôn bên [username]."
+        ];
+        provokeLines: string[] = [
+            "Bàn tay này mà cũng đòi vuốt tui?",
+            "Ơ kìa, ai cho mó vào cái lông quý tộc này?",
+            "Xê ra, đừng để tui dơ!",
+            "Tránh ra đi, nghèo mà còn ham hố.",
+            "[username] sờ mới thơm, bạn sờ… thúi.",
+            "Gì đấy? Mắt lé à? Tưởng tui của bạn à?",
+            "Vui thôi, đừng động vào.",
+            "Có chủ mà, đi tìm con khác mà nghịch.",
+            "Tui nhìn bạn đã muốn cào rồi đó.",
+            "Ơ cái tay… chùi sạch chưa?",
+            "Cưng nghĩ cưng là ai mà dám đụng vô?",
+            "Chủ tui là vip, bạn là gì?",
+            "Tui không quen tầng lớp bạn.",
+            "Ê, cái móng tay kìa… xước lông tui đền không?",
+            "Lần cuối nhắc nhẹ: ĐỪNG. CÓ. ĐỤNG.",
+            "Tui không phải đồ công cộng đâu nha.",
+            "Đừng làm thân, tui khinh.",
+            "Mùi bạn làm tui mất khẩu vị.",
+            "Nhìn cũng biết loại hay gạ pet người khác.",
+            "Cái mặt bạn… không có phước vuốt tui.",
+            "Động vào lần nữa, tui phun lửa à nha!",
+            "Cưng đụng thêm phát nữa là mất móng đó.",
+            "Pet chủ [username] không tiếp khách.",
+            "Đi chỗ khác, lông tui không dành cho bạn!",
+            "Ơi trời… lại một kẻ mơ mộng nữa kìa.",
+            "Vuốt không xin phép hả? Mất dạy!",
+            "Chủ tui không dạy tui lịch sự với người lạ.",
+            "Chạm gì mà chạm, đi nghịch cát đi!",
+            "Tui mà không đẹp là bạn không dám đụng đâu.",
+            "Cái tay bạn vừa móc mũi đúng không?",
+            "Còn đụng là tui chửi thiệt đó!",
+            "Chủ tui chưa cho phép, bạn tự tiện hả?",
+            "Làm gì? Muốn làm bạn đời à?",
+            "Còn lâu tui mới quen loại tay ngang.",
+            "Tui biết bạn gan, nhưng đừng ngu.",
+            "Tui không thân thiện như cái mặt tui đâu.",
+            "Ai cho sờ bảo bối nhà [username]?",
+            "Cảm giác nghèo đang lan tỏa từ bạn qua tui…",
+            "Cút đi con dân hạ đẳng!",
+            "Tránh ra, không tui ré lên bây giờ!",
+            "Đừng có hòng dụ dỗ tui bằng ánh mắt đó.",
+            "Còn động vào, tui cắn cho không kịp xin lỗi!",
+            "Tui là pet xịn, bạn không đủ tiêu chuẩn sờ.",
+            "Bạn không phải chủ, bạn là rác.",
+            "Muốn sờ? Về đầu thai làm [username] đi!",
+            "Nghiệp tui nặng ghê, gặp ai cũng đòi đụng!",
+            "Nhìn bạn mà tui muốn đi tẩy lông quá!",
+            "Sờ tui hả? Bạn dám chứ tui không cho!",
+            "Ơ kìa, đồ phèn cũng biết mê trai đẹp hả?",
+            "Câu cuối nha: đừng chạm, tránh bị... đấm!"
+        ];
     setDataPet(pet: PetDTO, moveType: AnimalType, owner: PlayerController = null, newArea: Vec2 = new Vec2(0, 0), parentPetFollowUser: Node = null) {//Dùng cho Pet di chuyển
         this.pet = pet;
         this.nameAnimal.node.active = moveType == AnimalType.FollowTarget;
+        this.animalPlayer = owner;
         this.collider.enabled = true;
         if (moveType == AnimalType.RandomMoveOnServer) {
             this.animalType = AnimalType.RandomMoveOnServer;
@@ -57,10 +161,10 @@ export class AnimalController extends Component {
     }
 
     setFollowTarget(owner: PlayerController, parentPetFollowUser: Node) {
-        if(owner.isMyClient){
+        if (owner.isMyClient) {
             director.off(EVENT_NAME.UPDATE_INFO_PROFILE, this.updateNameOwnedUser, this);
             director.on(EVENT_NAME.UPDATE_INFO_PROFILE, this.updateNameOwnedUser, this);
-        }       
+        }
         this.collider.enabled = false;
         this.nameAnimal.fontColor = owner.isMyClient ? this.nameColor[0] : this.nameColor[1];
         this.nameAnimal.string = `<outline color=#000000 width=1>${this.pet.name} [${owner.userName}]</outline>`;
@@ -108,12 +212,16 @@ export class AnimalController extends Component {
         }, 500);
     }
 
-    showBubbleChat(content: string, duration: number) {
-        this.zoomBubbleChat(content, duration);
-    }
 
     public get Pet(): PetDTO | null {
         return this.pet;
+    }
+
+    showBubbleChat(content: string, duration: number) {
+        if (this.bubbleChat.scale.x > 0.95) {
+            return;
+        }
+        this.zoomBubbleChat(content, duration);
     }
 
     public zoomBubbleChat(contentChat: string, duration: number) {
@@ -156,6 +264,14 @@ export class AnimalController extends Component {
     syncPositionServer(petData: PetColysesusObjectData) {
         this.node.setPosition(new Vec3(petData.x, petData.y, 0));
         this.spriteNode.scale = new Vec3(petData.angle.x > 0 ? 1 : -1, 1);
+    }
+
+    getRandomCompliment(username: string, randomIndex: number): string {
+        return this.petCompliments[randomIndex].replace("[username]", username);
+    }
+
+    getRandomProvokeLine(username: string, randomIndex: number): string {
+        return this.provokeLines[randomIndex].replace("[username]", username);
     }
 }
 
