@@ -25,6 +25,7 @@ export default class ConvetData {
             petDTO.is_caught = data.is_caught;
             petDTO.is_brought = data.is_brought;
             petDTO.room_code = data.room_code;
+            petDTO.rarity = data.rarity;
             return petDTO;
         });
     }
@@ -38,6 +39,7 @@ export default class ConvetData {
         petDTO.is_caught = data.is_caught;
         petDTO.is_brought = data.is_brought;
         petDTO.room_code = data.room_code;
+        petDTO.rarity = data.rarity;
         return petDTO;
     }
 }

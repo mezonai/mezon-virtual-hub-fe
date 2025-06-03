@@ -20,6 +20,7 @@ export class PopupChooseFoodPet extends BasePopup {
     @property({ type: Button }) chooseButton: Button = null;
     @property({ type: Prefab }) iItemChooseFood: Prefab = null;
     @property({ type: ScrollView }) scrollView: ScrollView = null;
+    @property({ type: Node }) noFoodPanel: Node = null;
     private stopDistance = 10000;
     private checkCloseInterval: number;
     private foodChoosen: Food | null;
@@ -72,14 +73,20 @@ export class PopupChooseFoodPet extends BasePopup {
         this.checkCloseInterval = setInterval(() => {
             this.checkPetsDistance(param.animal);
         }, 5000);
+        let hasFood = false;
         for (let i = 0; i < ResourceManager.instance.FoodData.data.length; i++) {
             let newitem = instantiate(this.iItemChooseFood);
             newitem.setParent(this.scrollView.content);
             let itemChooseFood = newitem.getComponent(ItemChooseFood);
             if (itemChooseFood == null) continue;
-            itemChooseFood.setDataItem(ResourceManager.instance.FoodData.data[i], this.chooseFood.bind(this));
+            const foodDTO = UserMeManager.GetFoods?.find(inv => inv.food?.id === ResourceManager.instance.FoodData.data[i].id);
+            itemChooseFood.setDataItem(ResourceManager.instance.FoodData.data[i], foodDTO, this.chooseFood.bind(this));
+            if (foodDTO?.quantity > 0) {
+                hasFood = true;
+            }
             if (i == 0) itemChooseFood.boundToggleCallback();// gọi item đầu để lấy food;
-        }        
+        }
+        this.noFoodPanel.active = !hasFood;
     }
 
     chooseFood(food: Food, quantity: number) {
@@ -97,7 +104,7 @@ export class PopupChooseFoodPet extends BasePopup {
     }
 
     checkPetsDistance(target: AnimalController) {
-        const playePos = UserManager.instance?.GetMyClientPlayer?.node.getWorldPosition();      
+        const playePos = UserManager.instance?.GetMyClientPlayer?.node.getWorldPosition();
         if (!playePos || !target) return;
         if (target.animalType == AnimalType.Disappeared) {
             this.showUiPetDisappeared();
