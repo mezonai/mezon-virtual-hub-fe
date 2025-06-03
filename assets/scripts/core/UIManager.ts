@@ -63,7 +63,7 @@ export class UIManager extends Component {
         console.log('Visible Size:', visibleSize.width, visibleSize.height);
         console.log('Design Resolution:', designSize.width, designSize.height);
 
-        view.setResizeCallback(UIManager.Instance.onResize);
+        view.on('canvas-resize', UIManager.Instance.onResize.bind(UIManager.Instance));
         this.showOwnedButton.node.on(Button.EventType.CLICK, () => this.showPopupOwenedAnimal(), this);
     }
 
