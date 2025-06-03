@@ -6,6 +6,7 @@ import { AnimalController, AnimalType } from '../../animal/AnimalController';
 import { PopupManager } from '../../PopUp/PopupManager';
 import { PopupChooseFoodPet } from '../../PopUp/PopupChooseFoodPet';
 import { FoodType } from '../../Model/Item';
+import { ServerManager } from '../../core/ServerManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('AnimalInteractManager')
@@ -76,13 +77,19 @@ export class AnimalInteractManager extends Component {
 
     onTouchStart(event) {
         if (this.CanShowUI) {
+            if (this.animalController?.Pet.is_caught) {
+                if (!this.animalController.canShowBubbleChat()) return;
+                this.touchPetAlreadyOwner();
+                return;
+            }
             if (Date.now() - this.lastActionTime > this.interactDelay) {
                 this.lastActionTime = Date.now()
                 this.toggleShowUI(!this.actionButtonParent.active);
             }
         }
         else {
-            if (this.animalController.animalType === AnimalType.RandomMove || this.animalController.animalType === AnimalType.RandomMoveOnServer) {
+            if (this.animalController.animalType === AnimalType.RandomMove || this.animalController.animalType === AnimalType.RandomMoveOnServer
+                || this.animalController.animalType === AnimalType.FollowTarget) {
                 let content = "Lại gần hơn để tương tác với nó!";
                 this.InteractTarget.zoomBubbleChat(content);
             }
@@ -110,6 +117,16 @@ export class AnimalInteractManager extends Component {
         }
     }
 
+    touchPetAlreadyOwner() {
+        const player = this.animalController?.animalPlayer;
+        const data = {
+            touchPlayerId: player?.myID ?? 0,// ID của người đang chạm vào pet
+            targetPetId: this.animalController.Pet.id,// ID của pet bị chạm
+            lengthCompliment: this.animalController.petCompliments.length,
+            lengthProvokeLine: this.animalController.provokeLines.length,
+        };
+        ServerManager.instance.sendTouchPet(data);
+    }
 }
 
 

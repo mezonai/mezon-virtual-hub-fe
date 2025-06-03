@@ -8,6 +8,7 @@ import { UIManager } from '../core/UIManager';
 import { ConfirmPopup } from './ConfirmPopup';
 import { ServerManager } from '../core/ServerManager';
 import { WebRequestManager } from '../network/WebRequestManager';
+import { AnimalRarity } from '../Model/PetDTO';
 const { ccclass, property } = _decorator;
 
 @ccclass('PopupOwnedAnimals')
@@ -17,6 +18,7 @@ export class PopupOwnedAnimals extends BasePopup {
     @property({ type: Button }) closeButton: Button = null;
     @property({ type: Prefab }) itemAnimalSlotPrefab: Prefab = null;
     @property({ type: ScrollView }) scrollView: ScrollView = null;
+    @property({ type: Node }) noPetPanel: Node = null;
     private itemAnimalSlots: ItemAnimalSlot[] = [];
     private selectedToggles: Toggle[] = [];
     private selectedPetInit: string[] = [];
@@ -28,13 +30,26 @@ export class PopupOwnedAnimals extends BasePopup {
     showPopup() {
         this.showDecription();
         let animals = UserMeManager.Get.animals;
-        if (animals == null || animals.length <= 0) return;
-        for (let i = 0; i < animals.length; i++) {
+        if (animals == null || animals.length <= 0) {
+            this.noPetPanel.active = true;
+            return;
+        }
+        this.noPetPanel.active = false;
+        const rarityOrder: Record<AnimalRarity, number> = {
+            [AnimalRarity.COMMON]: 0,
+            [AnimalRarity.RARE]: 1,
+            [AnimalRarity.EPIC]: 2,
+            [AnimalRarity.LEGENDARY]: 3,
+        };
+        const sortedPets = UserMeManager.Get.animals.sort((a, b) => {
+            return rarityOrder[a.rarity] - rarityOrder[b.rarity];
+        });
+        for (let i = 0; i < sortedPets.length; i++) {
             let newitemAnimalSlot = ObjectPoolManager.instance.spawnFromPool(this.itemAnimalSlotPrefab.name);
             newitemAnimalSlot.setParent(this.scrollView.content);
             let itemPetSlot = newitemAnimalSlot.getComponent(ItemAnimalSlot);
             if (itemPetSlot == null) continue;
-            itemPetSlot.setDataSlot(animals[i], this.onToggleChanged.bind(this));
+            itemPetSlot.setDataSlot(sortedPets[i], this.onToggleChanged.bind(this));
             this.itemAnimalSlots.push(itemPetSlot);
         }
         this.selectedPetInit = this.itemAnimalSlots
