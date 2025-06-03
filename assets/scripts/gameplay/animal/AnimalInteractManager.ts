@@ -19,7 +19,7 @@ export class AnimalInteractManager extends Component {
 
     private lastActionTime: number = 0;
     private interactDelay: number = 1000;
-    
+
     protected get InteractTarget(): PlayerController {
         if (UserManager.instance?.GetMyClientPlayer != null) {
             return UserManager.instance.GetMyClientPlayer;
@@ -76,23 +76,20 @@ export class AnimalInteractManager extends Component {
     }
 
     onTouchStart(event) {
-        if (this.animalController?.Pet.is_caught) {
-            // const username = (this.animalController && this.animalController.animalPlayer)
-            //     ? this.animalController.animalPlayer.userName || ""
-            //     : "";
-            // const compliment = this.getRandomCompliment(username);
-            // this.animalController?.showBubbleChat?.(compliment, 2000);
-            this.touchPetAlreadyOwner();
-            return;
-        }
         if (this.CanShowUI) {
+            if (this.animalController?.Pet.is_caught) {
+                if (!this.animalController.canShowBubbleChat()) return;
+                this.touchPetAlreadyOwner();
+                return;
+            }
             if (Date.now() - this.lastActionTime > this.interactDelay) {
                 this.lastActionTime = Date.now()
                 this.toggleShowUI(!this.actionButtonParent.active);
             }
         }
         else {
-            if (this.animalController.animalType === AnimalType.RandomMove || this.animalController.animalType === AnimalType.RandomMoveOnServer) {
+            if (this.animalController.animalType === AnimalType.RandomMove || this.animalController.animalType === AnimalType.RandomMoveOnServer
+                || this.animalController.animalType === AnimalType.FollowTarget) {
                 let content = "Lại gần hơn để tương tác với nó!";
                 this.InteractTarget.zoomBubbleChat(content);
             }
@@ -120,15 +117,8 @@ export class AnimalInteractManager extends Component {
         }
     }
 
-    
-
     touchPetAlreadyOwner() {
         const player = this.animalController?.animalPlayer;
-        // const isOwner = player?.myID === UserManager.instance.GetMyClientPlayer.myID;
-        // const username = player?.userName || "";
-        // const message = isOwner
-        //     ? this.getRandomCompliment(username)
-        //     : this.getRandomProvokeLine(username);
         const data = {
             touchPlayerId: player?.myID ?? 0,// ID của người đang chạm vào pet
             targetPetId: this.animalController.Pet.id,// ID của pet bị chạm

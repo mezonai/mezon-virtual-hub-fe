@@ -110,8 +110,9 @@ export class UserManager extends Component {
                     species: pet.species,
                     is_caught: true,
                     is_brought: true,
-                    room_code: ''
-                });
+                    room_code: '',
+                    rarity: pet.rarity,
+                });           
                 animalController.setDataPet(petDto, AnimalType.FollowTarget, playerController, null, this.animalParent);
                 playerController.savePetFollow(animalController);
                 animal.setParent(this.animalParent);

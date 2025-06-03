@@ -274,7 +274,7 @@ export class ServerManager extends Component {
             UserManager.instance.onPetFollowPlayer(data);
         });
 
-        this.room.onMessage("onSendTouchPet", (data) => {
+        this.room.onMessage("onSendTouchPet", (data) => {           
             UserManager.instance.onSendTouchPet(data);
         });
 
