@@ -339,7 +339,7 @@ export class UserManager extends Component {
         UserMeManager.Set = respone.data;
         const pet = UserMeManager.Get.animals.find(p => p.id === petCaughId);
         if (UserManager.instance.GetMyClientPlayer) {
-            const content = pet != null ? `Bạn đã bắt thành công <color=#FF0000>${pet.name}</color>` : `Bạn đã bắt pet thành công`
+            const content = pet != null ? `Bạn đã bắt thành công <color=#FF0000>${pet.name} (${pet.rarity})</color>` : `Bạn đã bắt pet thành công`
             UIManager.Instance.showNoticePopup("Thông báo", content);
         }
     }

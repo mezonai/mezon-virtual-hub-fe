@@ -11,14 +11,13 @@ export class ItemChooseFood extends Component {
     @property({ type: [SpriteFrame] }) spriteFramesFood: SpriteFrame[] = [];
     public boundToggleCallback: () => void;
 
-    setDataItem(food: Food, onToggleClick: (foodChoosen: Food, quantity: number) => void) {
+    setDataItem(food: Food, foodDTO: InventoryDTO, onToggleClick: (foodChoosen: Food, quantity: number) => void) {
         const typeToIndexMap: Record<FoodType, number> = {
         [FoodType.NORMAL]: 0,
         [FoodType.PREMIUM]: 1,
         [FoodType.ULTRA_PREMIUM]: 2
     };  
         this.spriteicon.spriteFrame = this.spriteFramesFood[typeToIndexMap[food.type]];
-        const foodDTO = UserMeManager.GetFoods?.find(inv => inv.food?.id === food.id);
         const quantity = foodDTO?.quantity ?? 0;
         this.quantity.string = quantity.toString();
         this.boundToggleCallback = () => {

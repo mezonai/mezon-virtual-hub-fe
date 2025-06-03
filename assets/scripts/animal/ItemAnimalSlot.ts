@@ -1,6 +1,6 @@
-import { _decorator, Component, Layers, Node, Toggle, UITransform, Vec3 } from 'cc';
+import { _decorator, Component, Layers, Node, Toggle, UITransform, Vec3, Animation, Color, Sprite } from 'cc';
 import { AnimalController, AnimalType } from './AnimalController';
-import { PetDTO } from '../Model/PetDTO';
+import { AnimalRarity, PetDTO } from '../Model/PetDTO';
 import { ObjectPoolManager } from '../pooling/ObjectPoolManager';
 const { ccclass, property } = _decorator;
 
@@ -8,6 +8,9 @@ const { ccclass, property } = _decorator;
 export class ItemAnimalSlot extends Component {
     @property({ type: Node }) parentAnimal: Node = null;
     @property({ type: Toggle }) toggle: Toggle = null;
+    @property({ type: Animation }) animator: Animation = null;
+    @property({ type: [Color] }) colorBorder: Color[] = [];
+    @property(Sprite) borderSprite: Sprite;
     @property animalController: AnimalController = null;
     private animalObject: Node = null;
     private defaultLayer = Layers.Enum.NONE;
@@ -28,13 +31,23 @@ export class ItemAnimalSlot extends Component {
             if (this.toggle.isChecked && this.boundToggleCallback != null) this.boundToggleCallback();
             this.animalController = this.animalObject.getComponent(AnimalController);
             if (this.animalController == null) return;
-            const uiTransform = this.animalController .spriteNode.getComponent(UITransform);
+            const uiTransform = this.animalController.spriteNode.getComponent(UITransform);
             if (uiTransform) {
                 const size = uiTransform.contentSize;
-                if(size.width > this.limitSize && size.height > this.limitSize){
+                if (size.width > this.limitSize && size.height > this.limitSize) {
                     this.animalObject.setScale(new Vec3(0.7, 0.7, 0.7));
                 }
-               
+            }
+            if (pet.rarity == AnimalRarity.LEGENDARY) {
+                this.animator.node.active = true;
+                this.borderSprite.color = this.colorBorder[0];
+                this.playAnimBorder(pet.rarity);
+            }
+            else {
+                this.animator.node.active = false;
+                const indexColor = pet.rarity == AnimalRarity.COMMON ? 0 : pet.rarity == AnimalRarity.RARE ? 1 : 2;
+                this.borderSprite.color = this.colorBorder[indexColor];
+
             }
             this.animalController.setDataPet(pet, AnimalType.NoMove);
             this.defaultLayer = this.animalController.spriteNode.layer;
@@ -57,6 +70,12 @@ export class ItemAnimalSlot extends Component {
             ObjectPoolManager.instance.returnToPool(this.animalObject);
             resolve();
         });
+    }
+
+    public playAnimBorder(animationName: string) {
+        if (animationName != "") {
+            this.animator.play(animationName);
+        }
     }
 }
 

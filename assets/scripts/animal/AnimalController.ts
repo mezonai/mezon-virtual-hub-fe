@@ -167,7 +167,7 @@ export class AnimalController extends Component {
         }
         this.collider.enabled = false;
         this.nameAnimal.fontColor = owner.isMyClient ? this.nameColor[0] : this.nameColor[1];
-        this.nameAnimal.string = `<outline color=#000000 width=1>${this.pet.name} [${owner.userName}]</outline>`;
+        this.nameAnimal.string = `<outline color=#000000 width=1> ${this.pet.name} (${this.capitalizeFirstLetter(this.pet.rarity)}) [${owner.userName}]</outline>`;
         this.animalPlayer = owner;
         this.animalType = AnimalType.FollowTarget;
         this.followTargetUser.playFollowTarget(owner.node, this.spriteNode, parentPetFollowUser);
@@ -175,7 +175,7 @@ export class AnimalController extends Component {
 
     updateNameOwnedUser(data: any) {
         if (!data || !data.fullname) return;
-        this.nameAnimal.string = `<outline color=#000000 width=1>${this.pet.name} [${data.fullname}]</outline>`;
+        this.nameAnimal.string = `<outline color=#000000 width=1> ${this.pet.name} (${this.capitalizeFirstLetter(this.pet.rarity)}) [${data.fullname}]</outline>`;
     }
 
     setDataSlot() {
@@ -284,6 +284,11 @@ export class AnimalController extends Component {
             provokeLine = provokeLine.replace("[username]", username);
         }
         this.showBubbleChat?.(provokeLine, 2000)
+    }
+
+    capitalizeFirstLetter(str) {
+        if (!str) return '';
+        return str.charAt(0).toUpperCase() + str.slice(1);
     }
 }
 
