@@ -6,7 +6,7 @@ const { ccclass, property } = _decorator;
 @ccclass('ColliderAutoUpdater')
 export class ColliderAutoUpdater extends Component {
 
-    @property(Node) coliderParent: Node | null = null;
+    @property(Node) colliderParent: Node | null = null;
 
     start() {
         director.on(EVENT_NAME.CANVAS_RESIZE, this.resetAllColliders, this);
@@ -15,6 +15,8 @@ export class ColliderAutoUpdater extends Component {
 
     protected onDisable(): void {
         director.off(EVENT_NAME.CANVAS_RESIZE, this.resetAllColliders);
+        input.off(Input.EventType.MOUSE_UP, this.onKeyUp, this);
+        this.unscheduleAllCallbacks();
     }
 
     onKeyUp() {
@@ -24,19 +26,19 @@ export class ColliderAutoUpdater extends Component {
     }
 
     resetBox() {
-        if (!this.coliderParent || this.coliderParent.active) return;
-
+        if (!this.colliderParent) return;
+        if (this.colliderParent.active) return;
         this.scheduleOnce(() => {
-            if (!this.coliderParent) return;
-            this.coliderParent.active = true;
+            if (!this.colliderParent) return;
+            this.colliderParent.active = true;
             UserManager.instance.GetMyClientPlayer.get_MoveAbility.startMove();
         }, 0);
     }
 
 
     resetAllColliders() {
-        if (!this.coliderParent) return;
-        this.coliderParent.active = false;
+        if (!this.colliderParent) return;
+        this.colliderParent.active = false;
         UserManager.instance.GetMyClientPlayer.get_MoveAbility.StopMove();
     }
 }
