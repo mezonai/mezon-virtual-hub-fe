@@ -17,7 +17,7 @@ const { ccclass, property } = _decorator;
 export class ShopPetController extends BaseInventoryManager {
     @property({ type: UIPopup }) noticePopup: UIPopup = null;
     @property({ type: RichText }) itemPrice: RichText = null;
-    @property({ type: RichText }) catchRateBonusPrice: RichText = null;
+    @property({ type: RichText }) descriptionFood: RichText = null;
     @property({ type: Node }) itemPriceContainer: Node = null;
     @property({ type: Node }) catchRateBonusPriceContainer: Node = null;
     protected override groupedItems: Record<string, Food[]> = null;
@@ -249,7 +249,7 @@ export class ShopPetController extends BaseInventoryManager {
         super.onUIItemClickFood(uiItem, data);
 
         this.descriptionText.string = data.name;
-        this.catchRateBonusPrice.string = Utilities.convertBigNumberToStr(data.catch_rate_bonus) + " %";
+        this.descriptionFood.string = data.description;
         this.itemPrice.string = Utilities.convertBigNumberToStr(data.price);
         this.itemPriceContainer.active = true;
         this.catchRateBonusPriceContainer.active = true;
