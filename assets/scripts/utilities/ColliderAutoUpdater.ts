@@ -1,49 +1,44 @@
-import { _decorator, Component, Node, Collider, Collider2D, BoxCollider, SphereCollider, CapsuleCollider, PhysicsSystem, Vec3, director } from 'cc';
+import { _decorator, Component, Node, Collider, Collider2D, BoxCollider, SphereCollider, CapsuleCollider, PhysicsSystem, Vec3, director, Input, input } from 'cc';
 import { EVENT_NAME } from '../network/APIConstant';
+import { UserManager } from '../core/UserManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('ColliderAutoUpdater')
 export class ColliderAutoUpdater extends Component {
-    start () {
+
+    @property(Node) colliderParent: Node | null = null;
+
+    start() {
         director.on(EVENT_NAME.CANVAS_RESIZE, this.resetAllColliders, this);
+        input.on(Input.EventType.MOUSE_UP, this.onKeyUp, this);
     }
 
     protected onDisable(): void {
         director.off(EVENT_NAME.CANVAS_RESIZE, this.resetAllColliders);
+        input.off(Input.EventType.MOUSE_UP, this.onKeyUp, this);
+        this.unscheduleAllCallbacks();
     }
 
-    resetAllColliders () {
-        const allChildren: Node[] = [];
-        this.collectAllChildren(this.node, allChildren);
-    
-        for (const child of allChildren) {
-            if (!child) continue;
-    
-            const colliders = [
-                child.getComponent(Collider2D),
-            ];
-    
-            for (const collider of colliders) {
-                if (!collider || !collider.enabled) continue;
-    
-                try {
-                    if ('resetShape' in collider && typeof collider['resetShape'] === 'function') {
-                        collider['resetShape']();
-                    } else {
-                        collider.enabled = false;
-                        collider.enabled = true;
-                    }
-                } catch (err) {
-                    console.warn(`[ColliderAutoUpdater] Failed to reset collider on node ${child.name}:`, err);
-                }
-            }
-        }
+    onKeyUp() {
+        this.schedule(() => {
+            this.resetBox();
+        }, 0)
     }
-    
-    private collectAllChildren (node: Node, result: Node[]) {
-        result.push(node);
-        for (const child of node.children) {
-            this.collectAllChildren(child, result);
-        }
+
+    resetBox() {
+        if (!this.colliderParent) return;
+        if (this.colliderParent.active) return;
+        this.scheduleOnce(() => {
+            if (!this.colliderParent) return;
+            this.colliderParent.active = true;
+            UserManager.instance.GetMyClientPlayer.get_MoveAbility.startMove();
+        }, 0);
+    }
+
+
+    resetAllColliders() {
+        if (!this.colliderParent) return;
+        this.colliderParent.active = false;
+        UserManager.instance.GetMyClientPlayer.get_MoveAbility.StopMove();
     }
 }

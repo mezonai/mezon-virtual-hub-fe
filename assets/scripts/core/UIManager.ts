@@ -56,14 +56,14 @@ export class UIManager extends Component {
         if (UIManager._instance == null) {
             UIManager._instance = this;
         }
-
-        view.setResizeCallback(UIManager.Instance.onResize);
-         this.showOwnedButton.node.on(Button.EventType.CLICK, () => this.showPopupOwenedAnimal(), this);
+        view.on('canvas-resize', UIManager.Instance.onResize.bind(UIManager.Instance));
+        this.showOwnedButton.node.on(Button.EventType.CLICK, () => this.showPopupOwenedAnimal(), this);
     }
 
     onResize() {
         director.emit(EVENT_NAME.CANVAS_RESIZE);
     }
+
 
     protected onDestroy(): void {
         UIManager._instance = null;
@@ -181,7 +181,7 @@ export class UIManager extends Component {
         }
     }
 
-    showPopupOwenedAnimal(){
+    showPopupOwenedAnimal() {
         PopupManager.getInstance().openAnimPopup('PopupOwnedAnimals', PopupOwnedAnimals, { message: "" });
     }
 
