@@ -227,7 +227,7 @@ export class InventoryManager extends BaseInventoryManager {
         super.onUIItemClickFood(uiItem, data);
         this.actionButton.interactable = false;
         this.selectingUIItem.toggleActive(false);
-        this.descriptionText.string = data.name;
+        this.descriptionText.string = `${data.name}: ${data.description}`;
         this.setupMoneyReward(uiItem, data.purchase_method.toString())
     }
 

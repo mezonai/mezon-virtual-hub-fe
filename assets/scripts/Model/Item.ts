@@ -42,6 +42,7 @@ export class Food extends BaseInventoryDTO {
     public purchase_method: PurchaseMethod;
     public price: number;
     public catch_rate_bonus: number;
+    public description: string;
     public iconSF: SpriteFrame[] = [];
 }
 
