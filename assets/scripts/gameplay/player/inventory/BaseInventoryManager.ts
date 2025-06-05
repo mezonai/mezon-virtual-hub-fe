@@ -1,5 +1,5 @@
 import { _decorator, Button, Component, Node, Prefab, RichText, SpriteFrame } from 'cc';
-import { BaseInventoryDTO, Food, InventoryType, Item } from '../../../Model/Item';
+import { BaseInventoryDTO, Food, InventoryType, Item, ItemType } from '../../../Model/Item';
 import { TabController } from '../../../ui/TabController';
 import { AnimationEventController } from '../AnimationEventController';
 import { InventoryUIITem } from './InventoryUIItem';
@@ -183,8 +183,15 @@ export class BaseInventoryManager extends Component {
         this.selectingUIItem = uiItem;
         this.skinData = data;
         this.previewPlayer.changeSkin(this.skinData, false);
-        this.descriptionText.string = this.skinData.mappingLocalData.description || "";
-        this.actionButton.interactable = this.selectingUIItem != null;
+        this.updateDescriptionAndActionButton(data, uiItem);
+    }
+
+    protected updateDescriptionAndActionButton(skinData: Item, uiItem: InventoryUIITem | null) {
+        const description = skinData.mappingLocalData?.description || "";
+        const isFaceOrEye = skinData.type === ItemType.EYES || skinData.type === ItemType.FACE;
+
+        this.descriptionText.string = isFaceOrEye ? description : `${skinData.name} : ${description}`;
+        this.actionButton.interactable = uiItem != null;
     }
 
     protected onUIItemClickFood(uiItem: InventoryUIITem, dataFood: Food) {

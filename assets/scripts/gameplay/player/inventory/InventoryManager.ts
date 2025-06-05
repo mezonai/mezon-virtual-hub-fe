@@ -42,20 +42,20 @@ export class InventoryManager extends BaseInventoryManager {
                 id: null,
                 equipped: false,
                 item: {
-                    id: "1", name: "", gold: 0, iconSF: null, type: 1, mappingLocalData: null, gender: "male", is_equippable: true, is_static: false, is_stackable: false
+                    id: "1", name: "Tóc đỏ SonGoKu", gold: 0, iconSF: null, type: 1, mappingLocalData: null, gender: "male", is_equippable: true, is_static: false, is_stackable: false
                 },
                 inventory_type: InventoryType.ITEM,
             },
             {
                 id: null,
                 equipped: false,
-                item: { id: "3", name: "", gold: 0, iconSF: null, type: 5, mappingLocalData: null, gender: "male", is_equippable: true, is_static: false, is_stackable: false },
+                item: { id: "3", name: "Áo đỏ rực rỡ", gold: 0, iconSF: null, type: 5, mappingLocalData: null, gender: "male", is_equippable: true, is_static: false, is_stackable: false },
                 inventory_type: InventoryType.ITEM,
             },
             {
                 id: null,
                 equipped: false,
-                item: { id: "4", name: "", gold: 0, iconSF: null, type: 6, mappingLocalData: null, gender: "male", is_equippable: true, is_static: false, is_stackable: false },
+                item: { id: "4", name: "Quần đỏ ngắn", gold: 0, iconSF: null, type: 6, mappingLocalData: null, gender: "male", is_equippable: true, is_static: false, is_stackable: false },
                 inventory_type: InventoryType.ITEM,
             }
         ];
@@ -64,19 +64,19 @@ export class InventoryManager extends BaseInventoryManager {
             {
                 id: null,
                 equipped: false,
-                item: { id: "8", name: "", gold: 0, iconSF: null, type: 1, mappingLocalData: null, gender: "female", is_equippable: true, is_static: false, is_stackable: false },
+                item: { id: "8", name: "Tóc hồng Cherry", gold: 0, iconSF: null, type: 1, mappingLocalData: null, gender: "female", is_equippable: true, is_static: false, is_stackable: false },
                 inventory_type: InventoryType.ITEM,
             },
             {
                 id: null,
                 equipped: false,
-                item: { id: "9", name: "", gold: 0, iconSF: null, type: 5, mappingLocalData: null, gender: "female", is_equippable: true, is_static: false, is_stackable: false },
+                item: { id: "9", name: "Áo trắng viền đỏ", gold: 0, iconSF: null, type: 5, mappingLocalData: null, gender: "female", is_equippable: true, is_static: false, is_stackable: false },
                 inventory_type: InventoryType.ITEM,
             },
             {
                 id: null,
                 equipped: false,
-                item: { id: "10", name: "", gold: 0, iconSF: null, type: 6, mappingLocalData: null, gender: "female", is_equippable: true, is_static: false, is_stackable: false },
+                item: { id: "10", name: "Quần trắng viền đỏ", gold: 0, iconSF: null, type: 6, mappingLocalData: null, gender: "female", is_equippable: true, is_static: false, is_stackable: false },
                 inventory_type: InventoryType.ITEM,
             }
         ];
@@ -127,7 +127,7 @@ export class InventoryManager extends BaseInventoryManager {
         item.item.mappingLocalData = null;
         if (this.groupedItems[item.item.type] == null) {
             this.groupedItems[item.item.type] = [];
-            if (!this.categories.includes(item.item.type.toString())){
+            if (!this.categories.includes(item.item.type.toString())) {
                 this.categories.push(item.item.type.toString());
             }
             this.tabController.initTabData(this.categories);
@@ -179,6 +179,7 @@ export class InventoryManager extends BaseInventoryManager {
         uiItem.toggleActive(isEquipped);
         if (isEquipped) {
             this.equipingUIItem = uiItem;
+            this.updateDescriptionAndActionButton(item.item, this.selectingUIItem);
         }
     }
 
@@ -187,6 +188,9 @@ export class InventoryManager extends BaseInventoryManager {
         uiItem.initFood(food);
         uiItem.toggleActive(false);
         this.setUIState(true, false, true);
+        if (this.descriptionText.string.trim() === "") {
+            this.descriptionText.string = `${food.name}: ${food.description || ""}`;
+        }
     }
 
     private setUIState(bgActive: boolean, listItemActive: boolean, listFoodActive: boolean) {
@@ -232,7 +236,7 @@ export class InventoryManager extends BaseInventoryManager {
     }
 
     protected override groupByCategory(items: InventoryDTO[]): Record<string, InventoryDTO[]> {
-        const result =  items.reduce((acc, item) => {
+        const result = items.reduce((acc, item) => {
             if (item.item) {
                 const type = item.item.type;
                 if (!acc[type]) {
@@ -246,14 +250,14 @@ export class InventoryManager extends BaseInventoryManager {
                     acc[type] = [];
                 }
                 acc[type].push(item);
-            } 
+            }
             return acc;
         }, {} as Record<string, InventoryDTO[]>);
 
-       if (!result[InventoryType.FOOD]) {
-        result[InventoryType.FOOD] = [];
-       }
-        return result;    
+        if (!result[InventoryType.FOOD]) {
+            result[InventoryType.FOOD] = [];
+        }
+        return result;
     }
 }
 
