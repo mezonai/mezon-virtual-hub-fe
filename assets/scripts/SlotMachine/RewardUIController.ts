@@ -1,5 +1,5 @@
-import { _decorator, EventKeyboard, Input, input, instantiate, KeyCode, Node, Prefab, SpriteFrame, Tween, tween, Vec3 } from 'cc';
-import { InventoryDTO, Item, RewardItemDTO, RewardType } from '../Model/Item';
+import { _decorator, EventKeyboard, Input, input, instantiate, KeyCode, Node, Prefab, SpriteFrame, Tween, tween, Vec2, Vec3 } from 'cc';
+import { InventoryDTO, Item, ItemType, RewardItemDTO, RewardType } from '../Model/Item';
 import { BubbleRotation } from './BubbleRotation';
 import { RewardItem } from './RewardItem';
 import { BaseInventoryManager } from '../gameplay/player/inventory/BaseInventoryManager';
@@ -69,6 +69,9 @@ export class RewardUIController extends BaseInventoryManager {
         uiItem.avatar.spriteFrame = item.item.iconSF[0];
         item.item.mappingLocalData = skinLocalData;
         uiItem.init(item.item);
+        const isHair = item.item.type === ItemType.HAIR;
+        const scaleValue = isHair ? 0.3 : 0.4;
+        uiItem.avatar.node.scale = new Vec3(scaleValue, scaleValue, 0);
         uiItem.setupAvatar();
     }
 
