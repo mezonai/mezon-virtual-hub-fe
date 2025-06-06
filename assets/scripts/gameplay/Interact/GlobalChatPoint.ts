@@ -22,11 +22,13 @@ export class GlobalChatPoint extends MapItemController {
             return;
         }
 
+        if(UIManager.Instance.FindUIIndetify(UIID.GlobalChat).node.active) return;
         UIManager.Instance.showYesNoPopup("Chú Ý", `Bỏ ${Constants.WiSH_FEE} đồng để thực hiện điều ước của bạn?`,
             () => {
                 UserMeManager.playerCoin -= Constants.WiSH_FEE;
                 UIManager.Instance.showUI(UIID.GlobalChat);
             }, null, "OK", "Thôi")
+            this.handleEndContact(null, null, null);
     }
 
     protected override canShowPopup(): boolean {
