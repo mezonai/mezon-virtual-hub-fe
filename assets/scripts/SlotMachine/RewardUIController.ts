@@ -69,8 +69,8 @@ export class RewardUIController extends BaseInventoryManager {
         uiItem.avatar.spriteFrame = item.item.iconSF[0];
         item.item.mappingLocalData = skinLocalData;
         uiItem.init(item.item);
-        const isHair = item.item.type === ItemType.HAIR;
-        const scaleValue = isHair ? 0.3 : 0.4;
+        const isSpecial  = item.item.type === ItemType.HAIR || item.item.type === ItemType.FACE;
+        const scaleValue = isSpecial  ? 0.25 : 0.4;
         uiItem.avatar.node.scale = new Vec3(scaleValue, scaleValue, 0);
         uiItem.setupAvatar();
     }
