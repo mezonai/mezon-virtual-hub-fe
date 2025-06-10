@@ -45,7 +45,7 @@ export class MyProfileHUD extends BaseProfileManager {
     }
 
     protected onCoinChangeGold(value, oldValue) {
-        this.gold_txt.string = Utilities.convertBigNumberToStr(value, false);
+        this.gold_txt.string = Utilities.convertBigNumberToStr(value);
         this.tooltip1.setFullValue(value);
 
         if (!this.inited) {
@@ -59,7 +59,7 @@ export class MyProfileHUD extends BaseProfileManager {
 
     protected onCoinChangeDiamond(value, oldValue) {
         if (!this.dimond_txt) return;
-        this.dimond_txt.string = Utilities.convertBigNumberToStr(value, false);
+        this.dimond_txt.string = Utilities.convertBigNumberToStr(value);
         this.tooltip2.setFullValue(value);
         if (!this.inited) {
             this.inited = true;

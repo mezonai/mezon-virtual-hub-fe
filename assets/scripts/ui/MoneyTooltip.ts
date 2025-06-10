@@ -10,7 +10,7 @@ export class MoneyTooltip extends Component {
     public tooltipNode: Node = null;
 
     private fullValue: number = 0;
-    private moneyLimitTooltip: number = 100000000;
+    private moneyLimitTooltip: number = 10000;
 
     public setFullValue(value: number) {
         this.fullValue = value;
