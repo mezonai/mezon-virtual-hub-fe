@@ -8,6 +8,7 @@ import { UserManager } from '../core/UserManager';
 import { ServerManager } from '../core/ServerManager';
 import { ExchangeCoinController } from '../core/ExchangeCoinController';
 import { RewardType } from '../Model/Item';
+import { MoneyTooltip } from '../ui/MoneyTooltip';
 
 const { ccclass, property } = _decorator;
 
@@ -18,6 +19,11 @@ export class MyProfileHUD extends BaseProfileManager {
     @property(Label) private dimond_txt: Label = null!;
     private inited: boolean = false;
     @property({ type: Vec3 }) spawnTextEffectOffset: Vec3 = new Vec3();
+
+    @property(MoneyTooltip)
+    tooltip1: MoneyTooltip = null;
+    @property(MoneyTooltip)
+    tooltip2: MoneyTooltip = null;
 
     start(): void {
         director.on(EVENT_NAME.UPDATE_INFO_PROFILE, this.updateProfile, this);
@@ -40,6 +46,7 @@ export class MyProfileHUD extends BaseProfileManager {
 
     protected onCoinChangeGold(value, oldValue) {
         this.gold_txt.string = Utilities.convertBigNumberToStr(value);
+        this.tooltip1.setFullValue(value);
 
         if (!this.inited) {
             this.inited = true;
@@ -53,6 +60,7 @@ export class MyProfileHUD extends BaseProfileManager {
     protected onCoinChangeDiamond(value, oldValue) {
         if (!this.dimond_txt) return;
         this.dimond_txt.string = Utilities.convertBigNumberToStr(value);
+        this.tooltip2.setFullValue(value);
         if (!this.inited) {
             this.inited = true;
         }

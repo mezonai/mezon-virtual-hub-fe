@@ -321,20 +321,24 @@ export default class Utilities {
     }
 
     private static doConvert(value, BIGNUMBER_CONVERT) {
-        let result = "";
         for (let convertInfo of BIGNUMBER_CONVERT) {
             if (value < Math.pow(10, convertInfo.decimals)) {
                 if (convertInfo.text == "") {
                     return value.toLocaleString();
-                }
-                else {
-                    let newNumber = Math.round(value / Math.pow(10, convertInfo.divideDecimals));
-                    result += newNumber.toLocaleString();
-                    result += convertInfo.text;
-                    return result;
+                } else {
+                    const divider = Math.pow(10, convertInfo.divideDecimals);
+                    let newNumber = value / divider;
+                    newNumber = Math.floor(newNumber * 10) / 10;
+                    const newNumberStr = newNumber % 1 === 0
+                        ? newNumber.toFixed(0)
+                        : newNumber.toFixed(1);
+
+                    return newNumberStr + convertInfo.text;
                 }
             }
         }
+
+        return value.toLocaleString();
     }
 
     static secondsToHMS(seconds: number): string {
