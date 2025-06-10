@@ -2,6 +2,7 @@ import { _decorator, Component, Label, Node, Sprite, SpriteFrame, Toggle, tween,
 import { BaseInventoryUIITem } from './BaseInventoryUIItem';
 import { Food, Item } from '../../../Model/Item';
 import { UserMeManager } from '../../../core/UserMeManager';
+import Utilities from '../../../utilities/Utilities';
 const { ccclass, property } = _decorator;
 
 @ccclass('InventoryUIITem')
@@ -21,6 +22,6 @@ export class InventoryUIITem extends BaseInventoryUIITem {
         const foodDTO = UserMeManager.GetFoods?.find(inv => inv.food?.id === data.id);
         const quantity = foodDTO?.quantity ?? 0;
         this.node.active = quantity > 0;
-        this.amountLabel.string = quantity.toString();
+        this.amountLabel.string = Utilities.convertBigNumberToStr(10000);
     }
 }
