@@ -22,6 +22,6 @@ export class InventoryUIITem extends BaseInventoryUIITem {
         const foodDTO = UserMeManager.GetFoods?.find(inv => inv.food?.id === data.id);
         const quantity = foodDTO?.quantity ?? 0;
         this.node.active = quantity > 0;
-        this.amountLabel.string = Utilities.convertBigNumberToStr(10000);
+        this.amountLabel.string = Utilities.convertBigNumberToStr(quantity);
     }
 }
