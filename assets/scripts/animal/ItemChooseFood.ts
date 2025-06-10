@@ -9,6 +9,7 @@ import { ServerManager } from '../core/ServerManager';
 import { UserManager } from '../core/UserManager';
 import { PopupChooseFoodPet } from '../PopUp/PopupChooseFoodPet';
 import { EVENT_NAME } from '../network/APIConstant';
+import Utilities from '../utilities/Utilities';
 const { ccclass, property } = _decorator;
 
 @ccclass('ItemChooseFood')
@@ -32,14 +33,14 @@ export class ItemChooseFood extends Component {
         this.spriteicon.spriteFrame = this.spriteFramesFood[typeToIndexMap[food.type]];
         this.foodDTO = foodDTO;
         let quantity = foodDTO?.quantity ?? 0;
-        this.quantity.string = quantity.toString();
+        this.quantity.string = Utilities.convertBigNumberToStr(quantity.toString());
         this.buttonChooseFood.node.off(Button.EventType.CLICK, () => this.catchPet(food, animalController, onThrowFood), this);
         this.buttonChooseFood.node.on(Button.EventType.CLICK, () => this.catchPet(food, animalController, onThrowFood), this);
     }
 
     updateQuantityFood(id: string, quantity: number) {        
         if (!this.foodDTO || this.foodDTO.id != id) return;
-        this.quantity.string = quantity.toString();
+        this.quantity.string = Utilities.convertBigNumberToStr(quantity.toString());
     }
 
     catchPet(food: Food, animalController: AnimalController, onThrowFood: (foodType: FoodType) => void) {

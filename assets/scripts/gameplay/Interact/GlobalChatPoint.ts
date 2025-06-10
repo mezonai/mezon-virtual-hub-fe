@@ -22,14 +22,24 @@ export class GlobalChatPoint extends MapItemController {
             return;
         }
 
-        if(UIManager.Instance.FindUIIndetify(UIID.GlobalChat).node.active) return;
+        if (UIManager.Instance.FindUIIndetify(UIID.GlobalChat).node.active) return;
         UIManager.Instance.showYesNoPopup("Chú Ý", `Bỏ ${Constants.WiSH_FEE} đồng để thực hiện điều ước của bạn?`,
             () => {
                 UserMeManager.playerCoin -= Constants.WiSH_FEE;
-                UIManager.Instance.showUI(UIID.GlobalChat);
+                this.ShowGlobalChat();
             }, null, "OK", "Thôi")
-            this.handleEndContact(null, null, null);
+        this.handleEndContact(null, null, null);
     }
+
+    private async ShowGlobalChat() {
+        await this.delay(600);
+        UIManager.Instance.showUI(UIID.GlobalChat);
+    }
+
+    delay(ms: number): Promise<void> {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
 
     protected override canShowPopup(): boolean {
         return true;
