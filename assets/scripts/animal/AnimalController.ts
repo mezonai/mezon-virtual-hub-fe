@@ -206,10 +206,6 @@ export class AnimalController extends Component {
 
     catchFail(content: string) {
         this.showBubbleChat(content, 1000);
-        if (this.animalType == AnimalType.RandomMoveOnServer) return;
-        setTimeout(() => {
-            this.randomlyMover.move();
-        }, 500);
     }
 
 
