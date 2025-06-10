@@ -6,6 +6,7 @@ import Utilities from '../utilities/Utilities';
 import { _decorator, Component, Enum, view, Node, director, Button, View } from 'cc';
 import { PopupManager } from '../PopUp/PopupManager';
 import { PopupOwnedAnimals } from '../PopUp/PopupOwnedAnimals';
+import { ToolSpawnPet } from '../utilities/ToolSpawnPet';
 const { ccclass, property } = _decorator;
 
 @ccclass('UIManager')
@@ -18,6 +19,7 @@ export class UIManager extends Component {
     @property({ type: Node }) fadePopupNode: Node;
     @property({ type: Button }) outmapButton: Button;
     @property({ type: Button }) showOwnedButton: Button;
+    @property({ type: ToolSpawnPet }) toolcreatePet: ToolSpawnPet;
     private _popup: UIPopup = null;
     private _bigPopup: UIPopup = null;
     private _fadePopup: UIPopup = null;
