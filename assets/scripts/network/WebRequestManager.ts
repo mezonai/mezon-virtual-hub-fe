@@ -117,6 +117,15 @@ export class WebRequestManager extends Component {
         APIManager.postData(url, {}, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
+    public createPet(data,successCallback, errorCallback) {
+        APIManager.postData(APIConstant.ANIMAL, data, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    }
+
+    public deletePet(foodId,successCallback, errorCallback) {
+         const url = `${APIConstant.ANIMAL}/${foodId}`;
+        APIManager.deleteData(url, {}, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    }
+
     private errorMessageMap: Map<number, string> = new Map([
         [400, 'Bad Request'],
         [401, 'Unauthorized'],

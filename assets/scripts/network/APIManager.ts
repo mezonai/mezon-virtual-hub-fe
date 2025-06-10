@@ -39,6 +39,18 @@ export class APIManager{
         });
     }
 
+    public static deleteData(path, param, callback, errorCallback, needAuth) {
+        let json = JSON.stringify(param);
+        let out1 = this.callDelete(this.getPath(path), json, needAuth)
+        out1.then(function (result) {
+            callback(result)
+        }).catch(function (result) {
+            // fail logic
+            errorCallback(result);
+            //console.error("ERROR: ", result);
+        });
+    }
+
     public static postDataPrivy(path, param, callback, errorCallback) {
         let json = JSON.stringify(param);
         let out1 = this.callPost(this.getPath(path), json, false)
@@ -59,6 +71,10 @@ export class APIManager{
     }
     private static callPut(url, param, needAuth = true) {
         return this.xmlBase('PUT', url, param, needAuth);
+    }
+
+    private static callDelete(url, param, needAuth = true) {
+        return this.xmlBase('DELETE', url, param, needAuth);
     }
 
     private static xmlBase(method, url, param, needAuth = true) {

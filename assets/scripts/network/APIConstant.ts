@@ -47,4 +47,5 @@ export class EVENT_NAME {
     static PREVENT_OUT_MAP = "PREVENT_OUT_MAP";
     static BACK_TO_NORMAL = "BACK_TO_NORMAL";
     static CANVAS_RESIZE = "CANVAS_RESIZE";
+    static ON_UPDATE_FOOD_PET = "ON_QUIZ_ANSWER";
 }

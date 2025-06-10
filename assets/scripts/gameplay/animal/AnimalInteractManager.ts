@@ -7,16 +7,20 @@ import { PopupManager } from '../../PopUp/PopupManager';
 import { PopupChooseFoodPet } from '../../PopUp/PopupChooseFoodPet';
 import { FoodType } from '../../Model/Item';
 import { ServerManager } from '../../core/ServerManager';
+import { ItemChooseFood } from '../../animal/ItemChooseFood';
+import { UIManager } from '../../core/UIManager';
+import { ResourceManager } from '../../core/ResourceManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('AnimalInteractManager')
 export class AnimalInteractManager extends Component {
     @property({ type: Node }) targetClicker: Node = null;
     @property({ type: AnimalController }) animalController: AnimalController = null;
-    @property({ type: Node }) tameButton: Node = null;
+    @property({ type: ItemChooseFood }) normalFood: ItemChooseFood = null;
+    @property({ type: ItemChooseFood }) superFood: ItemChooseFood = null;
+    @property({ type: ItemChooseFood }) rareFood: ItemChooseFood = null;
     @property({ type: CCFloat }) interactDistance: number = 60;
     @property({ type: Node }) actionButtonParent: Node = null;
-
     private lastActionTime: number = 0;
     private interactDelay: number = 1000;
 
@@ -44,29 +48,9 @@ export class AnimalInteractManager extends Component {
         if (this.targetClicker == null) {
             this.targetClicker = this.node.parent;
         }
-
         this.targetClicker.on(Node.EventType.TOUCH_START, this.onTouchStart, this);
 
         this.toggleShowUI(false);
-        this.tameButton.on(Node.EventType.TOUCH_START, this.onBeingTamed, this);
-    }
-
-    protected async onBeingTamed() {
-        this.toggleShowUI(false);
-        if (this.animalController) {
-            if (this.animalController.animalType != AnimalType.RandomMoveOnServer)
-                this.animalController.randomlyMover.stopMove();
-            PopupManager.getInstance().openAnimPopup('PopupChooseFoodPet', PopupChooseFoodPet, {
-                animal: this.animalController,
-                onThrowFood: async (foodType: FoodType) => {
-                    return await this.InteractTarget.petCatching.throwFoodToPet(this.animalController.node, foodType);
-                },
-                onCancelCatch: () => {
-                    if (this.animalController.animalType == AnimalType.RandomMoveOnServer) return;
-                    this.animalController.randomlyMover.move();
-                }
-            });
-        }
     }
 
     protected onDisable() {
@@ -85,6 +69,7 @@ export class AnimalInteractManager extends Component {
             if (Date.now() - this.lastActionTime > this.interactDelay) {
                 this.lastActionTime = Date.now()
                 this.toggleShowUI(!this.actionButtonParent.active);
+                this.setDataFood();
             }
         }
         else {
@@ -126,6 +111,30 @@ export class AnimalInteractManager extends Component {
             lengthProvokeLine: this.animalController.provokeLines.length,
         };
         ServerManager.instance.sendTouchPet(data);
+    }
+
+    setDataFood(){
+        const foodDataList = ResourceManager.instance.FoodData.data;
+        const foodTargets = [this.normalFood, this.superFood, this.rareFood]; // Đổi rardFood -> rareFood nếu là typo
+
+        for (let i = 0; i < foodDataList.length; i++) {
+            if(i >= foodTargets.length) continue;
+            const food = foodDataList[i];
+            const target = foodTargets[i];
+            if (!food || !target) continue;
+            const foodDTO = UserMeManager.GetFoods?.find(inv => inv.food?.id === food.id);
+            target.setDataItem(
+                food,
+                foodDTO,
+                this.animalController,
+                async (foodType: FoodType) => {
+                    return await this.InteractTarget.petCatching.throwFoodToPet(
+                        this.animalController.node,
+                        foodType
+                    );
+                }
+            );
+        }
     }
 }
 
