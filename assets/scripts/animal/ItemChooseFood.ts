@@ -20,11 +20,8 @@ export class ItemChooseFood extends Component {
     @property({ type: [SpriteFrame] }) spriteFramesFood: SpriteFrame[] = [];
     private foodDTO: InventoryDTO = null;
     private stopDistance = 250;
-    private isCooldown = false;
-    protected start(): void {
-        director.on(EVENT_NAME.ON_UPDATE_FOOD_PET, this.updateQuantityFood, this);
-    }
-    setDataItem(food: Food, foodDTO: InventoryDTO, animalController: AnimalController, onThrowFood: (foodType: FoodType) => void) {
+    private isCooldown = false;    
+    setDataItem(food: Food, foodDTO: InventoryDTO, animalController: AnimalController, OnCloseCatch: () => void, onThrowFood: (foodType: FoodType) => void) {
         const typeToIndexMap: Record<FoodType, number> = {
             [FoodType.NORMAL]: 0,
             [FoodType.PREMIUM]: 1,
@@ -34,24 +31,25 @@ export class ItemChooseFood extends Component {
         this.foodDTO = foodDTO;
         let quantity = foodDTO?.quantity ?? 0;
         this.quantity.string = Utilities.convertBigNumberToStr(quantity.toString());
-        this.buttonChooseFood.node.off(Button.EventType.CLICK, () => this.catchPet(food, animalController, onThrowFood), this);
-        this.buttonChooseFood.node.on(Button.EventType.CLICK, () => this.catchPet(food, animalController, onThrowFood), this);
+        this.buttonChooseFood.node.off(Button.EventType.CLICK, () => this.catchPet(food, animalController, onThrowFood, OnCloseCatch), this);
+        this.buttonChooseFood.node.on(Button.EventType.CLICK, () => this.catchPet(food, animalController, onThrowFood, OnCloseCatch), this);
     }
 
-    updateQuantityFood(id: string, quantity: number) {        
+    updateQuantityFood(id: string, quantity: number) {
         if (!this.foodDTO || this.foodDTO.id != id) return;
         this.quantity.string = Utilities.convertBigNumberToStr(quantity.toString());
     }
 
-    catchPet(food: Food, animalController: AnimalController, onThrowFood: (foodType: FoodType) => void) {
+    catchPet(food: Food, animalController: AnimalController, onThrowFood: (foodType: FoodType) => void, OnCloseCatch: () => void) {
         if (this.isCooldown) return;
         this.isCooldown = true;
+        OnCloseCatch();
         setTimeout(() => {
             this.isCooldown = false;
         }, 500);
         (async () => {
             if (!this.canCacthPet(animalController)) return;
-            if (animalController.animalType == AnimalType.Caught) {             
+            if (animalController.animalType == AnimalType.Caught) {
                 UIManager.Instance.showNoticePopup("Thông báo", `Thú cưng đã bị bắt. Chúc bạn may mắn lần sau`);
                 return;
             }
@@ -67,9 +65,7 @@ export class ItemChooseFood extends Component {
             if (onThrowFood) {
                 const foodThrow = UserMeManager.GetFoods?.find(inv => inv.food.id === food.id);
                 if (foodThrow && foodThrow.quantity > 0) {
-                    foodThrow.quantity -= 1;
-                    console.log('Emit:', foodThrow.id, foodThrow.quantity);
-                    director.emit(EVENT_NAME.ON_UPDATE_FOOD_PET, foodThrow.id, foodThrow.quantity);
+                    foodThrow.quantity -= 1;                    
                     await onThrowFood(food.type);
                     let data = {
                         player: UserMeManager.Get.user,

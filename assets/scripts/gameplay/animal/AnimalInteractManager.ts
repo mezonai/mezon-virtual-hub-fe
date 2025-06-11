@@ -1,4 +1,4 @@
-import { _decorator, CCFloat, Component, Label, Node, Tween, tween, Vec3 } from 'cc';
+import { _decorator, CCFloat, Component, director, Label, Node, Tween, tween, Vec3 } from 'cc';
 import { UserManager } from '../../core/UserManager';
 import { PlayerController } from '../player/PlayerController';
 import { UserMeManager } from '../../core/UserMeManager';
@@ -10,6 +10,7 @@ import { ServerManager } from '../../core/ServerManager';
 import { ItemChooseFood } from '../../animal/ItemChooseFood';
 import { UIManager } from '../../core/UIManager';
 import { ResourceManager } from '../../core/ResourceManager';
+import { EVENT_NAME } from '../../network/APIConstant';
 const { ccclass, property } = _decorator;
 
 @ccclass('AnimalInteractManager')
@@ -23,6 +24,13 @@ export class AnimalInteractManager extends Component {
     @property({ type: Node }) actionButtonParent: Node = null;
     private lastActionTime: number = 0;
     private interactDelay: number = 1000;
+
+    protected start(): void {
+        if (this.animalController.animalType === AnimalType.RandomMove || this.animalController.animalType === AnimalType.RandomMoveOnServer) {
+            director.on(EVENT_NAME.ON_TOUCH_PET, this.updateCloseToggleUI, this);
+        }
+
+    }
 
     protected get InteractTarget(): PlayerController {
         if (UserManager.instance?.GetMyClientPlayer != null) {
@@ -59,7 +67,18 @@ export class AnimalInteractManager extends Component {
         }
     }
 
+    updateCloseToggleUI(petId: string) {
+        if (!this.animalController?.Pet) return;
+        if (this.animalController.Pet.id !== petId && this.actionButtonParent.active) {
+            this.toggleShowUI(false);
+        }
+    }
+
     onTouchStart(event) {
+        if (this.animalController.animalType === AnimalType.RandomMove || this.animalController.animalType === AnimalType.RandomMoveOnServer) {
+            director.emit(EVENT_NAME.ON_TOUCH_PET, this.animalController.Pet.id);
+        }
+
         if (this.CanShowUI) {
             if (this.animalController?.Pet.is_caught) {
                 if (!this.animalController.canShowBubbleChat()) return;
@@ -113,12 +132,12 @@ export class AnimalInteractManager extends Component {
         ServerManager.instance.sendTouchPet(data);
     }
 
-    setDataFood(){
+    setDataFood() {
         const foodDataList = ResourceManager.instance.FoodData.data;
         const foodTargets = [this.normalFood, this.superFood, this.rareFood]; // Đổi rardFood -> rareFood nếu là typo
 
         for (let i = 0; i < foodDataList.length; i++) {
-            if(i >= foodTargets.length) continue;
+            if (i >= foodTargets.length) continue;
             const food = foodDataList[i];
             const target = foodTargets[i];
             if (!food || !target) continue;
@@ -127,12 +146,13 @@ export class AnimalInteractManager extends Component {
                 food,
                 foodDTO,
                 this.animalController,
+                () => this.toggleShowUI(false),
                 async (foodType: FoodType) => {
                     return await this.InteractTarget.petCatching.throwFoodToPet(
                         this.animalController.node,
                         foodType
                     );
-                }
+                },
             );
         }
     }

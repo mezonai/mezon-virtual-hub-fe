@@ -16,40 +16,40 @@ export class ToolSpawnPet extends Component {
     @property({ type: Button }) public buttonClose: Button;
     //Dog
     @property({ type: DropDown }) public dropdownDog: DropDown = null;
-    @property({ type: DropDown }) public dropdownCatchPercentDog: DropDown = null;
+    @property({ type: EditBox }) public editBoxCatchPercentDog: EditBox = null;
     @property({ type: EditBox }) quantityDog: EditBox = null!;
 
     //Bird
     @property({ type: DropDown }) public dropdownBird: DropDown = null;
-    @property({ type: DropDown }) public dropdownCatchPercentBird: DropDown = null;
+    @property({ type: EditBox }) public editBoxCatchPercentBird: EditBox = null;
     @property({ type: EditBox }) quantityBird: EditBox = null!;
     //Cat
     @property({ type: DropDown }) public dropdownCat: DropDown = null;
-    @property({ type: DropDown }) public dropdownCatchPercentCat: DropDown = null;
+    @property({ type: EditBox }) public editBoxCatchPercentCat: EditBox = null;
     @property({ type: EditBox }) quantityCat: EditBox = null!;
     //Dragon
     @property({ type: DropDown }) public dropdownDragon: DropDown = null;
-    @property({ type: DropDown }) public dropdownCatchPercentDragon: DropDown = null;
+    @property({ type: EditBox }) public editBoxCatchPercentDragon: EditBox = null;
     @property({ type: EditBox }) quantityDragon: EditBox = null!;
     //Pokemon
     @property({ type: DropDown }) public dropdownPokemon: DropDown = null;
-    @property({ type: DropDown }) public dropdownCatchPercentPokemon: DropDown = null;
+    @property({ type: EditBox }) public editBoxCatchPercentPokemon: EditBox = null;
     @property({ type: EditBox }) quantityPokemon: EditBox = null!;
     //Rabit
     @property({ type: DropDown }) public dropdownRabit: DropDown = null;
-    @property({ type: DropDown }) public dropdownCatchPercentRabit: DropDown = null;
+    @property({ type: EditBox }) public editBoxCatchPercentRabit: EditBox = null;
     @property({ type: EditBox }) quantityRabit: EditBox = null!;
     //Sika
     @property({ type: DropDown }) public dropdownSika: DropDown = null;
-    @property({ type: DropDown }) public dropdownCatchPercentSika: DropDown = null;
+    @property({ type: EditBox }) public editBoxCatchPercentSika: EditBox = null;
     @property({ type: EditBox }) quantitySika: EditBox = null!;
     //PhonenixIce
     @property({ type: DropDown }) public dropdownPhonenixIce: DropDown = null;
-    @property({ type: DropDown }) public dropdownCatchPercentPhonenixIce: DropDown = null;
+    @property({ type: EditBox }) public editBoxCatchPercentPhonenixIce: EditBox = null;
     @property({ type: EditBox }) quantityPhonenixIce: EditBox = null!;
     //DragonIce
     @property({ type: DropDown }) public dropdownDragonIce: DropDown = null;
-    @property({ type: DropDown }) public dropdownCatchPercentDragonIce: DropDown = null;
+    @property({ type: EditBox }) public editBoxCatchPercentDragonIce: EditBox = null;
     @property({ type: EditBox }) quantityDragonIce: EditBox = null!;
     //Create
     @property({ type: Button }) public btnCreatePet: Button;
@@ -62,8 +62,7 @@ export class ToolSpawnPet extends Component {
 
     map: string[] = ["all", "hn1", "hn1-office", "hn2", "hn2-office", "hn3", "hn3-office", "vinh", "vinh-office", "dn", "dn-office", "qn-office", "qn", "sg", "sg-office"];
     allmap: string[] = ["hn1", "hn2", "hn3", "vinh", "dn", "qn", "sg"];
-    subMap: string[] = ["", "office"];
-    catchPercent: string[] = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"];
+    subMap: string[] = ["", "office"];   
     rarity: string[] = [AnimalRarity.COMMON, AnimalRarity.RARE, AnimalRarity.EPIC, AnimalRarity.LEGENDARY];
     
     start() {
@@ -80,15 +79,15 @@ export class ToolSpawnPet extends Component {
         });
         this.dropdownRoomCreate.setOptions(this.map);
         this.dropdownRoomDelete.setOptions(this.map);
-        this.dropdownCatchPercentDog.setOptions(this.catchPercent);
-        this.dropdownCatchPercentBird.setOptions(this.catchPercent);
-        this.dropdownCatchPercentCat.setOptions(this.catchPercent);
-        this.dropdownCatchPercentDragon.setOptions(this.catchPercent);
-        this.dropdownCatchPercentDragonIce.setOptions(this.catchPercent);
-        this.dropdownCatchPercentPhonenixIce.setOptions(this.catchPercent);
-        this.dropdownCatchPercentPokemon.setOptions(this.catchPercent);
-        this.dropdownCatchPercentRabit.setOptions(this.catchPercent);
-        this.dropdownCatchPercentSika.setOptions(this.catchPercent);
+        this.editBoxCatchPercentDog.string = this.defaultQuantity.toString();
+        this.editBoxCatchPercentBird.string = this.defaultQuantity.toString();
+        this.editBoxCatchPercentCat.string = this.defaultQuantity.toString();
+        this.editBoxCatchPercentDragon.string = this.defaultQuantity.toString();
+        this.editBoxCatchPercentDragonIce.string = this.defaultQuantity.toString();
+        this.editBoxCatchPercentPhonenixIce.string = this.defaultQuantity.toString();
+        this.editBoxCatchPercentPokemon.string = this.defaultQuantity.toString();
+        this.editBoxCatchPercentRabit.string = this.defaultQuantity.toString();
+        this.editBoxCatchPercentSika.string = this.defaultQuantity.toString();
         this.quantityDog.string = this.defaultQuantity.toString();
         this.quantityBird.string = this.defaultQuantity.toString();
         this.quantityCat.string = this.defaultQuantity.toString();
@@ -169,15 +168,15 @@ export class ToolSpawnPet extends Component {
 
     private onGetAllPetDataCreate(map: string, submap: string) {
         const petConfigs: PetConfig[] = [
-            { species: "Dog", numSpawn: parseInt(this.quantityDog.string), catchChange: parseInt(this.dropdownCatchPercentDog.getValue()), rarity: this.dropdownDog.getValue() as AnimalRarity },
-            { species: "Cat", numSpawn: parseInt(this.quantityCat.string), catchChange: parseInt(this.dropdownCatchPercentCat.getValue()), rarity: this.dropdownCat.getValue() as AnimalRarity },
-            { species: "Bird", numSpawn: parseInt(this.quantityBird.string), catchChange: parseInt(this.dropdownCatchPercentBird.getValue()), rarity: this.dropdownBird.getValue() as AnimalRarity },
-            { species: "Rabit", numSpawn: parseInt(this.quantityRabit.string), catchChange: parseInt(this.dropdownCatchPercentRabit.getValue()), rarity: this.dropdownRabit.getValue() as AnimalRarity },
-            { species: "Pokemon", numSpawn: parseInt(this.quantityPokemon.string), catchChange: parseInt(this.dropdownCatchPercentPokemon.getValue()), rarity: this.dropdownPokemon.getValue() as AnimalRarity },
-            { species: "Sika", numSpawn: parseInt(this.quantitySika.string), catchChange: parseInt(this.dropdownCatchPercentSika.getValue()), rarity: this.dropdownSika.getValue() as AnimalRarity },
-            { species: "Dragon", numSpawn: parseInt(this.quantityDragon.string), catchChange: parseInt(this.dropdownCatchPercentDragon.getValue()), rarity: this.dropdownDragon.getValue() as AnimalRarity },
-            { species: "DragonIce", numSpawn: parseInt(this.quantityDragonIce.string), catchChange: parseInt(this.dropdownCatchPercentDragonIce.getValue()), rarity: this.dropdownDragonIce.getValue() as AnimalRarity },
-            { species: "PhoenixIce", numSpawn: parseInt(this.quantityPhonenixIce.string), catchChange: parseInt(this.dropdownCatchPercentPhonenixIce.getValue()), rarity: this.dropdownPhonenixIce.getValue() as AnimalRarity }
+            { species: "Dog", numSpawn: parseInt(this.quantityDog.string), catchChange: parseInt(this.editBoxCatchPercentDog.string), rarity: this.dropdownDog.getValue() as AnimalRarity },
+            { species: "Cat", numSpawn: parseInt(this.quantityCat.string), catchChange: parseInt(this.editBoxCatchPercentCat.string), rarity: this.dropdownCat.getValue() as AnimalRarity },
+            { species: "Bird", numSpawn: parseInt(this.quantityBird.string), catchChange: parseInt(this.editBoxCatchPercentBird.string), rarity: this.dropdownBird.getValue() as AnimalRarity },
+            { species: "Rabit", numSpawn: parseInt(this.quantityRabit.string), catchChange: parseInt(this.editBoxCatchPercentRabit.string), rarity: this.dropdownRabit.getValue() as AnimalRarity },
+            { species: "Pokemon", numSpawn: parseInt(this.quantityPokemon.string), catchChange: parseInt(this.editBoxCatchPercentPokemon.string), rarity: this.dropdownPokemon.getValue() as AnimalRarity },
+            { species: "Sika", numSpawn: parseInt(this.quantitySika.string), catchChange: parseInt(this.editBoxCatchPercentSika.string), rarity: this.dropdownSika.getValue() as AnimalRarity },
+            { species: "Dragon", numSpawn: parseInt(this.quantityDragon.string), catchChange: parseInt(this.editBoxCatchPercentDragon.string), rarity: this.dropdownDragon.getValue() as AnimalRarity },
+            { species: "DragonIce", numSpawn: parseInt(this.quantityDragonIce.string), catchChange: parseInt(this.editBoxCatchPercentDragonIce.string), rarity: this.dropdownDragonIce.getValue() as AnimalRarity },
+            { species: "PhoenixIce", numSpawn: parseInt(this.quantityPhonenixIce.string), catchChange: parseInt(this.editBoxCatchPercentPhonenixIce.string), rarity: this.dropdownPhonenixIce.getValue() as AnimalRarity }
         ];
         for (const config of petConfigs) {
             if (config.numSpawn <= 0) continue;
@@ -212,7 +211,7 @@ export class ToolSpawnPet extends Component {
 
         WebRequestManager.instance.createPet(
             petData,
-            () => console.log(`Tạo ${species} thành công.`),
+            () => console.log(`Tạo ${species} - ${rarity} - ${catchChange} thành công.`),
             (error) => this.onError(error)
         );
     }
