@@ -5,6 +5,10 @@ import { UIChat } from '../gameplay/ChatBox/UIChat';
 import { UIMission } from '../gameplay/Mission/UIMission';
 import { SettingManager } from './SettingManager';
 import { ShopPetController } from '../gameplay/shop/ShopPetController';
+import { WebRequestManager } from '../network/WebRequestManager';
+import ConvetData from './ConvertData';
+import { PopupManager } from '../PopUp/PopupManager';
+import { PopupReward } from '../PopUp/PopupReward';
 
 const { ccclass, property } = _decorator;
 
@@ -14,12 +18,12 @@ export class GameManager extends Component {
     public static get instance() {
         return GameManager._instance;
     }
-    @property({type: ShopController}) shopController: ShopController = null;
-    @property({type: ShopPetController}) shopPetController: ShopPetController = null;
-    @property({type: InventoryManager}) inventoryController: InventoryManager = null;  
-    @property({type: UIChat}) uiChat: UIChat = null;
-    @property({type: UIMission}) uiMission: UIMission = null;
-    @property({type: SettingManager}) settingManager: SettingManager = null;
+    @property({ type: ShopController }) shopController: ShopController = null;
+    @property({ type: ShopPetController }) shopPetController: ShopPetController = null;
+    @property({ type: InventoryManager }) inventoryController: InventoryManager = null;
+    @property({ type: UIChat }) uiChat: UIChat = null;
+    @property({ type: UIMission }) uiMission: UIMission = null;
+    @property({ type: SettingManager }) settingManager: SettingManager = null;
 
     protected onLoad(): void {
         if (GameManager._instance == null) {
@@ -28,14 +32,38 @@ export class GameManager extends Component {
     }
 
     public init() {
+        this.getReward();
         this.shopController.init();
         this.inventoryController.init();
         this.shopPetController.init();
         this.uiMission.getMissionEventData();
     }
 
+    getReward() {
+        WebRequestManager.instance.postGetReward(
+            (response) => this.handleGetReward(response),
+            (error) => this.onError(error)
+        );
+    }
+
     protected onDestroy(): void {
         GameManager._instance = null;
+    }
+
+
+    handleGetReward(response: any) {
+        const rewardsData = response?.data?.rewards ?? [];
+        const rewardItems = ConvetData.ConvertReward(rewardsData);
+        if (rewardItems.length <= 0) return;
+        PopupManager.getInstance().openAnimPopup('PopupReward', PopupReward, { rewards: rewardItems });
+
+    }
+
+    private onError(error: any) {
+        console.error("Error occurred:", error);
+        if (error?.message) {
+            console.error("Error message:", error.message);
+        }
     }
 }
 

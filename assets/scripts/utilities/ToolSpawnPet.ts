@@ -1,9 +1,9 @@
-import { _decorator, Button, Component, Node } from 'cc';
+import { _decorator, Button, Component, EditBox, Label, Node } from 'cc';
 import { WebRequestManager } from '../network/WebRequestManager';
 import { MapDTO } from '../Model/Player';
 import ConvetData from '../core/ConvertData';
 import { AnimalRarity } from '../Model/PetDTO';
-import { MapType, SubMapType } from '../Interface/DataMapAPI';
+import { DropDown } from './Dropdown/DropDown';
 const { ccclass, property } = _decorator;
 type PetConfig = {
     species: string;
@@ -13,131 +13,175 @@ type PetConfig = {
 };
 @ccclass('ToolSpawnPet')
 export class ToolSpawnPet extends Component {
-    @property({ type: Button }) public btnCreatePetByRoom: Button;
-    @property({ tooltip: "Nhập map Name" }) mapName: string = "hn1";
-    @property({ tooltip: "Nhập sub map Name" }) subMapName: string = "office";
+    @property({ type: Button }) public buttonClose: Button;
+    //Dog
+    @property({ type: DropDown }) public dropdownDog: DropDown = null;
+    @property({ type: EditBox }) public editBoxCatchPercentDog: EditBox = null;
+    @property({ type: EditBox }) quantityDog: EditBox = null!;
 
-    @property({ type: Button }) public btnCreatePettAllRoom: Button;
+    //Bird
+    @property({ type: DropDown }) public dropdownBird: DropDown = null;
+    @property({ type: EditBox }) public editBoxCatchPercentBird: EditBox = null;
+    @property({ type: EditBox }) quantityBird: EditBox = null!;
+    //Cat
+    @property({ type: DropDown }) public dropdownCat: DropDown = null;
+    @property({ type: EditBox }) public editBoxCatchPercentCat: EditBox = null;
+    @property({ type: EditBox }) quantityCat: EditBox = null!;
+    //Dragon
+    @property({ type: DropDown }) public dropdownDragon: DropDown = null;
+    @property({ type: EditBox }) public editBoxCatchPercentDragon: EditBox = null;
+    @property({ type: EditBox }) quantityDragon: EditBox = null!;
+    //Pokemon
+    @property({ type: DropDown }) public dropdownPokemon: DropDown = null;
+    @property({ type: EditBox }) public editBoxCatchPercentPokemon: EditBox = null;
+    @property({ type: EditBox }) quantityPokemon: EditBox = null!;
+    //Rabit
+    @property({ type: DropDown }) public dropdownRabit: DropDown = null;
+    @property({ type: EditBox }) public editBoxCatchPercentRabit: EditBox = null;
+    @property({ type: EditBox }) quantityRabit: EditBox = null!;
+    //Sika
+    @property({ type: DropDown }) public dropdownSika: DropDown = null;
+    @property({ type: EditBox }) public editBoxCatchPercentSika: EditBox = null;
+    @property({ type: EditBox }) quantitySika: EditBox = null!;
+    //PhonenixIce
+    @property({ type: DropDown }) public dropdownPhonenixIce: DropDown = null;
+    @property({ type: EditBox }) public editBoxCatchPercentPhonenixIce: EditBox = null;
+    @property({ type: EditBox }) quantityPhonenixIce: EditBox = null!;
+    //DragonIce
+    @property({ type: DropDown }) public dropdownDragonIce: DropDown = null;
+    @property({ type: EditBox }) public editBoxCatchPercentDragonIce: EditBox = null;
+    @property({ type: EditBox }) quantityDragonIce: EditBox = null!;
+    //Create
+    @property({ type: Button }) public btnCreatePet: Button;
+    @property({ type: DropDown }) public dropdownRoomCreate: DropDown = null;
+    //Delete
+    @property({ type: Button }) public btnDeletePet: Button;
+    @property({ type: DropDown }) public dropdownRoomDelete: DropDown = null;
 
-    @property({ type: Button }) public btnDeletePettAllRoom: Button;
+    defaultQuantity: number = 0;
 
-    @property({ type: Button }) public btnDeletePetByRoom: Button;
-    @property({ tooltip: "Nhập map Name" }) mapNameDelete: string = "hn1";
-    @property({ tooltip: "Nhập sub map Name" }) subMapNameDelete: string = "office";
-
-    numSpawnDog: number = 2;
-    cactChangeDog: number = 3;
-    rarityDog: AnimalRarity = AnimalRarity.RARE;
-
-    numSpawnCat: number = 2;
-    cactChangeCat: number = 2;
-    rarityCat: AnimalRarity = AnimalRarity.COMMON;
-
-    numSpawnBird: number = 2;
-    cactChangeBird: number = 2;
-    rarityBird: AnimalRarity = AnimalRarity.COMMON;
-
-    numSpawnRabit: number = 2;
-    cactChangeRabit: number = 2;
-    rarityRabit: AnimalRarity = AnimalRarity.COMMON;
-
-    numSpawnPokemon: number = 2;
-    cactChangePokemon: number = 6;
-    rarityPokemon: AnimalRarity = AnimalRarity.EPIC;
-
-    numSpawnSika: number = 2;
-    cactChangeSika: number = 3;
-    raritySika: AnimalRarity = AnimalRarity.RARE;
-
-    numSpawnDragon: number = 2;
-    cactChangeDragon: number = 6;
-    rarityDragon: AnimalRarity = AnimalRarity.EPIC;
-
-    numSpawnDragonIce: number = 2;
-    cactChangeDragonIce: number = 10;
-    rarityDragonIce: AnimalRarity = AnimalRarity.LEGENDARY;
-
-
-
-    map: string[] = ["hn1", "hn2", "hn3", "vinh", "dn", "qn", "sg"];
-    subMap: string[] = ["", "office"];
-
+    map: string[] = ["all", "hn1", "hn1-office", "hn2", "hn2-office", "hn3", "hn3-office", "vinh", "vinh-office", "dn", "dn-office", "qn-office", "qn", "sg", "sg-office"];
+    allmap: string[] = ["hn1", "hn2", "hn3", "vinh", "dn", "qn", "sg"];
+    subMap: string[] = ["", "office"];   
+    rarity: string[] = [AnimalRarity.COMMON, AnimalRarity.RARE, AnimalRarity.EPIC, AnimalRarity.LEGENDARY];
+    
     start() {
-        this.btnCreatePettAllRoom.node.on(Button.EventType.CLICK, () => {
-            this.createPetAllRoom();
+        this.btnCreatePet.node.on(Button.EventType.CLICK, () => {
+            this.createPetOnClick();
         });
 
-        this.btnCreatePetByRoom.node.on(Button.EventType.CLICK, () => {
-            this.createPetByRoom();
+        this.btnDeletePet.node.on(Button.EventType.CLICK, () => {
+            this.deletePetOnClick();
         });
 
-        this.btnDeletePettAllRoom.node.on(Button.EventType.CLICK, () => {
-            this.deletePetAllRoom();
+        this.buttonClose.node.on(Button.EventType.CLICK, () => {
+            this.node.active = false;
         });
-        this.btnDeletePetByRoom.node.on(Button.EventType.CLICK, () => {
-            this.deletePetByRoom();
-        });
+        this.dropdownRoomCreate.setOptions(this.map);
+        this.dropdownRoomDelete.setOptions(this.map);
+        this.editBoxCatchPercentDog.string = this.defaultQuantity.toString();
+        this.editBoxCatchPercentBird.string = this.defaultQuantity.toString();
+        this.editBoxCatchPercentCat.string = this.defaultQuantity.toString();
+        this.editBoxCatchPercentDragon.string = this.defaultQuantity.toString();
+        this.editBoxCatchPercentDragonIce.string = this.defaultQuantity.toString();
+        this.editBoxCatchPercentPhonenixIce.string = this.defaultQuantity.toString();
+        this.editBoxCatchPercentPokemon.string = this.defaultQuantity.toString();
+        this.editBoxCatchPercentRabit.string = this.defaultQuantity.toString();
+        this.editBoxCatchPercentSika.string = this.defaultQuantity.toString();
+        this.quantityDog.string = this.defaultQuantity.toString();
+        this.quantityBird.string = this.defaultQuantity.toString();
+        this.quantityCat.string = this.defaultQuantity.toString();
+        this.quantityDragon.string = this.defaultQuantity.toString();
+        this.quantityDragonIce.string = this.defaultQuantity.toString();
+        this.quantityPhonenixIce.string = this.defaultQuantity.toString();
+        this.quantityPokemon.string = this.defaultQuantity.toString();
+        this.quantityRabit.string = this.defaultQuantity.toString();
+        this.quantitySika.string = this.defaultQuantity.toString();
+        this.dropdownDog.setOptions(this.rarity);
+        this.dropdownBird.setOptions(this.rarity);
+        this.dropdownCat.setOptions(this.rarity);
+        this.dropdownDragon.setOptions(this.rarity);
+        this.dropdownDragonIce.setOptions(this.rarity);
+        this.dropdownPhonenixIce.setOptions(this.rarity);
+        this.dropdownPokemon.setOptions(this.rarity);
+        this.dropdownRabit.setOptions(this.rarity);
+        this.dropdownSika.setOptions(this.rarity);
     }
 
-    createPetByRoom() {
-        WebRequestManager.instance.getAllPetData(
-            this.subMapName == "" ? this.mapName : `${this.mapName}-${this.subMapName}`,
-            (response) => this.onGetAllPetDataCreate(response, this.mapName, this.subMapName),
-            (error) => this.onError(error)
-        );
-    }
+    deletePetOnClick() {
+        const selectedRoom = this.dropdownRoomCreate.getValue();
+        const handlePetData = (map: string, subMap: string = "") => {
+            WebRequestManager.instance.getAllPetData(
+                subMap == "" ? map : `${map}-${subMap}`,
+                (response) => this.onGetAllPetDataDelete(response),
+                (error) => this.onError(error)
+            );
+        };
 
-    deletePetByRoom() {
-        WebRequestManager.instance.getAllPetData(
-            this.subMapNameDelete == "" ? this.mapNameDelete : `${this.mapNameDelete}-${this.subMapNameDelete}`,
-            (response) => this.onGetAllPetDataDelete(response),
-            (error) => this.onError(error)
-        );
-    }
+        if (selectedRoom === "all") {
+            for (const entry of this.map) {
+                if (entry === "all") continue;
 
-    createPetAllRoom() {
-        for (let map of this.map) {
-            for (let submap of this.subMap) {
-                WebRequestManager.instance.getAllPetData(
-                    submap == "" ? map : `${map}-${submap}`,
-                    (response) => this.onGetAllPetDataCreate(response, map, submap),
-                    (error) => this.onError(error)
-                );
+                if (entry.includes("office")) {
+                    const [map, subMap] = entry.split("-");
+                    handlePetData(map, subMap);
+                } else {
+                    handlePetData(entry);
+                }
+            }
+        } else {
+            if (selectedRoom.includes("office")) {
+                const [map, subMap] = selectedRoom.split("-");
+                handlePetData(map, subMap);
+            } else {
+                handlePetData(selectedRoom);
             }
         }
     }
-    deletePetAllRoom() {
-        for (let map of this.map) {
-            for (let submap of this.subMap) {
-                WebRequestManager.instance.getAllPetData(
-                    submap == "" ? map : `${map}-${submap}`,
-                    (response) => this.onGetAllPetDataDelete(response),
-                    (error) => this.onError(error)
-                );
+
+    createPetOnClick() {
+        const selectedRoom = this.dropdownRoomCreate.getValue();
+        const handlePetData = (map: string, subMap: string = "") => {
+            this.onGetAllPetDataCreate(map, subMap);
+        };
+
+        if (selectedRoom === "all") {
+            for (const entry of this.map) {
+                if (entry === "all") continue;
+
+                if (entry.includes("office")) {
+                    const [map, subMap] = entry.split("-");
+                    handlePetData(map, subMap);
+                } else {
+                    handlePetData(entry);
+                }
+            }
+        } else {
+            if (selectedRoom.includes("office")) {
+                const [map, subMap] = selectedRoom.split("-");
+                handlePetData(map, subMap);
+            } else {
+                handlePetData(selectedRoom);
             }
         }
     }
 
-    private onGetAllPetDataCreate(response, map: string, submap: string) {
-        const petData = response.data;
-        if (!petData) return;
-
+    private onGetAllPetDataCreate(map: string, submap: string) {
         const petConfigs: PetConfig[] = [
-            { species: "Dog", numSpawn: this.numSpawnDog, catchChange: this.cactChangeDog, rarity: this.rarityDog },
-            { species: "Cat", numSpawn: this.numSpawnCat, catchChange: this.cactChangeCat, rarity: this.rarityCat },
-            { species: "Bird", numSpawn: this.numSpawnBird, catchChange: this.cactChangeBird, rarity: this.rarityBird },
-            { species: "Rabit", numSpawn: this.numSpawnRabit, catchChange: this.cactChangeRabit, rarity: this.rarityRabit },
-            { species: "Pokemon", numSpawn: this.numSpawnPokemon, catchChange: this.cactChangePokemon, rarity: this.rarityPokemon },
-            { species: "Sika", numSpawn: this.numSpawnSika, catchChange: this.cactChangeSika, rarity: this.raritySika },
-            { species: "Dragon", numSpawn: this.numSpawnDragon, catchChange: this.cactChangeDragon, rarity: this.rarityDragon },
-            { species: "DragonIce", numSpawn: this.numSpawnDragonIce, catchChange: this.cactChangeDragonIce, rarity: this.rarityDragonIce }
+            { species: "Dog", numSpawn: parseInt(this.quantityDog.string), catchChange: parseInt(this.editBoxCatchPercentDog.string), rarity: this.dropdownDog.getValue() as AnimalRarity },
+            { species: "Cat", numSpawn: parseInt(this.quantityCat.string), catchChange: parseInt(this.editBoxCatchPercentCat.string), rarity: this.dropdownCat.getValue() as AnimalRarity },
+            { species: "Bird", numSpawn: parseInt(this.quantityBird.string), catchChange: parseInt(this.editBoxCatchPercentBird.string), rarity: this.dropdownBird.getValue() as AnimalRarity },
+            { species: "Rabit", numSpawn: parseInt(this.quantityRabit.string), catchChange: parseInt(this.editBoxCatchPercentRabit.string), rarity: this.dropdownRabit.getValue() as AnimalRarity },
+            { species: "Pokemon", numSpawn: parseInt(this.quantityPokemon.string), catchChange: parseInt(this.editBoxCatchPercentPokemon.string), rarity: this.dropdownPokemon.getValue() as AnimalRarity },
+            { species: "Sika", numSpawn: parseInt(this.quantitySika.string), catchChange: parseInt(this.editBoxCatchPercentSika.string), rarity: this.dropdownSika.getValue() as AnimalRarity },
+            { species: "Dragon", numSpawn: parseInt(this.quantityDragon.string), catchChange: parseInt(this.editBoxCatchPercentDragon.string), rarity: this.dropdownDragon.getValue() as AnimalRarity },
+            { species: "DragonIce", numSpawn: parseInt(this.quantityDragonIce.string), catchChange: parseInt(this.editBoxCatchPercentDragonIce.string), rarity: this.dropdownDragonIce.getValue() as AnimalRarity },
+            { species: "PhoenixIce", numSpawn: parseInt(this.quantityPhonenixIce.string), catchChange: parseInt(this.editBoxCatchPercentPhonenixIce.string), rarity: this.dropdownPhonenixIce.getValue() as AnimalRarity }
         ];
-
         for (const config of petConfigs) {
-            const existing = petData.filter(pet => pet.species === config.species);
-            const countToCreate = config.numSpawn - existing.length;
+            if (config.numSpawn <= 0) continue;
 
-            for (let i = 0; i < countToCreate; i++) {
+            for (let i = 0; i < config.numSpawn; i++) {
                 this.createPet(config.species, config.catchChange, map, submap, config.rarity);
             }
         }
@@ -167,7 +211,7 @@ export class ToolSpawnPet extends Component {
 
         WebRequestManager.instance.createPet(
             petData,
-            () => console.log(`Tạo ${species} thành công.`),
+            () => console.log(`Tạo ${species} - ${rarity} - ${catchChange} thành công.`),
             (error) => this.onError(error)
         );
     }

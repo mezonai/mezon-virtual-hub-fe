@@ -126,6 +126,10 @@ export class WebRequestManager extends Component {
         APIManager.deleteData(url, {}, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
+    public postGetReward(successCallback, errorCallback) {
+        APIManager.postData(this.combineWithSlash(APIConstant.GAME, APIConstant.INITIAL_REWARD), {}, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    }
+
     private errorMessageMap: Map<number, string> = new Map([
         [400, 'Bad Request'],
         [401, 'Unauthorized'],

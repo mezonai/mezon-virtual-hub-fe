@@ -16,6 +16,7 @@ export default class APIConstant {
     static ANIMAL = "animal";
     static BRING = "bring-pets";
     static FOOD = "food";
+    static INITIAL_REWARD = "initial-reward";
 }
 
 export class APIConfig {
@@ -47,5 +48,5 @@ export class EVENT_NAME {
     static PREVENT_OUT_MAP = "PREVENT_OUT_MAP";
     static BACK_TO_NORMAL = "BACK_TO_NORMAL";
     static CANVAS_RESIZE = "CANVAS_RESIZE";
-    static ON_UPDATE_FOOD_PET = "ON_QUIZ_ANSWER";
+    static ON_TOUCH_PET = "ON_QUIZ_ANSWER";
 }

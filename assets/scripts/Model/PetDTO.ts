@@ -14,3 +14,15 @@ export enum AnimalRarity {
   EPIC = 'epic',
   LEGENDARY = 'legendary',
 }
+
+export enum Pet {
+  DOG,
+  BIRD,
+  CAT,
+  DRAGON,
+  DRAGONICE,
+  PHOENIXICE,
+  POKEMON,
+  RABIT,
+  SIKA
+}
