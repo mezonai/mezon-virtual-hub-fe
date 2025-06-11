@@ -39,12 +39,9 @@ export class PopupReward extends BasePopup {
         }
         else indexIcon = 3;
         this.icon.spriteFrame = this.iconReward[indexIcon];
-        console.log("currentItem.quantity: ", currentItem.quantity);
         let quantityReward = currentItem.type == RewardType.GOLD ? currentItem.amount : currentItem.quantity
         this.quantity.string = "+" + quantityReward;
         this.contentReward.string = currentItem.type == RewardType.FOOD ? this.contentRewardFood(currentItem.food) : this.contentOtherReward();
-
-        // Có thể bạn dùng prefab, list, v.v.
     }
 
     private contentRewardFood(food: Food): string {

@@ -52,10 +52,8 @@ export class GameManager extends Component {
 
 
     handleGetReward(response: any) {
-        console.log("Reward: ", response);
         const rewardsData = response?.data?.rewards ?? [];
         const rewardItems = ConvetData.ConvertReward(rewardsData);
-        console.log("rewardItems: ", rewardItems);
         if (rewardItems.length <= 0) return;
         PopupManager.getInstance().openAnimPopup('PopupReward', PopupReward, { rewards: rewardItems });
 
