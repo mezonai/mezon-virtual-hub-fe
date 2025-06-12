@@ -49,8 +49,8 @@ export class UserMeManager {
         }
     }
 
-    public static AddQuantityFood(foodType: FoodType, quantity: number) {
-        if (!this.me || !this.me.inventories) return;
+    public static AddQuantityFood(foodType: FoodType, quantity: number) : boolean {
+        if (!this.me || !this.me.inventories) return false;
 
         const targetInventory = this.me.inventories.find(
             inv => inv != null && inv.food != null && inv.food.type === foodType
@@ -58,7 +58,9 @@ export class UserMeManager {
 
         if (targetInventory) {
             targetInventory.quantity += quantity;
+            return true;
         }
+        return false;
     }
 
     public static set playerCoin(coin) {
