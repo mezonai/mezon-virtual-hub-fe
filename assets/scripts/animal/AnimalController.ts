@@ -25,6 +25,8 @@ export class AnimalController extends Component {
     @property({ type: RandomlyMover }) randomlyMover: RandomlyMover = null;
     @property(FollowTargetUser) followTargetUser: FollowTargetUser = null!;
     @property({ type: [Color] }) nameColor: Color[] = [];
+    @property maxSpeed: number = 100;
+    @property minSpeed: number = 40;
     animalType = AnimalType.NoMove;
     animalPlayer: PlayerController = null;
     private pet: PetDTO | null = null;
@@ -156,8 +158,7 @@ export class AnimalController extends Component {
 
     setRandomMove(newArea: Vec2) {
         this.animalType = AnimalType.RandomMove;
-        this.randomlyMover.areaSize = newArea;
-        this.randomlyMover.move();
+        this.randomlyMover.setRandomMovePet(this.minSpeed, this.maxSpeed, newArea);
     }
 
     setFollowTarget(owner: PlayerController, parentPetFollowUser: Node) {
@@ -170,7 +171,7 @@ export class AnimalController extends Component {
         this.nameAnimal.string = `<outline color=#000000 width=1> ${this.pet.name} (${this.capitalizeFirstLetter(this.pet.rarity)}) [${owner.userName}]</outline>`;
         this.animalPlayer = owner;
         this.animalType = AnimalType.FollowTarget;
-        this.followTargetUser.playFollowTarget(owner.node, this.spriteNode, parentPetFollowUser);
+        this.followTargetUser.playFollowTarget(owner.node, this.spriteNode, parentPetFollowUser, this.maxSpeed, this.minSpeed);
     }
 
     updateNameOwnedUser(data: any) {

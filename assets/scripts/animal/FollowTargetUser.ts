@@ -2,10 +2,7 @@ import { _decorator, Component, Node, randomRange, tween, Tween, UITransform, v2
 const { ccclass, property } = _decorator;
 
 @ccclass('FollowTargetUser')
-export class FollowTargetUser extends Component {    
-    @property followSpeedFast: number = 150;
-    @property maxSpeed: number = 100;
-    @property minSpeed: number = 40;
+export class FollowTargetUser extends Component {       
     private spriteNode: Node = null!;
     private userTarget: Node;
     private currentTween: Tween<Node> = null;
@@ -15,11 +12,16 @@ export class FollowTargetUser extends Component {
     private wanderRadius = 35;
     private timeSchedule = 0.5;
     private parent: Node = null;
+    maxSpeed: number = 0;
+    minSpeed: number = 0;
     
-    public playFollowTarget(target: Node, spriteNode: Node, parentPetFollowUser: Node) {
+
+    public playFollowTarget(target: Node, spriteNode: Node, parentPetFollowUser: Node, maxSpeed : number, minSpeed: number) {
         this.userTarget = target;
         this.spriteNode = spriteNode;
         this.parent = parentPetFollowUser;
+        this.maxSpeed = maxSpeed;
+        this.minSpeed = minSpeed;
         if (this.userTarget == null) return;
         this.schedule(this.updateFollowLogic, this.timeSchedule);
     }
@@ -42,7 +44,7 @@ export class FollowTargetUser extends Component {
             return;
         }
         if (distance > this.wanderRadius) {
-            this.followPlayerSmoothly(this.timeSchedule, this.followSpeedFast, playerMoved);
+            this.followPlayerSmoothly(this.timeSchedule, randomRange(60, this.maxSpeed), playerMoved);
         }
 
         this.lastPlayerPos = playerWorldPos.clone();
@@ -76,15 +78,14 @@ export class FollowTargetUser extends Component {
             .to(dt, { position: localPos }, { easing: 'linear' })
             .call(() => {
                 // Khi đến gần player thì tự động bắt đầu lang thang
-                if (isMoved) this.followPlayerSmoothly(this.timeSchedule, this.followSpeedFast, isMoved);
-                else setTimeout(() => this.followPlayerSmoothly(this.timeSchedule, this.followSpeedFast, isMoved), 300 + Math.random() * 500);
+                if (isMoved) this.followPlayerSmoothly(this.timeSchedule, this.randomSpeed(), isMoved);
+                else setTimeout(() => this.followPlayerSmoothly(this.timeSchedule, this.randomSpeed(), isMoved), 300 + Math.random() * 500);
 
             })
             .start();
     }
 
-    startWanderingAroundPlayer() {
-        
+    startWanderingAroundPlayer() {        
         const userWorldPos = this.userTarget?.worldPosition?.clone?.();
         if(!userWorldPos) return;
         const petWorldPos = this.node.getWorldPosition();
@@ -131,6 +132,10 @@ export class FollowTargetUser extends Component {
         return this.parent!.getComponent(UITransform)!.convertToNodeSpaceAR(positionWorld);
     }
     
+    randomSpeed(): number{
+        return randomRange(this.minSpeed, this.maxSpeed)
+    }
+
 }
 
 
