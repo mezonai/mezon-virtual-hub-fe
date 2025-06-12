@@ -19,6 +19,12 @@ export class RandomlyMover extends Component {
         this.moveRandomly();
     }
 
+    public setRandomMovePet(minSpeed: number, maxSpeed: number, area: Vec2) {
+        this.areaSize = area;
+        this.minSpeed = minSpeed;
+        this.maxSpeed = maxSpeed;
+        this.move();
+    }
     // protected onDisable(): void {
     //     this.stop();
     // }
@@ -34,8 +40,8 @@ export class RandomlyMover extends Component {
 
     private moveRandomly() {
         const randomPos = new Vec3(
-            randomRange(-this.areaSize.x, this.areaSize.x),
-            randomRange(-this.areaSize.y, this.areaSize.y),
+            (Math.random() * 2 - 1) * this.areaSize.x,
+            (Math.random() * 2 - 1) * this.areaSize.y,
             0
         );
 
