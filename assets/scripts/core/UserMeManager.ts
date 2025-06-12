@@ -1,5 +1,5 @@
 import { UserDataResponse } from "../Interface/DataMapAPI";
-import { Food, InventoryDTO } from "../Model/Item";
+import { Food, FoodType, InventoryDTO } from "../Model/Item";
 import { PlayerPropertyWatcher } from "../utilities/PlayerPropertyWatcher";
 
 export class UserMeManager {
@@ -20,7 +20,7 @@ export class UserMeManager {
 
     public static set Set(me: UserDataResponse | null) {
         this.me = me;
-        if(this._playerProperty == null){
+        if (this._playerProperty == null) {
             this._playerProperty = new PlayerPropertyWatcher(me.user.gold, me.user.diamond, "");
             return;
         }
@@ -28,11 +28,37 @@ export class UserMeManager {
         this.PlayerProperty.diamond = me.user.diamond;
     }
 
-    public static get GetFoods():InventoryDTO[] | null {
-       return this.me == null
-        ? null
-        : this.me.inventories
-            .filter((inv): inv is InventoryDTO & { food: Food } => inv.food != null)         
+    public static get GetFoods(): InventoryDTO[] | null {
+        return this.me == null
+            ? null
+            : this.me.inventories
+                .filter((inv): inv is InventoryDTO & { food: Food } => inv.food != null)
+    }
+
+    public static set SetFood(food: Food) {
+        if (!this.me || !this.me.inventories) return;
+
+        const targetInventory = this.me.inventories.find(
+            inv => inv.food != null && inv.food.type === food.type
+        );
+
+        if (targetInventory) {
+            targetInventory.food = food;
+        } else {
+            console.warn(`Không tìm thấy inventory với food.type = ${food.type}`);
+        }
+    }
+
+    public static AddQuantityFood(foodType: FoodType, quantity: number) {
+        if (!this.me || !this.me.inventories) return;
+
+        const targetInventory = this.me.inventories.find(
+            inv => inv != null && inv.food != null && inv.food.type === foodType
+        );
+
+        if (targetInventory) {
+            targetInventory.quantity += quantity;
+        }
     }
 
     public static set playerCoin(coin) {

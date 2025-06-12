@@ -3,6 +3,7 @@ import { BasePopup } from './BasePopup';
 import { PopupManager } from './PopupManager';
 import { RewardItem } from '../SlotMachine/RewardItem';
 import { Food, FoodType, RewardItemDTO, RewardType } from '../Model/Item';
+import { UserMeManager } from '../core/UserMeManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('PopupReward')
@@ -31,17 +32,22 @@ export class PopupReward extends BasePopup {
             return;
         }
 
-        const currentItem = rewardItems[this.currentIndex] as RewardItemDTO;
-        let indexIcon = 0;
-        if (currentItem.type == RewardType.GOLD) indexIcon = 3;
-        else if (currentItem.type == RewardType.FOOD) {
-            indexIcon = currentItem.food.type == FoodType.NORMAL ? 0 : currentItem.food.type == FoodType.PREMIUM ? 1 : 2;
+        const currentItem = rewardItems[this.currentIndex];
+        const isGold = currentItem.type === RewardType.GOLD;
+        const isFood = currentItem.type === RewardType.FOOD;
+        const indexIcon = isFood ? currentItem.food.type === FoodType.NORMAL ? 0 : currentItem.food.type === FoodType.PREMIUM ? 1 : 2 : 3;
+
+        if (isGold) {
+            UserMeManager.playerCoin += currentItem.amount;
+            this.quantity.string = `+${currentItem.amount}`;
+        } else if (isFood) {
+            this.quantity.string = `+${currentItem.quantity}`;
+            UserMeManager.AddQuantityFood(currentItem.food.type, currentItem.quantity);
         }
-        else indexIcon = 3;
         this.icon.spriteFrame = this.iconReward[indexIcon];
-        let quantityReward = currentItem.type == RewardType.GOLD ? currentItem.amount : currentItem.quantity
-        this.quantity.string = "+" + quantityReward;
-        this.contentReward.string = currentItem.type == RewardType.FOOD ? this.contentRewardFood(currentItem.food) : this.contentOtherReward();
+        this.contentReward.string = isFood
+            ? this.contentRewardFood(currentItem.food)
+            : this.contentOtherReward();
     }
 
     private contentRewardFood(food: Food): string {
