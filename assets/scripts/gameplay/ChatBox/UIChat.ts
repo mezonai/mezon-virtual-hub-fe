@@ -1,7 +1,6 @@
-import { _decorator, Button, Component, EditBox, game, instantiate, Layout, Prefab, ScrollView, Node, SystemEvent, systemEvent, KeyCode, Color, RichText, UITransform, input, Input, UI } from 'cc';
+import { _decorator, Button, Component, EditBox, game, instantiate, Layout, Prefab, ScrollView, Node, KeyCode, Color, RichText, input, Input} from 'cc';
 import { UserManager } from '../../core/UserManager';
 import { ObjectPoolManager } from '../../pooling/ObjectPoolManager';
-import { ToolSpawnPet } from '../../utilities/ToolSpawnPet';
 import { UIManager } from '../../core/UIManager';
 
 const { ccclass, property } = _decorator;
@@ -35,14 +34,14 @@ export class UIChat extends Component {
 
     sendMessage() {
         const message = this.editBox.string.trim();
-        if (message == "toolcreatePet") {
-            this.editBox.blur();
-            this.editBox.string = "";
-            game.canvas.focus();
-            this.isShowUI(false);
-            UIManager.Instance.toolcreatePet.node.active = true
-            return;
-        }
+        // if (message == "VituralHub-X92J7K1M") {
+        //     this.editBox.blur();
+        //     this.editBox.string = "";
+        //     game.canvas.focus();
+        //     this.isShowUI(false);
+        //     UIManager.Instance.toolcreatePet.node.active = true
+        //     return;
+        // }
         if (message != "") UserManager.instance.sendMessageChat(message);
         this.editBox.blur();
         this.editBox.string = "";
