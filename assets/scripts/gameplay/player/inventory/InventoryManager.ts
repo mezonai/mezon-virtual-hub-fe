@@ -170,7 +170,7 @@ export class InventoryManager extends BaseInventoryManager {
         if (item.item.iconSF.length === 0) {
             await this.loadIcons(item, skinLocalData);
         }
-
+        uiItem.avatar.node.scale = this.SetItemScaleValue(item.item.type);
         uiItem.avatar.spriteFrame = item.item.iconSF[0];
         item.item.mappingLocalData = skinLocalData;
         uiItem.init(item.item);

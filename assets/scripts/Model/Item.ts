@@ -95,3 +95,10 @@ export enum PurchaseMethod {
     DIAMOND = 'diamond',
     SLOT = 'slot',
 }
+
+export enum ItemGenderFilter{
+    ALL = 'ALL',
+    FEMALE = 'female',
+    MALE = 'male',
+    UNISEX = 'unisex'
+}

@@ -1,6 +1,6 @@
-import { _decorator, Button, Component, instantiate, Label, Node, Prefab } from 'cc';
+import { _decorator, Button, Component, instantiate, Label, Node, Prefab, SpriteFrame, assetManager, Vec3, UITransform, tween, Toggle } from 'cc'; // Thêm assetManager
 import { WebRequestManager } from '../network/WebRequestManager';
-import { Food, Item, RewardItemDTO, RewardType } from '../Model/Item';
+import { Food, InventoryDTO, Item, ItemGenderFilter, ItemType, RewardItemDTO, RewardType } from '../Model/Item';
 import { BubbleRotation } from './BubbleRotation';
 import { UserMeManager } from '../core/UserMeManager';
 import { RewardUIController } from './RewardUIController';
@@ -9,6 +9,13 @@ import { UserManager } from '../core/UserManager';
 import { AudioType, SoundManager } from '../core/SoundManager';
 import { UIManager } from '../core/UIManager';
 import { GameManager } from '../core/GameManager';
+import { ResourceManager } from '../core/ResourceManager';
+import { LocalItemConfig, LocalItemDataConfig, LocalItemPartDataConfig } from '../Model/LocalItemConfig';
+import { ObjectPoolManager } from '../pooling/ObjectPoolManager';
+import { SlotItem } from './SlotItem'; // Đảm bảo đường dẫn này đúng
+import { LoadBundleController } from '../bundle/LoadBundleController';
+import { TooltipManager } from '../ui/TooltipManager';
+import { UIPanelSliderEffect } from '../utilities/UIPanelSliderEffect';
 
 const { ccclass, property } = _decorator;
 
@@ -18,17 +25,46 @@ export class SlotMachineController extends Component {
     @property(Node) noticeSpin: Node = null;
     @property(RewardUIController) rewardPopUp: RewardUIController = null;
     @property(BubbleRotation) bubbleRotation: BubbleRotation = null;
-    @property(Node) playerHub: Node = null;
     @property(Button) closeButton: Button = null;
     @property(Button) spinButton: Button = null;
+    @property(Toggle) rateButton: Toggle = null;
     @property(Label) spinButtonLabel: Label = null;
     @property(Prefab) rewardTextPrefab: Prefab = null;
     @property(Node) container: Node = null;
     @property(Label) minusCoinText: Label = null;
     @property(Node) minusCoinicon: Node = null;
+    @property({ type: Node }) itemContainer: Node = null;
+    @property({ type: Prefab }) itemPrefab: Prefab = null;
+    @property({ type: TooltipManager }) tooltipManager: TooltipManager = null;
 
     private minusCoin: number = 10;
     private hasSpin: boolean = false;
+    private localSkinConfig: LocalItemConfig;
+
+    @property({ type: [SpriteFrame] }) iconValue: SpriteFrame[] = []; // 0: normal 1: rare 2: super
+    @property({ type: [SpriteFrame] }) iconMoney: SpriteFrame[] = []; // 0: Gold 1: Diamond
+    protected foodNameMap: Record<string, string>;
+    protected foodIconMap: Record<string, SpriteFrame>;
+    protected moneyIconMap: Record<string, SpriteFrame>;
+
+    @property(UIPanelSliderEffect) slotMachineRate: UIPanelSliderEffect = null;
+
+    protected onLoad(): void {
+        this.foodIconMap = {
+            normal: this.iconValue[0],
+            premium: this.iconValue[1],
+            ultrapremium: this.iconValue[2]
+        };
+        this.foodNameMap = {
+            "NormalFood": "Thức ăn sơ cấp",
+            "SuperFood": "Thức ăn cao cấp",
+            "RareFood": "Thức ăn siêu cao cấp",
+        };
+        this.moneyIconMap = {
+            gold: this.iconMoney[0],
+            diamond: this.iconMoney[1]
+        };
+    }
 
     protected start(): void {
         this.initUI();
@@ -48,7 +84,6 @@ export class SlotMachineController extends Component {
         UserManager.instance.GetMyClientPlayer.get_MoveAbility.startMove();
         this.rewardPopUp.show(false, null);
         this.slotMachinePopUp.active = false;
-        this.playerHub.active = true;
         this.refreshUserData();
     }
 
@@ -60,12 +95,64 @@ export class SlotMachineController extends Component {
         this.hasSpin = false;
         this.closeButton.node.active = true;
         this.rewardPopUp.HideNode();
-
         this.showMinusCoinInfo(true);
-        
+
         if (isShow) {
             UserManager.instance.GetMyClientPlayer.get_MoveAbility.StopMove();
         }
+        this.ShowItem();
+    }
+
+    private async ShowItem() {
+        ObjectPoolManager.instance.returnArrayToPool(this.itemContainer.children);
+        var userGender = UserMeManager.Get.user.gender as ItemGenderFilter;
+        var skinLocalData = ResourceManager.instance.getFilteredSkins([userGender, ItemGenderFilter.UNISEX]);
+        if (skinLocalData && skinLocalData.length > 0) {
+            for (const item of skinLocalData) {
+                let itemNode = ObjectPoolManager.instance.spawnFromPool(this.itemPrefab.name);
+                itemNode.setParent(this.itemContainer);
+
+                let spriteFrameToSet: SpriteFrame | null = null;
+
+                if (item instanceof SpriteFrame) {
+                    spriteFrameToSet = item;
+                } else if (item && typeof item === 'object' && 'icons' in item && Array.isArray(item.icons) && item.icons.length > 0) {
+                    spriteFrameToSet = await this.setItemImage(item.bundleName, item.icons[0]);
+                }
+                await this.registUIItemData(itemNode, spriteFrameToSet, item.name);
+            }
+        }
+
+        for (const spriteF of this.iconValue) {
+            let itemNode = ObjectPoolManager.instance.spawnFromPool(this.itemPrefab.name);
+            itemNode.setParent(this.itemContainer);
+            const displayName = this.foodNameMap[spriteF.name]
+            await this.registUIItemData(itemNode, spriteF, displayName);
+        }
+
+        let emptyNode = ObjectPoolManager.instance.spawnFromPool(this.itemPrefab.name);
+        emptyNode.setParent(this.itemContainer);
+        await this.registUIItemData(emptyNode, null, "Không có vật phẩm");
+    }
+
+    protected async registUIItemData(itemNode: Node, spriteFrameToSet: SpriteFrame | null, data: string | null) {
+        var slotItem = itemNode.getComponent(SlotItem);
+        slotItem.setupIcon(this.tooltipManager, spriteFrameToSet, data);
+        slotItem.iconFrame.node.scale = this.SetItemScaleValue(data);
+    }
+
+    protected SetItemScaleValue(itemType: string, sizeSpecial: number = 0.16, sizeClothes: number = 0.3): Vec3 {
+        const isSpecial = itemType.includes("Tóc") || itemType.includes("Mặt");
+        const value = isSpecial ? sizeSpecial : sizeClothes;
+        return new Vec3(value, value, 0);
+    }
+
+    protected async setItemImage(bundleName: string, bundlePath: string): Promise<SpriteFrame | null> {
+        let bundleData = {
+            bundleName: bundleName,
+            bundlePath: bundlePath
+        };
+        return await LoadBundleController.instance.spriteBundleLoader.getBundleData(bundleData);
     }
 
     private showMinusCoinInfo(show: boolean) {
@@ -105,6 +192,8 @@ export class SlotMachineController extends Component {
     }
 
     private prepareSpinUI() {
+        this.slotMachineRate.hide();
+        this.rateButton.node.active = false;
         this.rewardPopUp.node.active = false;
         this.rewardPopUp.HideNode();
         this.closeButton.node.active = false;
@@ -118,6 +207,8 @@ export class SlotMachineController extends Component {
         this.spinButton.node.active = true;
         this.spinButton.interactable = true;
         this.spinButtonLabel.string = this.hasSpin ? 'Quay tiếp' : 'Quay';
+        this.rateButton.node.active = true;
+        this.rateButton.isChecked = false;
         this.closeButton.node.active = true;
         this.showMinusCoinInfo(true);
     }
@@ -195,8 +286,8 @@ export class SlotMachineController extends Component {
 
     private refreshUserData() {
         WebRequestManager.instance.getUserProfile(
-            (response) => { 
-                UserMeManager.Set = response.data; 
+            (response) => {
+                UserMeManager.Set = response.data;
                 GameManager.instance.inventoryController.addFoodToInventory(UserMeManager.GetFoods);
             },
             this.onApiError.bind(this)
@@ -210,7 +301,9 @@ export class SlotMachineController extends Component {
     private onError(error: any) {
         this.bubbleRotation.stopRotation();
         if (error?.message) {
-            console.error('Error message:', error.message);
+            UIManager.Instance.showNoticePopup('Lỗi', error.message);
+        } else {
+            UIManager.Instance.showNoticePopup('Lỗi', 'Có lỗi xảy ra, vui lòng thử lại.');
         }
     }
 

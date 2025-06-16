@@ -16,6 +16,14 @@ export class CustomScrollBar extends Component {
         this.node.on(Node.EventType.TOUCH_MOVE, this.onTouchMove, this);
     }
 
+    onEnable(): void {
+        this.scheduleOnce(() => {
+            if (this.scrollView) {
+                this.scrollView.scrollToTop(0)
+            }
+        }, 0.05);
+    }
+
     onDestroy() {
         this.node.off(Node.EventType.TOUCH_START, this.onTouchStart, this);
         this.node.off(Node.EventType.TOUCH_MOVE, this.onTouchMove, this);
