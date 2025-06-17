@@ -156,6 +156,26 @@ export class AnimalInteractManager extends Component {
             );
         }
     }
+
+    public showUITutorial(show: boolean) {
+        const foodDataList = ResourceManager.instance.FoodData.data;
+        const foodTargets = [this.normalFood, this.superFood, this.rareFood]; // Đổi rardFood -> rareFood nếu là typo
+        for (let i = 0; i < foodDataList.length; i++) {
+            if (i >= foodTargets.length) continue;
+            const food = foodDataList[i];
+            const target = foodTargets[i];
+            if (!food || !target) continue;
+            target.setDataItemTutorial(food);
+        }
+        this.actionButtonParent.active = show;
+        if (show) {
+            this.actionButtonParent.scale = Vec3.ZERO;
+            tween(this.actionButtonParent)
+                .to(0.2, { scale: Vec3.ONE })
+                .start();
+        }
+    }
+
 }
 
 

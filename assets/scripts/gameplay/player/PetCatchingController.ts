@@ -1,4 +1,4 @@
-import { _decorator, Component, instantiate, Node, Prefab, tween, Vec3 } from 'cc';
+import { _decorator, Component, instantiate, Layers, Node, Prefab, tween, Vec3 } from 'cc';
 import { AnimalFoodPrefab } from '../animal/AnimalFoodPrefab';
 import { FoodType } from '../../Model/Item';
 const { ccclass, property } = _decorator;
@@ -12,13 +12,13 @@ export class PetCatchingController extends Component {
     private duration: number = 0.6;
     private peakHeight: number = 35;
 
-    public async throwFoodToPet(targetNode: Node, foodType: FoodType): Promise<void> {
-        console.log("throw: ", targetNode.name);
+    public async throwFoodToPet(targetNode: Node, foodType: FoodType, isTutorial: boolean = false): Promise<void> {
         const food = instantiate(this.foodPrefab);
         food.setParent(this.node);
         food.setWorldPosition(this.throwStartPosition.worldPosition);
-        let foodPrefab =  food.getComponent(AnimalFoodPrefab);
-        if(foodPrefab != null) foodPrefab.setFood(foodType);
+        let foodPrefab = food.getComponent(AnimalFoodPrefab);
+        if (foodPrefab != null) foodPrefab.setFood(foodType);
+        if (isTutorial) this.setLayerRecursive(foodPrefab.node, Layers.Enum.UI_2D);
         const start = this.throwStartPosition.worldPosition.clone();
         const end = targetNode.worldPosition.clone();
         let t = 0;
@@ -43,6 +43,13 @@ export class PetCatchingController extends Component {
                 .start();
 
         })
+    }
+
+    setLayerRecursive(node: Node, layer: number) {
+        node.layer = layer;
+        for (const child of node.children) {
+            this.setLayerRecursive(child, layer);
+        }
     }
 }
 

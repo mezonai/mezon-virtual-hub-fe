@@ -9,6 +9,8 @@ import { WebRequestManager } from '../network/WebRequestManager';
 import ConvetData from './ConvertData';
 import { PopupManager } from '../PopUp/PopupManager';
 import { PopupReward } from '../PopUp/PopupReward';
+import { PopupTutorialCatchPet, PopupTutorialCatchPetParam } from '../PopUp/PopupTutorialCatchPet';
+import { Constants } from '../utilities/Constants';
 
 const { ccclass, property } = _decorator;
 
@@ -24,6 +26,8 @@ export class GameManager extends Component {
     @property({ type: UIChat }) uiChat: UIChat = null;
     @property({ type: UIMission }) uiMission: UIMission = null;
     @property({ type: SettingManager }) settingManager: SettingManager = null;
+    @property({ type: Node }) canvas: Node = null;
+    @property({ type: Node }) uiCanvas: Node = null;
 
     protected onLoad(): void {
         if (GameManager._instance == null) {
@@ -37,6 +41,17 @@ export class GameManager extends Component {
         this.inventoryController.init();
         this.shopPetController.init();
         this.uiMission.getMissionEventData();
+        if (localStorage.getItem(Constants.TUTORIAL_CACTH_PET) === null) {
+            this.canvas.active = false;
+            this.canvas.active = false;
+            const param: PopupTutorialCatchPetParam = {
+                onActionCancel: () => {
+                    this.canvas.active = true;
+                    this.uiCanvas.active = true;
+                }
+            };
+            PopupManager.getInstance().openPopup("PopupTutorialCatchPet", PopupTutorialCatchPet, param);
+        }
     }
 
     getReward() {
