@@ -101,8 +101,16 @@ export class ItemChooseFood extends Component {
         UIManager.Instance.showNoticePopup("Thông báo", `Thú cưng xa quá rồi dí theo nào`);
         return false;
     }
-    protected onDestroy(): void {
-
+    
+    setDataItemTutorial(food: Food) {
+        const typeToIndexMap: Record<FoodType, number> = {
+            [FoodType.NORMAL]: 0,
+            [FoodType.PREMIUM]: 1,
+            [FoodType.ULTRA_PREMIUM]: 2
+        };
+        this.spriteicon.spriteFrame = this.spriteFramesFood[typeToIndexMap[food.type]];
+        let quantity = food.type == FoodType.NORMAL ? 1 : 0;
+        this.quantity.string = quantity.toString();
     }
 }
 
