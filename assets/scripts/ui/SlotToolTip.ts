@@ -1,16 +1,15 @@
 import { _decorator, Component, Node, Label, Vec3, UITransform, Director, Prefab, view } from 'cc';
 import { TooltipManager } from './TooltipManager'; // Import TooltipManager
+import { RewardDisplayData } from '../Model/Item';
 const { ccclass, property } = _decorator;
 
 @ccclass('SlotTooltip')
 export class SlotTooltip extends Component {
-    private valueRate: number = 0;
-    private valueName: string = null;
+    private data: RewardDisplayData;
     private tooltipManager: TooltipManager = null;
 
-    public setFullValue(valueName: string, valueRate: number, tooltipManager: TooltipManager) {
-        this.valueName = valueName;
-        this.valueRate = valueRate;
+    public setFullValue(tooltipManager: TooltipManager, data: RewardDisplayData) {
+        this.data = data;
         this.tooltipManager = tooltipManager;
     }
 
@@ -22,7 +21,7 @@ export class SlotTooltip extends Component {
     }
 
     private _onHoverShow() {
-        this.tooltipManager.showGlobalTooltip(this.valueName, this.valueRate.toString(), this.node);
+        this.tooltipManager.showGlobalTooltip(this.data, this.node);
     }
 
     private _onHoverHide() {

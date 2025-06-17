@@ -1,4 +1,5 @@
-import { _decorator, Component, Label } from 'cc';
+import { _decorator, Component, Label, Node } from 'cc';
+import { RewardDisplayData } from '../Model/Item';
 const { ccclass, property } = _decorator;
 
 @ccclass('TooltipView')
@@ -7,9 +8,12 @@ export class TooltipView extends Component {
     public nameLabel: Label = null;
     @property(Label)
     public rateLabel: Label = null;
+    @property(Node)
+    public description: Node = null;
 
-    setData(name: string, rate: string) {
-        this.nameLabel.string = name;
-        this.rateLabel.string = rate + " %";
+    setData(data: RewardDisplayData) {
+        this.nameLabel.string = data.name;
+        this.rateLabel.string = data.rate + " %";
+        this.description.active = data.isItem;
     }
 }

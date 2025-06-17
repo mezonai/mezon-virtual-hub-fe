@@ -1,6 +1,6 @@
 import { _decorator, Button, Component, instantiate, Label, Node, Prefab, SpriteFrame, assetManager, Vec3, UITransform, tween, Toggle } from 'cc'; // Thêm assetManager
 import { WebRequestManager } from '../network/WebRequestManager';
-import { Food, InventoryDTO, Item, ItemGenderFilter, ItemType, RewardItemDTO, RewardType } from '../Model/Item';
+import { Food, InventoryDTO, Item, ItemGenderFilter, ItemType, RewardDisplayData, RewardItemDTO, RewardPecent, RewardType } from '../Model/Item';
 import { BubbleRotation } from './BubbleRotation';
 import { UserMeManager } from '../core/UserMeManager';
 import { RewardUIController } from './RewardUIController';
@@ -46,6 +46,7 @@ export class SlotMachineController extends Component {
     protected foodNameMap: Record<string, string>;
     protected foodIconMap: Record<string, SpriteFrame>;
     protected moneyIconMap: Record<string, SpriteFrame>;
+    private rewardRateMap: RewardPecent;
 
     @property(UIPanelSliderEffect) slotMachineRate: UIPanelSliderEffect = null;
 
@@ -56,9 +57,9 @@ export class SlotMachineController extends Component {
             ultrapremium: this.iconValue[2]
         };
         this.foodNameMap = {
-            "NormalFood": "Thức ăn sơ cấp",
-            "SuperFood": "Thức ăn cao cấp",
-            "RareFood": "Thức ăn siêu cao cấp",
+            "normalFood": "Thức ăn sơ cấp",
+            "premiumFood": "Thức ăn cao cấp",
+            "ultraFood": "Thức ăn siêu cao cấp",
         };
         this.moneyIconMap = {
             gold: this.iconMoney[0],
@@ -100,10 +101,38 @@ export class SlotMachineController extends Component {
         if (isShow) {
             UserManager.instance.GetMyClientPlayer.get_MoveAbility.StopMove();
         }
-        this.ShowItem();
+
+        this.getRewardsPercent();
     }
 
-    private async ShowItem() {
+    private parseRewardsPercent(response: any): RewardPecent {
+        return {
+            item: response.item,
+            gold: response.gold,
+            normalFood: response.normalFood,
+            premiumFood: response.premiumFood,
+            ultraFood: response.ultraFood,
+            none: response.none
+        };
+    }
+
+    private async getRewardsPercent() {
+        WebRequestManager.instance.getRewardsPercent(
+            async (response) => {
+                try {
+                    this.rewardRateMap = this.parseRewardsPercent(response.data);
+                    console.log("✅ Parsed data:", JSON.stringify(this.rewardRateMap, null, 2));
+
+                    await this.showItem();
+                } catch (error) {
+                    this.onError(error);
+                }
+            },
+            this.onError.bind(this)
+        );
+    }
+
+    private async showItem() {
         ObjectPoolManager.instance.returnArrayToPool(this.itemContainer.children);
         var userGender = UserMeManager.Get.user.gender as ItemGenderFilter;
         var skinLocalData = ResourceManager.instance.getFilteredSkins([userGender, ItemGenderFilter.UNISEX]);
@@ -119,26 +148,38 @@ export class SlotMachineController extends Component {
                 } else if (item && typeof item === 'object' && 'icons' in item && Array.isArray(item.icons) && item.icons.length > 0) {
                     spriteFrameToSet = await this.setItemImage(item.bundleName, item.icons[0]);
                 }
-                await this.registUIItemData(itemNode, spriteFrameToSet, item.name);
+                await this.registUIItemData(itemNode, spriteFrameToSet, item.name, this.rewardRateMap.item, true);
             }
         }
 
         for (const spriteF of this.iconValue) {
+            const rate = this.rewardRateMap[spriteF.name] ?? 0;
+            const displayName = this.foodNameMap[spriteF.name]
+            if(rate <= 0) continue;
             let itemNode = ObjectPoolManager.instance.spawnFromPool(this.itemPrefab.name);
             itemNode.setParent(this.itemContainer);
-            const displayName = this.foodNameMap[spriteF.name]
-            await this.registUIItemData(itemNode, spriteF, displayName);
+            await this.registUIItemData(itemNode, spriteF, displayName, rate);
         }
+
+        let goldNode = ObjectPoolManager.instance.spawnFromPool(this.itemPrefab.name);
+        goldNode.setParent(this.itemContainer);
+        await this.registUIItemData(goldNode, this.iconMoney[0], "Coin", this.rewardRateMap.gold);
 
         let emptyNode = ObjectPoolManager.instance.spawnFromPool(this.itemPrefab.name);
         emptyNode.setParent(this.itemContainer);
-        await this.registUIItemData(emptyNode, null, "Không có vật phẩm");
+        await this.registUIItemData(emptyNode, null, "Không có vật phẩm", this.rewardRateMap.none);
     }
 
-    protected async registUIItemData(itemNode: Node, spriteFrameToSet: SpriteFrame | null, data: string | null) {
+    protected async registUIItemData(itemNode: Node, spriteFrameToSet: SpriteFrame | null, name: string | null, rate: number | null, isItem: boolean = false) {
         var slotItem = itemNode.getComponent(SlotItem);
-        slotItem.setupIcon(this.tooltipManager, spriteFrameToSet, data);
-        slotItem.iconFrame.node.scale = this.SetItemScaleValue(data);
+        var displayData: RewardDisplayData = {
+            spriteFrame: spriteFrameToSet,
+            name: name ?? '',
+            rate: rate ?? 0,
+            isItem
+        };
+        slotItem.setupIcon(this.tooltipManager, displayData);
+        slotItem.iconFrame.node.scale = this.SetItemScaleValue(name);
     }
 
     protected SetItemScaleValue(itemType: string, sizeSpecial: number = 0.16, sizeClothes: number = 0.3): Vec3 {

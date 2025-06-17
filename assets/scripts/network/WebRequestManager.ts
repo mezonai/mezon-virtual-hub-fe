@@ -62,6 +62,10 @@ export class WebRequestManager extends Component {
         APIManager.getData(this.combineWithSlash(APIConstant.GAME, APIConstant.SPIN), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
+    public getRewardsPercent(successCallback, errorCallback) {
+        APIManager.getData(this.combineWithSlash(APIConstant.GAME, APIConstant.REWARD_PERCENT), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    }
+
     public async GetMapInfo(): Promise<MapData[]> {
         return new Promise((resolve, reject) => {
             this.toggleLoading(true);

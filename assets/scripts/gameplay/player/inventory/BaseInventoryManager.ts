@@ -121,7 +121,7 @@ export class BaseInventoryManager extends Component {
 
     }
 
-    protected SetItemScaleValue(itemType: ItemType, sizeSpecial: number = 0.2, sizeClothes: number = 0.3): Vec3 {
+    protected SetItemScaleValue(itemType: ItemType, sizeSpecial: number = 0.16, sizeClothes: number = 0.3): Vec3 {
         const isSpecial = itemType === ItemType.HAIR || itemType === ItemType.FACE;
         const value = isSpecial ? sizeSpecial : sizeClothes;
         return new Vec3(value, value, 0);

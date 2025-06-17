@@ -1,6 +1,7 @@
 import { _decorator, Component, Node, Prefab, instantiate, UITransform, Vec3 } from 'cc';
 import { ObjectPoolManager } from '../pooling/ObjectPoolManager';
 import { TooltipView } from './TooltipView';
+import { RewardDisplayData } from '../Model/Item';
 const { ccclass, property } = _decorator;
 
 @ccclass('TooltipManager')
@@ -13,7 +14,7 @@ export class TooltipManager extends Component {
 
     private currentTooltipInstance: Node = null;
 
-    public showGlobalTooltip(valueName: string, valueRate: string, sourceNode: Node) {
+    public showGlobalTooltip(data: RewardDisplayData, sourceNode: Node, ) {
         this.hideGlobalTooltip();
 
         if (!this.tooltipUIPrefab || !this.tooltipParentNode) {
@@ -27,7 +28,7 @@ export class TooltipManager extends Component {
 
         const tooltipView = this.currentTooltipInstance.getComponent(TooltipView);
         if (tooltipView) {
-            tooltipView.setData(valueName, valueRate);
+            tooltipView.setData(data);
         } else {
             ObjectPoolManager.instance.returnToPool(this.currentTooltipInstance);
             this.currentTooltipInstance = null;
@@ -40,7 +41,7 @@ export class TooltipManager extends Component {
         if (sourceUITransform && parentUITransform) {
             const worldPos = sourceUITransform.convertToWorldSpaceAR(Vec3.ZERO);
             const localPos = parentUITransform.convertToNodeSpaceAR(worldPos);
-            this.currentTooltipInstance.setPosition(localPos.x + 31, localPos.y, localPos.z);
+            this.currentTooltipInstance.setPosition(localPos.x + 42, localPos.y, localPos.z);
         }
     }
 

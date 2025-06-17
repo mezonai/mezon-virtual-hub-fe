@@ -102,3 +102,19 @@ export enum ItemGenderFilter{
     MALE = 'male',
     UNISEX = 'unisex'
 }
+
+export interface RewardDisplayData {
+    spriteFrame: SpriteFrame | null;
+    name: string;
+    rate: number;
+    isItem?: boolean;
+}
+
+export class RewardPecent{
+    public item: number;
+    public gold: number;
+    public normalFood: number;
+    public premiumFood: number;
+    public ultraFood: number;
+    public none: number;
+}

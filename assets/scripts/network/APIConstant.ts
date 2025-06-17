@@ -17,6 +17,7 @@ export default class APIConstant {
     static BRING = "bring-pets";
     static FOOD = "food";
     static INITIAL_REWARD = "initial-reward";
+    static REWARD_PERCENT = "reward-percent";
 }
 
 export class APIConfig {
