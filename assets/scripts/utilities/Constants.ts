@@ -7,6 +7,7 @@ export class Constants {
     public static readonly PLAYER_LAYER: number = 1 << 30;
     public static readonly BORDER_LAYER: number = 1 << 3;
     public static readonly WiSH_FEE: number = 5;
+    public static TUTORIAL_CACTH_PET = "tutorialCatchPet";
 
     public static convertKeyOffice(positionTarget: OfficePosition): string {
         switch (positionTarget) {

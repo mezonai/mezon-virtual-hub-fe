@@ -4,6 +4,8 @@ import { PopupManager } from './PopupManager';
 import { RewardItem } from '../SlotMachine/RewardItem';
 import { Food, FoodType, RewardItemDTO, RewardType } from '../Model/Item';
 import { UserMeManager } from '../core/UserMeManager';
+import { WebRequestManager } from '../network/WebRequestManager';
+import { GameManager } from '../core/GameManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('PopupReward')
@@ -42,7 +44,16 @@ export class PopupReward extends BasePopup {
             this.quantity.string = `+${currentItem.amount}`;
         } else if (isFood) {
             this.quantity.string = `+${currentItem.quantity}`;
-            UserMeManager.AddQuantityFood(currentItem.food.type, currentItem.quantity);
+            let addSucess = UserMeManager.AddQuantityFood(currentItem.food.type, currentItem.quantity);
+            if (!addSucess) {
+                WebRequestManager.instance.getUserProfile(
+                    (response) => {
+                        UserMeManager.Set = response.data;
+                        GameManager.instance.inventoryController.addFoodToInventory(UserMeManager.GetFoods);
+                    },
+                    (error) => this.onError(error)
+                );
+            }
         }
         this.icon.spriteFrame = this.iconReward[indexIcon];
         this.contentReward.string = isFood
@@ -58,12 +69,12 @@ export class PopupReward extends BasePopup {
         return `Chúc mừng bạn nhận quà thành công`;
     }
 
-    protected onLoad(): void {
+    private onError(error: any) {
+        console.error("Error occurred:", error);
 
-    }
-
-    async onButtonClick() {
-
+        if (error?.message) {
+            console.error("Error message:", error.message);
+        }
     }
 }
 

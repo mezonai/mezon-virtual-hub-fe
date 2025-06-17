@@ -20,7 +20,7 @@ export class ItemChooseFood extends Component {
     @property({ type: [SpriteFrame] }) spriteFramesFood: SpriteFrame[] = [];
     private foodDTO: InventoryDTO = null;
     private stopDistance = 250;
-    private isCooldown = false;    
+    private isCooldown = false;
     setDataItem(food: Food, foodDTO: InventoryDTO, animalController: AnimalController, OnCloseCatch: () => void, onThrowFood: (foodType: FoodType) => void) {
         const typeToIndexMap: Record<FoodType, number> = {
             [FoodType.NORMAL]: 0,
@@ -58,14 +58,15 @@ export class ItemChooseFood extends Component {
                 return;
             }
             const foodThrow = UserMeManager.GetFoods?.find(inv => inv.food.id === food.id);
-            if (foodThrow.quantity <= 0) {
+            let quantity = foodThrow?.quantity ?? 0;
+            if (quantity  <= 0) {
                 PopupManager.getInstance().openAnimPopup('PopupChooseFoodPet', PopupChooseFoodPet, { message: "No food" });
                 return;
             }
             if (onThrowFood) {
                 const foodThrow = UserMeManager.GetFoods?.find(inv => inv.food.id === food.id);
                 if (foodThrow && foodThrow.quantity > 0) {
-                    foodThrow.quantity -= 1;                    
+                    foodThrow.quantity -= 1;
                     await onThrowFood(food.type);
                     let data = {
                         player: UserMeManager.Get.user,
@@ -100,8 +101,16 @@ export class ItemChooseFood extends Component {
         UIManager.Instance.showNoticePopup("Thông báo", `Thú cưng xa quá rồi dí theo nào`);
         return false;
     }
-    protected onDestroy(): void {
-
+    
+    setDataItemTutorial(food: Food) {
+        const typeToIndexMap: Record<FoodType, number> = {
+            [FoodType.NORMAL]: 0,
+            [FoodType.PREMIUM]: 1,
+            [FoodType.ULTRA_PREMIUM]: 2
+        };
+        this.spriteicon.spriteFrame = this.spriteFramesFood[typeToIndexMap[food.type]];
+        let quantity = food.type == FoodType.NORMAL ? 1 : 0;
+        this.quantity.string = quantity.toString();
     }
 }
 
