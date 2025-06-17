@@ -83,6 +83,8 @@ export class SlotMachineController extends Component {
 
     private endSpinSlotMachine() {
         UserManager.instance.GetMyClientPlayer.get_MoveAbility.startMove();
+        this.slotMachineRate.hide();
+        this.rateButton.isChecked = false;
         this.rewardPopUp.show(false, null);
         this.slotMachinePopUp.active = false;
         this.refreshUserData();
