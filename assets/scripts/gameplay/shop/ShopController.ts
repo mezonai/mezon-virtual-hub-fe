@@ -126,6 +126,7 @@ export class ShopController extends BaseInventoryManager {
                 item.iconSF.push(spriteFrame);
             }
         }
+        uiItem.avatar.node.scale = this.SetItemScaleValue(item.type);
         uiItem.avatar.spriteFrame = item.iconSF[0];
         item.mappingLocalData = skinLocalData;
         uiItem.init(item);

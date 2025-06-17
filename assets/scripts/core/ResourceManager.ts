@@ -2,7 +2,7 @@ import { _decorator, Component, director } from 'cc';
 import { LocalItemConfig, LocalItemDataConfig, LocalItemPartDataConfig } from '../Model/LocalItemConfig';
 import { MezonDTO } from '../Model/Player';
 import { UserMeManager } from './UserMeManager';
-import { Food, FoodDTO, Item, ItemDTO, ItemType } from '../Model/Item';
+import { Food, FoodDTO, Item, ItemDTO, ItemGenderFilter, ItemType } from '../Model/Item';
 import { FactData, JokeData } from '../Model/NPCLocalData';
 import { PetDTO } from '../Model/PetDTO';
 const { ccclass, property } = _decorator;
@@ -14,13 +14,13 @@ export class ResourceManager extends Component {
         return ResourceManager._instance;
     }
 
-    private skinDataDict:  Map<string, LocalItemDataConfig> = new Map<string, LocalItemDataConfig>();
+    private skinDataDict: Map<string, LocalItemDataConfig> = new Map<string, LocalItemDataConfig>();
 
     private _itemDTO: ItemDTO;
     private _foodDTO: FoodDTO;
     private localSkinConfig: LocalItemConfig;
 
-    public set LocalSkinConfig (value: LocalItemConfig) {
+    public set LocalSkinConfig(value: LocalItemConfig) {
         this.localSkinConfig = value;
         this.initSkinDict(value.female);
         this.initSkinDict(value.male);
@@ -57,7 +57,7 @@ export class ResourceManager extends Component {
         });
     }
 
-    public get LocalSkinConfig (): LocalItemConfig {
+    public get LocalSkinConfig(): LocalItemConfig {
         return this.localSkinConfig;
     }
 
@@ -106,5 +106,46 @@ export class ResourceManager extends Component {
         else {
             return null;
         }
+    }
+
+    public getFilteredSkins(genderFilters: ItemGenderFilter[]): LocalItemDataConfig[] {
+        let result: LocalItemDataConfig[] = [];
+        if (!this.localSkinConfig) return result;
+
+        const collectAllItemsFromPart = (partData: LocalItemPartDataConfig | undefined): LocalItemDataConfig[] => {
+            if (!partData) return [];
+            let allItems: LocalItemDataConfig[] = [];
+            allItems = allItems.concat(partData.eyes || []);
+            allItems = allItems.concat(partData.face || []);
+            allItems = allItems.concat(partData.hair || []);
+            allItems = allItems.concat(partData.lower || []);
+            allItems = allItems.concat(partData.upper || []);
+            return allItems;
+        };
+
+        const genderDataMap = new Map<ItemGenderFilter, LocalItemPartDataConfig>();
+        if (this.localSkinConfig.male) {
+            genderDataMap.set(ItemGenderFilter.MALE, this.localSkinConfig.male);
+        }
+        if (this.localSkinConfig.female) {
+            genderDataMap.set(ItemGenderFilter.FEMALE, this.localSkinConfig.female);
+        }
+        if (this.localSkinConfig.unisex) {
+            genderDataMap.set(ItemGenderFilter.UNISEX, this.localSkinConfig.unisex);
+        }
+
+        if (genderFilters.includes(ItemGenderFilter.ALL) || genderFilters.length === 0) {
+            result = result.concat(collectAllItemsFromPart(genderDataMap.get(ItemGenderFilter.MALE)));
+            result = result.concat(collectAllItemsFromPart(genderDataMap.get(ItemGenderFilter.FEMALE)));
+            result = result.concat(collectAllItemsFromPart(genderDataMap.get(ItemGenderFilter.UNISEX)));
+        } else {
+            for (const filter of genderFilters) {
+                const partData = genderDataMap.get(filter);
+                if (partData) {
+                    result = result.concat(collectAllItemsFromPart(partData));
+                }
+            }
+        }
+        return result;
     }
 }

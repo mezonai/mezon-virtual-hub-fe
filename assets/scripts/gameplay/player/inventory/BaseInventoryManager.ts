@@ -1,4 +1,4 @@
-import { _decorator, Button, Component, Node, Prefab, RichText, SpriteFrame } from 'cc';
+import { _decorator, Button, Component, Node, Prefab, RichText, SpriteFrame, Vec3 } from 'cc';
 import { BaseInventoryDTO, Food, InventoryType, Item, ItemType } from '../../../Model/Item';
 import { TabController } from '../../../ui/TabController';
 import { AnimationEventController } from '../AnimationEventController';
@@ -118,7 +118,13 @@ export class BaseInventoryManager extends Component {
     }
 
     protected async registUIItemData(itemNode: Node, item: BaseInventoryDTO, skinLocalData: LocalItemDataConfig) {
-        
+
+    }
+
+    protected SetItemScaleValue(itemType: ItemType, sizeSpecial: number = 0.16, sizeClothes: number = 0.3): Vec3 {
+        const isSpecial = itemType === ItemType.HAIR || itemType === ItemType.FACE;
+        const value = isSpecial ? sizeSpecial : sizeClothes;
+        return new Vec3(value, value, 0);
     }
 
     protected registItemClickEvent(itemNode: Node) {

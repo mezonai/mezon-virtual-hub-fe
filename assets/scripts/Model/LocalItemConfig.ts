@@ -17,6 +17,7 @@ export class LocalItemPartDataConfig {
 
 export class LocalItemDataConfig {
     public id: string = "";
+    public name: string = "";
     public icons: string[];
     public description: string = "";
     public bundleName: string = "";
