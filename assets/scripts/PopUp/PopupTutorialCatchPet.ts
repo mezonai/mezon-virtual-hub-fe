@@ -67,7 +67,7 @@ export class PopupTutorialCatchPet extends BasePopup {
                     this.showTalkAndDelay("Bạn có muốn sở hữu 1 con như tôi không?", () => {
                         this.showTalkAndDelay("Hãy để tôi hướng dẫn bạn cách để sở hữu một con Pet.", () => {
                             this.fadeInByColor(this.blackBackground, this.timeFade, () => {
-                                this.tutorialPlayer.setPosition(this.defaultPosititonPlayer);
+                                this.tutorialPlayer?.setPosition(this.defaultPosititonPlayer);
                                 this.dragonIceTutorial.node.active = false;
                                 this.fadeOutByColor(this.blackBackground, this.timeFade, () => {
                                     this.stepMoveToPet();
@@ -309,34 +309,44 @@ export class PopupTutorialCatchPet extends BasePopup {
     }
 
     fadeOutByColor(sprite: Sprite, duration: number = 1, onComplete?: () => void) {
-        const startColor = sprite.color.clone(); // Màu ban đầu
-        const tempColor = new Color(startColor.r, startColor.g, startColor.b, startColor.a); // Tạm thời
+        if (!sprite || !sprite.node || !sprite.node.isValid) return;
+
+        const startColor = sprite.color.clone();
+        const tempColor = new Color(startColor.r, startColor.g, startColor.b, 0);
+
+        sprite.color = tempColor.clone();
 
         tween(tempColor)
             .to(duration, { a: 0 }, {
                 onUpdate: () => {
-                    const c = new Color(tempColor.r, tempColor.g, tempColor.b, tempColor.a);
-                    sprite.color = c;
+                    if (!sprite || !sprite.node || !sprite.node.isValid) return;
+                    sprite.color = new Color(tempColor.r, tempColor.g, tempColor.b, tempColor.a);
                 }
             })
             .call(() => {
+                if (!sprite || !sprite.node || !sprite.node.isValid) return;
                 if (onComplete) onComplete();
             })
             .start();
     }
 
     fadeInByColor(sprite: Sprite, duration: number = 1, onComplete?: () => void) {
-        const startColor = sprite.color.clone(); // Màu ban đầu
-        const tempColor = new Color(startColor.r, startColor.g, startColor.b, startColor.a); // Tạm thời
+        if (!sprite || !sprite.node || !sprite.node.isValid) return;
+
+        const startColor = sprite.color.clone();
+        const tempColor = new Color(startColor.r, startColor.g, startColor.b, 0);
+
+        sprite.color = tempColor.clone();
 
         tween(tempColor)
             .to(duration, { a: 255 }, {
                 onUpdate: () => {
-                    const c = new Color(tempColor.r, tempColor.g, tempColor.b, tempColor.a);
-                    sprite.color = c;
+                    if (!sprite || !sprite.node || !sprite.node.isValid) return;
+                    sprite.color = new Color(tempColor.r, tempColor.g, tempColor.b, tempColor.a);
                 }
             })
             .call(() => {
+                if (!sprite || !sprite.node || !sprite.node.isValid) return;
                 if (onComplete) onComplete();
             })
             .start();
