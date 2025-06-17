@@ -123,8 +123,6 @@ export class SlotMachineController extends Component {
             async (response) => {
                 try {
                     this.rewardRateMap = this.parseRewardsPercent(response.data);
-                    console.log("✅ Parsed data:", JSON.stringify(this.rewardRateMap, null, 2));
-
                     await this.showItem();
                 } catch (error) {
                     this.onError(error);
