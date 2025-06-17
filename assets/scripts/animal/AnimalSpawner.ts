@@ -26,12 +26,12 @@ export class AnimalSpawner extends Component {
             if (petObj) {
                 let petParent = this.getRandomZone();
                 petObj.setParent(petParent.node);
-                let position = this.getRandomPositionInZone(petParent.node);
-                petObj.setPosition(new Vec3(position.x, position.y, 0));
+                let area = this.getArea(petParent.node);
+                petObj.setPosition(this.getRandomPositionInZone(area));
                 let animal = petObj.getComponent(AnimalController);
                 if (animal) {
                     this.spawnedAnimals.push(animal);
-                    animal.setDataPet(pet, AnimalType.RandomMove, null, position);
+                    animal.setDataPet(pet, AnimalType.RandomMove, null, area);
                 }
             }
         }
@@ -98,16 +98,19 @@ export class AnimalSpawner extends Component {
         return this.spawnZones[0];
     }
 
-    getRandomPositionInZone(zoneNode: Node): Vec2 {
+    getRandomPositionInZone(area: Vec2): Vec3 {
+        const x = (Math.random() * 2 - 1) * area.x;
+        const y = (Math.random() * 2 - 1) * area.y;
+        return new Vec3(x, y, 0);
+    }
+
+    getArea(zoneNode: Node): Vec2 {
         const uiTransform = zoneNode.getComponent(UITransform);
         if (uiTransform) {
             const areaSizeX = uiTransform.width / 2;
             const areaSizeY = uiTransform.height / 2;
-            const x = (Math.random() * 2 - 1) * areaSizeX;
-            const y = (Math.random() * 2 - 1) * areaSizeY;
-            return new Vec2(x, y);
+            return new Vec2(areaSizeX, areaSizeY);
         }
-
     }
 }
 
