@@ -18,7 +18,7 @@ export class MoneyTooltip extends TooltipHover {
     }
 
     public override onHoverShow() {
-        //if (!this.tooltipNode || !this.tooltipLabel || this.fullValue < this.moneyLimitTooltip) return;
+        if (!this.tooltipNode || !this.tooltipLabel || this.fullValue < this.moneyLimitTooltip) return;
         this.tooltipNode.active = true;
         this.tooltipLabel.string = this.fullValue.toLocaleString();
     }
