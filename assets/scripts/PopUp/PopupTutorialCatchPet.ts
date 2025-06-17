@@ -32,11 +32,11 @@ export class PopupTutorialCatchPet extends BasePopup {
     @property({ type: Node }) buttonBagPet: Node = null;
     @property({ type: PopupOwnedAnimals }) popupOwnedAnimals: PopupOwnedAnimals = null;
     @property({ type: ItemAnimalSlot }) itemAnimalSlot: ItemAnimalSlot = null;
-    private timeMoveSelectionIcon: number = 1.5;
+    private timeMoveSelectionIcon: number = 0.75;
     private timeout: number = 500;
     private timeAnimSelection: number = 500;
-    private timeTalk: number = 0.5;
-    private timeFade: number = 2;
+    private timeTalk: number = 0.25;
+    private timeFade: number = 1.5;
     private defaultStartDragonIce: Vec3 = new Vec3(406, 0, 0);
     private positionPoint1DragonIce: Vec3 = new Vec3(-80, 40, 0);
     private positionPoint2DragonIce: Vec3 = new Vec3(-60, 10, 0);
@@ -78,7 +78,7 @@ export class PopupTutorialCatchPet extends BasePopup {
                 });
 
             });
-        }, 5);
+        }, 3.5);
     }
 
     private initilize(param?: PopupTutorialCatchPetParam) {
