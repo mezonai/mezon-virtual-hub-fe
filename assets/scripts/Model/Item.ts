@@ -95,3 +95,26 @@ export enum PurchaseMethod {
     DIAMOND = 'diamond',
     SLOT = 'slot',
 }
+
+export enum ItemGenderFilter{
+    ALL = 'ALL',
+    FEMALE = 'female',
+    MALE = 'male',
+    UNISEX = 'unisex'
+}
+
+export interface RewardDisplayData {
+    spriteFrame: SpriteFrame | null;
+    name: string;
+    rate: number;
+    isItem?: boolean;
+}
+
+export class RewardPecent{
+    public item: number;
+    public gold: number;
+    public normalFood: number;
+    public premiumFood: number;
+    public ultraFood: number;
+    public none: number;
+}
