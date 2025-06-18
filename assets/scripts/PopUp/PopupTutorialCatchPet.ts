@@ -46,7 +46,7 @@ export class PopupTutorialCatchPet extends BasePopup {
     private positionInteractPet: Vec3 = new Vec3(10, 15, 0);
     private positionChoosePet: Vec3 = new Vec3(85, -10, 0);
     private positionFinished: Vec3 = new Vec3(-4.5, -10, 0);
-    private _onActionCancel: (() => void) | null = null;
+    private _onActionCompleted: (() => void) | null = null;
 
     public async init(param?: PopupTutorialCatchPetParam) {
         if (!param) {
@@ -82,8 +82,8 @@ export class PopupTutorialCatchPet extends BasePopup {
     }
 
     private initilize(param?: PopupTutorialCatchPetParam) {
-        if (param?.onActionCancel) {
-            this._onActionCancel = param.onActionCancel;
+        if (param?.onActionCompleted) {
+            this._onActionCompleted = param.onActionCompleted;
         }
         this.tutorialPlayer.active = false;
         this.animalTutorial.node.active = false;
@@ -105,7 +105,7 @@ export class PopupTutorialCatchPet extends BasePopup {
     }
 
     cancelTutorial() {
-        this._onActionCancel?.();
+        this._onActionCompleted?.();
         this.cancelTween();
         this.closePopup();
     }
@@ -354,7 +354,7 @@ export class PopupTutorialCatchPet extends BasePopup {
 }
 
 export interface PopupTutorialCatchPetParam {
-    onActionCancel?: () => void;
+    onActionCompleted?: () => void;
 }
 
 
