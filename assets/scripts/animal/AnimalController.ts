@@ -200,6 +200,7 @@ export class AnimalController extends Component {
 
         if (this.node) {
             Tween.stopAllByTarget(this.node);
+            this.pet = null;
             this.node.setPosition(Vec3.ZERO);
             ObjectPoolManager.instance.returnToPool(this.node);
         }

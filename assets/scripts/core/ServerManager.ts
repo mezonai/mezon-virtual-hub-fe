@@ -274,17 +274,15 @@ export class ServerManager extends Component {
             UserManager.instance.onPetFollowPlayer(data);
         });
 
-        this.room.onMessage("onSendTouchPet", (data) => {           
+        this.room.onMessage("onSendTouchPet", (data) => {
             UserManager.instance.onSendTouchPet(data);
         });
 
         this.room.onMessage("petPositionUpdate", (data) => {
-            if (!data) return;
-            data.forEach(pet => {
-                const petData = new PetColysesusObjectData(pet.id, this.room, pet.position.x, pet.position.y, pet.name, new Vec2(pet.angle.x, pet.angle.y), pet);
-                if (OfficeSceneController.instance.currentMap == null) return;
-                OfficeSceneController.instance.currentMap.AnimalSpawner.updatePositionPetOnServer(petData);
-            });
+            if (!data) return;          
+            const petData = new PetColysesusObjectData(data.id, this.room, data.position.x, data.position.y, data.name, new Vec2(data.angle.x, data.angle.y), data);
+            if (OfficeSceneController.instance.currentMap == null) return;
+            OfficeSceneController.instance.currentMap.AnimalSpawner.updatePositionPetOnServer(petData);
         });
 
         this.room.state.pets.onAdd((pet, key) => {

@@ -48,7 +48,6 @@ export class AnimalSpawner extends Component {
         if (!pet) return;
         let petObj = ObjectPoolManager.instance.spawnFromPool(pet.pet.species);
         if (petObj) {
-            let petParent = this.spawnZones[1];
             petObj.setParent(this.spawnMap);
             petObj.setPosition(new Vec3(pet.x, pet.y, 0));
             let animal = petObj.getComponent(AnimalController);
@@ -77,6 +76,10 @@ export class AnimalSpawner extends Component {
     public disappearedPet(id: string) {// trường hợp pet di chuyển giữa các room
         let animal = this.getAnimalById(id);
         if (animal == null) return;
+        const index = this.spawnedAnimals.indexOf(animal);
+        if (index !== -1) {
+            this.spawnedAnimals.splice(index, 1);
+        }
         animal.closeAnimal(AnimalType.Disappeared);
     }
 
