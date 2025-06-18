@@ -36,21 +36,28 @@ export class GameManager extends Component {
     }
 
     public init() {
-        this.getReward();
         this.shopController.init();
         this.inventoryController.init();
         this.shopPetController.init();
         this.uiMission.getMissionEventData();
+        this.tutorialCacthPet();
+    }
+
+    tutorialCacthPet() {
         if (localStorage.getItem(Constants.TUTORIAL_CACTH_PET) === null) {
             this.canvas.active = false;
             this.canvas.active = false;
             const param: PopupTutorialCatchPetParam = {
-                onActionCancel: () => {
+                onActionCompleted: () => {
                     this.canvas.active = true;
                     this.uiCanvas.active = true;
-                }
+                    this.getReward();
+                },
             };
             PopupManager.getInstance().openPopup("PopupTutorialCatchPet", PopupTutorialCatchPet, param);
+        }
+        else {
+            this.getReward();
         }
     }
 

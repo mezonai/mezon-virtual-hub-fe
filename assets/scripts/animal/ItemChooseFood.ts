@@ -59,21 +59,26 @@ export class ItemChooseFood extends Component {
             }
             const foodThrow = UserMeManager.GetFoods?.find(inv => inv.food.id === food.id);
             let quantity = foodThrow?.quantity ?? 0;
-            if (quantity  <= 0) {
+            if (quantity <= 0) {
                 PopupManager.getInstance().openAnimPopup('PopupChooseFoodPet', PopupChooseFoodPet, { message: "No food" });
                 return;
             }
             if (onThrowFood) {
                 const foodThrow = UserMeManager.GetFoods?.find(inv => inv.food.id === food.id);
                 if (foodThrow && foodThrow.quantity > 0) {
-                    foodThrow.quantity -= 1;
                     await onThrowFood(food.type);
+                    if (animalController?.Pet == null) {
+                        this.showUiPetDisappeared();
+                        return;
+                    }
+                    foodThrow.quantity -= 1;
                     let data = {
                         player: UserMeManager.Get.user,
-                        petId: animalController.Pet.id,
+                        petId: animalController.Pet?.id ?? "0",
                         foodId: food.id,
                     }
                     ServerManager.instance.sendCatchPet(data);
+
                 }
 
             }
@@ -101,7 +106,7 @@ export class ItemChooseFood extends Component {
         UIManager.Instance.showNoticePopup("Thông báo", `Thú cưng xa quá rồi dí theo nào`);
         return false;
     }
-    
+
     setDataItemTutorial(food: Food) {
         const typeToIndexMap: Record<FoodType, number> = {
             [FoodType.NORMAL]: 0,
