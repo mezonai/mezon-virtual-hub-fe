@@ -26,7 +26,6 @@ export class ColliderAutoUpdater extends Component {
     }
 
     onCanvasResize() {
-        console.log('[ColliderAutoUpdater] Canvas is resizing...');
         if (this.resizeDebounceTimer) {
             clearTimeout(this.resizeDebounceTimer);
         }

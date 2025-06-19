@@ -115,8 +115,10 @@ export class MoveAbility extends Ability {
                 const angleDeg = Math.atan2(value.y, value.x) * (180 / Math.PI);
                 this.colliderDetectParent.angle = angleDeg;
 
-                if (this.isCollideWithST())
+                if (this.isCollideWithST()){
+                    this.updateAction("idle");
                     return;
+                }
 
                 value.normalize();
                 this.currentDirection.x = value.x > 0 ? 1 : -1;
