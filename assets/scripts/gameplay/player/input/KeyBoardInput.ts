@@ -13,7 +13,7 @@ export class KeyBoardInput extends PlayerInput {
     private isLeft = false;
     private isRight = false;
 
-    public override getInput(): Vec3{
+    public override getInput(): Vec3 {
         this.inputValue.x = (this.isD || this.isRight ? 1 : 0) + (this.isA || this.isLeft ? -1 : 0);
         this.inputValue.y = (this.isW || this.isUp ? 1 : 0) + (this.isS || this.isDown ? -1 : 0);
 
@@ -32,6 +32,7 @@ export class KeyBoardInput extends PlayerInput {
     }
 
     protected onKeyDown(event: EventKeyboard) {
+        if (!this.canAcceptInput) return;
         switch (event.keyCode) {
             case KeyCode.KEY_W: this.isW = true; break;
             case KeyCode.KEY_S: this.isS = true; break;
@@ -45,6 +46,7 @@ export class KeyBoardInput extends PlayerInput {
     }
 
     protected onKeyUp(event: EventKeyboard) {
+        if (!this.canAcceptInput) return;
         switch (event.keyCode) {
             case KeyCode.KEY_W: this.isW = false; break;
             case KeyCode.KEY_S: this.isS = false; break;
@@ -56,4 +58,29 @@ export class KeyBoardInput extends PlayerInput {
             case KeyCode.ARROW_RIGHT: this.isRight = false; break;
         }
     }
+
+    private resetKeyState(): void {
+        this.isW = false;
+        this.isA = false;
+        this.isS = false;
+        this.isD = false;
+        this.isUp = false;
+        this.isDown = false;
+        this.isLeft = false;
+        this.isRight = false;
+
+        this.inputValue.set(0, 0, 0);
+    }
+
+    public override setCanAcceptInput(value: boolean): void {
+        this.canAcceptInput = value;
+        if (!value) {
+            this.resetKeyState();
+        }
+    }
+
+    public override getCanAcceptInput(): boolean {
+        return this.canAcceptInput;
+    }
+
 }

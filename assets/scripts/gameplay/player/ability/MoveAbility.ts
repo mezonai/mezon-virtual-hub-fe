@@ -115,8 +115,10 @@ export class MoveAbility extends Ability {
                 const angleDeg = Math.atan2(value.y, value.x) * (180 / Math.PI);
                 this.colliderDetectParent.angle = angleDeg;
 
-                if (this.isCollideWithST())
+                if (this.isCollideWithST()){
+                    this.updateAction("idle");
                     return;
+                }
 
                 value.normalize();
                 this.currentDirection.x = value.x > 0 ? 1 : -1;
@@ -192,11 +194,42 @@ export class MoveAbility extends Ability {
         this.animationController.play(anim);
     }
 
+    public InputClose() {
+        if (this.isMyClient) {
+            for (const input of this.playerInputs) {
+                input.setCanAcceptInput(false);
+            }
+            this.updateAction("idle");
+        }
+    }
+
+
+    public InputInit() {
+        if (this.isMyClient) {
+            for (const input of this.playerInputs) {
+                input.setCanAcceptInput(true);
+            }
+            this.updateAction("idle");
+        }
+    }
+
     public StopMove() {
+        this.InputClose();
         this.canMove = false;
+        this.lastPressedKey = null;
+        Tween.stopAllByTarget(this.node);
+        const rb = this.node.getComponent(RigidBody2D);
+        if (rb) {
+            rb.sleep();
+        }
     }
 
     public startMove() {
+        this.InputInit();
         this.canMove = true;
+        const rb = this.node.getComponent(RigidBody2D);
+        if (rb) {
+            rb.wakeUp();
+        }
     }
 }
