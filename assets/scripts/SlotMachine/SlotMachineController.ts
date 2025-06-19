@@ -164,10 +164,6 @@ export class SlotMachineController extends Component {
         let goldNode = ObjectPoolManager.instance.spawnFromPool(this.itemPrefab.name);
         goldNode.setParent(this.itemContainer);
         await this.registUIItemData(goldNode, this.iconMoney[0], "Coin", this.rewardRateMap.gold);
-
-        let emptyNode = ObjectPoolManager.instance.spawnFromPool(this.itemPrefab.name);
-        emptyNode.setParent(this.itemContainer);
-        await this.registUIItemData(emptyNode, null, "Không có vật phẩm", this.rewardRateMap.none);
     }
 
     protected async registUIItemData(itemNode: Node, spriteFrameToSet: SpriteFrame | null, name: string | null, rate: number | null, isItem: boolean = false) {
