@@ -227,8 +227,9 @@ export class ServerManager extends Component {
         });
 
         this.room.onMessage("onWithrawDiamond", (data) => {
-            SoundManager.instance.playSound(AudioType.ReceiveReward);
-            if (this.withAmount > 0 && UserMeManager.Get) {
+            const { sessionId } = data;
+            if (this.withAmount > 0 && UserMeManager.Get && sessionId == UserManager.instance.GetMyClientPlayer.myID) {
+                SoundManager.instance.playSound(AudioType.ReceiveReward);
                 UIManager.Instance.showNoticePopup("Thông báo", `<color=#FF0000>${Utilities.convertBigNumberToStr(this.withAmount)} Diamond</color> được trừ từ tài khoản`, () => {
                     UserMeManager.playerDiamond -= this.withAmount;
                     this.withAmount = -1;
@@ -243,9 +244,9 @@ export class ServerManager extends Component {
 
         this.room.onMessage("onExchangeDiamondToCoin", (data) => {
 
-            SoundManager.instance.playSound(AudioType.ReceiveReward);
-            if (this.exchangeAmount > 0 && UserMeManager.Get) {
-                const { coinChange, diamondChange } = data;
+            const { coinChange, diamondChange, sessionId } = data;
+            if (this.exchangeAmount > 0 && UserMeManager.Get && sessionId == UserManager.instance.GetMyClientPlayer.myID) {
+                SoundManager.instance.playSound(AudioType.ReceiveReward);
                 const msg = `<color=#FF0000>${Utilities.convertBigNumberToStr(Math.abs(diamondChange))} Diamond</color> đã được chuyển thành <color=#00FF00>${coinChange} coin</color>`;
                 UIManager.Instance.showNoticePopup("Thông báo", msg, () => {
                     UserMeManager.playerDiamond += diamondChange;
