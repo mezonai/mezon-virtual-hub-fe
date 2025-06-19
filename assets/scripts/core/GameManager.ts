@@ -26,8 +26,6 @@ export class GameManager extends Component {
     @property({ type: UIChat }) uiChat: UIChat = null;
     @property({ type: UIMission }) uiMission: UIMission = null;
     @property({ type: SettingManager }) settingManager: SettingManager = null;
-    @property({ type: Node }) canvas: Node = null;
-    @property({ type: Node }) uiCanvas: Node = null;
 
     protected onLoad(): void {
         if (GameManager._instance == null) {
@@ -45,12 +43,8 @@ export class GameManager extends Component {
 
     tutorialCacthPet() {
         if (localStorage.getItem(Constants.TUTORIAL_CACTH_PET) === null) {
-            this.canvas.active = false;
-            this.canvas.active = false;
             const param: PopupTutorialCatchPetParam = {
                 onActionCompleted: () => {
-                    this.canvas.active = true;
-                    this.uiCanvas.active = true;
                     this.getReward();
                 },
             };

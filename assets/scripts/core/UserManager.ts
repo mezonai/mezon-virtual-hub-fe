@@ -112,7 +112,7 @@ export class UserManager extends Component {
                     is_brought: true,
                     room_code: '',
                     rarity: pet.rarity,
-                });           
+                });
                 animalController.setDataPet(petDto, AnimalType.FollowTarget, playerController, null, this.animalParent);
                 playerController.savePetFollow(animalController);
                 animal.setParent(this.animalParent);
@@ -291,7 +291,7 @@ export class UserManager extends Component {
     }
 
     public onCatchPetSuccess(data) {
-        OfficeSceneController.instance.currentMap.AnimalSpawner.setAnimalCaught(data.petId)
+        OfficeSceneController.instance.currentMap.AnimalSpawner.disappearedPet(data.petId, true)
         if (data.playerCatchId === UserManager.instance.GetMyClientPlayer.myID) this.updateMyData(data.petId);
     }
     public onPetAlreadyCaught(data) {
@@ -304,7 +304,7 @@ export class UserManager extends Component {
     }
 
     public onPetDisappear(data) {
-        OfficeSceneController.instance.currentMap.AnimalSpawner.disappearedPet(data.petId)
+        OfficeSceneController.instance.currentMap.AnimalSpawner.disappearedPet(data.petId, false)
     }
 
     public onPetFollowPlayer(data) {
@@ -316,12 +316,12 @@ export class UserManager extends Component {
 
     public onSendTouchPet(data) {
         if (data == null) return;
-        const { targetPetId, playerTouchingPetId, isOwnerTouching, randomIndex} = data;
+        const { targetPetId, playerTouchingPetId, isOwnerTouching, randomIndex } = data;
         let playerTarget = this.players.get(playerTouchingPetId);
-        if(playerTarget == null) return;
+        if (playerTarget == null) return;
         const targetPet = playerTarget.petFollowPrefabs.find(pet => pet.Pet.id === targetPetId);
-        if(targetPet == null) return;
-        if(isOwnerTouching){
+        if (targetPet == null) return;
+        if (isOwnerTouching) {
             targetPet.getRandomCompliment(playerTarget.userName, randomIndex);
             return;
         }

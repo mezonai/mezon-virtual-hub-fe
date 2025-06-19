@@ -16,7 +16,8 @@ export class SpawnZone {
 export class AnimalSpawner extends Component {
     @property({ type: [SpawnZone] }) spawnZones: SpawnZone[] = [];
     @property({ type: Node }) spawnMap: Node;// Area nguyên map
-    @property spawnedAnimals: AnimalController[] = [];
+    @property({ type: [AnimalController] })
+    spawnedAnimals: AnimalController[] = [];
 
     public spawnPet(petData: PetDTO[]) {
         for (const pet of petData) {
@@ -67,20 +68,14 @@ export class AnimalSpawner extends Component {
         });
     }
 
-    public setAnimalCaught(id: string) {
-        let animal = this.getAnimalById(id);
-        if (animal == null) return;
-        animal.closeAnimal(AnimalType.Caught);
-    }
-
-    public disappearedPet(id: string) {// trường hợp pet di chuyển giữa các room
+    public disappearedPet(id: string, isCaught: boolean) {// trường hợp pet di chuyển giữa các room
         let animal = this.getAnimalById(id);
         if (animal == null) return;
         const index = this.spawnedAnimals.indexOf(animal);
         if (index !== -1) {
             this.spawnedAnimals.splice(index, 1);
         }
-        animal.closeAnimal(AnimalType.Disappeared);
+        animal.closeAnimal(isCaught ? AnimalType.Caught : AnimalType.Disappeared);
     }
 
     public getAnimalById(id: string): AnimalController | null {
