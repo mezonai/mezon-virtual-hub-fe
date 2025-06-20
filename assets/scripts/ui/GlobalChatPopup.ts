@@ -7,17 +7,18 @@ const { ccclass, property } = _decorator;
 
 @ccclass('GlobalChatPopup')
 export class GlobalChatPopup extends Component {
-    @property({type: EditBox}) content: EditBox = null;
-    @property({type: Node}) sendButton: Node = null;
-    @property({type: Node}) closeButton: Node = null;
-    @property({type: UIIdentify}) panel: UIIdentify = null;
+    @property({ type: EditBox }) content: EditBox = null;
+    @property({ type: Node }) sendButton: Node = null;
+    @property({ type: Node }) closeButton: Node = null;
+    @property({ type: UIIdentify }) panel: UIIdentify = null;
 
     protected start(): void {
-        this.sendButton.on(Node.EventType.TOUCH_START, this.onSend,this);
-        this.closeButton.on(Node.EventType.TOUCH_START, this.onClose,this);
+        this.sendButton.on(Node.EventType.TOUCH_START, this.onSend, this);
+        this.closeButton.on(Node.EventType.TOUCH_START, this.onClose, this);
     }
 
-    public onClose(){
+    public onClose() {
+        UserManager.instance.GetMyClientPlayer.get_MoveAbility.setMove(true);
         this.panel.hide();
     }
 
@@ -35,6 +36,7 @@ export class GlobalChatPopup extends Component {
 
     protected onEnable(): void {
         this.content.string = "";
+        UserManager.instance.GetMyClientPlayer.get_MoveAbility.setMove(false);
     }
 }
 

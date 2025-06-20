@@ -11,6 +11,7 @@ import { PopupManager } from '../PopUp/PopupManager';
 import { PopupReward } from '../PopUp/PopupReward';
 import { PopupTutorialCatchPet, PopupTutorialCatchPetParam } from '../PopUp/PopupTutorialCatchPet';
 import { Constants } from '../utilities/Constants';
+import { UserManager } from './UserManager';
 
 const { ccclass, property } = _decorator;
 
@@ -43,9 +44,11 @@ export class GameManager extends Component {
 
     tutorialCacthPet() {
         if (localStorage.getItem(Constants.TUTORIAL_CACTH_PET) === null) {
+            UserManager.instance.GetMyClientPlayer.get_MoveAbility.setMove(false);
             const param: PopupTutorialCatchPetParam = {
                 onActionCompleted: () => {
                     this.getReward();
+                    UserManager.instance.GetMyClientPlayer.get_MoveAbility.setMove(true);
                 },
             };
             PopupManager.getInstance().openPopup("PopupTutorialCatchPet", PopupTutorialCatchPet, param);

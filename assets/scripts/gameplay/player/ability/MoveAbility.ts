@@ -192,6 +192,10 @@ export class MoveAbility extends Ability {
         this.animationController.play(anim);
     }
 
+    public setMove(canMove: boolean) {
+        this.canMove = canMove;
+    }
+
     public StopMove() {
         this.canMove = false;
     }

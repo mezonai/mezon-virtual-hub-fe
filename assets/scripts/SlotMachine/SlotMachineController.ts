@@ -82,7 +82,7 @@ export class SlotMachineController extends Component {
     }
 
     private endSpinSlotMachine() {
-        UserManager.instance.GetMyClientPlayer.get_MoveAbility.startMove();
+        UserManager.instance.GetMyClientPlayer.get_MoveAbility.setMove(true);
         this.slotMachineRate.hide();
         this.rateButton.isChecked = false;
         this.rewardPopUp.show(false, null);
@@ -101,7 +101,7 @@ export class SlotMachineController extends Component {
         this.showMinusCoinInfo(true);
 
         if (isShow) {
-            UserManager.instance.GetMyClientPlayer.get_MoveAbility.StopMove();
+            UserManager.instance.GetMyClientPlayer.get_MoveAbility.setMove(false);
         }
 
         this.getRewardsPercent();
@@ -155,7 +155,7 @@ export class SlotMachineController extends Component {
         for (const spriteF of this.iconValue) {
             const rate = this.rewardRateMap[spriteF.name] ?? 0;
             const displayName = this.foodNameMap[spriteF.name]
-            if(rate <= 0) continue;
+            if (rate <= 0) continue;
             let itemNode = ObjectPoolManager.instance.spawnFromPool(this.itemPrefab.name);
             itemNode.setParent(this.itemContainer);
             await this.registUIItemData(itemNode, spriteF, displayName, rate);

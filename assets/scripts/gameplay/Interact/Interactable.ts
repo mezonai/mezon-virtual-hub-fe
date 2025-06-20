@@ -48,7 +48,7 @@ export abstract class Interactable extends Component {
         }
         return false;
     }
-    
+
 
     protected canBeginContact(other: Node) {
         return true;
@@ -57,8 +57,8 @@ export abstract class Interactable extends Component {
     protected onBeginContact(selfCollider: Collider2D, otherCollider: Collider2D, contact: IPhysics2DContact | null) {
         const otherNode = otherCollider.node;
         const myPlayer = UserManager.instance.GetMyClientPlayer;
-    
-        if (this.collidingNodes.has(otherNode)) return;
+
+        if (this.collidingNodes.has(otherNode) || this.noticePopup != null) return;
         this.collidingNodes.add(otherNode);
         const otherPlayerId = this.getPlayerIdFromNode(otherNode);
         const myId = myPlayer.myID;
@@ -68,17 +68,17 @@ export abstract class Interactable extends Component {
             this.handleBeginContact(selfCollider, otherCollider, contact);
         }
     }
-    
+
     protected onEndContact(selfCollider: Collider2D, otherCollider: Collider2D, contact: IPhysics2DContact | null) {
         const otherNode = otherCollider.node;
         const myPlayer = UserManager.instance.GetMyClientPlayer;
         this.collidingNodes.delete(otherNode);
-    
+
         if ((otherNode.layer & Constants.PLAYER_LAYER) !== 0) {
             const otherPlayerId = this.getPlayerIdFromNode(otherNode);
             const myId = myPlayer.myID;
             const isSamePlayer = otherPlayerId === myId;
-    
+
             if (isSamePlayer) {
                 this.isPlayerNearby = false;
                 this.nearbyPlayerNode = null;
@@ -86,16 +86,16 @@ export abstract class Interactable extends Component {
             }
         }
     }
-    
+
     protected getPlayerIdFromNode(node: Node): string {
         const playerComp = node.getComponent(PlayerController) as any;
 
         return playerComp?.myID ?? "";
     }
-    
-    
+
+
     protected abstract interact(playerSessionId: string): void;
-    protected async handleBeginContact(selfCollider: Collider2D, otherCollider: Collider2D, contact: IPhysics2DContact | null) {}
+    protected async handleBeginContact(selfCollider: Collider2D, otherCollider: Collider2D, contact: IPhysics2DContact | null) { }
 
     protected async handleEndContact(selfCollider: Collider2D, otherCollider: Collider2D, contact: IPhysics2DContact | null) {
         if (this.noticePopup?.node != null) {
