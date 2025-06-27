@@ -34,7 +34,6 @@ export abstract class MapManagerBase extends Component {
         }
         for (const teleport of this.interactTeleports) {
             teleport.currentOffice = office;
-            console.log("curr: ", teleport.currentOffice);
         }
         this.startRoom = startRoom;
         this.updatePositionPlayer(office, startRoom);
@@ -69,7 +68,7 @@ export abstract class MapManagerBase extends Component {
 
     setDoor(door: any) {
         this.doors.forEach(doorRoom => {
-            if (!doorRoom.isSet) {              
+            if (!doorRoom.isSet) {
                 doorRoom.setDoor(door);
             }
         });

@@ -1,8 +1,9 @@
-import { _decorator, BoxCollider2D, Collider2D, Component, Contact2DType, EventKeyboard, input, Input, IPhysics2DContact, ITriggerEvent, KeyCode, Layers, Node } from 'cc';
+import { _decorator, BoxCollider2D, Collider2D, Component, Contact2DType, EventKeyboard, input, Input, IPhysics2DContact, ITriggerEvent, KeyCode, Layers, Node, Rect, UITransform, Vec3 } from 'cc';
 import { PopupManager } from '../../PopUp/PopupManager';
 import { InteracterLabel } from '../../PopUp/InteracterLabel';
 import { Interactable } from './Interactable';
 import { ServerManager } from '../../core/ServerManager';
+import { UserManager } from '../../core/UserManager';
 const { ccclass, property } = _decorator;
 @ccclass('InteractableDoor')
 export class InteractableDoor extends Interactable {
@@ -10,16 +11,17 @@ export class InteractableDoor extends Interactable {
     isSet: boolean = false;
     id: string = "";
     private isOpen: boolean = false;
+    private offsetPlayer: number = 30;
 
     protected async interact(playerSessionId: string) {
         if (!this.isPlayerNearby) return;
 
         this.toggleDoorState();
         this.updateDoorVisual();
+        if (!this.isOpen) this.checkPlayerStandingOnDoor();
         const data = {
             doorId: this.id ?? "0",
         };
-        console.log("Send: ", data.doorId);
         ServerManager.instance.sendInteracDoor(data, this.isOpen);
         if (this.noticePopup) {
             await this.refreshPopup();
@@ -47,7 +49,6 @@ export class InteractableDoor extends Interactable {
         this.isOpen = door.isOpen;
 
         this.updateDoorVisual();
-
         if (this.noticePopup) {
             await this.refreshPopup();
         }
@@ -55,7 +56,6 @@ export class InteractableDoor extends Interactable {
 
     async setDoor(door: { id: string, isOpen: boolean }) {
         if (!door) return;
-        console.log("set Rooom: ", door);
         this.isSet = true;
         await this.applyDoorData(door);
     }
@@ -63,6 +63,7 @@ export class InteractableDoor extends Interactable {
     async updateDoor(door: { id: string, isOpen: boolean }) {
         if (!door) return;
         await this.applyDoorData(door);
+        if (!this.isOpen) this.checkPlayerStandingOnDoor();
     }
 
     private toggleDoorState() {
@@ -88,6 +89,48 @@ export class InteractableDoor extends Interactable {
         );
     }
 
+    async checkPlayerStandingOnDoor() {
+        const playerNode = UserManager.instance.GetMyClientPlayer?.node;
+        if (!playerNode || !this.doorLocked) return;
+
+        const playerUI = playerNode.getComponent(UITransform);
+        const doorUI = this.doorLocked.getComponent(UITransform);
+        if (!playerUI || !doorUI) return;
+
+        const playerBox = this.getWorldRect(playerNode, playerUI);
+        const doorBox = this.getWorldRect(this.doorLocked, doorUI);
+
+        if (!doorBox.intersects(playerBox)) return;
+
+        const doorMidY = doorBox.y + doorBox.height / 2;
+        const currentPos = playerNode.worldPosition;
+        let newPos: Vec3;
+
+        if (playerBox.yMin >= doorMidY) {
+            // Đang đứng nửa trên → đẩy lên
+            const offsetY = doorBox.yMax - playerBox.yMin;
+            newPos = new Vec3(currentPos.x, currentPos.y + offsetY - 5, currentPos.z);
+        } else {
+            // Đang đứng nửa dưới → đẩy xuống
+            const offsetY = playerBox.yMax - doorBox.y;
+            newPos = new Vec3(currentPos.x, currentPos.y - offsetY + 10, currentPos.z);
+        }
+        playerNode.setWorldPosition(newPos);
+        UserManager.instance?.GetMyClientPlayer?.moveAbility?.updateAction("idle");
+    }
+
+    getWorldRect(node: Node, uiTransform: UITransform): Rect {
+        const worldPos = node.worldPosition;
+        const width = uiTransform.width;
+        const height = uiTransform.height;
+        return new Rect(
+            worldPos.x - width / 2,
+            worldPos.y - height / 2,
+            width,
+            height
+        );
+    }
+
     private async hidePopup() {
         if (!this.noticePopup) return;
         await PopupManager.getInstance().closePopup(this.noticePopup.node.uuid);
@@ -97,6 +140,19 @@ export class InteractableDoor extends Interactable {
     private async refreshPopup() {
         await this.hidePopup();
         await this.showPopup();
+    }
+
+    private encodeMoveData(x: number, y: number, sX: number, anim: string): ArrayBuffer {
+        const animBytes = new TextEncoder().encode(anim);
+        const buffer = new ArrayBuffer(5 + animBytes.length);
+        const view = new DataView(buffer);
+
+        view.setInt16(0, x, true);
+        view.setInt16(2, y, true);
+        view.setInt8(4, sX);
+
+        new Uint8Array(buffer, 5).set(animBytes);
+        return buffer;
     }
 }
 
