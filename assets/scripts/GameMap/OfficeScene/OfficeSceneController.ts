@@ -22,7 +22,7 @@ export class OfficeSceneController extends Component {
     @property(Node)
     mapParent: Node = null;
     @property currentMap: MapManagerBase = null;
-    nameCode : string = "";
+    nameCode: string = "";
     protected onLoad(): void {
         if (OfficeSceneController._instance == null) {
             OfficeSceneController._instance = this;
@@ -32,13 +32,13 @@ export class OfficeSceneController extends Component {
     protected onDestroy(): void {
         OfficeSceneController._instance = null;
     }
-    public async LoadData() : Promise<boolean>{
+    public async LoadData(): Promise<boolean> {
         const param = SceneManagerController.getSceneParam<OfficeSenenParameter>();
         if (param != null) {
             let nameRoom = this.nameCode = param.nameRoomServer;
             let map = instantiate(this.mapOffice[this.getOffice(param.currentOffice, nameRoom)]);
             map.setParent(this.mapParent);
-            let mapManager =map.getComponent("MapManagerBase") as MapManagerBase;
+            let mapManager = map.getComponent("MapManagerBase") as MapManagerBase;
             if (mapManager) {
                 this.currentMap = mapManager;
                 console.log("MapManagerBase found:", mapManager);
@@ -47,23 +47,23 @@ export class OfficeSceneController extends Component {
                 console.error("MapManagerBase not found on instantiated map!");
                 return false;
             }
-            await ServerManager.instance.init(nameRoom);          
+            await ServerManager.instance.init(nameRoom);
         }
         else {
             console.log("No data received.");
         }
         this.backMapButton.node.on(Button.EventType.CLICK, async () => {
             const param = { isBackMap: true };
-            UserManager.instance.GetMyClientPlayer.leaveRoom(() =>{
+            UserManager.instance.GetMyClientPlayer.leaveRoom(() => {
                 SceneManagerController.loadScene(SceneName.SCENE_GAME_MAP, param)
             });
-            
+
         });
         return true;
     }
 
     public spawnPet(data) {
-        if (this.currentMap?.AnimalSpawner?.spawnZones.length > 0) {                   
+        if (this.currentMap?.AnimalSpawner?.spawnZones.length > 0) {
             this.currentMap.AnimalSpawner.spawnPet(data);
         }
     }
@@ -84,7 +84,7 @@ export class OfficeSceneController extends Component {
                 case OfficePosition.QUYNHON:
                     return 7;
                 case OfficePosition.SAIGON:
-                    return 8;                
+                    return 8;
             }
         }
         else if (nameRoom.includes("-shop")) {

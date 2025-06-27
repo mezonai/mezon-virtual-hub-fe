@@ -15,6 +15,7 @@ import Utilities from '../utilities/Utilities';
 import { Office } from '../GameMap/Office';
 import { OfficeSceneController } from '../GameMap/OfficeScene/OfficeSceneController';
 import { UserMeManager } from './UserMeManager';
+import { MessageTypes } from '../utilities/MessageTypes';
 
 @ccclass('ServerManager')
 export class ServerManager extends Component {
@@ -280,18 +281,32 @@ export class ServerManager extends Component {
         });
 
         this.room.onMessage("petPositionUpdate", (data) => {
-            if (!data) return;          
+            if (!data) return;
             const petData = new PetColysesusObjectData(data.id, this.room, data.position.x, data.position.y, data.name, new Vec2(data.angle.x, data.angle.y), data);
             if (OfficeSceneController.instance.currentMap == null) return;
             OfficeSceneController.instance.currentMap.AnimalSpawner.updatePositionPetOnServer(petData);
         });
 
+        this.room.onMessage(MessageTypes.ON_OPEN_DOOR, (data) => {
+            if (data == null || data.doorUpadte == null || data.sessionId == UserManager.instance.GetMyClientPlayer.myID) return;
+            OfficeSceneController.instance.currentMap.updateDoor(data.doorUpadte);
+        });
+
+        this.room.onMessage(MessageTypes.ON_CLOSE_DOOR, (data) => {
+            if (data == null || data.doorUpadte == null || data.sessionId == UserManager.instance.GetMyClientPlayer.myID) return;
+            OfficeSceneController.instance.currentMap.updateDoor(data.doorUpadte);
+        });
+
         this.room.state.pets.onAdd((pet, key) => {
             let petData = new PetColysesusObjectData(key, this.room, pet.position.x, pet.position.y, pet.name, new Vec2(pet.angle.x, pet.angle.y), pet);
-            if (OfficeSceneController.instance.currentMap == null) return; {
-                OfficeSceneController.instance.currentMap.AnimalSpawner.spawnPetOnServer(petData);
-            }
-        })
+            if (OfficeSceneController.instance.currentMap == null) return;
+            OfficeSceneController.instance.currentMap.AnimalSpawner.spawnPetOnServer(petData);
+        });
+
+        this.room.state.doors.onAdd((door, key) => {
+            if (OfficeSceneController.instance.currentMap == null) return;
+            OfficeSceneController.instance.currentMap.setDoor(door);
+        });
     }
 
     private decodeMoveData(uint8Array: ArrayBuffer) {
@@ -394,5 +409,9 @@ export class ServerManager extends Component {
 
     public sendTouchPet(data) {
         this.room.send("sendTouchPet", data);
+    }
+
+    public sendInteracDoor(data, isOpen: boolean) {
+        this.room.send(isOpen ? MessageTypes.OPEN_DOOR : MessageTypes.CLOSE_DOOR, data);
     }
 }
