@@ -248,6 +248,37 @@ export class UserManager extends Component {
         });
     }
 
+    public handleCombatStart(data) {
+        let p1 = this.players.get(data.from);
+        let p2 = this.players.get(data.to);
+        let action = data.action;
+        let result1 = data.result1;
+        let result2 = data.result2;
+        let fee = data.fee;
+        let winner = data.winner;
+        let p1Diamond = data.fromDiamond;
+        let p2Diamond = data.toDiamond;
+        if (p1.myID != this.GetMyClientPlayer.myID) {
+            p1.p2PInteractManager.showCombat();
+        }
+        if (p2.myID != this.GetMyClientPlayer.myID) {
+            p2.p2PInteractManager.showCombat();
+        }
+        if (p1.myID == this.GetMyClientPlayer.myID) {
+            this.GetMyClientPlayer.p2PInteractManager.onAcceptedActionFromOther(data);
+        }
+    }
+
+    private handleCombatDone(p1, p2, winner, p1Diamond, p2Diamond, myID, data) {
+        p1.p2PInteractManager.showCombatResult(data.result1);
+        p2.p2PInteractManager.showCombatResult(data.result2);
+
+        // this.reactToGameResult(winner, p1, p2, myID);
+        // this.updateDiamond(p1, p2, myID, p1Diamond, p2Diamond);
+    }
+
+
+
     public onPlayerRemoteUpdateGold(data) {
         const { sessionId, amountChange } = data;
         let player = this.players.get(sessionId);

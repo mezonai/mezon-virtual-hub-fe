@@ -307,6 +307,11 @@ export class ServerManager extends Component {
             if (OfficeSceneController.instance.currentMap == null) return;
             OfficeSceneController.instance.currentMap.setDoor(door);
         });
+
+        this.room.onMessage("onp2pCombatActionAccept", (data) => {
+            UserManager.instance.handleCombatStart(data);
+        });
+
     }
 
     private decodeMoveData(uint8Array: ArrayBuffer) {

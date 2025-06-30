@@ -3,6 +3,7 @@ import { Ability } from './Ability';
 import { ActionType, PlayerInteractAction } from './PlayerInteractAction';
 import { UIManager } from '../../../core/UIManager';
 import { RPSGame } from './RPSGame';
+import { CombatPet } from './CombatPet';
 const { ccclass, property } = _decorator;
 
 @ccclass('P2PInteractManager')
@@ -28,8 +29,10 @@ export class P2PInteractManager extends Ability {
             this.targetClicker.on(Node.EventType.TOUCH_START, this.onTouchStart, this);
         }
         this.toggleShowUI(false);
+
+        console.log("action.node.name ---: ", this.actionButtons.length);
         this.actionButtons.forEach(action => {
-            console.log("action.node.name",action.actionType);
+            console.log("action.node.name: ",action.actionType);
             action.init(sessionId, playerController, room);
             action.controller = this;
         });
@@ -113,6 +116,16 @@ export class P2PInteractManager extends Ability {
         for (const action of this.actionButtons) {
             if (action.actionType.toString() == ActionType.RPS.toString()) {
                 (action as RPSGame).spin()
+                break;
+            }
+        }
+    }
+
+    public showCombat() {
+        for (const action of this.actionButtons) {
+            console.log("action.actionType.toString(): "+action.actionType.toString());
+            if (action.actionType.toString() == ActionType.CombatPet.toString()) {
+                (action as CombatPet).ShowCombat()
                 break;
             }
         }
