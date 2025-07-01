@@ -1,81 +1,77 @@
-import { _decorator, Component, Layers, Node, Toggle, UITransform, Vec3, Animation, Color, Sprite } from 'cc';
-import { AnimalController, AnimalType } from './AnimalController';
+import { _decorator, Component, Node, Animation, Color, Sprite, Button, Vec3 } from 'cc';
+import { AnimalController } from './AnimalController';
 import { AnimalRarity, PetDTO } from '../Model/PetDTO';
-import { ObjectPoolManager } from '../pooling/ObjectPoolManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('ItemAnimalSlot')
 export class ItemAnimalSlot extends Component {
-    @property({ type: Node }) parentAnimal: Node = null;
-    @property({ type: Toggle }) toggle: Toggle = null;
+    @property({ type: [Node] }) petImage: Node[] = [];
+    @property({ type: Button }) buttonClick: Button = null;
     @property({ type: Animation }) animator: Animation = null;
+    @property({ type: Node }) bringNode: Node = null;
+    @property({ type: Node }) fightingNode: Node = null;
+    @property({ type: Node }) slotNode: Node = null;
     @property({ type: [Color] }) colorBorder: Color[] = [];
     @property(Sprite) borderSprite: Sprite;
-    @property animalController: AnimalController = null;
-    private animalObject: Node = null;
-    private defaultLayer = Layers.Enum.NONE;
-    private boundToggleCallback: () => void;
-    private limitSize: number = 80;
-    setDataSlot(pet: PetDTO, onToggleClick: (toggleSelected: Toggle) => void) {
-        this.animalObject = ObjectPoolManager.instance.spawnFromPool(pet.species);
-        if (this.animalObject) {
-            this.animalObject.setParent(this.parentAnimal);
-            this.animalObject.setPosition(new Vec3(0, 0, 0));
-            this.boundToggleCallback = () => {
-                if (onToggleClick) {
-                    onToggleClick(this.toggle);
-                }
-            };
-            this.toggle.node.on(Node.EventType.TOUCH_END, this.boundToggleCallback, this);
-            this.toggle.isChecked = pet.is_brought;
-            if (this.toggle.isChecked && this.boundToggleCallback != null) this.boundToggleCallback();
-            this.animalController = this.animalObject.getComponent(AnimalController);
-            if (this.animalController == null) return;
-            const uiTransform = this.animalController.spriteNode.getComponent(UITransform);
-            if (uiTransform) {
-                const size = uiTransform.contentSize;
-                if (size.width > this.limitSize && size.height > this.limitSize) {
-                    this.animalObject.setScale(new Vec3(0.7, 0.7, 0.7));
-                }
+    currentPet: PetDTO = null;
+    selectedCallback: () => void;
+    setDataSlot(pet: PetDTO, onClikcPet: (slot: ItemAnimalSlot) => void) {
+        this.fightingNode.active = false;
+        this.setBringPet(pet.is_brought);
+        this.currentPet = pet;
+        this.selectedCallback = async () => {
+            if (onClikcPet) {
+                await onClikcPet(this);
+                this.setSelectedSlot(true);
             }
-            if (pet.rarity == AnimalRarity.LEGENDARY) {
-                this.animator.node.active = true;
-                this.borderSprite.color = this.colorBorder[0];
-                this.playAnimBorder(pet.rarity);
-            }
-            else {
-                this.animator.node.active = false;
-                const indexColor = pet.rarity == AnimalRarity.COMMON ? 0 : pet.rarity == AnimalRarity.RARE ? 1 : 2;
-                this.borderSprite.color = this.colorBorder[indexColor];
+        };
+        this.buttonClick.node.on(Button.EventType.CLICK, this.onSelectedCallback, this);
+        if (pet.rarity == AnimalRarity.LEGENDARY) {
+            this.animator.node.active = true;
+            this.borderSprite.color = this.colorBorder[0];
+            this.playAnimBorder(pet.rarity);
+        }
+        else {
+            this.animator.node.active = false;
+            const indexColor = pet.rarity == AnimalRarity.COMMON ? 0 : pet.rarity == AnimalRarity.RARE ? 1 : 2;
+            this.borderSprite.color = this.colorBorder[indexColor];
+        }
+        this.setActivePetByName(pet.name);
+    }
 
-            }
-            this.animalController.setDataPet(pet, AnimalType.NoMove);
-            this.defaultLayer = this.animalController.spriteNode.layer;
-            this.setLayerAnimal(false);
+    onSelectedCallback() {
+        if (this.selectedCallback == null) return;
+        this.selectedCallback();
+    }
+
+    setActivePetByName(name: string) {
+        for (let node of this.petImage) {
+            node.active = node.name === name;
         }
     }
 
-
-
-    setLayerAnimal(isReturnPool: boolean) {
-        this.animalController.spriteNode.layer = isReturnPool ? this.defaultLayer : Layers.Enum.UI_2D;
-    }
-
-    resetAnimal(): Promise<void> {
-        this.toggle.node.off(Node.EventType.TOUCH_END, this.boundToggleCallback, this);
-        this.boundToggleCallback = null;
-        return new Promise((resolve) => {
-            this.setLayerAnimal(true);
-            this.animalObject.setScale(Vec3.ONE);
-            ObjectPoolManager.instance.returnToPool(this.animalObject);
-            resolve();
-        });
+    resetAnimal() {
+        this.buttonClick.node.off(Button.EventType.CLICK, this.onSelectedCallback, this);
+        this.selectedCallback = null;
     }
 
     public playAnimBorder(animationName: string) {
         if (animationName != "") {
             this.animator.play(animationName);
         }
+    }
+
+    setBringPet(isBrought: boolean = true) {
+        this.bringNode.active = isBrought;
+    }
+
+    setSelectedSlot(isSelected: boolean) {
+        console.log("isSelected", this.currentPet.name, isSelected);
+        if (isSelected) {
+            this.slotNode.setScale(new Vec3(1.2, 1.2, 1.2))
+            return;
+        }
+        this.slotNode.setScale(Vec3.ONE);
     }
 }
 
