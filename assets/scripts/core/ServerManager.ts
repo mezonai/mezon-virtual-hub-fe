@@ -309,7 +309,11 @@ export class ServerManager extends Component {
         });
 
         this.room.onMessage("onp2pCombatActionAccept", (data) => {
-            UserManager.instance.handleCombatStart(data);
+            UserManager.instance.handleCombat(data);
+        });
+
+        this.room.onMessage("onp2pCombatActionEscape", (data) => {
+            UserManager.instance.handleCombat(data);
         });
 
     }
@@ -418,5 +422,9 @@ export class ServerManager extends Component {
 
     public sendInteracDoor(data, isOpen: boolean) {
         this.room.send(isOpen ? MessageTypes.OPEN_DOOR : MessageTypes.CLOSE_DOOR, data);
+    }
+
+    public sendP2pCombatActionEscape(data){
+        this.room.send("p2pCombatActionEscape", data);
     }
 }

@@ -5,7 +5,7 @@ import { UserMeManager } from '../../../core/UserMeManager';
 import { AudioType, SoundManager } from '../../../core/SoundManager';
 const { ccclass, property } = _decorator;
 
-interface GameData {
+export interface GameData {
     action: string;
     from: string;
     to: string;

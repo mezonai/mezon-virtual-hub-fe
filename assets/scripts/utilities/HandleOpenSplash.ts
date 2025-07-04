@@ -1,16 +1,17 @@
-import { _decorator, Component, Node, tween, Vec3, director, Enum } from 'cc';
+import { _decorator, Component, Node, tween, Vec3, Enum } from 'cc';
 const { ccclass, property } = _decorator;
 
 export enum SplashMode {
     CenterOpen = 0,
     SlideDown = 1,
     SlideRight = 2,
-    CrashingWave = 3,
-    Random = 4
+    SlideLeft = 3,
+    CenterClose = 4,
+    Random = 5,
 }
 
-@ccclass('CenterOpenSplash')
-export class CenterOpenSplash extends Component {
+@ccclass('HandleOpenSplash')
+export class HandleOpenSplash extends Component {
     @property(Node)
     topPanel: Node = null;
 
@@ -29,14 +30,20 @@ export class CenterOpenSplash extends Component {
     @property({ type: Enum(SplashMode) })
     splashMode: SplashMode = SplashMode.CenterOpen;
 
-
-        playSplash(onComplete?: () => void) {
+    playSplash(onComplete?: () => void) {
         this.topPanel.active = true;
         this.bottomPanel.active = true;
 
         let modeToPlay = this.splashMode;
+
         if (this.splashMode === SplashMode.Random) {
-            const availableModes = [SplashMode.CenterOpen, SplashMode.SlideDown, SplashMode.SlideRight];
+            const availableModes = [
+                SplashMode.CenterOpen,
+                SplashMode.CenterClose,
+                SplashMode.SlideDown,
+                SplashMode.SlideRight,
+                SplashMode.SlideLeft
+            ];
             modeToPlay = availableModes[Math.floor(Math.random() * availableModes.length)];
         }
 
@@ -45,18 +52,36 @@ export class CenterOpenSplash extends Component {
 
         switch (modeToPlay) {
             case SplashMode.CenterOpen:
+                this.topPanel.setPosition(0, 0, 0);
+                this.bottomPanel.setPosition(0, 0, 0);
                 topTarget = new Vec3(0, this.openDistance, 0);
                 bottomTarget = new Vec3(0, -this.openDistance, 0);
                 break;
+
+            case SplashMode.CenterClose:
+                this.topPanel.setPosition(0, this.openDistance, 0);
+                this.bottomPanel.setPosition(0, -this.openDistance, 0);
+                topTarget = new Vec3(0, 0, 0);
+                bottomTarget = new Vec3(0, 0, 0);
+                break;
+
             case SplashMode.SlideDown:
                 this.topPanel.setPosition(0, this.openDistance, 0);
                 this.bottomPanel.setPosition(0, this.openDistance + 100, 0);
                 topTarget = new Vec3(0, 0, 0);
                 bottomTarget = new Vec3(0, 0, 0);
                 break;
+
             case SplashMode.SlideRight:
                 this.topPanel.setPosition(-this.openDistance, 0, 0);
                 this.bottomPanel.setPosition(-this.openDistance - 100, 0, 0);
+                topTarget = new Vec3(0, 0, 0);
+                bottomTarget = new Vec3(0, 0, 0);
+                break;
+
+            case SplashMode.SlideLeft:
+                this.topPanel.setPosition(this.openDistance, 0, 0);
+                this.bottomPanel.setPosition(this.openDistance + 100, 0, 0);
                 topTarget = new Vec3(0, 0, 0);
                 bottomTarget = new Vec3(0, 0, 0);
                 break;

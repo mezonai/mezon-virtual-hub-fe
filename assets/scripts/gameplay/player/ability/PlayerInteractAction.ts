@@ -7,7 +7,7 @@ export enum ActionType {
     Punch = 2,
     SendCoin = 3,
     CatchUser = 4,
-    CombatPet = 5
+    PetCombat = 5
 }
 
 @ccclass('PlayerInteractAction')

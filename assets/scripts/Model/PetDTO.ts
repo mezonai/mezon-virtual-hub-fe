@@ -6,7 +6,21 @@ export class PetDTO{
     public is_brought: boolean;
     public room_code: string;
     public rarity: AnimalRarity;
+    type: AnimalElement;
+    lvl: number;
+    maxHp: number;
+    currentHp: number;
+    maxExp: number;
+    currentExp: number;
+    skills: number[];
 }
+
+export interface CombatStartData {
+    environmentType: AnimalElement;
+    pet1: PetDTO;
+    pet2: PetDTO;
+}
+
 
 export enum AnimalRarity {
   COMMON = 'common',
@@ -25,4 +39,14 @@ export enum Pet {
   POKEMON,
   RABIT,
   SIKA
+}
+
+export enum AnimalElement {
+    Normal,
+    Fire,
+    Water,
+    Grass,
+    Electric,
+    Ice,
+    Dragon,
 }
