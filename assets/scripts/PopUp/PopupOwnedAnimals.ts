@@ -11,14 +11,14 @@ import { WebRequestManager } from '../network/WebRequestManager';
 import { AnimalRarity, PetDTO } from '../Model/PetDTO';
 import { AnimalController, AnimalType } from '../animal/AnimalController';
 import { PopupSelection, SelectionParam } from './PopupSelection';
+import { ItemDisplayPetFighting } from '../animal/ItemDisplayPetFighting';
 const { ccclass, property } = _decorator;
 
 @ccclass('PopupOwnedAnimals')
 export class PopupOwnedAnimals extends BasePopup {
-    @property({ type: Button }) saveButton: Button = null;
     @property({ type: Button }) closeButton: Button = null;
     @property({ type: Prefab }) itemAnimalSlotPrefab: Prefab = null;
-    @property({ type: ScrollView }) scrollView: ScrollView = null;
+    @property({ type: ScrollView }) scrollViewDetailPet: ScrollView = null;
     @property({ type: Node }) noPetPanel: Node = null;
     //Pet Detail
     @property({ type: Node }) parentPet: Node = null;
@@ -33,16 +33,55 @@ export class PopupOwnedAnimals extends BasePopup {
     @property({ type: RichText }) denfenseValue: RichText = null;
     @property({ type: RichText }) speedValue: RichText = null;
     @property({ type: RichText }) typeValue: RichText = null;
+    @property({ type: RichText }) levelValue: RichText = null;
     @property({ type: [Node] }) stars: Node[] = [];
+    @property({ type: [ItemDisplayPetFighting] }) itemDisplayPetFightings: ItemDisplayPetFighting[] = [];
     private animalObject: Node = null;
     private animalController: AnimalController = null;
     private defaultLayer = Layers.Enum.NONE;
     //Bring Pet
     @property({ type: Button }) summonButton: Button = null;
-    private currentAnimalSlot: ItemAnimalSlot = null;
+    private animalSlots: ItemAnimalSlot[] = [];
     private animalBrings: PetDTO[] = [];
     private bringPetIdsInit: string[] = [];
     private maxBringPets = 3;
+    private timeoutLoadSlot: number = 50;
+    //
+    species: string[] = ["Bird", "Cat", "Dog", "Rabit", "Sika", "Pokemon", "Dragon", "PhoenixIce", "DragonIce"]
+    groupPetsBySpecies(pets: PetDTO[]): PetDTO[] {
+        const rarityOrder: Record<AnimalRarity, number> = {
+            [AnimalRarity.COMMON]: 0,
+            [AnimalRarity.RARE]: 1,
+            [AnimalRarity.EPIC]: 2,
+            [AnimalRarity.LEGENDARY]: 3,
+        };
+
+        return pets.slice().sort((a, b) => {
+            // So sánh species trước
+            if (a.species < b.species) return -1;
+            if (a.species > b.species) return 1;
+
+            // Nếu species giống nhau, so sánh rarity
+            return rarityOrder[a.rarity] - rarityOrder[b.rarity];
+        });
+    }
+    getTop3LegendaryPets(pets: PetDTO[]): PetDTO[] {// data test sau nãy sẽ xóa
+        const rarityOrder: Record<AnimalRarity, number> = {
+            [AnimalRarity.COMMON]: 0,
+            [AnimalRarity.RARE]: 1,
+            [AnimalRarity.EPIC]: 2,
+            [AnimalRarity.LEGENDARY]: 3,
+        };
+
+        const sortedPets = pets.slice().sort((a, b) => {
+            if (a.species < b.species) return -1;
+            if (a.species > b.species) return 1;
+            return rarityOrder[a.rarity] - rarityOrder[b.rarity];
+        });
+
+        // Lọc ra 3 pet LEGENDARY đầu tiên trong danh sách đã sort
+        return sortedPets.filter(pet => pet.rarity === AnimalRarity.LEGENDARY).slice(0, 3);
+    }
     showPopup() {
         let animals = UserMeManager.Get.animals;
         if (animals == null || animals.length <= 0) {
@@ -56,44 +95,56 @@ export class PopupOwnedAnimals extends BasePopup {
             [AnimalRarity.EPIC]: 2,
             [AnimalRarity.LEGENDARY]: 3,
         };
-        const sortedPets = UserMeManager.Get.animals.sort((a, b) => {
-            return rarityOrder[a.rarity] - rarityOrder[b.rarity];
-        });
-        let totalPet = 0;
-        for (let i = 0; i < sortedPets.length; i++) {
-            if (sortedPets[i] == null) continue;
-            totalPet++;
-            let pet = sortedPets[i];
+        this.setSlotPetFighting(animals);
+        this.showDetailPet(this.groupPetsBySpecies(animals));
+    }
+
+    setSlotPetFighting(pets: PetDTO[]) {
+        let pets3 = this.getTop3LegendaryPets(pets);
+        for (let i = 0; i < this.itemDisplayPetFightings.length; i++) {
+            this.itemDisplayPetFightings[i].setData(pets3[i], i, this.showPetDetail.bind(this));
+        }
+    }
+
+    setDefaultDetailPet() {
+        setTimeout(() => {
+            this.animalSlots[0].toggle.isChecked = true;
+            this.animalSlots[0].onToggleChanged(this.animalSlots[0].toggle);
+        }, this.timeoutLoadSlot);
+
+    }
+
+    async refreshSlot() {
+        const tasks = this.animalSlots.map(slot => slot.resetSlot());
+        const tasksAndReset = [
+            Promise.all(tasks),
+            this.resePet()
+        ];
+        await Promise.all(tasksAndReset);
+        this.animalSlots = [];
+    }
+
+    async showDetailPet(pets: PetDTO[]) {
+        await this.refreshSlot();
+        for (let i = 0; i < pets.length; i++) {
+            if (pets[i] == null) continue;
+            let pet = pets[i];
             let newitemAnimalSlot = ObjectPoolManager.instance.spawnFromPool(this.itemAnimalSlotPrefab.name);
-            newitemAnimalSlot.setParent(this.scrollView.content);
+            newitemAnimalSlot.setParent(this.scrollViewDetailPet.content);
             let itemPetSlot = newitemAnimalSlot.getComponent(ItemAnimalSlot);
             if (itemPetSlot == null) continue;
             itemPetSlot.setDataSlot(pet, this.showPetDetail.bind(this));
-            if (this.currentAnimalSlot == null) this.currentAnimalSlot = itemPetSlot;
+            this.animalSlots.push(itemPetSlot);
             if (pet.is_brought) {
                 this.animalBrings.push(pet);
                 this.bringPetIdsInit.push(pet.id);
             }
         }
-        setTimeout(() => {
-            if (this.scrollView.content.children.length === totalPet) {
-                this.currentAnimalSlot?.onSelectedCallback();
-            }
-        }, 200);
+        this.setDefaultDetailPet();
     }
 
-    async setDefaultSlot() {
-        await new Promise(resolve => setTimeout(resolve, 5));
-        this.currentAnimalSlot.onSelectedCallback();
-    }
-
-    async showPetDetail(itemAnimalSlot: ItemAnimalSlot) {
-        if (itemAnimalSlot == null) return;
-        if (this.currentAnimalSlot.node.uuid != itemAnimalSlot.node.uuid) {
-            this.currentAnimalSlot.setSelectedSlot(false);
-            this.currentAnimalSlot = itemAnimalSlot;
-        }
-        let pet = itemAnimalSlot.currentPet;
+    async showPetDetail(pet: PetDTO) {
+        if (pet == null) return;
         if (this.animalObject != null) {
             if (pet?.id === this.animalController?.Pet?.id) return;
             if (pet?.species == this.animalController?.Pet?.species) {
@@ -110,7 +161,7 @@ export class PopupOwnedAnimals extends BasePopup {
         this.setDataDetail(pet);
         this.animalController = this.animalObject.getComponent(AnimalController);
         if (this.animalController == null) return;
-        this.animalObject.setScale(pet?.name == "DragonIce" || pet?.name == "PhoenixIce" ? new Vec3(0.3, 0.3, 0.3) : new Vec3(0.5, 0.5, 0.5));
+        this.animalObject.setScale(pet?.name == "DragonIce" || pet?.name == "PhoenixIce" ? new Vec3(0.2, 0.2, 0.2) : new Vec3(0.27, 0.27, 0.27));
         this.animalController.setDataPet(pet, AnimalType.NoMove);
         this.defaultLayer = this.animalController.spriteNode.layer;
         this.setLayerAnimal(false);
@@ -127,12 +178,14 @@ export class PopupOwnedAnimals extends BasePopup {
         this.attackValue.string = `<outline color=#222222 width=1> ? </outline>`;
         this.denfenseValue.string = `<outline color=#222222 width=1> ? </outline>`;
         this.speedValue.string = `<outline color=#222222 width=1> ? </outline>`;
+        this.levelValue.string = `<outline color=#222222 width=1> ? </outline>`;
         this.typeValue.string = `<outline color=#222222 width=1> Normal </outline>`;
         this.setStar(pet.rarity == AnimalRarity.COMMON ? 0 : pet.rarity == AnimalRarity.RARE ? 1 : pet.rarity == AnimalRarity.EPIC ? 2 : 3)
         this.setActiveButton(pet.is_brought);
     }
 
     resePet(): Promise<void> {
+        if (this.animalObject == null) return;
         return new Promise((resolve) => {
             this.setLayerAnimal(true);
             this.animalObject.setScale(Vec3.ONE);
@@ -264,8 +317,9 @@ export class PopupOwnedAnimals extends BasePopup {
             }
         }
 
-        if (this.currentAnimalSlot) {
-            this.currentAnimalSlot.setBringPet(isBring);
+        const currentAnimalSlot = this.animalSlots.find(slot => slot.currentPet.id === pet?.id);
+        if (currentAnimalSlot) {
+            currentAnimalSlot.setBringPet(isBring);
         }
     }
 }

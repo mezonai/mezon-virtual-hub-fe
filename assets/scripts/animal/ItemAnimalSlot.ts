@@ -1,12 +1,14 @@
-import { _decorator, Component, Node, Animation, Color, Sprite, Button, Vec3 } from 'cc';
+import { _decorator, Component, Node, Animation, Color, Sprite, Button, Vec3, Toggle } from 'cc';
 import { AnimalController } from './AnimalController';
 import { AnimalRarity, PetDTO } from '../Model/PetDTO';
+import { ObjectPoolManager } from '../pooling/ObjectPoolManager';
+import { PetsDesignIcon } from './PetsDesignIcon';
 const { ccclass, property } = _decorator;
 
 @ccclass('ItemAnimalSlot')
 export class ItemAnimalSlot extends Component {
-    @property({ type: [Node] }) petImage: Node[] = [];
-    @property({ type: Button }) buttonClick: Button = null;
+    @property({ type: PetsDesignIcon }) petImage: PetsDesignIcon = null;
+    @property({ type: Toggle }) toggle: Toggle = null;
     @property({ type: Animation }) animator: Animation = null;
     @property({ type: Node }) bringNode: Node = null;
     @property({ type: Node }) fightingNode: Node = null;
@@ -15,17 +17,17 @@ export class ItemAnimalSlot extends Component {
     @property(Sprite) borderSprite: Sprite;
     currentPet: PetDTO = null;
     selectedCallback: () => void;
-    setDataSlot(pet: PetDTO, onClikcPet: (slot: ItemAnimalSlot) => void) {
+    setDataSlot(pet: PetDTO, onClikcPet: (pet: PetDTO) => void) {
         this.fightingNode.active = false;
+        this.node.setScale(Vec3.ONE);
         this.setBringPet(pet.is_brought);
         this.currentPet = pet;
         this.selectedCallback = async () => {
             if (onClikcPet) {
-                await onClikcPet(this);
-                this.setSelectedSlot(true);
+                await onClikcPet(this.currentPet);
             }
         };
-        this.buttonClick.node.on(Button.EventType.CLICK, this.onSelectedCallback, this);
+        this.toggle.node.on('toggle', this.onToggleChanged, this);
         if (pet.rarity == AnimalRarity.LEGENDARY) {
             this.animator.node.active = true;
             this.borderSprite.color = this.colorBorder[0];
@@ -36,7 +38,7 @@ export class ItemAnimalSlot extends Component {
             const indexColor = pet.rarity == AnimalRarity.COMMON ? 0 : pet.rarity == AnimalRarity.RARE ? 1 : 2;
             this.borderSprite.color = this.colorBorder[indexColor];
         }
-        this.setActivePetByName(pet.name);
+        this.petImage.setActivePetByName(pet.name);
     }
 
     onSelectedCallback() {
@@ -44,15 +46,21 @@ export class ItemAnimalSlot extends Component {
         this.selectedCallback();
     }
 
-    setActivePetByName(name: string) {
-        for (let node of this.petImage) {
-            node.active = node.name === name;
-        }
-    }
 
-    resetAnimal() {
-        this.buttonClick.node.off(Button.EventType.CLICK, this.onSelectedCallback, this);
+    resetSlot(): Promise<void> {
+        this.toggle.node.off('toggle', this.onToggleChanged, this);
         this.selectedCallback = null;
+        ObjectPoolManager.instance.returnToPool(this.node);
+        return new Promise(resolve => {
+            const check = () => {
+                if (!this.node.active) {
+                    resolve();
+                } else {
+                    setTimeout(check, 0);
+                }
+            };
+            check();
+        });
     }
 
     public playAnimBorder(animationName: string) {
@@ -65,13 +73,14 @@ export class ItemAnimalSlot extends Component {
         this.bringNode.active = isBrought;
     }
 
-    setSelectedSlot(isSelected: boolean) {
-        console.log("isSelected", this.currentPet.name, isSelected);
-        if (isSelected) {
-            this.slotNode.setScale(new Vec3(1.2, 1.2, 1.2))
+    onToggleChanged(toggle: Toggle) {
+
+        if (!toggle.isChecked) {
+            this.node.setScale(Vec3.ONE);
             return;
         }
-        this.slotNode.setScale(Vec3.ONE);
+        this.node.setScale(new Vec3(1.25, 1.25, 1.25))
+        this.onSelectedCallback();
     }
 }
 
