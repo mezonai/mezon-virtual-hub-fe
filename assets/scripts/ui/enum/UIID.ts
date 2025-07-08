@@ -15,4 +15,5 @@ export enum UIID {
     GlobalChat= 13,
     NoticeBig = 14,
     ShopPet = 15,
+    CombatPet = 16
 }

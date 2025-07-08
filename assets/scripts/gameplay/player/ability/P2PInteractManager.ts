@@ -3,6 +3,7 @@ import { Ability } from './Ability';
 import { ActionType, PlayerInteractAction } from './PlayerInteractAction';
 import { UIManager } from '../../../core/UIManager';
 import { RPSGame } from './RPSGame';
+import { PetCombat } from './PetCombat';
 const { ccclass, property } = _decorator;
 
 @ccclass('P2PInteractManager')
@@ -29,7 +30,6 @@ export class P2PInteractManager extends Ability {
         }
         this.toggleShowUI(false);
         this.actionButtons.forEach(action => {
-            console.log("action.node.name",action.actionType);
             action.init(sessionId, playerController, room);
             action.controller = this;
         });
@@ -117,6 +117,26 @@ export class P2PInteractManager extends Ability {
             }
         }
     }
+
+    public showCombat(data) {
+        for (const action of this.actionButtons) {
+            console.log("action.actionType.toString(): "+action.actionType.toString());
+            if (action.actionType.toString() == ActionType.PetCombat.toString()) {
+                (action as PetCombat).ShowCombat(data)
+                break;
+            }
+        }
+    }
+
+    public showCombatResult(result) {
+        for (const action of this.actionButtons) {
+            if (action.actionType.toString() == ActionType.PetCombat.toString()) {
+                action.actionResult(result)
+                break;
+            }
+        }
+    }
+
     
     public showSpinResultRPS(result) {
         for (const action of this.actionButtons) {

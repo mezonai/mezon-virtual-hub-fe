@@ -307,6 +307,15 @@ export class ServerManager extends Component {
             if (OfficeSceneController.instance.currentMap == null) return;
             OfficeSceneController.instance.currentMap.setDoor(door);
         });
+
+        this.room.onMessage("onp2pCombatActionAccept", (data) => {
+            UserManager.instance.handleCombat(data);
+        });
+
+        this.room.onMessage("onp2pCombatActionEscape", (data) => {
+            UserManager.instance.handleCombat(data);
+        });
+
     }
 
     private decodeMoveData(uint8Array: ArrayBuffer) {
@@ -413,5 +422,9 @@ export class ServerManager extends Component {
 
     public sendInteracDoor(data, isOpen: boolean) {
         this.room.send(isOpen ? MessageTypes.OPEN_DOOR : MessageTypes.CLOSE_DOOR, data);
+    }
+
+    public sendP2pCombatActionEscape(data){
+        this.room.send("p2pCombatActionEscape", data);
     }
 }

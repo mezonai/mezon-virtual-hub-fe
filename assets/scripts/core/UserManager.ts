@@ -248,6 +248,51 @@ export class UserManager extends Component {
         });
     }
 
+    public handleCombat(data) {
+        console.log("Data: " + JSON.stringify(data));
+        let p1 = this.players.get(data.from);
+        let p2 = this.players.get(data.to);
+        let action = data.action;
+        let result1 = data.result1;
+        let result2 = data.result2;
+        let fee = data.fee;
+        let winner = data.winner;
+        let p1Diamond = data.fromDiamond;
+        let p2Diamond = data.toDiamond;
+        let message = data.message;
+        if (action == ActionType.PetCombat.toString()) {
+            if (p1.myID != this.GetMyClientPlayer.myID) {
+                p1.p2PInteractManager.showCombat(data);
+            }
+            if (p2.myID != this.GetMyClientPlayer.myID) {
+                p2.p2PInteractManager.showCombat(data);
+            }
+            if (p1.myID == this.GetMyClientPlayer.myID) {
+                this.GetMyClientPlayer.p2PInteractManager.onAcceptedActionFromOther(data);
+            }
+        }
+        else if (action == ActionType.PetCombat.toString() + "Done") {
+            p1.p2PInteractManager.showCombatResult(message);
+            p2.p2PInteractManager.showCombatResult(message);
+
+            if (winner == this.GetMyClientPlayer.myID) {
+                this.GetMyClientPlayer.happyAction();
+            }
+            else if (p1.myID == this.GetMyClientPlayer.myID || p2.myID == this.GetMyClientPlayer.myID) {
+                this.GetMyClientPlayer.sadAction();
+            }
+
+            // if (UserMeManager.Get?.user) {
+            //     if (p1.myID == this.GetMyClientPlayer.myID && p1Diamond != null) {
+            //         UserMeManager.playerDiamond = p1Diamond;
+            //     }
+            //     else if (p2.myID == this.GetMyClientPlayer.myID && p2Diamond != null) {
+            //         UserMeManager.playerDiamond = p2Diamond;
+            //     }
+            // }
+        }
+    }
+
     public onPlayerRemoteUpdateGold(data) {
         const { sessionId, amountChange } = data;
         let player = this.players.get(sessionId);
