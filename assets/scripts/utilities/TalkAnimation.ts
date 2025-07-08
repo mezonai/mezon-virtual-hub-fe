@@ -23,6 +23,35 @@ export class TalkAnimation extends Component {
         this.zoomBubbleChat(content, duration, onComplete);
     }
 
+    showBubbleChatCombat(content: string, duration: number, onComplete?: () => void) {
+        this.zoomBubbleChatCombat(content, duration, onComplete);
+    }
+
+    zoomBubbleChatCombat(textShow: string, timeShow: number, onComplete?: () => void) {
+        let text = '';
+        let index = 0;
+        const totalLength = textShow.length;
+        const interval = timeShow / totalLength;
+
+        const callback = () => {
+            if (index < totalLength) {
+                text += textShow[index];
+                this.contentBubbleChat.string = text;
+                index++;
+            } else {
+                this.unschedule(callback);
+                setTimeout(() => {
+                    this.contentBubbleChat.string = "";
+                    if (onComplete) {
+                        onComplete();
+                    }
+                }, 500);
+            }
+        };
+
+        this.schedule(callback, interval);
+    }
+
     public zoomBubbleChat(contentChat: string, duration: number, onComplete?: () => void) {
         this.contentBubbleChat.string = ''
         if (this.tweenAction) {
