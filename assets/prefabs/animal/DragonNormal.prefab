@@ -31,13 +31,13 @@
     "_active": true,
     "_components": [
       {
-        "__id__": 166
+        "__id__": 170
       },
       {
         "__id__": 158
       },
       {
-        "__id__": 168
+        "__id__": 172
       },
       {
         "__id__": 28
@@ -50,7 +50,7 @@
       }
     ],
     "_prefab": {
-      "__id__": 170
+      "__id__": 174
     },
     "_lpos": {
       "__type__": "cc.Vec3",
@@ -313,7 +313,7 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 17.748558542724965,
+      "width": 17.74891460372741,
       "height": 12.6
     },
     "_anchorPoint": {
@@ -439,6 +439,12 @@
       },
       {
         "__id__": 164
+      },
+      {
+        "__id__": 166
+      },
+      {
+        "__id__": 168
       }
     ],
     "removedComponents": []
@@ -683,7 +689,7 @@
     "_lpos": {
       "__type__": "cc.Vec3",
       "x": 0,
-      "y": 105,
+      "y": 136.775,
       "z": 0
     },
     "_lrot": {
@@ -3083,7 +3089,7 @@
     "_string": "",
     "_horizontalAlign": 1,
     "_verticalAlign": 1,
-    "_actualFontSize": 38.27777777777778,
+    "_actualFontSize": 41.5,
     "_fontSize": 8,
     "_fontFamily": "Arial",
     "_lineHeight": 15,
@@ -3621,6 +3627,48 @@
     ]
   },
   {
+    "__type__": "CCPropertyOverrideInfo",
+    "targetInfo": {
+      "__id__": 167
+    },
+    "propertyPath": [
+      "_lscale"
+    ],
+    "value": {
+      "__type__": "cc.Vec3",
+      "x": 0,
+      "y": 1,
+      "z": 1
+    }
+  },
+  {
+    "__type__": "cc.TargetInfo",
+    "localID": [
+      "cbrnGbbj1LxJ3PqPuHcJOb"
+    ]
+  },
+  {
+    "__type__": "CCPropertyOverrideInfo",
+    "targetInfo": {
+      "__id__": 169
+    },
+    "propertyPath": [
+      "_lpos"
+    ],
+    "value": {
+      "__type__": "cc.Vec3",
+      "x": 0,
+      "y": 136.775,
+      "z": 0
+    }
+  },
+  {
+    "__type__": "cc.TargetInfo",
+    "localID": [
+      "bbOHdnszZA2L5PQX3glQD2"
+    ]
+  },
+  {
     "__type__": "cc.UITransform",
     "_name": "",
     "_objFlags": 0,
@@ -3630,7 +3678,7 @@
     },
     "_enabled": true,
     "__prefab": {
-      "__id__": 167
+      "__id__": 171
     },
     "_contentSize": {
       "__type__": "cc.Size",
@@ -3658,7 +3706,7 @@
     },
     "_enabled": true,
     "__prefab": {
-      "__id__": 169
+      "__id__": 173
     },
     "enabledContactListener": false,
     "bullet": true,
@@ -3694,12 +3742,6 @@
     "instance": null,
     "targetOverrides": [
       {
-        "__id__": 171
-      },
-      {
-        "__id__": 173
-      },
-      {
         "__id__": 175
       },
       {
@@ -3709,13 +3751,19 @@
         "__id__": 179
       },
       {
-        "__id__": 182
+        "__id__": 181
       },
       {
-        "__id__": 185
+        "__id__": 183
       },
       {
-        "__id__": 188
+        "__id__": 186
+      },
+      {
+        "__id__": 189
+      },
+      {
+        "__id__": 192
       }
     ],
     "nestedPrefabInstanceRoots": [
@@ -3733,7 +3781,7 @@
     ],
     "target": null,
     "targetInfo": {
-      "__id__": 172
+      "__id__": 176
     }
   },
   {
@@ -3751,7 +3799,7 @@
     ],
     "target": null,
     "targetInfo": {
-      "__id__": 174
+      "__id__": 178
     }
   },
   {
@@ -3773,7 +3821,7 @@
       "__id__": 16
     },
     "targetInfo": {
-      "__id__": 176
+      "__id__": 180
     }
   },
   {
@@ -3795,7 +3843,7 @@
       "__id__": 16
     },
     "targetInfo": {
-      "__id__": 178
+      "__id__": 182
     }
   },
   {
@@ -3810,7 +3858,7 @@
       "__id__": 16
     },
     "sourceInfo": {
-      "__id__": 180
+      "__id__": 184
     },
     "propertyPath": [
       "normalFood"
@@ -3819,7 +3867,7 @@
       "__id__": 16
     },
     "targetInfo": {
-      "__id__": 181
+      "__id__": 185
     }
   },
   {
@@ -3840,7 +3888,7 @@
       "__id__": 16
     },
     "sourceInfo": {
-      "__id__": 183
+      "__id__": 187
     },
     "propertyPath": [
       "superFood"
@@ -3849,7 +3897,7 @@
       "__id__": 16
     },
     "targetInfo": {
-      "__id__": 184
+      "__id__": 188
     }
   },
   {
@@ -3870,7 +3918,7 @@
       "__id__": 16
     },
     "sourceInfo": {
-      "__id__": 186
+      "__id__": 190
     },
     "propertyPath": [
       "rareFood"
@@ -3879,7 +3927,7 @@
       "__id__": 16
     },
     "targetInfo": {
-      "__id__": 187
+      "__id__": 191
     }
   },
   {
@@ -3900,7 +3948,7 @@
       "__id__": 16
     },
     "sourceInfo": {
-      "__id__": 189
+      "__id__": 193
     },
     "propertyPath": [
       "actionButtonParent"
@@ -3909,7 +3957,7 @@
       "__id__": 16
     },
     "targetInfo": {
-      "__id__": 190
+      "__id__": 194
     }
   },
   {
