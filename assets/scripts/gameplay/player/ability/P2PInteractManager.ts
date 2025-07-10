@@ -120,7 +120,6 @@ export class P2PInteractManager extends Ability {
 
     public showCombat(data) {
         for (const action of this.actionButtons) {
-            console.log("action.actionType.toString(): "+action.actionType.toString());
             if (action.actionType.toString() == ActionType.PetCombat.toString()) {
                 (action as PetCombat).ShowCombat(data)
                 break;

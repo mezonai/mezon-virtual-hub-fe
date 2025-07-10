@@ -63,8 +63,6 @@ export class PetCombat extends PlayerInteractAction {
     public onStartAction(data) {
         super.onStartAction(data);
         this.gameData = data;
-
-        console.log("Data: "+JSON.stringify(data));
     }
 
     public ShowCombat(data) {
