@@ -161,7 +161,8 @@ export class PopupOwnedAnimals extends BasePopup {
         this.setDataDetail(pet);
         this.animalController = this.animalObject.getComponent(AnimalController);
         if (this.animalController == null) return;
-        this.animalObject.setScale(pet?.name == "DragonIce" || pet?.name == "PhoenixIce" ? new Vec3(0.2, 0.2, 0.2) : new Vec3(0.27, 0.27, 0.27));
+        var isScale = pet?.name == "DragonIce" || pet?.name == "DragonFire" || pet?.name == "DragonNormal" || pet?.name == "PhoenixIce";
+        this.animalObject.setScale(isScale ? new Vec3(0.2, 0.2, 0.2) : new Vec3(0.27, 0.27, 0.27));
         this.animalController.setDataPet(pet, AnimalType.NoMove);
         this.defaultLayer = this.animalController.spriteNode.layer;
         this.setLayerAnimal(false);
