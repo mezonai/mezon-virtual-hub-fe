@@ -8,7 +8,7 @@ import { UserManager } from '../core/UserManager';
 import { ServerManager } from '../core/ServerManager';
 import { ExchangeCoinController } from '../core/ExchangeCoinController';
 import { RewardType } from '../Model/Item';
-import { MoneyTooltip } from '../ui/MoneyTooltip';
+import { MoneyTooltip } from '../Tooltip/MoneyTooltip';
 
 const { ccclass, property } = _decorator;
 
