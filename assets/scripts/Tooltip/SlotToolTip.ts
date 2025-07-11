@@ -1,8 +1,8 @@
 import { _decorator, Node, Vec3, UITransform, Prefab } from 'cc';
-import { TooltipManager } from './TooltipManager';
 import { RewardDisplayData } from '../Model/Item';
 import { ObjectPoolManager } from '../pooling/ObjectPoolManager';
-import { TooltipView } from './TooltipView';
+import { TooltipManager } from '../ui/TooltipManager';
+import { TooltipView } from '../ui/TooltipView';
 const { ccclass, property } = _decorator;
 
 @ccclass('SlotTooltip')

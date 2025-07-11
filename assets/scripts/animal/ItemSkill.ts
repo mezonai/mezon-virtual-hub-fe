@@ -3,6 +3,8 @@ import { AnimalElement } from '../Model/PetDTO';
 import { UIGradientColor } from '../core/UIGradient';
 import { SkillDragItem } from './SkillDragItem';
 import { ItemSlotSkill, InteractSlot } from './ItemSlotSkill';
+import { SkillData } from './Skills';
+import { SkillTooltip } from '../Tooltip/SkillTooltip';
 const { ccclass, property } = _decorator;
 
 @ccclass('CornerColors')
@@ -28,19 +30,21 @@ export class ItemSkill extends Component {
     colorBackgroundIcon: CornerColors[] = [];
     @property({ type: [Color] }) colorBoder: Color[] = [];
     @property({ type: [Color] }) colorBoder2: Color[] = [];
-    idSkill: string = "";
-    element: AnimalElement = AnimalElement.Normal;
-    setData(idSkill: string, element: AnimalElement, interactSlot: InteractSlot, slotSkillFighting: ItemSlotSkill[] = []) {
+    @property({ type: SkillTooltip }) skillTooltip: SkillTooltip = null;
+    currentSkill: SkillData = null;
+    setData(skillData: SkillData, interactSlot: InteractSlot, slotSkillFighting: ItemSlotSkill[] = []) {
         this.iconSkills.forEach(node => {
-            node.active = (node.name === idSkill);
+            node.active = (node.name === skillData.idSkill);
         });
-        this.idSkill = idSkill;
-        this.element = element;
-        this.border1.color = this.getColorBorder1(element);
-        this.border2.color = this.getColorBorder2(element);
-        let colorGradient = this.getColorBackgroundIcon(element);
+        this.currentSkill = skillData;
+        this.border1.color = this.getColorBorder1(skillData.type);
+        this.border2.color = this.getColorBorder2(skillData.type);
+        let colorGradient = this.getColorBackgroundIcon(skillData.type);
         this.backgroundIcon.setGradientColors(colorGradient.bl, colorGradient.br, colorGradient.tl, colorGradient.tr);
-        this.skillDragItem.intiData(slotSkillFighting, interactSlot)
+        this.skillDragItem.intiData(slotSkillFighting, interactSlot, this.skillTooltip)
+        if (this.skillTooltip != null && interactSlot != InteractSlot.DOUBLE_CLICK) {
+            this.skillTooltip.setData(skillData);
+        }
     }
 
     getColorBackgroundIcon(element: AnimalElement): CornerColors {

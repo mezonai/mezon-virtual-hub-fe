@@ -1,9 +1,9 @@
 import { _decorator, Component, Node, EventTouch, EventMouse, Label, input, Input, Vec3 } from 'cc';
-import { TooltipManager } from './TooltipManager';
+import { TooltipManager } from '../ui/TooltipManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('MoneyTooltip')
-export class MoneyTooltip extends TooltipManager  {
+export class MoneyTooltip extends TooltipManager {
     @property(Label)
     public tooltipLabel: Label = null;
 

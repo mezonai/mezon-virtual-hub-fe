@@ -13,6 +13,7 @@ import { AnimalController, AnimalType } from '../animal/AnimalController';
 import { PopupSelection, SelectionParam } from './PopupSelection';
 import { ItemDisplayPetFighting } from '../animal/ItemDisplayPetFighting';
 import { InteractSlot, ItemSlotSkill } from '../animal/ItemSlotSkill';
+import { SkillData, SkillList } from '../animal/Skills';
 const { ccclass, property } = _decorator;
 
 @ccclass('PopupOwnedAnimals')
@@ -51,11 +52,11 @@ export class PopupOwnedAnimals extends BasePopup {
     private timeoutLoadSlot: number = 50;
     //
     species: string[] = ["Bird", "Cat", "Dog", "Rabit", "Sika", "Pokemon", "Dragon", "PhoenixIce", "DragonIce"]
-    skillTest: [string, AnimalElement][] = [
-        ["NOR01", AnimalElement.Normal],
-        ["GRASS01", AnimalElement.Grass],
-        ["ICE01", AnimalElement.Ice],
-        ["FIRE01", AnimalElement.Fire]
+    skillTest: SkillData[] = [
+        SkillList[0],
+        SkillList[14],
+        SkillList[16],
+        SkillList[19]
     ];
     groupPetsBySpecies(pets: PetDTO[]): PetDTO[] {
         const rarityOrder: Record<AnimalRarity, number> = {
@@ -170,23 +171,23 @@ export class PopupOwnedAnimals extends BasePopup {
         this.setDataDetail(pet);
         this.animalController = this.animalObject.getComponent(AnimalController);
         if (this.animalController != null) {
-            this.animalObject.setScale(pet?.name == "DragonIce" || pet?.name == "PhoenixIce" ? new Vec3(0.2, 0.2, 0.2) : new Vec3(0.27, 0.27, 0.27));
+            var isScale = pet?.name == "DragonIce" || pet?.name == "DragonFire" || pet?.name == "DragonNormal" || pet?.name == "PhoenixIce";
+            this.animalObject.setScale(isScale ? new Vec3(0.2, 0.2, 0.2) : new Vec3(0.27, 0.27, 0.27));
             this.animalController.setDataPet(pet, AnimalType.NoMove);
             this.defaultLayer = this.animalController.spriteNode.layer;
             this.setLayerAnimal(false);
         }
         // Gán dữ liệu cho itemSlotSkills
-        this.skillTest.forEach(([id, name], index) => {
+        this.skillTest.forEach((skill, index) => {
             if (this.itemSlotSkills[index]) {
-                this.itemSlotSkills[index].initData(id, name, InteractSlot.DRAG, this.slotSkillFighting);
+                this.itemSlotSkills[index].initData(skill, InteractSlot.DRAG, this.slotSkillFighting);
             }
         });
 
         // Gán dữ liệu cho tất cả slotSkillFighting dùng skill đầu tiên
-        const [defaultId, defaultName] = this.skillTest[0];
         this.slotSkillFighting.forEach((slot, index) => {
-            if (index == 0) slot.initData(defaultId, defaultName, InteractSlot.DOUBLE_CLICK, this.slotSkillFighting);
-            else slot.initData("", defaultName, InteractSlot.DOUBLE_CLICK, this.slotSkillFighting);
+            if (index == 0) slot.initData(null, InteractSlot.DOUBLE_CLICK, this.slotSkillFighting);
+            else slot.initData(null, InteractSlot.DOUBLE_CLICK, this.slotSkillFighting);
 
         });
     }

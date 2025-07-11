@@ -1,6 +1,6 @@
 import { _decorator, Component, Node, Sprite, SpriteFrame } from 'cc';
-import { SlotTooltip } from '../ui/SlotToolTip';
 import { RewardDisplayData } from '../Model/Item';
+import { SlotTooltip } from '../Tooltip/SlotToolTip';
 const { ccclass, property } = _decorator;
 
 @ccclass('SlotItem')

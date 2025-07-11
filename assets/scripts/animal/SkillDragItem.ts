@@ -2,6 +2,7 @@ import { _decorator, Component, EventTouch, instantiate, Node, Prefab } from 'cc
 import { DraggableBase } from '../utilities/DraggableBase';
 import { ItemSkill } from './ItemSkill';
 import { InteractSlot, ItemSlotSkill } from './ItemSlotSkill';
+import { SkillTooltip } from '../Tooltip/SkillTooltip';
 
 const { ccclass, property } = _decorator;
 
@@ -10,19 +11,22 @@ export class SkillDragItem extends DraggableBase {
     @property({ type: Prefab }) itemSkillPrefab: Prefab = null;
     slotsSkillFighting: ItemSlotSkill[] = [];
     interactionMode: InteractSlot = InteractSlot.NONE;
+    skillTooltip: SkillTooltip = null;
     private clickCount = 0;
     private clickTimeout: number = 300; // thời gian giữa 2 lần click để nhận là double click (ms)
-    intiData(slotsSkillFighting: ItemSlotSkill[], interactSlot: InteractSlot) {
+    intiData(slotsSkillFighting: ItemSlotSkill[], interactSlot: InteractSlot, skillTooltip: SkillTooltip) {
         if (slotsSkillFighting.length <= 0) {
             this.interactionMode = InteractSlot.NONE
             return;
         }
+        this.skillTooltip = skillTooltip;
         this.slotsSkillFighting = slotsSkillFighting;
         this.interactionMode = interactSlot;
     }
 
     protected onTouchMove(event: EventTouch) {
         if (this.interactionMode != InteractSlot.DRAG) return;
+        this.skillTooltip.closePopup();
         const delta = event.getUIDelta();
         this.node.setPosition(this.node.position.x + delta.x, this.node.position.y + delta.y);
     }
@@ -64,7 +68,7 @@ export class SkillDragItem extends DraggableBase {
             this.clickCount = 0;
             const itemSkill = this.node.getComponent(ItemSkill);
             if (!itemSkill) return;
-            const slot = this.slotsSkillFighting.find(s => s.itemSkill?.idSkill === itemSkill.idSkill);
+            const slot = this.slotsSkillFighting.find(s => s.itemSkill?.currentSkill?.idSkill === itemSkill?.currentSkill.idSkill);
             if (slot) {
                 slot.resetSkill();
             }
@@ -82,32 +86,31 @@ export class SkillDragItem extends DraggableBase {
             const slot = this.slotsSkillFighting[i];
             if (this.isOverlapping(this.node, slot.node)) {
                 const otherSlot = this.slotsSkillFighting[1 - i];
+                const draggedSkill = itemSkill?.currentSkill;
+                if (draggedSkill == null) continue;
 
-                const draggedId = itemSkill.idSkill;
-                const draggedElement = itemSkill.element;
+                const currentSlotId = slot.itemSkill?.currentSkill.idSkill;
+                const otherSlotId = otherSlot.itemSkill?.currentSkill.idSkill;
 
-                const currentSlotId = slot.itemSkill?.idSkill;
-                const otherSlotId = otherSlot.itemSkill?.idSkill;
-
-                if (currentSlotId === draggedId) {
+                if (currentSlotId === draggedSkill.idSkill) {
                     this.resetPosition();
                     return;
                 }
 
-                if (otherSlotId === draggedId && currentSlotId) {
+                if (otherSlotId === draggedSkill.idSkill && currentSlotId) {
                     const currentSkill = slot.itemSkill;
-                    slot.setDataSlotSkill(draggedId, itemSkill.element, this.slotsSkillFighting);
-                    otherSlot.setDataSlotSkill(currentSkill.idSkill, currentSkill.element, this.slotsSkillFighting);
+                    slot.setDataSlotSkill(draggedSkill, this.slotsSkillFighting);
+                    otherSlot.setDataSlotSkill(currentSkill.currentSkill, this.slotsSkillFighting);
                     this.resetPosition();
                     return;
                 }
 
-                if (otherSlotId === draggedId) {
+                if (otherSlotId === draggedSkill.idSkill) {
                     otherSlot.itemSkill.node.destroy();
                     otherSlot.setItemSkill(null);
                 }
 
-                slot.setDataSlotSkill(draggedId, draggedElement, this.slotsSkillFighting);
+                slot.setDataSlotSkill(draggedSkill, this.slotsSkillFighting);
                 this.resetPosition();
                 return;
             }
