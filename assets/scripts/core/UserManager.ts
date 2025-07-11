@@ -249,7 +249,6 @@ export class UserManager extends Component {
     }
 
     public handleCombat(data) {
-        console.log("Data: " + JSON.stringify(data));
         let p1 = this.players.get(data.from);
         let p2 = this.players.get(data.to);
         let action = data.action;
