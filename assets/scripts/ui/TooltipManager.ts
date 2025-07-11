@@ -1,54 +1,26 @@
 import { _decorator, Component, Node, Prefab, instantiate, UITransform, Vec3 } from 'cc';
-import { ObjectPoolManager } from '../pooling/ObjectPoolManager';
-import { TooltipView } from './TooltipView';
-import { RewardDisplayData } from '../Model/Item';
 const { ccclass, property } = _decorator;
 
 @ccclass('TooltipManager')
-export class TooltipManager extends Component {
-    @property({ type: Prefab })
-    tooltipUIPrefab: Prefab = null;
+export abstract class TooltipManager extends Component {
 
-    @property({ type: Node })
-    tooltipParentNode: Node = null;
+    protected currentTooltipInstance: Node = null;
 
-    private currentTooltipInstance: Node = null;
-
-    public showGlobalTooltip(data: RewardDisplayData, sourceNode: Node, ) {
-        this.hideGlobalTooltip();
-
-        if (!this.tooltipUIPrefab || !this.tooltipParentNode) {
-            return;
-        }
-
-        this.currentTooltipInstance = ObjectPoolManager.instance.spawnFromPool(this.tooltipUIPrefab.name);
-        if (!this.currentTooltipInstance) {
-            return;
-        }
-
-        const tooltipView = this.currentTooltipInstance.getComponent(TooltipView);
-        if (tooltipView) {
-            tooltipView.setData(data);
-        } else {
-            ObjectPoolManager.instance.returnToPool(this.currentTooltipInstance);
-            this.currentTooltipInstance = null;
-            return;
-        }
-
-        this.currentTooltipInstance.setParent(this.tooltipParentNode);
-        const sourceUITransform = sourceNode.getComponent(UITransform);
-        const parentUITransform = this.tooltipParentNode.getComponent(UITransform);
-        if (sourceUITransform && parentUITransform) {
-            const worldPos = sourceUITransform.convertToWorldSpaceAR(Vec3.ZERO);
-            const localPos = parentUITransform.convertToNodeSpaceAR(worldPos);
-            this.currentTooltipInstance.setPosition(localPos.x + 42, localPos.y, localPos.z);
-        }
+    protected onLoad() {
+        this.node.on(Node.EventType.MOUSE_ENTER, this.onHoverShow, this);
+        this.node.on(Node.EventType.MOUSE_LEAVE, this.onHoverHide, this);
+        this.node.on(Node.EventType.TOUCH_START, this.onHoverShow, this);
+        this.node.on(Node.EventType.TOUCH_END, this.onHoverHide, this);
     }
 
-    public hideGlobalTooltip() {
-        if (this.currentTooltipInstance) {
-            ObjectPoolManager.instance.returnToPool(this.currentTooltipInstance);
-            this.currentTooltipInstance = null;
-        }
+    protected onDestroy() {
+        this.node.off(Node.EventType.MOUSE_ENTER, this.onHoverShow, this);
+        this.node.off(Node.EventType.MOUSE_LEAVE, this.onHoverHide, this);
+        this.node.off(Node.EventType.TOUCH_START, this.onHoverShow, this);
+        this.node.off(Node.EventType.TOUCH_END, this.onHoverHide, this);
     }
+
+    protected abstract onHoverShow()
+
+    protected abstract onHoverHide()
 }
