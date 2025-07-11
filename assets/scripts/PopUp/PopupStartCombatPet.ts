@@ -55,7 +55,6 @@ export class PopupStartCombatPet extends BasePopup {
     }
 
     private initilize(param?: GameData) {
-        console.log("Data tranfer: "+JSON.stringify(param));
         this.gameData = param;
         this.Init();
     }
