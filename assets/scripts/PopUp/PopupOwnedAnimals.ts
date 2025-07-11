@@ -8,10 +8,11 @@ import { UIManager } from '../core/UIManager';
 import { ConfirmPopup } from './ConfirmPopup';
 import { ServerManager } from '../core/ServerManager';
 import { WebRequestManager } from '../network/WebRequestManager';
-import { AnimalRarity, PetDTO } from '../Model/PetDTO';
+import { AnimalElement, AnimalRarity, PetDTO } from '../Model/PetDTO';
 import { AnimalController, AnimalType } from '../animal/AnimalController';
 import { PopupSelection, SelectionParam } from './PopupSelection';
 import { ItemDisplayPetFighting } from '../animal/ItemDisplayPetFighting';
+import { InteractSlot, ItemSlotSkill } from '../animal/ItemSlotSkill';
 const { ccclass, property } = _decorator;
 
 @ccclass('PopupOwnedAnimals')
@@ -35,6 +36,8 @@ export class PopupOwnedAnimals extends BasePopup {
     @property({ type: RichText }) typeValue: RichText = null;
     @property({ type: RichText }) levelValue: RichText = null;
     @property({ type: [Node] }) stars: Node[] = [];
+    @property({ type: [ItemSlotSkill] }) slotSkillFighting: ItemSlotSkill[] = [];
+    @property({ type: [ItemSlotSkill] }) itemSlotSkills: ItemSlotSkill[] = [];
     @property({ type: [ItemDisplayPetFighting] }) itemDisplayPetFightings: ItemDisplayPetFighting[] = [];
     private animalObject: Node = null;
     private animalController: AnimalController = null;
@@ -48,6 +51,12 @@ export class PopupOwnedAnimals extends BasePopup {
     private timeoutLoadSlot: number = 50;
     //
     species: string[] = ["Bird", "Cat", "Dog", "Rabit", "Sika", "Pokemon", "Dragon", "PhoenixIce", "DragonIce"]
+    skillTest: [string, AnimalElement][] = [
+        ["NOR01", AnimalElement.Normal],
+        ["GRASS01", AnimalElement.Grass],
+        ["ICE01", AnimalElement.Ice],
+        ["FIRE01", AnimalElement.Fire]
+    ];
     groupPetsBySpecies(pets: PetDTO[]): PetDTO[] {
         const rarityOrder: Record<AnimalRarity, number> = {
             [AnimalRarity.COMMON]: 0,
@@ -96,7 +105,7 @@ export class PopupOwnedAnimals extends BasePopup {
             [AnimalRarity.LEGENDARY]: 3,
         };
         this.setSlotPetFighting(animals);
-        this.showDetailPet(this.groupPetsBySpecies(animals));
+        this.InitPet(this.groupPetsBySpecies(animals));
     }
 
     setSlotPetFighting(pets: PetDTO[]) {
@@ -124,7 +133,7 @@ export class PopupOwnedAnimals extends BasePopup {
         this.animalSlots = [];
     }
 
-    async showDetailPet(pets: PetDTO[]) {
+    async InitPet(pets: PetDTO[]) {
         await this.refreshSlot();
         for (let i = 0; i < pets.length; i++) {
             if (pets[i] == null) continue;
@@ -160,12 +169,29 @@ export class PopupOwnedAnimals extends BasePopup {
         this.animalObject.setPosition(new Vec3(0, 0, 0));
         this.setDataDetail(pet);
         this.animalController = this.animalObject.getComponent(AnimalController);
-        if (this.animalController == null) return;
-        this.animalObject.setScale(pet?.name == "DragonIce" || pet?.name == "PhoenixIce" ? new Vec3(0.2, 0.2, 0.2) : new Vec3(0.27, 0.27, 0.27));
-        this.animalController.setDataPet(pet, AnimalType.NoMove);
-        this.defaultLayer = this.animalController.spriteNode.layer;
-        this.setLayerAnimal(false);
+        if (this.animalController != null) {
+            this.animalObject.setScale(pet?.name == "DragonIce" || pet?.name == "PhoenixIce" ? new Vec3(0.2, 0.2, 0.2) : new Vec3(0.27, 0.27, 0.27));
+            this.animalController.setDataPet(pet, AnimalType.NoMove);
+            this.defaultLayer = this.animalController.spriteNode.layer;
+            this.setLayerAnimal(false);
+        }
+        // Gán dữ liệu cho itemSlotSkills
+        this.skillTest.forEach(([id, name], index) => {
+            if (this.itemSlotSkills[index]) {
+                this.itemSlotSkills[index].initData(id, name, InteractSlot.DRAG, this.slotSkillFighting);
+            }
+        });
+
+        // Gán dữ liệu cho tất cả slotSkillFighting dùng skill đầu tiên
+        const [defaultId, defaultName] = this.skillTest[0];
+        this.slotSkillFighting.forEach((slot, index) => {
+            if (index == 0) slot.initData(defaultId, defaultName, InteractSlot.DOUBLE_CLICK, this.slotSkillFighting);
+            else slot.initData("", defaultName, InteractSlot.DOUBLE_CLICK, this.slotSkillFighting);
+
+        });
     }
+
+
 
     setLayerAnimal(isReturnPool: boolean) {
         this.animalController.spriteNode.layer = isReturnPool ? this.defaultLayer : Layers.Enum.UI_2D;
