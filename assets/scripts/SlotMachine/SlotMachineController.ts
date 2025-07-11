@@ -14,7 +14,6 @@ import { LocalItemConfig, LocalItemDataConfig, LocalItemPartDataConfig } from '.
 import { ObjectPoolManager } from '../pooling/ObjectPoolManager';
 import { SlotItem } from './SlotItem'; // Đảm bảo đường dẫn này đúng
 import { LoadBundleController } from '../bundle/LoadBundleController';
-import { TooltipManager } from '../ui/TooltipManager';
 import { UIPanelSliderEffect } from '../utilities/UIPanelSliderEffect';
 
 const { ccclass, property } = _decorator;
@@ -35,8 +34,7 @@ export class SlotMachineController extends Component {
     @property(Node) minusCoinicon: Node = null;
     @property({ type: Node }) itemContainer: Node = null;
     @property({ type: Prefab }) itemPrefab: Prefab = null;
-    @property({ type: TooltipManager }) tooltipManager: TooltipManager = null;
-
+    @property(Node) parentHover: Node = null;
     private minusCoin: number = 10;
     private hasSpin: boolean = false;
     private localSkinConfig: LocalItemConfig;
@@ -155,7 +153,7 @@ export class SlotMachineController extends Component {
         for (const spriteF of this.iconValue) {
             const rate = this.rewardRateMap[spriteF.name] ?? 0;
             const displayName = this.foodNameMap[spriteF.name]
-            if(rate <= 0) continue;
+            if (rate <= 0) continue;
             let itemNode = ObjectPoolManager.instance.spawnFromPool(this.itemPrefab.name);
             itemNode.setParent(this.itemContainer);
             await this.registUIItemData(itemNode, spriteF, displayName, rate);
@@ -167,14 +165,14 @@ export class SlotMachineController extends Component {
     }
 
     protected async registUIItemData(itemNode: Node, spriteFrameToSet: SpriteFrame | null, name: string | null, rate: number | null, isItem: boolean = false) {
-        var slotItem = itemNode.getComponent(SlotItem);
-        var displayData: RewardDisplayData = {
+        let slotItem = itemNode.getComponent(SlotItem);
+        let displayData: RewardDisplayData = {
             spriteFrame: spriteFrameToSet,
             name: name ?? '',
             rate: rate ?? 0,
             isItem
         };
-        slotItem.setupIcon(this.tooltipManager, displayData);
+        slotItem.setupIcon(displayData, this.parentHover);
         slotItem.iconFrame.node.scale = this.SetItemScaleValue(name);
     }
 
