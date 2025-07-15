@@ -1,6 +1,5 @@
 import { _decorator, Button, EditBox, Label, Node, RichText, Sprite } from 'cc';
 import { UserMeManager } from '../../core/UserMeManager';
-import { UIManager } from '../../core/UIManager';
 import { WebRequestManager } from '../../network/WebRequestManager';
 import { Food, InventoryType, Item, PurchaseMethod } from '../../Model/Item';
 import { ResourceManager } from '../../core/ResourceManager';
@@ -10,7 +9,8 @@ import { BaseInventoryManager } from '../player/inventory/BaseInventoryManager';
 import { LocalItemDataConfig } from '../../Model/LocalItemConfig';
 import UIPopup from '../../ui/UI_Popup';
 import Utilities from '../../utilities/Utilities';
-import { GameManager } from '../../core/GameManager';
+import { PopupManager } from '../../PopUp/PopupManager';
+import { ConfirmParam, ConfirmPopup } from '../../PopUp/ConfirmPopup';
 const { ccclass, property } = _decorator;
 
 @ccclass('ShopPetController')
@@ -51,8 +51,16 @@ export class ShopPetController extends BaseInventoryManager {
             }
 
         } catch (error) {
-            UIManager.Instance.showNoticePopup("Chú ý", error.message);
+            const param: ConfirmParam = {
+                message: error.message,
+                title: "Chú ý",
+            };
+            PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
         }
+    }
+
+    protected override closeUIBtnClick() {
+        PopupManager.getInstance().closePopup(this.node.uuid);
     }
 
     private async showPopupAndReset(): Promise<boolean> {
@@ -77,7 +85,11 @@ export class ShopPetController extends BaseInventoryManager {
     private addItemToInventory(response) {
         UserMeManager.playerCoin = response.data.user_balance.gold;
         UserMeManager.playerDiamond = response.data.user_balance.diamond;
-        UIManager.Instance.showNoticePopup("Thông báo", "Mua thành công!");
+        const param: ConfirmParam = {
+            message: "Mua thành công!",
+            title: "Thông báo",
+        };
+        PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
     }
 
     private async buyItem() {
@@ -108,14 +120,17 @@ export class ShopPetController extends BaseInventoryManager {
         WebRequestManager.instance.getUserProfile(
             (response) => {
                 UserMeManager.Set = response.data;
-                GameManager.instance.inventoryController.addFoodToInventory(UserMeManager.GetFoods);
             },
             (error) => this.onApiError(error)
         );
     }
 
     private onApiError(error) {
-        UIManager.Instance.showNoticePopup("Chú ý", error.error_message);
+        const param: ConfirmParam = {
+            message: error.error_message,
+            title: "Chú ý",
+        };
+        PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
     }
 
     private checkGoldUser(price: number) {
@@ -147,7 +162,7 @@ export class ShopPetController extends BaseInventoryManager {
     }
 
     private onQuantityChanged(editbox: EditBox) {
-       const cleanString = editbox.string.replace(/[^0-9]/g, '');
+        const cleanString = editbox.string.replace(/[^0-9]/g, '');
         if (editbox.string !== cleanString) {
             editbox.string = cleanString;
         }
@@ -168,8 +183,10 @@ export class ShopPetController extends BaseInventoryManager {
         this.decreaseQuantityBtn.interactable = this.quantity > this.quantityLimit;
     }
 
-    public override init() {
+    public init() {
+        super.init();
         this.initGroupData();
+        this.onTabChange(this.categories[0]);
         this.setupQuantityHandlers();
     }
 
@@ -207,6 +224,7 @@ export class ShopPetController extends BaseInventoryManager {
         this.setupFoodReward(uiItem, item.type);
         uiItem.initFood(item);
         uiItem.toggleActive(false);
+        uiItem.reset();
     }
 
     public override setupFoodReward(uiItem: any, foodType: string) {
@@ -237,15 +255,7 @@ export class ShopPetController extends BaseInventoryManager {
     }
 
     protected override onUIItemClickFood(uiItem: ShopUIItem, data: Food) {
-        if (this.selectingUIItem) {
-            this.selectingUIItem.toggleActive(false);
-
-            if (this.selectingUIItem == uiItem) {
-                this.reset();
-                return;
-            }
-        }
-
+        this.selectingUIItem = uiItem;
         super.onUIItemClickFood(uiItem, data);
 
         this.descriptionText.string = data.name;
