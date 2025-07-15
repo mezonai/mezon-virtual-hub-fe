@@ -26,19 +26,18 @@ export class InventoryManager extends BaseInventoryManager {
         PopupManager.getInstance().closePopup(this.node.uuid);
     }
 
-    protected onEnable(): void {
-        this.goBg.active = false;
-        this.addLocalData();
-        this.initGroupData();
-        this.onTabChange(this.categories[0]);
-        this.isItemGenerated = false;
-    }
 
     private equipSkin() {
         UserManager.instance.updatePlayerSkin(this.skinData, true);
     }
 
-    public override init() {
+    public init() {
+        super.init();
+        this.goBg.active = false;
+        this.addLocalData();
+        this.initGroupData();
+        this.onTabChange(this.categories[0]);
+        this.isItemGenerated = false;
     }
 
     private addLocalData() {

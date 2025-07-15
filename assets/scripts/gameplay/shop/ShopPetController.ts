@@ -1,6 +1,5 @@
 import { _decorator, Button, EditBox, Label, Node, RichText, Sprite } from 'cc';
 import { UserMeManager } from '../../core/UserMeManager';
-import { UIManager } from '../../core/UIManager';
 import { WebRequestManager } from '../../network/WebRequestManager';
 import { Food, InventoryType, Item, PurchaseMethod } from '../../Model/Item';
 import { ResourceManager } from '../../core/ResourceManager';
@@ -10,9 +9,8 @@ import { BaseInventoryManager } from '../player/inventory/BaseInventoryManager';
 import { LocalItemDataConfig } from '../../Model/LocalItemConfig';
 import UIPopup from '../../ui/UI_Popup';
 import Utilities from '../../utilities/Utilities';
-import { GameManager } from '../../core/GameManager';
 import { PopupManager } from '../../PopUp/PopupManager';
-import { ConfirmPopup } from '../../PopUp/ConfirmPopup';
+import { ConfirmParam, ConfirmPopup } from '../../PopUp/ConfirmPopup';
 const { ccclass, property } = _decorator;
 
 @ccclass('ShopPetController')
@@ -53,7 +51,11 @@ export class ShopPetController extends BaseInventoryManager {
             }
 
         } catch (error) {
-            PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, { message: error.message, title: "Chú ý" });
+            const param: ConfirmParam = {
+                message: error.message,
+                title: "Chú ý",
+            };
+            PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
         }
     }
 
@@ -83,7 +85,11 @@ export class ShopPetController extends BaseInventoryManager {
     private addItemToInventory(response) {
         UserMeManager.playerCoin = response.data.user_balance.gold;
         UserMeManager.playerDiamond = response.data.user_balance.diamond;
-        PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, { message: "Mua thành công!", title: "Thông báo" });
+        const param: ConfirmParam = {
+            message: "Mua thành công!",
+            title: "Thông báo",
+        };
+        PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
     }
 
     private async buyItem() {
@@ -120,7 +126,11 @@ export class ShopPetController extends BaseInventoryManager {
     }
 
     private onApiError(error) {
-        PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, { message: error.error_message, title: "Chú ý" });
+        const param: ConfirmParam = {
+            message: error.error_message,
+            title: "Chú ý",
+        };
+        PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
     }
 
     private checkGoldUser(price: number) {
@@ -173,13 +183,11 @@ export class ShopPetController extends BaseInventoryManager {
         this.decreaseQuantityBtn.interactable = this.quantity > this.quantityLimit;
     }
 
-    protected onEnable(): void {
+    public init() {
+        super.init();
         this.initGroupData();
         this.onTabChange(this.categories[0]);
         this.setupQuantityHandlers();
-    }
-
-    public override init() {
     }
 
     protected override reset() {

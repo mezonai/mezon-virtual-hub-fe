@@ -4,11 +4,9 @@ import { UserMeManager } from '../core/UserMeManager';
 import { AnimalController, AnimalType } from './AnimalController';
 import { UIManager } from '../core/UIManager';
 import { PopupManager } from '../PopUp/PopupManager';
-import { ConfirmPopup } from '../PopUp/ConfirmPopup';
 import { ServerManager } from '../core/ServerManager';
 import { UserManager } from '../core/UserManager';
 import { PopupChooseFoodPet } from '../PopUp/PopupChooseFoodPet';
-import { EVENT_NAME } from '../network/APIConstant';
 import Utilities from '../utilities/Utilities';
 const { ccclass, property } = _decorator;
 

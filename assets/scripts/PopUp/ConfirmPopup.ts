@@ -1,4 +1,4 @@
-import { _decorator, Button, Component, Label, Node, RichText } from 'cc';
+import { _decorator, Button, RichText } from 'cc';
 import { PopupManager } from './PopupManager';
 import { BasePopup } from './BasePopup';
 const { ccclass, property } = _decorator;
@@ -13,11 +13,13 @@ export class ConfirmPopup extends BasePopup {
     @property(Button)
     closeButton: Button = null;
 
-    public init(param?: { message: string, title?: string;}) {
-        if (this.titleLabel && param?.title != null) {
-            this.titleLabel.string = param.title;
+    public init(param?: ConfirmParam) {
+        if(param == null){
+            this.onButtonClick();
+            return;
         }
-        if (this.messageLabel && param?.message) {
+        this.titleLabel.string = param.title == "" ? "Thông Báo" : param.title;
+        if (this.messageLabel && param?.message != "") {
             this.messageLabel.string = param?.message;
         }
         this.closeButton.node.on(Button.EventType.CLICK, this.onButtonClick, this);
@@ -28,4 +30,7 @@ export class ConfirmPopup extends BasePopup {
     }
 }
 
-
+export interface ConfirmParam {
+    message: string;
+    title: string;
+}

@@ -1,6 +1,5 @@
 import { _decorator, Node, RichText } from 'cc';
 import { UserMeManager } from '../../core/UserMeManager';
-import { UIManager } from '../../core/UIManager';
 import { WebRequestManager } from '../../network/WebRequestManager';
 import { InventoryType, Item } from '../../Model/Item';
 import { ResourceManager } from '../../core/ResourceManager';
@@ -10,9 +9,8 @@ import { BaseInventoryManager } from '../player/inventory/BaseInventoryManager';
 import { LocalItemDataConfig } from '../../Model/LocalItemConfig';
 import UIPopup from '../../ui/UI_Popup';
 import Utilities from '../../utilities/Utilities';
-import { GameManager } from '../../core/GameManager';
 import { PopupManager } from '../../PopUp/PopupManager';
-import { ConfirmPopup } from '../../PopUp/ConfirmPopup';
+import { ConfirmParam, ConfirmPopup } from '../../PopUp/ConfirmPopup';
 const { ccclass, property } = _decorator;
 
 @ccclass('ShopController')
@@ -38,7 +36,11 @@ export class ShopController extends BaseInventoryManager {
             }
 
         } catch (error) {
-            PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, { message: error.message, title: "Chú ý" });
+            const param: ConfirmParam = {
+                message: error.message,
+                title: "Chú ý",
+            };
+            PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
         }
     }
 
@@ -67,7 +69,11 @@ export class ShopController extends BaseInventoryManager {
     private addItemToInventory(response) {
         UserMeManager.Get.inventories.push(response.data.inventory_data);
         UserMeManager.playerCoin = response.data.user_gold;
-        PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, { message: "Mua thành công!", title: "Thông báo" });
+        const param: ConfirmParam = {
+            message: "Mua thành công!",
+            title: "Thông báo",
+        };
+        PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
     }
 
     private async buyItem() {
@@ -91,12 +97,10 @@ export class ShopController extends BaseInventoryManager {
         });
     }
 
-    protected onEnable(): void {
+    public init() {
+        super.init();
         this.initGroupData();
         this.onTabChange(this.categories[0]);
-    }
-
-    public override init() {
     }
 
     protected override reset() {
@@ -141,20 +145,6 @@ export class ShopController extends BaseInventoryManager {
         uiItem.init(item);
         uiItem.toggleActive(false);
         uiItem.reset();
-    }
-
-    protected override resetSelectItem() {
-        if (this.selectingUIItem) {
-            this.selectingUIItem.reset();
-            this.selectingUIItem.toggleActive(false);
-            this.selectingUIItem = null;
-        }
-        this.reset();
-        this.actionButton.interactable = false;
-    }
-
-    protected onDisable(): void {
-        this.resetSelectItem();
     }
 
     protected override onUIItemClick(uiItem: ShopUIItem, data: Item) {

@@ -40,7 +40,20 @@ export class BaseInventoryManager extends BasePopup {
 
     @property({ type: Button }) closeUIBtn: Button = null;
 
-    protected onLoad(): void {
+    public init(param?: any): void {
+        this.intiIconMap();
+        if (this.categories.length > 0) {
+            this.reset();
+        }
+        this.actionButton.node.on("click", this.actionButtonClick, this);
+        this.closeUIBtn.node.on("click", this.closeUIBtnClick, this);
+        UserMeManager.PlayerProperty.onChange("gold", (newCoin, oldValue) => {
+            this.onCoinChange(newCoin);
+        });
+        this.onCoinChange(UserMeManager.playerCoin);
+    }
+
+    intiIconMap() {
         this.foodIconMap = {
             normal: this.iconValue[0],
             premium: this.iconValue[1],
@@ -50,25 +63,6 @@ export class BaseInventoryManager extends BasePopup {
             gold: this.iconMoney[0],
             diamond: this.iconMoney[1]
         };
-    }
-
-    protected onEnable(): void {
-        if (this.categories.length > 0) {
-            this.reset();
-        }
-    }
-
-    protected start(): void {
-        this.actionButton.node.on("click", this.actionButtonClick, this);
-        this.closeUIBtn.node.on("click", this.closeUIBtnClick, this);
-        UserMeManager.PlayerProperty.onChange("gold", (newCoin, oldValue) => {
-            this.onCoinChange(newCoin);
-        });
-        this.onCoinChange(UserMeManager.playerCoin);
-    }
-
-    protected onDestroy(): void {
-        
     }
 
     protected onCoinChange(value) {
@@ -93,13 +87,13 @@ export class BaseInventoryManager extends BasePopup {
         this.ResetPositionScrollBar();
     }
 
-    ResetPositionScrollBar(){
-         this.scheduleOnce(() => {
+    ResetPositionScrollBar() {
+        this.scheduleOnce(() => {
             if (this.itemScrollView) {
                 this.itemScrollView.scrollToTop(0)
             }
         }, 0.05);
-         this.scheduleOnce(() => {
+        this.scheduleOnce(() => {
             if (this.foodScrollView) {
                 this.foodScrollView.scrollToTop(0)
             }
@@ -172,10 +166,6 @@ export class BaseInventoryManager extends BasePopup {
         this.equipingUIItem = this.selectingUIItem;
         this.actionButton.interactable = false;
         this.selectingUIItem = null;
-    }
-
-    public init() {
-
     }
 
     protected initGroupData() {
