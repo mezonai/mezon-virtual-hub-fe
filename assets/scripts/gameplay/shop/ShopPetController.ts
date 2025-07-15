@@ -11,6 +11,8 @@ import { LocalItemDataConfig } from '../../Model/LocalItemConfig';
 import UIPopup from '../../ui/UI_Popup';
 import Utilities from '../../utilities/Utilities';
 import { GameManager } from '../../core/GameManager';
+import { PopupManager } from '../../PopUp/PopupManager';
+import { ConfirmPopup } from '../../PopUp/ConfirmPopup';
 const { ccclass, property } = _decorator;
 
 @ccclass('ShopPetController')
@@ -51,8 +53,12 @@ export class ShopPetController extends BaseInventoryManager {
             }
 
         } catch (error) {
-            UIManager.Instance.showNoticePopup("Chú ý", error.message);
+            PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, { message: error.message, title: "Chú ý" });
         }
+    }
+
+    protected override closeUIBtnClick() {
+        PopupManager.getInstance().closePopup(this.node.uuid);
     }
 
     private async showPopupAndReset(): Promise<boolean> {
@@ -77,7 +83,7 @@ export class ShopPetController extends BaseInventoryManager {
     private addItemToInventory(response) {
         UserMeManager.playerCoin = response.data.user_balance.gold;
         UserMeManager.playerDiamond = response.data.user_balance.diamond;
-        UIManager.Instance.showNoticePopup("Thông báo", "Mua thành công!");
+        PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, { message: "Mua thành công!", title: "Thông báo" });
     }
 
     private async buyItem() {
@@ -108,14 +114,13 @@ export class ShopPetController extends BaseInventoryManager {
         WebRequestManager.instance.getUserProfile(
             (response) => {
                 UserMeManager.Set = response.data;
-                GameManager.instance.inventoryController.addFoodToInventory(UserMeManager.GetFoods);
             },
             (error) => this.onApiError(error)
         );
     }
 
     private onApiError(error) {
-        UIManager.Instance.showNoticePopup("Chú ý", error.error_message);
+        PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, { message: error.error_message, title: "Chú ý" });
     }
 
     private checkGoldUser(price: number) {
@@ -147,7 +152,7 @@ export class ShopPetController extends BaseInventoryManager {
     }
 
     private onQuantityChanged(editbox: EditBox) {
-       const cleanString = editbox.string.replace(/[^0-9]/g, '');
+        const cleanString = editbox.string.replace(/[^0-9]/g, '');
         if (editbox.string !== cleanString) {
             editbox.string = cleanString;
         }
@@ -168,9 +173,13 @@ export class ShopPetController extends BaseInventoryManager {
         this.decreaseQuantityBtn.interactable = this.quantity > this.quantityLimit;
     }
 
-    public override init() {
+    protected onEnable(): void {
         this.initGroupData();
+        this.onTabChange(this.categories[0]);
         this.setupQuantityHandlers();
+    }
+
+    public override init() {
     }
 
     protected override reset() {
@@ -207,6 +216,7 @@ export class ShopPetController extends BaseInventoryManager {
         this.setupFoodReward(uiItem, item.type);
         uiItem.initFood(item);
         uiItem.toggleActive(false);
+        uiItem.reset();
     }
 
     public override setupFoodReward(uiItem: any, foodType: string) {
@@ -237,15 +247,7 @@ export class ShopPetController extends BaseInventoryManager {
     }
 
     protected override onUIItemClickFood(uiItem: ShopUIItem, data: Food) {
-        if (this.selectingUIItem) {
-            this.selectingUIItem.toggleActive(false);
-
-            if (this.selectingUIItem == uiItem) {
-                this.reset();
-                return;
-            }
-        }
-
+        this.selectingUIItem = uiItem;
         super.onUIItemClickFood(uiItem, data);
 
         this.descriptionText.string = data.name;

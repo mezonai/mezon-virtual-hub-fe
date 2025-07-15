@@ -20,9 +20,6 @@ export class GameManager extends Component {
     public static get instance() {
         return GameManager._instance;
     }
-    @property({ type: ShopController }) shopController: ShopController = null;
-    @property({ type: ShopPetController }) shopPetController: ShopPetController = null;
-    @property({ type: InventoryManager }) inventoryController: InventoryManager = null;
     @property({ type: UIChat }) uiChat: UIChat = null;
     @property({ type: UIMission }) uiMission: UIMission = null;
     @property({ type: SettingManager }) settingManager: SettingManager = null;
@@ -34,9 +31,6 @@ export class GameManager extends Component {
     }
 
     public init() {
-        this.shopController.init();
-        this.inventoryController.init();
-        this.shopPetController.init();
         this.uiMission.getMissionEventData();
         this.tutorialCacthPet();
     }

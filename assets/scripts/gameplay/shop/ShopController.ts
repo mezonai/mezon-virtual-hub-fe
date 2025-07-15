@@ -11,6 +11,8 @@ import { LocalItemDataConfig } from '../../Model/LocalItemConfig';
 import UIPopup from '../../ui/UI_Popup';
 import Utilities from '../../utilities/Utilities';
 import { GameManager } from '../../core/GameManager';
+import { PopupManager } from '../../PopUp/PopupManager';
+import { ConfirmPopup } from '../../PopUp/ConfirmPopup';
 const { ccclass, property } = _decorator;
 
 @ccclass('ShopController')
@@ -36,8 +38,12 @@ export class ShopController extends BaseInventoryManager {
             }
 
         } catch (error) {
-            UIManager.Instance.showNoticePopup("Chú ý", error.message);
+            PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, { message: error.message, title: "Chú ý" });
         }
+    }
+
+    protected override closeUIBtnClick() {
+        PopupManager.getInstance().closePopup(this.node.uuid);
     }
 
     private async showPopupAndReset(): Promise<boolean> {
@@ -60,9 +66,8 @@ export class ShopController extends BaseInventoryManager {
 
     private addItemToInventory(response) {
         UserMeManager.Get.inventories.push(response.data.inventory_data);
-        GameManager.instance.inventoryController.addItemToInventory(response.data.inventory_data);
         UserMeManager.playerCoin = response.data.user_gold;
-        UIManager.Instance.showNoticePopup("Thông báo", "Mua thành công!");
+        PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, { message: "Mua thành công!", title: "Thông báo" });
     }
 
     private async buyItem() {
@@ -86,8 +91,12 @@ export class ShopController extends BaseInventoryManager {
         });
     }
 
-    public override init() {
+    protected onEnable(): void {
         this.initGroupData();
+        this.onTabChange(this.categories[0]);
+    }
+
+    public override init() {
     }
 
     protected override reset() {
@@ -99,7 +108,7 @@ export class ShopController extends BaseInventoryManager {
         this.groupedItems = this.groupByCategory(ResourceManager.instance.ItemData.data);
         this.categories = [];
         for (const category in this.groupedItems) {
-            if(category === InventoryType.FOOD){
+            if (category === InventoryType.FOOD) {
                 continue;
             }
             this.categories.push(category);
@@ -108,7 +117,7 @@ export class ShopController extends BaseInventoryManager {
             });
         }
         this.tabController.initTabData(this.categories);
-        this.tabController.node.on(EVENT_NAME.ON_CHANGE_TAB, (tabName) => {this.onTabChange(tabName); });
+        this.tabController.node.on(EVENT_NAME.ON_CHANGE_TAB, (tabName) => { this.onTabChange(tabName); });
         // this.previewPlayer.init([]);
     }
 
@@ -131,6 +140,7 @@ export class ShopController extends BaseInventoryManager {
         item.mappingLocalData = skinLocalData;
         uiItem.init(item);
         uiItem.toggleActive(false);
+        uiItem.reset();
     }
 
     protected override resetSelectItem() {
@@ -148,17 +158,10 @@ export class ShopController extends BaseInventoryManager {
     }
 
     protected override onUIItemClick(uiItem: ShopUIItem, data: Item) {
-        if (this.selectingUIItem) {
-            this.selectingUIItem.toggleActive(false);
-            if (this.selectingUIItem == uiItem) {
-                this.reset();
-                return;
-            }
-        }
+        this.selectingUIItem = uiItem;
         super.onUIItemClick(uiItem, data);
         this.itemPrice.string = Utilities.convertBigNumberToStr(data.gold);
         this.itemPriceContainer.active = true;
-        this.selectingUIItem.toggleActive(true);
     }
 
     protected override groupByCategory(items: Item[]): Record<string, Item[]> {

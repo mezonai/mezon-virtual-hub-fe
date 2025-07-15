@@ -7,6 +7,7 @@ import { UserManager } from '../../../core/UserManager';
 import { InventoryUIITem } from './InventoryUIItem';
 import { BaseInventoryManager } from './BaseInventoryManager';
 import { LocalItemDataConfig } from '../../../Model/LocalItemConfig';
+import { PopupManager } from '../../../PopUp/PopupManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('InventoryManager')
@@ -21,14 +22,23 @@ export class InventoryManager extends BaseInventoryManager {
         this.resetSelectItem();
     }
 
+    protected override closeUIBtnClick() {
+        PopupManager.getInstance().closePopup(this.node.uuid);
+    }
+
+    protected onEnable(): void {
+        this.goBg.active = false;
+        this.addLocalData();
+        this.initGroupData();
+        this.onTabChange(this.categories[0]);
+        this.isItemGenerated = false;
+    }
+
     private equipSkin() {
         UserManager.instance.updatePlayerSkin(this.skinData, true);
     }
 
     public override init() {
-        this.goBg.active = false;
-        this.addLocalData();
-        this.initGroupData();
     }
 
     private addLocalData() {
@@ -119,36 +129,6 @@ export class InventoryManager extends BaseInventoryManager {
         this.tabController.node.on(EVENT_NAME.ON_CHANGE_TAB, (tabName) => {
             this.onTabChange(tabName);
         });
-    }
-
-    public addItemToInventory(item: InventoryDTO) {
-        this.isItemGenerated = false;
-        item.item.iconSF = [];
-        item.item.mappingLocalData = null;
-        if (this.groupedItems[item.item.type] == null) {
-            this.groupedItems[item.item.type] = [];
-            if (!this.categories.includes(item.item.type.toString())) {
-                this.categories.push(item.item.type.toString());
-            }
-            this.tabController.initTabData(this.categories);
-        }
-
-        this.groupedItems[item.item.type].push(item);
-    }
-
-    public addFoodToInventory(items: InventoryDTO[]) {
-        delete this.groupedItems[InventoryType.FOOD];
-        if (!this.groupedItems[InventoryType.FOOD]) {
-            this.groupedItems[InventoryType.FOOD] = [];
-            if (!this.categories.includes(InventoryType.FOOD)) {
-                this.categories.push(InventoryType.FOOD);
-                this.tabController.initTabData(this.categories);
-            }
-        }
-
-        for (const item of items) {
-            this.groupedItems[InventoryType.FOOD].push(item);
-        }
     }
 
     protected override getLocalData(item) {
