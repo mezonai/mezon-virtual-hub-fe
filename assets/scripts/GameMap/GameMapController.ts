@@ -1,7 +1,7 @@
 import { _decorator, Button, Component, Node, Vec3, tween, game, director, Label, Tween, randomRangeInt } from 'cc';
 import { Office } from "./Office";
 import { PopupManager } from '../PopUp/PopupManager';
-import { ConfirmPopup } from '../PopUp/ConfirmPopup';
+import { ConfirmParam, ConfirmPopup } from '../PopUp/ConfirmPopup';
 import { SceneManagerController } from '../utilities/SceneManagerController';
 import { SceneName } from '../utilities/SceneName';
 import { WebRequestManager } from '../network/WebRequestManager';
@@ -88,7 +88,11 @@ export class GameMapController extends Component {
 
     public onClickGoToNextOffice(office: Office) {
         if (office.officeBrach === OfficePosition.NONE) {
-            PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, { message: "Văn phòng đang chưa có sẵn" });
+            const param: ConfirmParam = {
+                message: "Văn phòng đang chưa có sẵn",
+                title:"Thông báo",
+            };
+            PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
             return;
         }
 

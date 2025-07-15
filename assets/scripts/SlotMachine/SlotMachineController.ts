@@ -323,7 +323,6 @@ export class SlotMachineController extends Component {
         WebRequestManager.instance.getUserProfile(
             (response) => {
                 UserMeManager.Set = response.data;
-                GameManager.instance.inventoryController.addFoodToInventory(UserMeManager.GetFoods);
             },
             this.onApiError.bind(this)
         );

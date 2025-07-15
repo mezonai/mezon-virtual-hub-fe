@@ -1,14 +1,13 @@
-import { _decorator, Button, Component, Layers, Node, Prefab, RichText, ScrollView, Toggle, UITransform, Vec3 } from 'cc';
+import { _decorator, Button, Layers, Node, Prefab, RichText, ScrollView, Vec3 } from 'cc';
 import { UserMeManager } from '../core/UserMeManager';
 import { ObjectPoolManager } from '../pooling/ObjectPoolManager';
 import { ItemAnimalSlot } from '../animal/ItemAnimalSlot';
 import { BasePopup } from './BasePopup';
 import { PopupManager } from './PopupManager';
-import { UIManager } from '../core/UIManager';
-import { ConfirmPopup } from './ConfirmPopup';
+import { ConfirmParam, ConfirmPopup } from './ConfirmPopup';
 import { ServerManager } from '../core/ServerManager';
 import { WebRequestManager } from '../network/WebRequestManager';
-import { AnimalElement, AnimalRarity, PetDTO } from '../Model/PetDTO';
+import { AnimalRarity, PetDTO } from '../Model/PetDTO';
 import { AnimalController, AnimalType } from '../animal/AnimalController';
 import { PopupSelection, SelectionParam } from './PopupSelection';
 import { ItemDisplayPetFighting } from '../animal/ItemDisplayPetFighting';
@@ -282,7 +281,11 @@ export class PopupOwnedAnimals extends BasePopup {
     onButtonBringPetClick() {
         if (this.animalController == null) return;
         if (this.animalBrings.length >= this.maxBringPets) {
-            PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, { message: "Bạn chỉ được chọn 3 thú cưng mang theo" });
+            const param: ConfirmParam = {
+                message: "Bạn chỉ được chọn 3 thú cưng mang theo",
+                title: "Thông báo",
+            };
+            PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
             return;
         }
         const param: SelectionParam = {
