@@ -22,7 +22,6 @@ export class GameManager extends Component {
     }
     @property({ type: UIChat }) uiChat: UIChat = null;
     @property({ type: UIMission }) uiMission: UIMission = null;
-    @property({ type: SettingManager }) settingManager: SettingManager = null;
 
     protected onLoad(): void {
         if (GameManager._instance == null) {

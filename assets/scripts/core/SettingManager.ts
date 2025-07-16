@@ -1,11 +1,15 @@
-import { _decorator, Component, Slider, Label, Button, SpriteFrame, Sprite } from 'cc';
+import { _decorator, Component, Slider, Label, Button, SpriteFrame, Sprite, Node } from 'cc';
 import { SoundManager } from './SoundManager';
 import { CustomSlider } from '../ui/CustomSlider';
+import { BasePopup } from '../PopUp/BasePopup';
+import { PopupManager } from '../PopUp/PopupManager';
+import { UIHelp } from '../ui/UIHelp';
+import { UIAbout } from '../ui/UIAbout';
 
 const { ccclass, property } = _decorator;
 
 @ccclass('SettingManager')
-export class SettingManager extends Component {
+export class SettingManager extends BasePopup {
     @property(Slider)
     soundSlider: Slider = null;
 
@@ -44,6 +48,10 @@ export class SettingManager extends Component {
 
     private settingsoundmusic: Record<string, SpriteFrame>;
 
+    @property(Button) helpButton: Button = null;
+    @property(Button) aboutButton: Button = null;
+    @property(Button) closeButton: Button = null;
+
     onLoad() {
         this.settingsoundmusic = {
             soundOn: this.iconValue[0],
@@ -76,8 +84,24 @@ export class SettingManager extends Component {
         this.soundButton.node.on('click', this.onSoundButtonToggle, this);
         this.musicButton.node.on('click', this.onMusicButtonToggle, this);
 
+        this.helpButton.node.on('click', this.onShowHelp, this);
+        this.aboutButton.node.on('click', this.onShowAbout, this);
+        this.closeButton.node.on('click', this.onClosePopup, this);
+
         this.updateSoundButtonIcon();
         this.updateMusicButtonIcon();
+    }
+
+    private onClosePopup(){
+        PopupManager.getInstance().closePopup(this.node.uuid);
+    }
+
+    private onShowHelp(){
+        PopupManager.getInstance().openPopup('UI_Help', UIHelp);
+    }
+
+    private onShowAbout(){
+        PopupManager.getInstance().openPopup('UI_AboutUs', UIAbout);
     }
 
     private onSoundSliderChanged(slider: Slider) {

@@ -1,4 +1,4 @@
-import { _decorator, director, Label, randomRange, Vec3 } from 'cc';
+import { _decorator, Button, director, Label, randomRange, Vec3 } from 'cc';
 import { BaseProfileManager } from './BaseProfileManager';
 import { UserMeManager } from '../core/UserMeManager';
 import { EVENT_NAME } from '../network/APIConstant';
@@ -9,6 +9,8 @@ import { ServerManager } from '../core/ServerManager';
 import { ExchangeCoinController } from '../core/ExchangeCoinController';
 import { RewardType } from '../Model/Item';
 import { MoneyTooltip } from '../Tooltip/MoneyTooltip';
+import { PopupManager } from '../PopUp/PopupManager';
+import { MyProfileManager } from './MyProfileManager';
 
 const { ccclass, property } = _decorator;
 
@@ -24,6 +26,7 @@ export class MyProfileHUD extends BaseProfileManager {
     tooltip1: MoneyTooltip = null;
     @property(MoneyTooltip)
     tooltip2: MoneyTooltip = null;
+    @property(Button) infoButton: Button = null;
 
     start(): void {
         director.on(EVENT_NAME.UPDATE_INFO_PROFILE, this.updateProfile, this);
@@ -42,6 +45,11 @@ export class MyProfileHUD extends BaseProfileManager {
             });
             this.onCoinChangeDiamond(UserMeManager.playerDiamond, UserMeManager.playerDiamond);
         }
+        this.infoButton.node.on('click', this.onShowInfo, this);
+    }
+
+    private onShowInfo(){
+        PopupManager.getInstance().openPopup('UI_My_Profile', MyProfileManager);
     }
 
     protected onCoinChangeGold(value, oldValue) {
