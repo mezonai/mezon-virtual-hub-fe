@@ -105,7 +105,7 @@ export class PopupManager extends Component {
             .start();
     }
 
-      private HideoutToTop(popup: Node, callback) {
+    private HideoutToTop(popup: Node, callback) {
         popup.position = new Vec3(0, 0, 0);
         tween(popup)
             .to(0.2, { position: new Vec3(0, 500, 0) },)
@@ -117,7 +117,6 @@ export class PopupManager extends Component {
     public async closePopup(uniqueKey: string, isAnim : boolean = false) {
         const popupNode = this.popupDict.get(uniqueKey);
         if (!popupNode) return;
-
         if(isAnim) this.HideoutToTop(popupNode, () =>{popupNode.destroy();})
         else popupNode.destroy();
         this.popupDict.delete(uniqueKey);
@@ -139,3 +138,4 @@ export class PopupManager extends Component {
         this.popupDict.clear();
     }
 }
+
