@@ -5,7 +5,7 @@ import { InventoryType, Item } from '../../Model/Item';
 import { ResourceManager } from '../../core/ResourceManager';
 import { EVENT_NAME } from '../../network/APIConstant';
 import { ShopUIItem } from './ShopUIItem';
-import { BaseInventoryManager } from '../player/inventory/BaseInventoryManager';
+import { BaseInventoryManager, InventoryParam } from '../player/inventory/BaseInventoryManager';
 import { LocalItemDataConfig } from '../../Model/LocalItemConfig';
 import UIPopup from '../../ui/UI_Popup';
 import Utilities from '../../utilities/Utilities';
@@ -46,6 +46,7 @@ export class ShopController extends BaseInventoryManager {
 
     protected override closeUIBtnClick() {
         PopupManager.getInstance().closePopup(this.node.uuid);
+        this._onActionClose();
     }
 
     private async showPopupAndReset(): Promise<boolean> {
@@ -98,10 +99,13 @@ export class ShopController extends BaseInventoryManager {
         });
     }
 
-    public init() {
+    public init(param: InventoryParam) {
         super.init();
         this.initGroupData();
         this.onTabChange(this.categories[0]);
+        if(param != null && param.onActionClose != null){
+            this._onActionClose = param.onActionClose;
+        }
     }
 
     protected override reset() {

@@ -1,22 +1,24 @@
-import { _decorator, BoxCollider2D, Collider2D, Component, Contact2DType, debug, EventKeyboard, input, Input, IPhysics2DContact, ITriggerEvent, KeyCode, Layers, Node, UI } from 'cc';
+import { _decorator, Collider2D, IPhysics2DContact} from 'cc';
 import { PopupManager } from '../../PopUp/PopupManager';
 import { InteracterLabel } from '../../PopUp/InteracterLabel';
-import { Interactable } from './Interactable';
-import { BubbleRotation } from '../../SlotMachine/BubbleRotation';
 import { SlotMachineController } from '../../SlotMachine/SlotMachineController';
-import { UIManager } from '../../core/UIManager';
-import { UIID } from '../../ui/enum/UIID';
-import { UserManager } from '../../core/UserManager';
-import { PlayerController } from '../player/PlayerController';
-import { Constants } from '../../utilities/Constants';
 import { MapItemController } from '../MapItem/MapItemController';
+import { InventoryParam } from '../../PopUp/BasePopup';
 const { ccclass, property } = _decorator;
 
 @ccclass('InteractableSlotMachine')
 export class InteractableSlotMachine extends MapItemController {
 
     protected override async interact(playerSessionId: string) {
-        let panel = await PopupManager.getInstance().openPopup('UISlotMachinePopup', SlotMachineController);
+         if(this.isOpenPopUp) return;
+                this.isOpenPopUp = true;
+        
+                const param: InventoryParam = {
+                     onActionClose:()=>{
+                        this.isOpenPopUp = false;
+                     }          
+                };
+        let panel = await PopupManager.getInstance().openPopup('UISlotMachinePopup', SlotMachineController, param);
         const popupComponent = panel?.getComponent(SlotMachineController);
         popupComponent?.showNoticeSpin(true);
         this.handleEndContact(null, null, null);

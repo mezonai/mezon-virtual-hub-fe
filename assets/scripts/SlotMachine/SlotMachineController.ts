@@ -15,7 +15,7 @@ import { ObjectPoolManager } from '../pooling/ObjectPoolManager';
 import { SlotItem } from './SlotItem';
 import { LoadBundleController } from '../bundle/LoadBundleController';
 import { UIPanelSliderEffect } from '../utilities/UIPanelSliderEffect';
-import { BasePopup } from '../PopUp/BasePopup';
+import { BasePopup, InventoryParam } from '../PopUp/BasePopup';
 import { PopupManager } from '../PopUp/PopupManager';
 import { ConfirmParam, ConfirmPopup } from '../PopUp/ConfirmPopup';
 
@@ -40,7 +40,6 @@ export class SlotMachineController extends BasePopup {
     @property(Node) parentHover: Node = null;
     private minusCoin: number = 10;
     private hasSpin: boolean = false;
-    private localSkinConfig: LocalItemConfig;
 
     @property({ type: [SpriteFrame] }) iconValue: SpriteFrame[] = []; // 0: normal 1: rare 2: super
     @property({ type: [SpriteFrame] }) iconMoney: SpriteFrame[] = []; // 0: Gold 1: Diamond
@@ -51,7 +50,7 @@ export class SlotMachineController extends BasePopup {
 
     @property(UIPanelSliderEffect) slotMachineRate: UIPanelSliderEffect = null;
 
-    public init(param?: any): void {
+    public init(param: InventoryParam): void {
         this.foodIconMap = {
             normal: this.iconValue[0],
             premium: this.iconValue[1],
@@ -69,6 +68,9 @@ export class SlotMachineController extends BasePopup {
 
         this.initUI();
         this.registerEventListeners();
+        if(param != null && param.onActionClose != null){
+            this._onActionClose = param.onActionClose;
+        }
     }
 
     private initUI() {
@@ -88,6 +90,7 @@ export class SlotMachineController extends BasePopup {
         this.slotMachinePopUp.active = false;
         this.refreshUserData();
         PopupManager.getInstance().closePopup(this.node.uuid);
+        this._onActionClose();
     }
 
     public showNoticeSpin(isShow: boolean) {

@@ -8,7 +8,6 @@ export class PopupManager extends Component {
     @property({type: Node}) floatPopupParent: Node = null;
     private static _instance: PopupManager | null = null;
     private popupDict: Map<string, Node> = new Map();
-    private fixPopupsActive: Map<string, Node> = new Map();
 
     public static getInstance(): PopupManager {
         if (!this._instance) {
@@ -29,7 +28,6 @@ export class PopupManager extends Component {
 
     protected onDisable(): void {
         this.clearFloatPopupChildren();
-        this.fixPopupsActive.clear(); 
     }
 
     private clearFloatPopupChildren() {
@@ -51,18 +49,9 @@ export class PopupManager extends Component {
                 }
                 const popupNode = instantiate(prefab) as T;
                 let basePopup = popupNode.getComponent(BasePopup);
-                const isFixUIPopup = basePopup && basePopup.isFixPosition && popupName.startsWith("UI");
                 if (basePopup) {
                     if (basePopup.isFixPosition) {
-                        if (isFixUIPopup && this.fixPopupsActive.has(popupName)) {
-                            popupNode.destroy();
-                            resolve(null);
-                            return;
-                        }
                         popupNode.setParent(this.fixPopupParent);
-                        if (isFixUIPopup) {
-                             this.fixPopupsActive.set(popupName, popupNode);
-                        }
                     }
                     else {
                         popupNode.setParent(this.floatPopupParent);
@@ -116,7 +105,7 @@ export class PopupManager extends Component {
             .start();
     }
 
-    private HideoutToTop(popup: Node, callback) {
+      private HideoutToTop(popup: Node, callback) {
         popup.position = new Vec3(0, 0, 0);
         tween(popup)
             .to(0.2, { position: new Vec3(0, 500, 0) },)
@@ -128,10 +117,6 @@ export class PopupManager extends Component {
     public async closePopup(uniqueKey: string, isAnim : boolean = false) {
         const popupNode = this.popupDict.get(uniqueKey);
         if (!popupNode) return;
-        
-        if (popupNode.name.startsWith("UI") && this.fixPopupsActive.has(popupNode.name)) {
-            this.fixPopupsActive.delete(popupNode.name);
-        }
 
         if(isAnim) this.HideoutToTop(popupNode, () =>{popupNode.destroy();})
         else popupNode.destroy();
@@ -139,10 +124,6 @@ export class PopupManager extends Component {
     }
 
     public getPopup<T extends Node>(popupName: string): T | null {
-        if (popupName.startsWith("UI") && this.fixPopupsActive.has(popupName)) {
-            return this.fixPopupsActive.get(popupName) as T;
-        }
-
         for (const popupNode of this.popupDict.values()) {
             if (popupNode.name === popupName) {
                 return popupNode as T;
@@ -156,16 +137,5 @@ export class PopupManager extends Component {
             await this.closePopup(key);
         }
         this.popupDict.clear();
-        this.fixPopupsActive.clear();
-    }
-
-    public getActiveFixPopups(): Node[] {
-        const activeFixPopups = Array.from(this.fixPopupsActive.values());
-        return activeFixPopups;
-    }
-
-    public isFixPopupActive(popupName: string): boolean {
-        const isActive = popupName.startsWith("UI") && this.fixPopupsActive.has(popupName);
-        return isActive;
     }
 }

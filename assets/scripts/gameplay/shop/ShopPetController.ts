@@ -11,6 +11,7 @@ import UIPopup from '../../ui/UI_Popup';
 import Utilities from '../../utilities/Utilities';
 import { PopupManager } from '../../PopUp/PopupManager';
 import { ConfirmParam, ConfirmPopup } from '../../PopUp/ConfirmPopup';
+import { InventoryParam } from '../../PopUp/BasePopup';
 const { ccclass, property } = _decorator;
 
 @ccclass('ShopPetController')
@@ -61,6 +62,7 @@ export class ShopPetController extends BaseInventoryManager {
 
     protected override closeUIBtnClick() {
         PopupManager.getInstance().closePopup(this.node.uuid);
+        this._onActionClose();
     }
 
     private async showPopupAndReset(): Promise<boolean> {
@@ -183,11 +185,14 @@ export class ShopPetController extends BaseInventoryManager {
         this.decreaseQuantityBtn.interactable = this.quantity > this.quantityLimit;
     }
 
-    public init() {
+    public init(param: InventoryParam) {
         super.init();
         this.initGroupData();
         this.onTabChange(this.categories[0]);
         this.setupQuantityHandlers();
+         if(param != null && param.onActionClose != null){
+            this._onActionClose = param.onActionClose;
+        }
     }
 
     protected override reset() {
