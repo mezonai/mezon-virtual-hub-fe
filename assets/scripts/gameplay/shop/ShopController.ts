@@ -74,6 +74,7 @@ export class ShopController extends BaseInventoryManager {
             title: "Thông báo",
         };
         PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
+        this.onTabChange(this.currentTabName);
     }
 
     private async buyItem() {

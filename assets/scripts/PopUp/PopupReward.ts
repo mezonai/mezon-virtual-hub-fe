@@ -49,7 +49,6 @@ export class PopupReward extends BasePopup {
                 WebRequestManager.instance.getUserProfile(
                     (response) => {
                         UserMeManager.Set = response.data;
-                        GameManager.instance.inventoryController.addFoodToInventory(UserMeManager.GetFoods);
                     },
                     (error) => this.onError(error)
                 );

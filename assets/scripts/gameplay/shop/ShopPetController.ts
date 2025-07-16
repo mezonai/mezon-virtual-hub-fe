@@ -228,6 +228,7 @@ export class ShopPetController extends BaseInventoryManager {
     }
 
     public override setupFoodReward(uiItem: any, foodType: string) {
+        super.setupFoodReward(uiItem, foodType);
         const normalizedType = foodType.replace(/-/g, "");
         const sprite = this.foodIconMap[normalizedType];
         if (sprite) {

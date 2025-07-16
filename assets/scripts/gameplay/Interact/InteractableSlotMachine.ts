@@ -16,9 +16,9 @@ const { ccclass, property } = _decorator;
 export class InteractableSlotMachine extends MapItemController {
 
     protected override async interact(playerSessionId: string) {
-        let panel = UIManager.Instance.showUI(UIID.SlotMachine);
+        let panel = await PopupManager.getInstance().openPopup('UISlotMachinePopup', SlotMachineController);
         const popupComponent = panel?.getComponent(SlotMachineController);
-        popupComponent.showNoticeSpin(true);
+        popupComponent?.showNoticeSpin(true);
         this.handleEndContact(null, null, null);
     }
 

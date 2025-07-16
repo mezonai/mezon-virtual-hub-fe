@@ -37,11 +37,13 @@ export class BaseInventoryManager extends BasePopup {
     @property({ type: [SpriteFrame] }) iconMoney: SpriteFrame[] = []; // 0: Gold 1: Diamond
     protected foodIconMap: Record<string, SpriteFrame>;
     protected moneyIconMap: Record<string, SpriteFrame>;
+    protected currentTabName: string = null;
 
     @property({ type: Button }) closeUIBtn: Button = null;
 
     public init(param?: any): void {
-        this.intiIconMap();
+        this.initFoodMap();
+        this.initMoneyMap();
         if (this.categories.length > 0) {
             this.reset();
         }
@@ -53,16 +55,23 @@ export class BaseInventoryManager extends BasePopup {
         this.onCoinChange(UserMeManager.playerCoin);
     }
 
-    intiIconMap() {
-        this.foodIconMap = {
-            normal: this.iconValue[0],
-            premium: this.iconValue[1],
-            ultrapremium: this.iconValue[2]
-        };
-        this.moneyIconMap = {
-            gold: this.iconMoney[0],
-            diamond: this.iconMoney[1]
-        };
+    initFoodMap() {
+        if (this.iconValue.length >= 3) {
+            this.foodIconMap = {
+                normal: this.iconValue[0],
+                premium: this.iconValue[1],
+                ultrapremium: this.iconValue[2]
+            };
+        }
+    }
+
+    initMoneyMap(){
+        if (this.iconValue.length >= 3) {
+            this.moneyIconMap = {
+                gold: this.iconMoney[0],
+                diamond: this.iconMoney[1]
+            };
+        }
     }
 
     protected onCoinChange(value) {
@@ -83,7 +92,11 @@ export class BaseInventoryManager extends BasePopup {
         if (isTabFood)
             await this.spawnFoodItems(this.groupedItems[tabName]);
         else
-            await this.spawnClothesItems(this.groupedItems[tabName]);
+        {
+            this.currentTabName = tabName;
+            await this.spawnClothesItems(this.groupedItems[tabName]);  
+
+        }
         this.ResetPositionScrollBar();
     }
 
@@ -218,10 +231,15 @@ export class BaseInventoryManager extends BasePopup {
     }
 
     protected setupFoodReward(uiItem: any, foodType: any) {
-
+        if (!this.foodIconMap) {
+            this.initFoodMap();
+        }
     }
 
     protected setupMoneyReward(uiItem: any, typeMoney: any) {
+        if (!this.moneyIconMap) {
+            this.initMoneyMap();
+        }
         const sprite = this.moneyIconMap[typeMoney.type];
         if (sprite) {
             uiItem.iconFrame.spriteFrame = sprite;

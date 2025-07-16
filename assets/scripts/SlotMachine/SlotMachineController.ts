@@ -12,14 +12,17 @@ import { GameManager } from '../core/GameManager';
 import { ResourceManager } from '../core/ResourceManager';
 import { LocalItemConfig, LocalItemDataConfig, LocalItemPartDataConfig } from '../Model/LocalItemConfig';
 import { ObjectPoolManager } from '../pooling/ObjectPoolManager';
-import { SlotItem } from './SlotItem'; // Đảm bảo đường dẫn này đúng
+import { SlotItem } from './SlotItem';
 import { LoadBundleController } from '../bundle/LoadBundleController';
 import { UIPanelSliderEffect } from '../utilities/UIPanelSliderEffect';
+import { BasePopup } from '../PopUp/BasePopup';
+import { PopupManager } from '../PopUp/PopupManager';
+import { ConfirmParam, ConfirmPopup } from '../PopUp/ConfirmPopup';
 
 const { ccclass, property } = _decorator;
 
 @ccclass('SlotMachineController')
-export class SlotMachineController extends Component {
+export class SlotMachineController extends BasePopup {
     @property(Node) slotMachinePopUp: Node = null;
     @property(Node) noticeSpin: Node = null;
     @property(RewardUIController) rewardPopUp: RewardUIController = null;
@@ -48,7 +51,7 @@ export class SlotMachineController extends Component {
 
     @property(UIPanelSliderEffect) slotMachineRate: UIPanelSliderEffect = null;
 
-    protected onLoad(): void {
+    public init(param?: any): void {
         this.foodIconMap = {
             normal: this.iconValue[0],
             premium: this.iconValue[1],
@@ -63,9 +66,7 @@ export class SlotMachineController extends Component {
             gold: this.iconMoney[0],
             diamond: this.iconMoney[1]
         };
-    }
 
-    protected start(): void {
         this.initUI();
         this.registerEventListeners();
     }
@@ -86,6 +87,7 @@ export class SlotMachineController extends Component {
         this.rewardPopUp.show(false, null);
         this.slotMachinePopUp.active = false;
         this.refreshUserData();
+        PopupManager.getInstance().closePopup(this.node.uuid);
     }
 
     public showNoticeSpin(isShow: boolean) {
@@ -200,7 +202,11 @@ export class SlotMachineController extends Component {
 
     private async spinMachine() {
         if (UserMeManager.playerCoin < this.minusCoin) {
-            UIManager.Instance.showNoticePopup('Chú ý', 'Bạn cần 10 coin để quay vòng quay may mắn');
+            const param: ConfirmParam = {
+                message: "Bạn cần 10 coin để quay vòng quay may mắn",
+                title: "Chú ý",
+            };
+            PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
             return;
         }
 
@@ -329,15 +335,27 @@ export class SlotMachineController extends Component {
     }
 
     private onApiError(error: any) {
-        UIManager.Instance.showNoticePopup('Warning', error.error_message);
+        const param: ConfirmParam = {
+            message: error.error_message,
+            title: "Lỗi",
+        };
+        PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
     }
 
     private onError(error: any) {
         this.bubbleRotation.stopRotation();
         if (error?.message) {
-            UIManager.Instance.showNoticePopup('Lỗi', error.message);
+            const param: ConfirmParam = {
+                message: error.message,
+                title: "Lỗi",
+            };
+            PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
         } else {
-            UIManager.Instance.showNoticePopup('Lỗi', 'Có lỗi xảy ra, vui lòng thử lại.');
+            const param: ConfirmParam = {
+                message: "Có lỗi xảy ra, vui lòng thử lại.",
+                title: "Lỗi",
+            };
+            PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
         }
     }
 
