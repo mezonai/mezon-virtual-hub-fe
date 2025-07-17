@@ -1,8 +1,7 @@
 import { _decorator } from 'cc';
 import { MapItemController } from '../MapItem/MapItemController';
 import { PopupManager } from '../../PopUp/PopupManager';
-import { ShopController } from '../shop/ShopController';
-import { InventoryParam } from '../../PopUp/BasePopup';
+import { InteractShopParam, ShopController } from '../shop/ShopController';
 const { ccclass, property } = _decorator;
 
 @ccclass('InteractShop')
@@ -12,7 +11,7 @@ export class InteractShop extends MapItemController {
         if(this.isOpenPopUp) return;
         this.isOpenPopUp = true;
 
-        const param: InventoryParam = {
+        const param: InteractShopParam = {
              onActionClose:()=>{
                 this.isOpenPopUp = false;
              }          

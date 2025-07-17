@@ -11,7 +11,6 @@ import UIPopup from '../../ui/UI_Popup';
 import Utilities from '../../utilities/Utilities';
 import { PopupManager } from '../../PopUp/PopupManager';
 import { ConfirmParam, ConfirmPopup } from '../../PopUp/ConfirmPopup';
-import { InventoryParam } from '../../PopUp/BasePopup';
 const { ccclass, property } = _decorator;
 
 @ccclass('ShopPetController')
@@ -185,7 +184,7 @@ export class ShopPetController extends BaseInventoryManager {
         this.decreaseQuantityBtn.interactable = this.quantity > this.quantityLimit;
     }
 
-    public init(param: InventoryParam) {
+    public init(param: InteractShopPetParam) {
         super.init();
         this.initGroupData();
         this.onTabChange(this.categories[0]);
@@ -289,4 +288,8 @@ export class ShopPetController extends BaseInventoryManager {
         }, {} as Record<string, Food[]>);
         return grouped;
     }
+}
+
+export interface InteractShopPetParam {
+    onActionClose?: () => void;
 }

@@ -5,7 +5,7 @@ import { InventoryType, Item } from '../../Model/Item';
 import { ResourceManager } from '../../core/ResourceManager';
 import { EVENT_NAME } from '../../network/APIConstant';
 import { ShopUIItem } from './ShopUIItem';
-import { BaseInventoryManager, InventoryParam } from '../player/inventory/BaseInventoryManager';
+import { BaseInventoryManager } from '../player/inventory/BaseInventoryManager';
 import { LocalItemDataConfig } from '../../Model/LocalItemConfig';
 import UIPopup from '../../ui/UI_Popup';
 import Utilities from '../../utilities/Utilities';
@@ -99,7 +99,7 @@ export class ShopController extends BaseInventoryManager {
         });
     }
 
-    public init(param: InventoryParam) {
+    public init(param: InteractShopParam) {
         super.init();
         this.initGroupData();
         this.onTabChange(this.categories[0]);
@@ -168,4 +168,8 @@ export class ShopController extends BaseInventoryManager {
             return acc;
         }, {} as Record<string, Item[]>);
     }
+}
+
+export interface InteractShopParam {
+    onActionClose?: () => void;
 }

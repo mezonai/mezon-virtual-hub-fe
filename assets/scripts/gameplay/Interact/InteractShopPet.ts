@@ -1,10 +1,7 @@
-import { _decorator, Component, Node } from 'cc';
+import { _decorator} from 'cc';
 import { MapItemController } from '../MapItem/MapItemController';
-import { UIManager } from '../../core/UIManager';
-import { UIID } from '../../ui/enum/UIID';
 import { PopupManager } from '../../PopUp/PopupManager';
-import { ShopPetController } from '../shop/ShopPetController';
-import { InventoryParam } from '../../PopUp/BasePopup';
+import { InteractShopPetParam, ShopPetController } from '../shop/ShopPetController';
 const { ccclass, property } = _decorator;
 
 @ccclass('InteractShopPet')
@@ -14,7 +11,7 @@ export class InteractShopPet extends MapItemController {
          if(this.isOpenPopUp) return;
                 this.isOpenPopUp = true;
         
-                const param: InventoryParam = {
+                const param: InteractShopPetParam = {
                      onActionClose:()=>{
                         this.isOpenPopUp = false;
                      }          
@@ -27,5 +24,3 @@ export class InteractShopPet extends MapItemController {
         return true;
     }
 }
-
-
