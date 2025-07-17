@@ -1,10 +1,6 @@
-import { _decorator, Component, Node } from 'cc';
-import { ShopController } from '../gameplay/shop/ShopController';
-import { InventoryManager } from '../gameplay/player/inventory/InventoryManager';
+import { _decorator, Component } from 'cc';
 import { UIChat } from '../gameplay/ChatBox/UIChat';
 import { UIMission } from '../gameplay/Mission/UIMission';
-import { SettingManager } from './SettingManager';
-import { ShopPetController } from '../gameplay/shop/ShopPetController';
 import { WebRequestManager } from '../network/WebRequestManager';
 import ConvetData from './ConvertData';
 import { PopupManager } from '../PopUp/PopupManager';
@@ -22,7 +18,6 @@ export class GameManager extends Component {
     }
     @property({ type: UIChat }) uiChat: UIChat = null;
     @property({ type: UIMission }) uiMission: UIMission = null;
-    @property({ type: SettingManager }) settingManager: SettingManager = null;
 
     protected onLoad(): void {
         if (GameManager._instance == null) {
