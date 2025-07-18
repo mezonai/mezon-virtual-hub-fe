@@ -7,15 +7,12 @@ import { RewardUIController } from './RewardUIController';
 import { RewardFloatingText } from './RewardFloatingText';
 import { UserManager } from '../core/UserManager';
 import { AudioType, SoundManager } from '../core/SoundManager';
-import { UIManager } from '../core/UIManager';
-import { GameManager } from '../core/GameManager';
 import { ResourceManager } from '../core/ResourceManager';
-import { LocalItemConfig, LocalItemDataConfig, LocalItemPartDataConfig } from '../Model/LocalItemConfig';
 import { ObjectPoolManager } from '../pooling/ObjectPoolManager';
 import { SlotItem } from './SlotItem';
 import { LoadBundleController } from '../bundle/LoadBundleController';
 import { UIPanelSliderEffect } from '../utilities/UIPanelSliderEffect';
-import { BasePopup, InventoryParam } from '../PopUp/BasePopup';
+import { BasePopup} from '../PopUp/BasePopup';
 import { PopupManager } from '../PopUp/PopupManager';
 import { ConfirmParam, ConfirmPopup } from '../PopUp/ConfirmPopup';
 
@@ -50,7 +47,7 @@ export class SlotMachineController extends BasePopup {
 
     @property(UIPanelSliderEffect) slotMachineRate: UIPanelSliderEffect = null;
 
-    public init(param: InventoryParam): void {
+    public init(param: SlotmachineParam): void {
         this.foodIconMap = {
             normal: this.iconValue[0],
             premium: this.iconValue[1],
@@ -365,4 +362,8 @@ export class SlotMachineController extends BasePopup {
     private delay(ms: number): Promise<void> {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
+}
+
+export interface SlotmachineParam {
+    onActionClose?: () => void;
 }

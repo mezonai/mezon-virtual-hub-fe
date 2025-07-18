@@ -10,8 +10,3 @@ export class BasePopup extends Component {
     }
     
 }
-export interface InventoryParam {
-    onActionClose?: () => void;
-}
-
-
