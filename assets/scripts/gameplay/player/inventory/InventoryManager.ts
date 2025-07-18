@@ -187,6 +187,7 @@ export class InventoryManager extends BaseInventoryManager {
     }
 
     public override setupFoodReward(uiItem: any, foodType: string) {
+        super.setupFoodReward(uiItem, foodType);
         uiItem.avatar.spriteFrame = null;
         const normalizedType = foodType.replace(/-/g, "");
         const sprite = this.foodIconMap[normalizedType];
