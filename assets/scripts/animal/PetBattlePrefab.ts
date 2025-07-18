@@ -1,9 +1,14 @@
-import { _decorator, Component, Node, Sprite, SpriteFrame, Animation } from 'cc';
+import { _decorator, Component, Node, Sprite, SpriteFrame, Animation, Enum, Vec3 } from 'cc';
+import { PetDTO2, Species } from '../Model/PetDTO';
 const { ccclass, property } = _decorator;
-
+@ccclass('SpeciesMap')
+export class SpeciesMap {
+    @property({ type: Enum(Species) }) species: Species = Species.Dog;
+    @property({ type: SpriteFrame }) spritePet: SpriteFrame = null;
+}
 @ccclass('PetBattlePrefab')
 export class PetBattlePrefab extends Component {
-    @property({ type: [SpriteFrame] }) spritePets: SpriteFrame[] = [];
+    @property({ type: [SpeciesMap] }) speciesMap: SpeciesMap[] = [];
     @property({ type: Sprite }) petDisplay: Sprite = null;
     //Normal
     @property({ type: Animation }) animationNormal: Animation = null;
@@ -29,6 +34,16 @@ export class PetBattlePrefab extends Component {
 
     getSkillNameById(id: string): SkillName | undefined {
         return SkillMapById.get(id);
+    }
+
+    setDataPet(pet: PetDTO2, slot: number) {
+        if (pet == null) return;
+        this.petDisplay.spriteFrame = this.getSpritePet(pet.species);
+        this.petDisplay.node.setScale(slot < 1 ? new Vec3(-1, 1, 1) : Vec3.ONE);
+    }
+
+    getSpritePet(species: Species): SpriteFrame {
+        return this.speciesMap.find(t => t.species === species).spritePet || this.speciesMap[0].spritePet;
     }
 }
 

@@ -41,6 +41,7 @@ export class ItemSkill extends Component {
         this.border2.color = this.getColorBorder2(skillData.type);
         let colorGradient = this.getColorBackgroundIcon(skillData.type);
         this.backgroundIcon.setGradientColors(colorGradient.bl, colorGradient.br, colorGradient.tl, colorGradient.tr);
+        if (interactSlot == InteractSlot.SHOW_UI) return; // chỉ show ui thì không cần set data
         this.skillDragItem.intiData(slotSkillFighting, interactSlot, this.skillTooltip)
         if (this.skillTooltip != null && interactSlot != InteractSlot.DOUBLE_CLICK) {
             this.skillTooltip.setData(skillData);

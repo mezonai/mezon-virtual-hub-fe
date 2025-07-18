@@ -1,6 +1,6 @@
 import { _decorator, Button, Component, Label, Node, Tween } from 'cc';
-import { PopupStartCombatPet } from '../../PopUp/PopupStartCombatPet';
 import { TalkAnimation } from '../../utilities/TalkAnimation';
+import { BattleData as BattleData } from '../../Model/PetDTO';
 const { ccclass, property } = _decorator;
 
 @ccclass('HandleCombat')
@@ -20,8 +20,7 @@ export class HandleCombat extends Component {
 
     @property({ type: Button }) attackSkillFirst: Button = null;
     @property({ type: Button }) attackSkillSecond: Button = null;
-
-    @property({ type: PopupStartCombatPet }) popupStartCombatPet: PopupStartCombatPet = null;
+    private _onCloseBattle: (() => void) | null = null;
 
     private introMessages: string[] = [
         "Trận đấu sắp bắt đầu. Bạn đã sẵn sàng chưa?",
@@ -32,20 +31,33 @@ export class HandleCombat extends Component {
         "Đừng để đối thủ đánh bại bạn một cách dễ dàng!",
     ];
 
-    protected start(): void {
-        this.chooseActionPanel.active = false;
-        this.chooseSkillPanel.active = false;
-        this.talkPanel.active = true;
+    setData(handleBattleData: HandleBattleData) {
+        // if (handleBattleData != null) {
+        //     if (handleBattleData.onCancelBattle) {
+        //         this.giveupBtn.node.on(Button.EventType.CLICK, handleBattleData.onCancelBattle, this);
+        //     }
+        //     if (handleBattleData.onCloseBattle) {
+        //         this._onCloseBattle = handleBattleData.onCloseBattle;
+        //     }
+        //     if (handleBattleData.battleData != null) {
+        //         this.attackSkillFirst.node.on(Button.EventType.CLICK, () => { this.HandleSkillFirst(handleBattleData.battleData.pet2.skills[0]) }, this);
+        //         this.attackSkillSecond.node.on(Button.EventType.CLICK, () => { this.HandleSkillFirst(handleBattleData.battleData.pet2.skills[1]) }, this);
+        //     }
+        // }
+        // this.chooseActionPanel.active = false;
+        // this.chooseSkillPanel.active = false;
+        // this.talkPanel.active = true;
 
-        this.giveupBtn.node.on(Node.EventType.TOUCH_START, this.HandleGiveUp, this);
-        this.fightBtn.node.on(Node.EventType.TOUCH_START, this.HandleFight, this);
-        this.PetBtn.node.on(Node.EventType.TOUCH_START, this.HandleShowPet, this);
-        this.attackSkillFirst.node.on(Node.EventType.TOUCH_START, this.HandleSkillFirst, this);
-        this.attackSkillSecond.node.on(Node.EventType.TOUCH_START, this.HandleSkillSecond, this);
-        this.showMessagesSequentially(this.introMessages, () => {
-            this.ShowAction();
-        });
+
+        // this.fightBtn.node.on(Button.EventType.CLICK, this.HandleFight, this);
+        // this.PetBtn.node.on(Button.EventType.CLICK, this.HandleShowPet, this);
+
+        // this.showMessagesSequentially(this.introMessages, () => {
+        //     this.ShowAction();
+        // });
+        // this.ShowAction();
     }
+
 
     ShowAction() {
         this.talkPanel.active = false;
@@ -58,12 +70,8 @@ export class HandleCombat extends Component {
         this.chooseActionPanel.active = false;
         this.talkPanel.active = true;
         this.talkAnimation?.showBubbleChatCombat(data, this.timeTalk, () => {
-            this.popupStartCombatPet.closeComBat();
+            this._onCloseBattle();
         });
-    }
-
-    HandleGiveUp() {
-        this.popupStartCombatPet.cancelCombat(this.giveupBtn.node.name);
     }
 
     HandleFight() {
@@ -75,13 +83,13 @@ export class HandleCombat extends Component {
         //
     }
 
-    HandleSkillFirst() {
-        const skillId = this.popupStartCombatPet.fakeCombatData.pet2.skills[0];
+    HandleSkillFirst(battleDataSkill1: number) {
+        const skillId = battleDataSkill1;
         this.sendSkillAction(skillId);
     }
 
-    HandleSkillSecond() {
-        const skillId = this.popupStartCombatPet.fakeCombatData.pet2.skills[1];
+    HandleSkillSecond(battleDataSkill2: number) {
+        const skillId = battleDataSkill2;
         this.sendSkillAction(skillId);
     }
 
@@ -106,4 +114,10 @@ export class HandleCombat extends Component {
     protected onDisable(): void {
         Tween.stopAllByTarget(this.talkAnimation);
     }
+}
+
+export interface HandleBattleData {
+    onCancelBattle?: () => void;
+    onCloseBattle?: () => void;
+    battleData: BattleData
 }

@@ -1,9 +1,10 @@
 import { _decorator, Component, Label, Sprite } from 'cc';
-import { PetDTO } from '../../Model/PetDTO';
+import { PetDTO, PetDTO2 } from '../../Model/PetDTO';
+import { SlideObject } from '../../utilities/SlideObject';
 const { ccclass, property } = _decorator;
 
-@ccclass('CombatPetHUD')
-export class CombatPetHUD extends Component {
+@ccclass('HUDBattlePet')
+export class HUDBattlePet extends Component {
     @property(Label) nameLabel: Label = null;
     @property(Label) lvlLabel: Label = null;
     @property(Label) hpLabel: Label = null;
@@ -11,8 +12,9 @@ export class CombatPetHUD extends Component {
 
     @property(Sprite) hpFillSprite: Sprite = null;
     @property(Sprite) expFillSprite: Sprite = null;
+   @property({ type: SlideObject }) slide: SlideObject = null;
 
-    public updateHUD(info: PetDTO) {
+    public updateHUD(info: PetDTO2) {
         if (!info) return;
 
         this.nameLabel.string = info.name;

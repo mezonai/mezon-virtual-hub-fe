@@ -3,16 +3,14 @@ import { ActionType, PlayerInteractAction } from './PlayerInteractAction';
 import { AudioType, SoundManager } from '../../../core/SoundManager';
 import { UIManager } from '../../../core/UIManager';
 import { PopupManager } from '../../../PopUp/PopupManager';
-import { PopupStartCombatPet } from '../../../PopUp/PopupStartCombatPet';
 import { GameData } from './RPSGame';
-import { UserMeManager } from '../../../core/UserMeManager';
+import { ServerManager } from '../../../core/ServerManager';
+import { BatllePetParam, PopupBattlePet } from '../../../PopUp/PopupBattlePet';
 const { ccclass, property } = _decorator;
 
 @ccclass('PetCombat')
 export class PetCombat extends PlayerInteractAction {
-    private gameData: GameData = null;
     private fee: number = 5;
-
     protected onLoad() {
         this.actionType = ActionType.PetCombat;
     }
@@ -40,7 +38,7 @@ export class PetCombat extends PlayerInteractAction {
     }
 
     public onBeingInvited(data) {
-       SoundManager.instance.playSound(AudioType.Notice);
+        SoundManager.instance.playSound(AudioType.Notice);
         UIManager.Instance.showYesNoPopup(null, `${data.fromName} mời bạn chơi đấu pet. Phí <color=#FF0000> ${this.fee} diamond</color>`,
             () => {
                 this.startAction(data);
@@ -62,12 +60,16 @@ export class PetCombat extends PlayerInteractAction {
 
     public onStartAction(data) {
         super.onStartAction(data);
-        this.gameData = data;
     }
 
     public ShowCombat(data) {
-        PopupManager.getInstance().openAnimPopup('PopupStartCombatPet', PopupStartCombatPet, data);
+        const param: BatllePetParam = {
+            data: data as GameData,
+        };
+        PopupManager.getInstance().openAnimPopup('PopupBattlePet', PopupBattlePet, param);
     }
+
+
 
     public rejectAction(data) {
         SoundManager.instance.playSound(AudioType.NoReward);
@@ -86,7 +88,7 @@ export class PetCombat extends PlayerInteractAction {
 
     public actionResult(data) {
         super.actionResult(data);
-        PopupManager.getInstance().getPopup('PopupStartCombatPet').getComponent(PopupStartCombatPet).showEndCombat(data);
+        PopupManager.getInstance().getPopup('PopupStartCombatPet').getComponent(PopupBattlePet).showEndCombat(data);
     }
 
     public stop() {

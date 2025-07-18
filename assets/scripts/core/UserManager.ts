@@ -259,6 +259,7 @@ export class UserManager extends Component {
         let p1Diamond = data.fromDiamond;
         let p2Diamond = data.toDiamond;
         let message = data.message;
+        console.log("Action: ", action);
         if (action == ActionType.PetCombat.toString()) {
             if (p1.myID != this.GetMyClientPlayer.myID) {
                 p1.p2PInteractManager.showCombat(data);

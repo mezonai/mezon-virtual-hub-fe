@@ -7,8 +7,8 @@ const { ccclass, property } = _decorator;
 export enum InteractSlot {
     NONE,
     DRAG,
-    CLICK,
     DOUBLE_CLICK,
+    SHOW_UI,
 }
 @ccclass('ItemSlotSkill')
 export class ItemSlotSkill extends Component {
