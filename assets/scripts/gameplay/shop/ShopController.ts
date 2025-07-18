@@ -46,6 +46,7 @@ export class ShopController extends BaseInventoryManager {
 
     protected override closeUIBtnClick() {
         PopupManager.getInstance().closePopup(this.node.uuid);
+        this._onActionClose();
     }
 
     private async showPopupAndReset(): Promise<boolean> {
@@ -74,6 +75,7 @@ export class ShopController extends BaseInventoryManager {
             title: "Thông báo",
         };
         PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
+        this.onTabChange(this.currentTabName);
     }
 
     private async buyItem() {
@@ -97,10 +99,13 @@ export class ShopController extends BaseInventoryManager {
         });
     }
 
-    public init() {
+    public init(param: InteractShopParam) {
         super.init();
         this.initGroupData();
         this.onTabChange(this.categories[0]);
+        if(param != null && param.onActionClose != null){
+            this._onActionClose = param.onActionClose;
+        }
     }
 
     protected override reset() {
@@ -163,4 +168,8 @@ export class ShopController extends BaseInventoryManager {
             return acc;
         }, {} as Record<string, Item[]>);
     }
+}
+
+export interface InteractShopParam {
+    onActionClose?: () => void;
 }

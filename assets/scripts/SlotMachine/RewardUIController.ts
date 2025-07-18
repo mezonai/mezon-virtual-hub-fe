@@ -1,12 +1,10 @@
-import { _decorator, EventKeyboard, Input, input, instantiate, KeyCode, Node, Prefab, SpriteFrame, Tween, tween, Vec2, Vec3 } from 'cc';
-import { InventoryDTO, Item, ItemType, RewardItemDTO, RewardType } from '../Model/Item';
+import { _decorator, instantiate, Node, Prefab, tween, Vec3 } from 'cc';
+import { RewardItemDTO, RewardType } from '../Model/Item';
 import { BubbleRotation } from './BubbleRotation';
 import { RewardItem } from './RewardItem';
 import { BaseInventoryManager } from '../gameplay/player/inventory/BaseInventoryManager';
 import { ResourceManager } from '../core/ResourceManager';
-import { UserMeManager } from '../core/UserMeManager';
 import { RewardFloatingText } from './RewardFloatingText';
-import { GameManager } from '../core/GameManager';
 import { AudioType, SoundManager } from '../core/SoundManager';
 import { LocalItemDataConfig } from '../Model/LocalItemConfig';
 const { ccclass, property } = _decorator;
@@ -29,7 +27,8 @@ export class RewardUIController extends BaseInventoryManager {
         this.onAllRewardsShownCallback = callback;
     }
 
-    protected start(): void {
+    public init(param?: any): void {
+        super.init();
         if (!this.bubbleRotation) {
             return;
         }
@@ -91,12 +90,6 @@ export class RewardUIController extends BaseInventoryManager {
         if (index >= Math.min(this.MAX_SLOT, bubbleChildren.length)) return;
 
         const reward = index < listItem.length ? listItem[index] : undefined;
-        if (reward?.item) {
-            let inventory = new InventoryDTO();
-            inventory.item = reward.item;
-            GameManager.instance.inventoryController.addItemToInventory(inventory);
-        }
-
         const bubble = bubbleChildren[index];
         let itemNode = bubble.getChildByName("RewardItem");
         if (!itemNode) {
@@ -189,6 +182,7 @@ export class RewardUIController extends BaseInventoryManager {
     }
 
     public override setupFoodReward(uiItem: any, foodType: string) {
+        super.setupFoodReward(uiItem, foodType);
         const normalizedType = foodType.replace(/-/g, "");
         const sprite = this.foodIconMap[normalizedType];
         if (sprite) {

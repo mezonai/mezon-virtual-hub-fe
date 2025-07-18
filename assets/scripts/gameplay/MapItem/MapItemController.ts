@@ -26,6 +26,7 @@ export class MapItemController extends Interactable {
     private originParent: Node = null;
     protected currentPlayer: PlayerController = null;
     private ownerIdCache: string = "";
+    protected isOpenPopUp: boolean = false;
 
     public async init(sessionId, room, ownerId = "") {
         this.room = room;

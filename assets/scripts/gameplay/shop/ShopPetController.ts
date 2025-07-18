@@ -61,6 +61,7 @@ export class ShopPetController extends BaseInventoryManager {
 
     protected override closeUIBtnClick() {
         PopupManager.getInstance().closePopup(this.node.uuid);
+        this._onActionClose();
     }
 
     private async showPopupAndReset(): Promise<boolean> {
@@ -183,11 +184,14 @@ export class ShopPetController extends BaseInventoryManager {
         this.decreaseQuantityBtn.interactable = this.quantity > this.quantityLimit;
     }
 
-    public init() {
+    public init(param: InteractShopPetParam) {
         super.init();
         this.initGroupData();
         this.onTabChange(this.categories[0]);
         this.setupQuantityHandlers();
+         if(param != null && param.onActionClose != null){
+            this._onActionClose = param.onActionClose;
+        }
     }
 
     protected override reset() {
@@ -228,6 +232,7 @@ export class ShopPetController extends BaseInventoryManager {
     }
 
     public override setupFoodReward(uiItem: any, foodType: string) {
+        super.setupFoodReward(uiItem, foodType);
         const normalizedType = foodType.replace(/-/g, "");
         const sprite = this.foodIconMap[normalizedType];
         if (sprite) {
@@ -283,4 +288,8 @@ export class ShopPetController extends BaseInventoryManager {
         }, {} as Record<string, Food[]>);
         return grouped;
     }
+}
+
+export interface InteractShopPetParam {
+    onActionClose?: () => void;
 }
