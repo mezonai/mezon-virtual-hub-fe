@@ -4,17 +4,18 @@ import { ResourceManager } from '../core/ResourceManager';
 import { UserMeManager } from '../core/UserMeManager';
 import { EVENT_NAME } from '../network/APIConstant';
 import { UserDataResponse } from '../Interface/DataMapAPI';
+import { BasePopup } from '../PopUp/BasePopup';
 
 const { ccclass, property } = _decorator;
 
 @ccclass('BaseProfileManager')
-export class BaseProfileManager extends Component {
+export class BaseProfileManager extends BasePopup {
     @property(Sprite)
     protected sprite_Avatar: Sprite = null!;
 
     protected UserProfileData: UserDataResponse;
 
-    onLoad() {
+    public init(param?: any): void {
         if (!UserMeManager.Get) {
             return;
         }
