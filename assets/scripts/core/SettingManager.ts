@@ -3,8 +3,8 @@ import { SoundManager } from './SoundManager';
 import { CustomSlider } from '../ui/CustomSlider';
 import { BasePopup } from '../PopUp/BasePopup';
 import { PopupManager } from '../PopUp/PopupManager';
-import { UIHelp } from '../ui/UIHelp';
-import { UIAbout } from '../ui/UIAbout';
+import { UIHelp, UIHelpParam } from '../ui/UIHelp';
+import { UIAbout, UIAboutParam } from '../ui/UIAbout';
 
 const { ccclass, property } = _decorator;
 
@@ -52,17 +52,15 @@ export class SettingManager extends BasePopup {
     @property(Button) aboutButton: Button = null;
     @property(Button) closeButton: Button = null;
 
-    onLoad() {
+    private isOpenPopUp: boolean;
+
+    public init(param: SettingParam) {
         this.settingsoundmusic = {
             soundOn: this.iconValue[0],
             soundOff: this.iconValue[1],
             musicOn: this.iconValue[2],
             musicOff: this.iconValue[3],
         };
-        this.init();
-    }
-
-    public init() {
         this.currentSoundVolume = SoundManager.instance.getSoundVolume();
         this.currentMusicVolume = SoundManager.instance.getMusicVolume();
 
@@ -90,18 +88,38 @@ export class SettingManager extends BasePopup {
 
         this.updateSoundButtonIcon();
         this.updateMusicButtonIcon();
+        if(param != null && param.onActionClose != null){
+            this._onActionClose = param.onActionClose;
+        }
     }
 
     private onClosePopup(){
         PopupManager.getInstance().closePopup(this.node.uuid);
+        this._onActionClose?.();
     }
 
     private onShowHelp(){
-        PopupManager.getInstance().openAnimPopup('UI_Help', UIHelp);
+        if (this.isOpenPopUp) return;
+        this.isOpenPopUp = true;
+
+        const param: UIHelpParam = {
+            onActionClose: () => {
+                this.isOpenPopUp = false;
+            }
+        };
+        PopupManager.getInstance().openPopup('UI_Help', UIHelp, param);
     }
 
     private onShowAbout(){
-        PopupManager.getInstance().openAnimPopup('UI_AboutUs', UIAbout);
+        if (this.isOpenPopUp) return;
+        this.isOpenPopUp = true;
+
+        const param: UIAboutParam = {
+            onActionClose: () => {
+                this.isOpenPopUp = false;
+            }
+        };
+        PopupManager.getInstance().openPopup('UI_AboutUs', UIAbout, param);
     }
 
     private onSoundSliderChanged(slider: Slider) {
@@ -171,4 +189,8 @@ export class SettingManager extends BasePopup {
             ? this.settingsoundmusic.musicOff
             : this.settingsoundmusic.musicOn;
     }
+}
+
+export interface SettingParam {
+    onActionClose?: () => void;
 }

@@ -38,7 +38,7 @@ export class MyProfileManager extends BaseProfileManager {
     genderSprites: SpriteFrame[] = [];
     private selectedGenderIndex = 0;
 
-    public init() {
+    public init(param: MyProfileParam) {
         super.init();
         if (!UserMeManager.Get) {
             return;
@@ -51,10 +51,14 @@ export class MyProfileManager extends BaseProfileManager {
         this.clearInputFields();
         this.setEditingState(false);
         this.loadProfileUI();
+        if(param != null && param.onActionClose != null){
+            this._onActionClose = param.onActionClose;
+        }
     }
 
     private onClosePopup() {
         PopupManager.getInstance().closePopup(this.node.uuid);
+        this._onActionClose?.();
     }
 
     protected loadProfileUI() {
@@ -217,4 +221,8 @@ export class MyProfileManager extends BaseProfileManager {
     validateUsernameInput(value: string): boolean {
         return /^[a-zA-Z0-9]+$/.test(value);
     }
+}
+
+export interface MyProfileParam {
+    onActionClose?: () => void;
 }

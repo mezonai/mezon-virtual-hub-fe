@@ -61,7 +61,7 @@ export class ShopPetController extends BaseInventoryManager {
 
     protected override closeUIBtnClick() {
         PopupManager.getInstance().closePopup(this.node.uuid);
-        this._onActionClose();
+        this._onActionClose?.();
     }
 
     private async showPopupAndReset(): Promise<boolean> {

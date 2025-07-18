@@ -1,4 +1,4 @@
-import { _decorator, Collider2D, IPhysics2DContact} from 'cc';
+import { _decorator, Collider2D, IPhysics2DContact } from 'cc';
 import { PopupManager } from '../../PopUp/PopupManager';
 import { InteracterLabel } from '../../PopUp/InteracterLabel';
 import { SlotMachineController, SlotmachineParam } from '../../SlotMachine/SlotMachineController';
@@ -9,14 +9,14 @@ const { ccclass, property } = _decorator;
 export class InteractableSlotMachine extends MapItemController {
 
     protected override async interact(playerSessionId: string) {
-         if(this.isOpenPopUp) return;
-                this.isOpenPopUp = true;
-        
-                const param: SlotmachineParam = {
-                     onActionClose:()=>{
-                        this.isOpenPopUp = false;
-                     }          
-                };
+        if (this.isOpenPopUp) return;
+        this.isOpenPopUp = true;
+
+        const param: SlotmachineParam = {
+            onActionClose: () => {
+                this.isOpenPopUp = false;
+            }
+        };
         let panel = await PopupManager.getInstance().openPopup('UISlotMachinePopup', SlotMachineController, param);
         const popupComponent = panel?.getComponent(SlotMachineController);
         popupComponent.showNoticeSpin(true);

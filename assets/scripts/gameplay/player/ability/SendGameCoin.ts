@@ -3,14 +3,15 @@ import { PlayerInteractAction } from './PlayerInteractAction';
 import { UserMeManager } from '../../../core/UserMeManager';
 import { UIManager } from '../../../core/UIManager';
 import { UIID } from '../../../ui/enum/UIID';
-import { SendTokenPanel } from '../../../ui/SendTokenPanel';
+import { SendTokenPanel, SendTokenParam } from '../../../ui/SendTokenPanel';
 import { UserManager } from '../../../core/UserManager';
 import { AudioType, SoundManager } from '../../../core/SoundManager';
+import { PopupManager } from '../../../PopUp/PopupManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('SendGameCoin')
 export class SendGameCoin extends PlayerInteractAction {
-
+    private isOpenPopUp: boolean = false; 
     private readonly notEnoughGoldResponse = [
         "Bạn nghĩ mình có nhiều tiền thế ư?",
         "Bạn điền nhiều tiền quá rồi",
@@ -24,6 +25,8 @@ export class SendGameCoin extends PlayerInteractAction {
     ];
 
     protected override invite() {
+        if(this.isOpenPopUp) return;
+        this.isOpenPopUp = true;
         if (UserMeManager.Get) {
             if (UserMeManager.playerDiamond <= 0) {
                 UserManager.instance.GetMyClientPlayer.zoomBubbleChat("Tính năng chỉ dành cho người có tiền");
@@ -33,12 +36,13 @@ export class SendGameCoin extends PlayerInteractAction {
         }
 
         super.invite();
-
-        let popop = UIManager.Instance.showUI(UIID.SendToken);
-        popop.getComponent(SendTokenPanel).setSendCallback((data) => {
-            this.startAction(data)
-        });
-
+        const param: SendTokenParam = {
+            onActionClose:()=>{
+                this.isOpenPopUp = false;
+            }, 
+            onActionSendDiamond: (data) => { this.startAction(data); }
+        }
+        PopupManager.getInstance().openAnimPopup("UITransferDiamondPopup", SendTokenPanel, param);
     }
 
     public onBeingInvited(data) {
