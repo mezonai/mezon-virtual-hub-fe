@@ -17,6 +17,8 @@ import { OfficeSceneController } from '../GameMap/OfficeScene/OfficeSceneControl
 import { PetDTO } from '../Model/PetDTO';
 import ConvetData from './ConvertData';
 import { WebRequestManager } from '../network/WebRequestManager';
+import { ConfirmParam, ConfirmPopup } from '../PopUp/ConfirmPopup';
+import { PopupManager } from '../PopUp/PopupManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('UserManager')
@@ -241,7 +243,11 @@ export class UserManager extends Component {
     public onP2PGameError(data) {
         if (data.from == this.GetMyClientPlayer.myID || data.to == this.GetMyClientPlayer.myID) {
             SoundManager.instance.playSound(AudioType.Lose);
-            UIManager.Instance.showNoticePopup(null, data.message);
+            const param: ConfirmParam = {
+                message: data.message,
+                title: "Chú Ý",
+            };
+            PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
         }
         this.players.forEach(player => {
             player.p2PInteractManager.stopP2pAction(data);
@@ -339,7 +345,11 @@ export class UserManager extends Component {
         if (data.playerCatchId === UserManager.instance.GetMyClientPlayer.myID) this.updateMyData(data.petId);
     }
     public onPetAlreadyCaught(data) {
-        UIManager.Instance.showNoticePopup("Thông báo", `Thú cưng đã bị bắt. Chúc bạn may mắn lần sau`);
+        const param: ConfirmParam = {
+            message: `Thú cưng đã bị bắt. Chúc bạn may mắn lần sau`,
+            title: "Thông báo",
+        };
+        PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
     }
     public onCatchPetFail(data) {
         let animal = OfficeSceneController.instance.currentMap.AnimalSpawner.getAnimalById(data.petId);
@@ -384,7 +394,11 @@ export class UserManager extends Component {
         const pet = UserMeManager.Get.animals.find(p => p.id === petCaughId);
         if (UserManager.instance.GetMyClientPlayer) {
             const content = pet != null ? `Bạn đã bắt thành công <color=#FF0000>${pet.name} (${pet.rarity})</color>` : `Bạn đã bắt pet thành công`
-            UIManager.Instance.showNoticePopup("Thông báo", content);
+            const param: ConfirmParam = {
+                message: content,
+                title: "Thông báo",
+            };
+            PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
         }
     }
 

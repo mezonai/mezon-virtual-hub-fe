@@ -65,7 +65,6 @@ export class P2PInteractManager extends Ability {
     }
 
     public onAcceptedActionFromOther(data) {
-        console.log("Accept");
         for (const action of this.actionButtons) {
             if (action.actionType.toString() == data.action) {
                 action.onStartAction(data);
@@ -76,7 +75,6 @@ export class P2PInteractManager extends Ability {
     }
 
     public onRejectedActionFromOther(data) {
-        console.log("Reject");
         for (const action of this.actionButtons) {
             if (action.actionType.toString() == data.action) {
                 action.onRejectAction(data);

@@ -7,11 +7,12 @@ import { SendTokenPanel, SendTokenParam } from '../../../ui/SendTokenPanel';
 import { UserManager } from '../../../core/UserManager';
 import { AudioType, SoundManager } from '../../../core/SoundManager';
 import { PopupManager } from '../../../PopUp/PopupManager';
+import { PopupSelectionMini, SelectionMiniParam } from '../../../PopUp/PopupSelectionMini';
 const { ccclass, property } = _decorator;
 
 @ccclass('SendGameCoin')
 export class SendGameCoin extends PlayerInteractAction {
-    private isOpenPopUp: boolean = false; 
+    private isOpenPopUp: boolean = false;
     private readonly notEnoughGoldResponse = [
         "Bạn nghĩ mình có nhiều tiền thế ư?",
         "Bạn điền nhiều tiền quá rồi",
@@ -25,7 +26,7 @@ export class SendGameCoin extends PlayerInteractAction {
     ];
 
     protected override invite() {
-        if(this.isOpenPopUp) return;
+        if (this.isOpenPopUp) return;
         this.isOpenPopUp = true;
         if (UserMeManager.Get) {
             if (UserMeManager.playerDiamond <= 0) {
@@ -37,9 +38,9 @@ export class SendGameCoin extends PlayerInteractAction {
 
         super.invite();
         const param: SendTokenParam = {
-            onActionClose:()=>{
+            onActionClose: () => {
                 this.isOpenPopUp = false;
-            }, 
+            },
             onActionSendDiamond: (data) => { this.startAction(data); }
         }
         PopupManager.getInstance().openAnimPopup("UITransferDiamondPopup", SendTokenPanel, param);
@@ -48,9 +49,17 @@ export class SendGameCoin extends PlayerInteractAction {
     public onBeingInvited(data) {
         const { fromName, amount, currentDiamond } = data;
         SoundManager.instance.playSound(AudioType.Notice);
-        UIManager.Instance.showNoticePopup(null, `Nhận <color=#FF0000> ${amount} Diamond</color> từ ${fromName}`, () => {
-            UserMeManager.playerDiamond = currentDiamond;
-        })
+        const param: SelectionMiniParam = {
+            title: "Thông báo",
+            content: `Nhận <color=#FF0000> ${amount} Diamond</color> từ ${fromName}`,
+            textButtonLeft: "",
+            textButtonRight: "",
+            textButtonCenter: "OK",
+            onActionButtonCenter: () => {
+                UserMeManager.playerDiamond = currentDiamond;
+            },
+        };
+        PopupManager.getInstance().openAnimPopup("PopupSelectionMini", PopupSelectionMini, param);
     }
 
     protected startAction(data) {
@@ -89,9 +98,17 @@ export class SendGameCoin extends PlayerInteractAction {
         super.actionResult(data);
         const { toName, amount, currentDiamond } = data;
         SoundManager.instance.playSound(AudioType.ReceiveReward);
-        UIManager.Instance.showNoticePopup(null, `Gửi <color=#FF0000> ${amount} Diamond</color> tới ${toName} thành công`, () => {
-            UserMeManager.playerDiamond = currentDiamond;
-        })
+        const param: SelectionMiniParam = {
+            title: "Thông báo",
+            content: `Gửi <color=#FF0000> ${amount} Diamond</color> tới ${toName} thành công`,
+            textButtonLeft: "",
+            textButtonRight: "",
+            textButtonCenter: "OK",
+            onActionButtonCenter: () => {
+                UserMeManager.playerDiamond = currentDiamond;
+            },
+        };
+        PopupManager.getInstance().openAnimPopup("PopupSelectionMini", PopupSelectionMini, param);
     }
 
     public stop() {

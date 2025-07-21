@@ -8,6 +8,9 @@ import { UserMeManager } from './UserMeManager';
 import Utilities from '../utilities/Utilities';
 import { AudioType, SoundManager } from './SoundManager';
 import { UserManager } from './UserManager';
+import { ConfirmParam, ConfirmPopup } from '../PopUp/ConfirmPopup';
+import { PopupManager } from '../PopUp/PopupManager';
+import { PopupSelectionMini, SelectionMiniParam } from '../PopUp/PopupSelectionMini';
 const { ccclass, property } = _decorator;
 
 @ccclass('ExchangeCoinController')
@@ -63,23 +66,35 @@ export class ExchangeCoinController extends Component {
             window.Mezon.WebView.postEvent(MezonWebViewEvent.SendToken, sendData, null);
         }
         else {
-            UIManager.Instance.showNoticePopup("Chú Ý", "Chỉ khả dụng trên Mezon");
+            this.showNoticeIfUsingMezon();
         }
     }
 
     private onSendTokenSuccess(e, data) {
         SoundManager.instance.playSound(AudioType.ReceiveReward);
         if (this.amount > 0 && UserMeManager.Get) {
-            UIManager.Instance.showNoticePopup("Thông báo", `<color=#FF0000>${Utilities.convertBigNumberToStr(this.amount)} Diamond</color> được cộng vào tài khoản`, () => {
-                UserMeManager.playerDiamond += this.amount;
-                this.amount = -1;
-            })
+            const param: SelectionMiniParam = {
+                title: "Thông báo",
+                content: `<color=#FF0000>${Utilities.convertBigNumberToStr(this.amount)} Diamond</color> được cộng vào tài khoản`,
+                textButtonLeft: "",
+                textButtonRight: "",
+                textButtonCenter: "OK",
+                onActionButtonCenter: () => {
+                    UserMeManager.playerDiamond += this.amount;
+                    this.amount = -1;
+                },
+            };
+            PopupManager.getInstance().openAnimPopup("PopupSelectionMini", PopupSelectionMini, param);
         }
     }
 
     private onSendTokenFail(data) {
         this.amount = -1;
-        UIManager.Instance.showNoticePopup("Chú ý", "Không thể nạp Diamond");
+        const param: ConfirmParam = {
+            message: "Không thể nạp Diamond",
+            title: "Chú Ý",
+        };
+        PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
         SoundManager.instance.playSound(AudioType.NoReward);
     }
 
@@ -94,7 +109,7 @@ export class ExchangeCoinController extends Component {
             ServerManager.instance.Withdraw(UserManager.instance?.GetMyClientPlayer.myID, sendData);
         }
         else {
-            UIManager.Instance.showNoticePopup("Chú Ý", "Chỉ khả dụng trên Mezon");
+            this.showNoticeIfUsingMezon();
         }
     }
 
@@ -108,7 +123,15 @@ export class ExchangeCoinController extends Component {
             ServerManager.instance.exchangeCoinToDiamond(UserManager.instance?.GetMyClientPlayer.myID, sendData);
         }
         else {
-            UIManager.Instance.showNoticePopup("Chú Ý", "Chỉ khả dụng trên Mezon");
+            this.showNoticeIfUsingMezon();
         }
+    }
+
+    private showNoticeIfUsingMezon() {
+        const param: ConfirmParam = {
+            message: "Chỉ khả dụng trên Mezon",
+            title: "Chú Ý",
+        };
+        PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
     }
 }

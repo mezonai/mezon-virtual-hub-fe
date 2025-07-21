@@ -12,18 +12,8 @@ export class UIManager extends Component {
     private static _instance: UIManager = null;
     @property({ type: Enum(UIID) }) defaultUI: UIID = UIID.Home;
     @property({ type: [Node] }) listPanel: Node[] = [];
-    @property({ type: Node }) popupNode: Node;
     @property({ type: Button }) outmapButton: Button;
     @property({ type: ToolSpawnPet }) toolcreatePet: ToolSpawnPet;
-    private _popup: UIPopup = null;
-
-    private get popup() {
-        if (this._popup == null) {
-            this._popup = this.popupNode.getComponent(UIPopup);
-        }
-
-        return this._popup;
-    }
 
     private _listPanel: UIIdentify[] = [];
 
@@ -131,14 +121,6 @@ export class UIManager extends Component {
             }
         }
     };
-
-    public showYesNoPopup(title: string, content: string, yesCallback, noCallback = null, txt_Yes: string = "Yes", txt_No: string = "No", closeAfter: number = -1): void {
-        this.popup.showYesNoPopup(title, content, yesCallback, txt_Yes, txt_No, noCallback, closeAfter);
-    };
-
-    public showNoticePopup(title = "Chú Ý", content = "", callback = null) {
-        this.popup.showOkPopup(title, content, callback, "OK");
-    }
 
     public HideUI(id: UIID) {
         for (const panel of this._listPanel) {
