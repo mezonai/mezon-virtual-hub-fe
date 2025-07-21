@@ -3,9 +3,7 @@ import { UIID } from '../ui/enum/UIID';
 import { UIIdentify } from '../ui/UIIdentify';
 import { EVENT_NAME } from '../network/APIConstant';
 import Utilities from '../utilities/Utilities';
-import { _decorator, Component, Enum, view, Node, director, Button, View } from 'cc';
-import { PopupManager } from '../PopUp/PopupManager';
-import { PopupOwnedAnimals } from '../PopUp/PopupOwnedAnimals';
+import { _decorator, Component, Enum, view, Node, director, Button } from 'cc';
 import { ToolSpawnPet } from '../utilities/ToolSpawnPet';
 const { ccclass, property } = _decorator;
 
@@ -15,14 +13,9 @@ export class UIManager extends Component {
     @property({ type: Enum(UIID) }) defaultUI: UIID = UIID.Home;
     @property({ type: [Node] }) listPanel: Node[] = [];
     @property({ type: Node }) popupNode: Node;
-    @property({ type: Node }) bigPopupNode: Node;
-    @property({ type: Node }) fadePopupNode: Node;
     @property({ type: Button }) outmapButton: Button;
-    @property({ type: Button }) showOwnedButton: Button;
     @property({ type: ToolSpawnPet }) toolcreatePet: ToolSpawnPet;
     private _popup: UIPopup = null;
-    private _bigPopup: UIPopup = null;
-    private _fadePopup: UIPopup = null;
 
     private get popup() {
         if (this._popup == null) {
@@ -30,22 +23,6 @@ export class UIManager extends Component {
         }
 
         return this._popup;
-    }
-
-    private get bigPopup() {
-        if (this._bigPopup == null) {
-            this._bigPopup = this.bigPopupNode.getComponent(UIPopup);
-        }
-
-        return this._bigPopup;
-    }
-
-    private get fadePopup() {
-        if (this._fadePopup == null) {
-            this._fadePopup = this.fadePopupNode.getComponent(UIPopup);
-        }
-
-        return this._fadePopup;
     }
 
     private _listPanel: UIIdentify[] = [];
@@ -59,7 +36,7 @@ export class UIManager extends Component {
             UIManager._instance = this;
         }
         view.on('canvas-resize', UIManager.Instance.onResize.bind(UIManager.Instance));
-        this.showOwnedButton.node.on(Button.EventType.CLICK, () => this.showPopupOwenedAnimal(), this);
+       
     }
 
     onResize() {
@@ -163,18 +140,6 @@ export class UIManager extends Component {
         this.popup.showOkPopup(title, content, callback, "OK");
     }
 
-    public showBigNoticePopup(title = "Chú Ý", content = "", callback = null) {
-        this.bigPopup.showOkPopup(title, content, callback, "OK");
-    }
-
-    public showMessageTimeout(content: string, closeAfter: number) {
-        this.fadePopup.showMessageTimeout(content, closeAfter);
-    }
-
-    public hideMessageTimeout() {
-        this.fadePopup.hide();
-    }
-
     public HideUI(id: UIID) {
         for (const panel of this._listPanel) {
             if (panel.id == id) {
@@ -183,10 +148,7 @@ export class UIManager extends Component {
         }
     }
 
-    showPopupOwenedAnimal() {
-        PopupManager.getInstance().openAnimPopup('PopupOwnedAnimals', PopupOwnedAnimals, { message: "" });
-    }
-
+   
     // TweenEasing = "linear" | "smooth" | "fade" | "constant" | "quadIn" | "quadOut" | "quadInOut" |
     //  "quadOutIn" | "cubicIn" | "cubicOut" | "cubicInOut" | "cubicOutIn" | "quartIn" | "quartOut" |
     //  "quartInOut" | "quartOutIn" | "quintIn" | "quintOut" | "quintInOut" | "quintOutIn" | "sineIn" |

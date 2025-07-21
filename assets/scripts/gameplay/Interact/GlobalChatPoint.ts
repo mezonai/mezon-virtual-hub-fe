@@ -5,6 +5,9 @@ import { UIID } from '../../ui/enum/UIID';
 import { UserMeManager } from '../../core/UserMeManager';
 import { UserManager } from '../../core/UserManager';
 import { Constants } from '../../utilities/Constants';
+import { PopupManager } from '../../PopUp/PopupManager';
+import { PopupSelectionMini, SelectionMiniParam } from '../../PopUp/PopupSelectionMini';
+import { GlobalChatParam, GlobalChatPopup } from '../../ui/GlobalChatPopup';
 
 const { ccclass, property } = _decorator;
 
@@ -12,6 +15,9 @@ const { ccclass, property } = _decorator;
 export class GlobalChatPoint extends MapItemController {
 
     protected override async interact(playerSessionId: string) {
+        if (this.isOpenPopUp) return;
+        this.isOpenPopUp = true;
+
         if (UserMeManager.Get) {
             if (UserMeManager.playerCoin < Constants.WiSH_FEE) {
                 UserManager.instance.GetMyClientPlayer.zoomBubbleChat(`Cần ${Constants.WiSH_FEE} đồng để dùng tính năng này`)
@@ -22,17 +28,35 @@ export class GlobalChatPoint extends MapItemController {
             return;
         }
 
-        if (UIManager.Instance.FindUIIndetify(UIID.GlobalChat).node.active) return;
-        UIManager.Instance.showYesNoPopup("Chú Ý", `Bỏ ${Constants.WiSH_FEE} đồng để thực hiện điều ước của bạn?`,
-            () => {
+        const param: SelectionMiniParam = {
+            title:"Chú ý",
+            content: `Bỏ ${Constants.WiSH_FEE} đồng để thực hiện điều ước của bạn?`,
+            textButtonLeft: "OK",
+            textButtonRight: "Thôi",
+            textButtonCenter: "",
+            onActionButtonLeft: () => {
                 UserMeManager.playerCoin -= Constants.WiSH_FEE;
                 this.ShowGlobalChat();
-            }, null, "OK", "Thôi")
+            },
+            onActionButtonRight: () => {
+                this.isOpenPopUp = false;
+            },
+            onActionClose:()=>{
+                this.isOpenPopUp = false;
+            },  
+        };
+        PopupManager.getInstance().openAnimPopup("PopupSelectionMini", PopupSelectionMini, param);
         this.handleEndContact(null, null, null);
     }
 
     private async ShowGlobalChat() {
         await this.delay(600);
+         const param: GlobalChatParam = {
+            onActionClose:()=>{
+                this.isOpenPopUp = false;
+            },  
+        };
+        PopupManager.getInstance().openAnimPopup("GlobalChatPanel", GlobalChatPopup, param);
         UIManager.Instance.showUI(UIID.GlobalChat);
     }
 
