@@ -6,13 +6,13 @@ import ConvetData from '../core/ConvertData';
 import { UserMeManager } from '../core/UserMeManager';
 import { MapData } from '../Interface/DataMapAPI';
 import { ServerManager } from '../core/ServerManager';
+import { PopupSelectionMini, SelectionMiniParam } from '../PopUp/PopupSelectionMini';
+import { PopupManager } from '../PopUp/PopupManager';
 const { ccclass, property } = _decorator;
 
 @ccclass("WebRequestManager")
 export class WebRequestManager extends Component {
     private static _instance: WebRequestManager = null;
-
-    @property({ type: UIPopup }) noticePanel: UIPopup = null;
     @property({ type: Node }) loadingPanel: Node = null;
 
     public static get instance(): WebRequestManager {
@@ -203,14 +203,22 @@ export class WebRequestManager extends Component {
             console.log(e);
         }
 
-        this.noticePanel.showOkPopup(null, json.error_message, () => {
-            APIConfig.token = "";
+        const param: SelectionMiniParam = {
+            title: "Thông báo",
+            content: json.error_message,
+            textButtonLeft: "",
+            textButtonRight: "",
+            textButtonCenter: "Refresh",
+            onActionButtonCenter: () => {
+                APIConfig.token = "";
             if (ServerManager.instance?.Room) {
                 ServerManager.instance.Room.leave();
             }
             director.emit(EVENT_NAME.RELOAD_SCENE);
             director.loadScene("GameMap");
-        }, "Refresh");
+            },
+        };
+        PopupManager.getInstance().openAnimPopup("PopupSelectionMini", PopupSelectionMini, param);
         onError(json);
     }
 }

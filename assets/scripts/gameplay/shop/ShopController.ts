@@ -11,15 +11,16 @@ import UIPopup from '../../ui/UI_Popup';
 import Utilities from '../../utilities/Utilities';
 import { PopupManager } from '../../PopUp/PopupManager';
 import { ConfirmParam, ConfirmPopup } from '../../PopUp/ConfirmPopup';
+import { PopupBuyItem, PopupBuyItemParam } from '../../PopUp/PopupBuyItem';
 const { ccclass, property } = _decorator;
 
 @ccclass('ShopController')
 export class ShopController extends BaseInventoryManager {
-    @property({ type: UIPopup }) noticePopup: UIPopup = null;
     @property({ type: RichText }) itemPrice: RichText = null;
     @property({ type: Node }) itemPriceContainer: Node = null;
     protected override groupedItems: Record<string, Item[]> = null;
     protected override selectingUIItem: ShopUIItem = null;
+    private isOpenPopUp: boolean = false;
 
     protected override async actionButtonClick() {
         try {
@@ -51,17 +52,28 @@ export class ShopController extends BaseInventoryManager {
 
     private async showPopupAndReset(): Promise<boolean> {
         let result = await new Promise<boolean>((resolve, reject) => {
-            this.noticePopup.showYesNoPopup(
-                null,
-                Utilities.convertBigNumberToStr(this.selectingUIItem.data.gold),
-                () => {
+             if (this.isOpenPopUp || !this.selectingUIItem?.data?.gold || this.selectingUIItem.data.gold <= 0) 
+            {
+                reject(false);
+                return;
+            }
+            if (this.isOpenPopUp) return;
+            this.isOpenPopUp = true;
+            const param: PopupBuyItemParam = {
+                selectedItemPrice: Utilities.convertBigNumberToStr(this.selectingUIItem.data.gold),
+                textButtonLeft: "Thôi",
+                textButtonRight: "Mua",
+                onActionButtonLeft: () => {
+                    reject(false);
+                },
+                onActionButtonRight: () => {
                     resolve(true);
                 },
-                null, null,
-                () => {
-                    reject(false);
-                }
-            );
+                onActionClose: () => {
+                    this.isOpenPopUp = false;
+                },
+            };
+            PopupManager.getInstance().openAnimPopup("PopupBuyItem", PopupBuyItem, param);
         });
 
         return result;
@@ -103,7 +115,7 @@ export class ShopController extends BaseInventoryManager {
         super.init();
         this.initGroupData();
         this.onTabChange(this.categories[0]);
-        if(param != null && param.onActionClose != null){
+        if (param != null && param.onActionClose != null) {
             this._onActionClose = param.onActionClose;
         }
     }
