@@ -41,9 +41,6 @@ export class GlobalChatPoint extends MapItemController {
             onActionButtonRight: () => {
                 this.isOpenPopUp = false;
             },
-            onActionClose:()=>{
-                this.isOpenPopUp = false;
-            },  
         };
         PopupManager.getInstance().openAnimPopup("PopupSelectionMini", PopupSelectionMini, param);
         this.handleEndContact(null, null, null);
