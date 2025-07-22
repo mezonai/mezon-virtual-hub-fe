@@ -8,7 +8,6 @@ export class CustomToggle extends Toggle {
 
     onLoad() {
         this.node.on('toggle', this.onToggleChanged, this);
-        this.onToggleChanged(this);
     }
 
     onEnable(): void {
