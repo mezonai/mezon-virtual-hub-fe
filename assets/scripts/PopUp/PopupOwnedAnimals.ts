@@ -268,14 +268,14 @@ export class PopupOwnedAnimals extends BasePopup {
         };
         PopupManager.getInstance().openAnimPopup("PopupSelection", PopupSelection, param);
     }
-    public async init(param?) {
-        this.showPopup();
-    }
-
-    protected onLoad(): void {
+    public async init(param: PopupOwnedAnimalsParam) {
         this.closeButton.node.on(Button.EventType.CLICK, this.saveChange, this);
         this.bringButton.node.on(Button.EventType.CLICK, this.onButtonBringPetClick, this);
         this.summonButton.node.on(Button.EventType.CLICK, this.onSummonPetPetClick, this);
+        if (param != null && param.onActionClose != null) {
+            this._onActionClose = param.onActionClose;
+        }
+        this.showPopup();
     }
 
     onButtonBringPetClick() {
@@ -317,6 +317,7 @@ export class PopupOwnedAnimals extends BasePopup {
     async closePopup() {
         await this.resePet();
         await PopupManager.getInstance().closePopup(this.node.uuid, true);
+        this._onActionClose?.();
     }
     private onError(error: any) {
         console.error("Error occurred:", error);
@@ -353,5 +354,7 @@ export class PopupOwnedAnimals extends BasePopup {
         }
     }
 }
-
+export interface PopupOwnedAnimalsParam {
+    onActionClose?: () => void;
+}
 

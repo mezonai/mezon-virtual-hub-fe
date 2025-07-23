@@ -8,6 +8,8 @@ import { GameMapController } from '../GameMap/GameMapController';
 import { UserMeManager } from '../core/UserMeManager';
 import { LocalItemConfig } from '../Model/LocalItemConfig';
 import { Tutorial } from '../tutorial/Tutorial';
+import { PopupSelectionMini, SelectionMiniParam } from '../PopUp/PopupSelectionMini';
+import { PopupManager } from '../PopUp/PopupManager';
 
 const { ccclass, property } = _decorator;
 
@@ -251,20 +253,27 @@ export class UILoginControll extends Component {
 
     updateGender() {
         let genderMessage = "Giới tính sẽ không thể thay đổi."
-        WebRequestManager.instance.noticePanel.showYesNoPopup(null, genderMessage, () => {
-            let data = {
-                "map_id": null,
-                "position_x": null,
-                "position_y": null,
-                "display_name": this.usernameLabel.string,
-                "gender": this.genderLabel.string.toLowerCase() == "nam" ? "male" : "female",
-                "skin_set": ResourceManager.instance.LocalSkinConfig.male.defaultSet
-            }
+        const param: SelectionMiniParam = {
+            title: "Thông báo",
+            content: genderMessage,
+            textButtonLeft: "",
+            textButtonRight: "",
+            textButtonCenter: "Ok",
+            onActionButtonCenter: () => {
+                let data = {
+                    "map_id": null,
+                    "position_x": null,
+                    "position_y": null,
+                    "display_name": this.usernameLabel.string,
+                    "gender": this.genderLabel.string.toLowerCase() == "nam" ? "male" : "female",
+                    "skin_set": ResourceManager.instance.LocalSkinConfig.male.defaultSet
+                }
 
-            WebRequestManager.instance.updateProfile(data, (response) => this.onUpdateGender(response), (error) => this.onError(error));
-            this.login_Btn.interactable = false;
-        },
-            null, null, null)
+                WebRequestManager.instance.updateProfile(data, (response) => this.onUpdateGender(response), (error) => this.onError(error));
+                this.login_Btn.interactable = false;
+            },
+        };
+        PopupManager.getInstance().openAnimPopup("PopupSelectionMini", PopupSelectionMini, param);
     }
 
     private onUpdateGender(respone) {

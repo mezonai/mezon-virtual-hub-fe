@@ -2,7 +2,7 @@ import { _decorator, Button, Component, Node } from 'cc';
 import { PopupManager } from '../PopUp/PopupManager';
 import { InventoryManager, InventoryParam } from '../gameplay/player/inventory/InventoryManager';
 import { SettingManager, SettingParam } from '../core/SettingManager';
-import { PopupOwnedAnimals } from '../PopUp/PopupOwnedAnimals';
+import { PopupOwnedAnimals, PopupOwnedAnimalsParam } from '../PopUp/PopupOwnedAnimals';
 const { ccclass, property } = _decorator;
 
 @ccclass('PlayerHubController')
@@ -43,7 +43,15 @@ export class PlayerHubController extends Component {
     }
 
     showPopupOwenedAnimal() {
-        PopupManager.getInstance().openAnimPopup('PopupOwnedAnimals', PopupOwnedAnimals, { message: "" });
+        if (this.isOpenPopUp) return;
+        this.isOpenPopUp = true;
+
+        const param: PopupOwnedAnimalsParam = {
+            onActionClose: () => {
+                this.isOpenPopUp = false;
+            }
+        };
+        PopupManager.getInstance().openAnimPopup('PopupOwnedAnimals', PopupOwnedAnimals, param);
     }
 
 }

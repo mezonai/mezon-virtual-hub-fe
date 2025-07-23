@@ -78,7 +78,6 @@ export class ShopPetController extends BaseInventoryManager {
                 },
                 onActionButtonRight: (quantity: number) => {
                     this.quantity = quantity;
-                    console.log(quantity + " quantity");
                     resolve(true);
                 },
                 onActionClose: () => {
