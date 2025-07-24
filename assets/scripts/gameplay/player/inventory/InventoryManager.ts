@@ -24,6 +24,7 @@ export class InventoryManager extends BaseInventoryManager {
 
     protected override closeUIBtnClick() {
         PopupManager.getInstance().closePopup(this.node.uuid);
+        this._onActionClose?.();
     }
 
 
@@ -31,13 +32,16 @@ export class InventoryManager extends BaseInventoryManager {
         UserManager.instance.updatePlayerSkin(this.skinData, true);
     }
 
-    public init() {
+    public init(param: InventoryParam) {
         super.init();
         this.goBg.active = false;
         this.addLocalData();
         this.initGroupData();
         this.onTabChange(this.categories[0]);
         this.isItemGenerated = false;
+        if(param != null && param.onActionClose != null){
+            this._onActionClose = param.onActionClose;
+        }
     }
 
     private addLocalData() {
@@ -241,4 +245,6 @@ export class InventoryManager extends BaseInventoryManager {
     }
 }
 
-
+export interface InventoryParam {
+    onActionClose?: () => void;
+}

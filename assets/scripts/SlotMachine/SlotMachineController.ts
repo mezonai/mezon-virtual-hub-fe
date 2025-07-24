@@ -87,7 +87,7 @@ export class SlotMachineController extends BasePopup {
         this.slotMachinePopUp.active = false;
         this.refreshUserData();
         PopupManager.getInstance().closePopup(this.node.uuid);
-        this._onActionClose();
+        this._onActionClose?.();
     }
 
     public showNoticeSpin(isShow: boolean) {

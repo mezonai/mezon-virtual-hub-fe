@@ -28,6 +28,13 @@ export class GameManager extends Component {
     public init() {
         this.uiMission.getMissionEventData();
         this.tutorialCacthPet();
+        this.resetNoticeTrandferDiamon();
+    }
+
+    resetNoticeTrandferDiamon(){
+        if (localStorage.getItem(Constants.NOTICE_TRANSFER_DIAMOND) !== null){
+            localStorage.removeItem(Constants.NOTICE_TRANSFER_DIAMOND);
+        }
     }
 
     tutorialCacthPet() {

@@ -9,8 +9,16 @@ export class UIHelp extends BasePopup {
 
     public init(param?: any): void {
         this.closeButton.node.on('click', this.onClosePopup, this);
+         if(param != null && param.onActionClose != null){
+            this._onActionClose = param.onActionClose;
+        }
     }
     private onClosePopup() {
         PopupManager.getInstance().closePopup(this.node.uuid);
+        this._onActionClose?.();
     }
+}
+
+export interface UIHelpParam {
+    onActionClose?: () => void;
 }
