@@ -1,5 +1,5 @@
-import { _decorator, Component, Node, Sprite, SpriteFrame, Animation, Enum, Vec3 } from 'cc';
-import { PetDTO2, Species } from '../Model/PetDTO';
+import { _decorator, Component, Node, Sprite, SpriteFrame, Animation, Enum, Vec3, tween } from 'cc';
+import { PetBattleInfo, PetDTO2, Species } from '../Model/PetDTO';
 const { ccclass, property } = _decorator;
 @ccclass('SpeciesMap')
 export class SpeciesMap {
@@ -36,14 +36,91 @@ export class PetBattlePrefab extends Component {
         return SkillMapById.get(id);
     }
 
-    setDataPet(pet: PetDTO2, slot: number) {
+    setDataPet(pet: PetBattleInfo, slot: number) {
         if (pet == null) return;
         this.petDisplay.spriteFrame = this.getSpritePet(pet.species);
-        this.petDisplay.node.setScale(slot < 1 ? new Vec3(-1, 1, 1) : Vec3.ONE);
+        this.SetPositionAndScale(pet.species, slot);
+        this.petDisplay.node.active = true;
     }
 
     getSpritePet(species: Species): SpriteFrame {
         return this.speciesMap.find(t => t.species === species).spritePet || this.speciesMap[0].spritePet;
+    }
+
+    SetPositionAndScale(species: Species, slot: number) {
+        const isLeftSide = slot < 1;
+        const flipX = isLeftSide ? -1 : 1;
+
+        // Mặc định
+        let position = new Vec3(0, 0, 0);
+        let scale = new Vec3(flipX, 1, 1);
+
+        switch (species) {
+            case Species.Bubblespark:
+                position = new Vec3(0, 7, 0);
+                scale = new Vec3(0.9 * flipX, 0.9, 1);
+                break;
+            case Species.Dragon:
+                position = new Vec3(0, 8, 0);
+                scale = new Vec3(0.8 * flipX, 0.8, 1);
+                break;
+            case Species.DragonFire:
+            case Species.DragonIce:
+            case Species.DragonNormal:
+                position = new Vec3(0, 12, 0);
+                scale = new Vec3(0.8 * flipX, 0.8, 1);
+                break;
+            case Species.Duskar:
+                position = new Vec3(0, 6, 0);
+                scale = isLeftSide ? new Vec3(-1, 1, 1) : Vec3.ONE;
+                break;
+            case Species.Leafeon:
+                position = new Vec3(0, 9.5, 0);
+                scale = new Vec3(0.6 * flipX, 0.6, 1);
+                break;
+            case Species.Lizard:
+                position = new Vec3(0, 5, 0);
+                scale = new Vec3(0.8 * flipX, 0.8, 1);
+                break;
+            case Species.PhoenixFire:
+            case Species.PhoenixIce:
+                position = new Vec3(0, 15, 0);
+                scale = new Vec3(0.7 * flipX, 0.7, 1);
+                break;
+            case Species.Pokemon:
+                position = new Vec3(0, 2, 0);
+                scale = isLeftSide ? new Vec3(-1, 1, 1) : Vec3.ONE;
+                break;
+            case Species.Sika:
+                position = new Vec3(0, 8, 0);
+                scale = new Vec3(0.9 * flipX, 0.9, 1);
+                break;
+            case Species.Snowria:
+                position = new Vec3(0, 10, 0);
+                scale = new Vec3(0.9 * flipX, 0.9, 1);
+                break;
+        }
+
+        this.petDisplay.node.position = position;
+        this.petDisplay.node.setScale(scale);
+    }
+
+    async setPetDead(callback?: () => void): Promise<void> {
+        const startPosition = this.node.position.clone(); // lưu vị trí ban đầu
+        const endPosition = startPosition.clone();
+        endPosition.y -= 300; // rơi thẳng đứng 300 đơn vị
+
+        await new Promise<void>((resolve) => {
+            tween(this.node)
+                .to(0.5, { position: endPosition }, { easing: 'quadIn' }) // thời gian rơi
+                .call(() => {
+                    this.petDisplay.node.active = false;
+                    this.node.setPosition(startPosition); // reset lại vị trí ban đầu
+                    resolve(); // báo tween đã xong
+                    callback?.(); // gọi callback nếu có
+                })
+                .start();
+        });
     }
 }
 

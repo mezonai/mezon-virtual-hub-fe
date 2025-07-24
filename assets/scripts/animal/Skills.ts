@@ -1,7 +1,7 @@
 import { _decorator, Component, Node } from 'cc';
 import { AnimalElement } from '../Model/PetDTO';
 const { ccclass, property } = _decorator;
-export interface SkillData {
+export interface SkillDataInfor {
     idSkill: string;
     name: string;
     type: AnimalElement;
@@ -11,7 +11,16 @@ export interface SkillData {
     description: string;
 }
 
-export const SkillList: SkillData[] = [
+export const SkillList: SkillDataInfor[] = [
+    {
+        idSkill: "ATTACK01",
+        name: "Đánh Thường",
+        type: AnimalElement.Normal,
+        attack: 20,
+        accuracy: 100,
+        powerPoints: 30,
+        description: "Pet tấn công vào đối thủ và gây sát thương",
+    },
     {
         idSkill: "NOR01",
         name: "Growl - Gầm Gừ",

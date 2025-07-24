@@ -1,5 +1,5 @@
 import { _decorator, Component, Label, Sprite } from 'cc';
-import { PetDTO, PetDTO2 } from '../../Model/PetDTO';
+import { PetBattleInfo, PetDTO, PetDTO2 } from '../../Model/PetDTO';
 import { SlideObject } from '../../utilities/SlideObject';
 const { ccclass, property } = _decorator;
 
@@ -12,16 +12,14 @@ export class HUDBattlePet extends Component {
 
     @property(Sprite) hpFillSprite: Sprite = null;
     @property(Sprite) expFillSprite: Sprite = null;
-   @property({ type: SlideObject }) slide: SlideObject = null;
+    @property({ type: SlideObject }) slide: SlideObject = null;
 
-    public updateHUD(info: PetDTO2) {
-        if (!info) return;
-
-        this.nameLabel.string = info.name;
-        this.hpLabel.string = `${info.currentHp}/${info.maxHp}`;
-        this.lvlLabel.string = `Lvl ${info.lvl}`;
-        this.expLabel.string = `${info.currentExp}/${info.maxExp}`;
-        this.hpFillSprite.fillRange = Math.min(info.currentHp / info.maxHp, 1);
-        this.expFillSprite.fillRange = Math.min(info.currentExp / info.maxExp, 1);
+    public updateHUD(petGotoBattle: PetBattleInfo, id: string) {
+        this.nameLabel.string = id;
+        this.hpLabel.string = `${petGotoBattle.currentHp}/${petGotoBattle.totalHp}`;
+        this.lvlLabel.string = `Lvl ${petGotoBattle.level}`;
+        this.expLabel.string = `${petGotoBattle.currentExp}/${petGotoBattle.totalExp}`;
+        this.hpFillSprite.fillRange = Math.min(petGotoBattle.currentHp / petGotoBattle.totalHp, 1);
+        this.expFillSprite.fillRange = Math.min(petGotoBattle.currentExp / petGotoBattle.totalExp, 1);
     }
 }

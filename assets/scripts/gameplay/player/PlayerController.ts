@@ -36,6 +36,7 @@ export class PlayerController extends Component {
     @property(Label) contentBubbleChat: Label = null;
     @property({ type: PetCatchingController }) petCatching: PetCatchingController;
     @property petFollowPrefabs: AnimalController[] = [];
+    myClientBattleId: string = "";
     private tweenAction: Tween<Node> | null = null;
     private hideTimeout: number | null = null;
     private showNameTimer: number | null = null;

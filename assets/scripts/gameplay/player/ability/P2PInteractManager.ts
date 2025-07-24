@@ -23,7 +23,7 @@ export class P2PInteractManager extends Ability {
         return false;
     }
 
-    public override init(sessionId, playerController, room) {        
+    public override init(sessionId, playerController, room) {
         super.init(sessionId, playerController, room);
         if (!this.isMyClient) {
             this.targetClicker.on(Node.EventType.TOUCH_START, this.onTouchStart, this);
@@ -118,15 +118,6 @@ export class P2PInteractManager extends Ability {
         }
     }
 
-    public showCombat(data) {
-        for (const action of this.actionButtons) {
-            if (action.actionType.toString() == ActionType.PetCombat.toString()) {
-                (action as PetCombat).ShowCombat(data)
-                break;
-            }
-        }
-    }
-
     public showCombatResult(result) {
         for (const action of this.actionButtons) {
             if (action.actionType.toString() == ActionType.PetCombat.toString()) {
@@ -136,7 +127,7 @@ export class P2PInteractManager extends Ability {
         }
     }
 
-    
+
     public showSpinResultRPS(result) {
         for (const action of this.actionButtons) {
             if (action.actionType.toString() == ActionType.RPS.toString()) {

@@ -4,8 +4,8 @@ const { ccclass, property } = _decorator;
 
 @ccclass('PopupManager')
 export class PopupManager extends Component {
-    @property({type: Node}) fixPopupParent: Node = null;
-    @property({type: Node}) floatPopupParent: Node = null;
+    @property({ type: Node }) fixPopupParent: Node = null;
+    @property({ type: Node }) floatPopupParent: Node = null;
     private static _instance: PopupManager | null = null;
     private popupDict: Map<string, Node> = new Map();
 
@@ -32,10 +32,10 @@ export class PopupManager extends Component {
 
     private clearFloatPopupChildren() {
         if (!this.floatPopupParent || this.floatPopupParent.children.length == 0) return;
-    
+
         for (let i = this.floatPopupParent.children.length - 1; i >= 0; i--) {
             const child = this.floatPopupParent.children[i];
-            child.destroy(); 
+            child.destroy();
         }
     }
 
@@ -65,23 +65,21 @@ export class PopupManager extends Component {
         });
     }
 
-    public async openPopup<T extends Component>(popupName: string, componentType: { new (): T }, param?: any ): Promise<T | null> 
-    {
+    public async openPopup<T extends Component>(popupName: string, componentType: { new(): T }, param?: any): Promise<T | null> {
         const popupNode = await this.loadPopupView(popupName);
         if (!popupNode) return null;
         const uniqueKey = popupNode.uuid;
         this.popupDict.set(uniqueKey, popupNode);
 
         const popupComponent = popupNode.getComponent(componentType);
-        if (popupComponent && "init" in popupComponent) { 
+        if (popupComponent && "init" in popupComponent) {
             (popupComponent as any).init(param);
         }
 
         return popupComponent;
     }
 
-    public async openAnimPopup<T extends Component>(popupName: string, componentType: { new (): T }, param?: any ): Promise<T | null> 
-    {
+    public async openAnimPopup<T extends Component>(popupName: string, componentType: { new(): T }, param?: any): Promise<T | null> {
         const popupNode = await this.loadPopupView(popupName);
         if (!popupNode) return null;
         this.showInFromTop(popupNode);
@@ -89,7 +87,7 @@ export class PopupManager extends Component {
         this.popupDict.set(uniqueKey, popupNode);
 
         const popupComponent = popupNode.getComponent(componentType);
-        if (popupComponent && "init" in popupComponent) { 
+        if (popupComponent && "init" in popupComponent) {
             (popupComponent as any).init(param);
         }
 
@@ -105,7 +103,7 @@ export class PopupManager extends Component {
             .start();
     }
 
-     private HideoutToTop(popup: Node, callback) {
+    private HideoutToTop(popup: Node, callback) {
         popup.position = new Vec3(0, 0, 0);
         tween(popup)
             .to(0.2, { position: new Vec3(0, 500, 0) },)
@@ -114,10 +112,10 @@ export class PopupManager extends Component {
             })
             .start();
     }
-    public async closePopup(uniqueKey: string, isAnim : boolean = false) {
+    public async closePopup(uniqueKey: string, isAnim: boolean = false) {
         const popupNode = this.popupDict.get(uniqueKey);
         if (!popupNode) return;
-        if(isAnim) this.HideoutToTop(popupNode, () =>{popupNode.destroy();})
+        if (isAnim) this.HideoutToTop(popupNode, () => { popupNode.destroy(); })
         else popupNode.destroy();
         this.popupDict.delete(uniqueKey);
     }
@@ -129,6 +127,12 @@ export class PopupManager extends Component {
             }
         }
         return null;
+    }
+
+    public getPopupById<T extends Node>(uuid: string): T | null {
+        const popupNode = this.popupDict.get(uuid);
+        console.log("popupNode ", popupNode);
+        return popupNode as T ?? null;
     }
 
     public async closeAllPopups() {

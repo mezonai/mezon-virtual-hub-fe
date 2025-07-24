@@ -2,7 +2,7 @@ import { _decorator, Component, Node, Prefab } from 'cc';
 import { AnimalElement } from '../Model/PetDTO';
 import { ObjectPoolManager } from '../pooling/ObjectPoolManager';
 import { ItemSkill } from './ItemSkill';
-import { SkillData } from './Skills';
+import { SkillDataInfor } from './Skills';
 const { ccclass, property } = _decorator;
 export enum InteractSlot {
     NONE,
@@ -17,13 +17,13 @@ export class ItemSlotSkill extends Component {
     itemSkill: ItemSkill = null;
     interactSlot: InteractSlot = InteractSlot.NONE
 
-    initData(skillData: SkillData, interactSlot: InteractSlot, slotSkillFighting: ItemSlotSkill[] = []) {
+    initData(skillData: SkillDataInfor, interactSlot: InteractSlot, slotSkillFighting: ItemSlotSkill[] = []) {
         this.interactSlot = interactSlot;
         if (skillData == null) return;
         this.setDataSlotSkill(skillData, slotSkillFighting);
     }
 
-    setDataSlotSkill(skillData: SkillData, slotSkillFighting: ItemSlotSkill[] = []) {
+    setDataSlotSkill(skillData: SkillDataInfor, slotSkillFighting: ItemSlotSkill[] = []) {
         this.resetSkill();
         let newitemSkill = ObjectPoolManager.instance.spawnFromPool(this.itemSkillPrefab.name);
         newitemSkill.setParent(this.parentSkill);

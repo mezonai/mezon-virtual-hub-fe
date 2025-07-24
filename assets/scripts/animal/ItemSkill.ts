@@ -3,7 +3,7 @@ import { AnimalElement } from '../Model/PetDTO';
 import { UIGradientColor } from '../core/UIGradient';
 import { SkillDragItem } from './SkillDragItem';
 import { ItemSlotSkill, InteractSlot } from './ItemSlotSkill';
-import { SkillData } from './Skills';
+import { SkillDataInfor } from './Skills';
 import { SkillTooltip } from '../Tooltip/SkillTooltip';
 const { ccclass, property } = _decorator;
 
@@ -31,8 +31,8 @@ export class ItemSkill extends Component {
     @property({ type: [Color] }) colorBoder: Color[] = [];
     @property({ type: [Color] }) colorBoder2: Color[] = [];
     @property({ type: SkillTooltip }) skillTooltip: SkillTooltip = null;
-    currentSkill: SkillData = null;
-    setData(skillData: SkillData, interactSlot: InteractSlot, slotSkillFighting: ItemSlotSkill[] = []) {
+    currentSkill: SkillDataInfor = null;
+    setData(skillData: SkillDataInfor, interactSlot: InteractSlot, slotSkillFighting: ItemSlotSkill[] = []) {
         this.iconSkills.forEach(node => {
             node.active = (node.name === skillData.idSkill);
         });

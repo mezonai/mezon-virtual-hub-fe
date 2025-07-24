@@ -62,13 +62,6 @@ export class PetCombat extends PlayerInteractAction {
         super.onStartAction(data);
     }
 
-    public ShowCombat(data) {
-        const param: BatllePetParam = {
-            data: data as GameData,
-        };
-        PopupManager.getInstance().openAnimPopup('PopupBattlePet', PopupBattlePet, param);
-    }
-
 
 
     public rejectAction(data) {
@@ -88,7 +81,6 @@ export class PetCombat extends PlayerInteractAction {
 
     public actionResult(data) {
         super.actionResult(data);
-        PopupManager.getInstance().getPopup('PopupStartCombatPet').getComponent(PopupBattlePet).showEndCombat(data);
     }
 
     public stop() {
