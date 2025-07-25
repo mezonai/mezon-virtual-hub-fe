@@ -21,6 +21,6 @@ Button.prototype.addAsyncListener = function (this: Button, callback: () => Prom
             isProcessing = false;
         }
     };
-
+    this.node.off(Button.EventType.CLICK);
     this.node.on(Button.EventType.CLICK, handler);
 };
