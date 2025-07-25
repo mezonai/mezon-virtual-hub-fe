@@ -33,12 +33,17 @@ export class BattleSkillButton extends Component {
         this.backgroundType.color = colorbackground;
         this.nameSkil.string = skillDataInfo.name;
         if (onAfterClickSkill) this._onAfterClickSkill = onAfterClickSkill;
-        this.clickButton.node.on(Button.EventType.CLICK, this.sendAction, this);
+        this.clickButton.addAsyncListener(async () => {
+            if (onAfterClickSkill) {
+                onAfterClickSkill();
+            }
+            ServerManager.instance.sendPlayerActionBattle(true, this.indexSkill);
+        })
     }
 
     sendAction() {
         this._onAfterClickSkill();
-        ServerManager.instance.sendPlayerActionBattle(true, this.indexSkill);
+
     }
 
     updateParameter(skillData: SkillData) {
@@ -51,9 +56,6 @@ export class BattleSkillButton extends Component {
 
     getSkillById(id: string): SkillDataInfor | undefined {
         return SkillList.find(skill => skill.idSkill === id);
-    }
-    onDisable() {
-        this.clickButton.node.off(Button.EventType.CLICK, this.sendAction, this);
     }
 }
 

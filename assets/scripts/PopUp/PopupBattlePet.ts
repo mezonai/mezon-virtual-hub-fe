@@ -91,10 +91,22 @@ export class PopupBattlePet extends BasePopup {
         }
     }
 
+    async handleActionSkill(playerAttackId: string, skillAttackID: string, damage: number, petDefense: PetBattleInfo): Promise<void> {
+        const isSelfAttacker = playerAttackId === this.clientIdInRoom;
+        const attacker = this.playerBattleStats[isSelfAttacker ? 1 : 0];
+        const defender = this.playerBattleStats[isSelfAttacker ? 0 : 1];
+        await attacker.petBattlePrefab.playAnimBySpecies(skillAttackID, async () => {
+            if (damage <= 0) return;
+            await defender.petBattlePrefab.shakeNode();
+            await defender.hudBattlePet.takeDamage(damage, petDefense.currentHp, petDefense.totalHp);
+        });
+
+    }
+
     updateHUDPet(pet: PetBattleInfo, isMyClient: boolean) {
         const index = isMyClient ? 1 : 0;
         const playerBattleStat = this.playerBattleStats[index];
-        playerBattleStat.hudBattlePet.updateHUD(pet, this.clientIdInRoom);
+        playerBattleStat.hudBattlePet.updateHUD(pet);
     }
 
     createPet(pet: PetBattleInfo, isMyClient: boolean) {
@@ -129,9 +141,9 @@ export class PopupBattlePet extends BasePopup {
     }
 
     public async handleBattleResult(data) {
-        const isTurn1PetAlive = await this.handleBattlePlayer(data.player1Id, data.skillAttacPlayer1Id, data.damagePlayer1, data.playerTargetP1, 1);
+        const isTurn1PetAlive = await this.handleBattlePlayer(data.player1Id, data.skillAttacPlayer1Id, data.damagePlayer1, data.playerTargetP1);
         if (!isTurn1PetAlive) return;
-        const isTurn2PetAlive = await this.handleBattlePlayer(data.player2Id, data.skillAttacPlayer2Id, data.damagePlayer2, data.playerTargetP2, 1);
+        const isTurn2PetAlive = await this.handleBattlePlayer(data.player2Id, data.skillAttacPlayer2Id, data.damagePlayer2, data.playerTargetP2);
         if (!isTurn2PetAlive) return;
         this.slideSkillButtons.slide(true, 0.3);
     }
@@ -141,7 +153,6 @@ export class PopupBattlePet extends BasePopup {
         killAttacPlayer: string,
         damagePlayer: number,
         target: any,
-        delay: number
     ): Promise<boolean> {
         const playerTarget = ConvetData.ConvertPlayerBattleData(target);
         const isMyClient = playerTarget.id === this.clientIdInRoom;
@@ -151,8 +162,7 @@ export class PopupBattlePet extends BasePopup {
             this.targetClient = playerTarget;
         }
         const petTarget = playerTarget.battlePets[playerTarget.activePetIndex];
-        await new Promise(resolve => setTimeout(resolve, delay));
-        this.updateHUDPet(petTarget, isMyClient);
+        await this.handleActionSkill(playerId, killAttacPlayer, damagePlayer, petTarget);
         if (petTarget.isDead) {
             await this.updatePetDead(isMyClient, () => {
                 let nextPet = this.getActivePetIndexById(playerTarget);
