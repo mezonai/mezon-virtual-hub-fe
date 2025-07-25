@@ -11,7 +11,6 @@ Button.prototype.addAsyncListener = function (this: Button, callback: () => Prom
     let isProcessing = false;
 
     const handler = async () => {
-        console.error("isProcessing", isProcessing);
         if (isProcessing) return;
         isProcessing = true;
         try {
