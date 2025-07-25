@@ -10,7 +10,7 @@ import { ExchangeCoinController } from '../core/ExchangeCoinController';
 import { RewardType } from '../Model/Item';
 import { MoneyTooltip } from '../Tooltip/MoneyTooltip';
 import { PopupManager } from '../PopUp/PopupManager';
-import { MyProfileManager, MyProfileParam } from './MyProfileManager';
+import { MyProfileManager } from './MyProfileManager';
 
 const { ccclass, property } = _decorator;
 
@@ -27,7 +27,6 @@ export class MyProfileHUD extends BaseProfileManager {
     @property(MoneyTooltip)
     tooltip2: MoneyTooltip = null;
     @property(Button) infoButton: Button = null;
-    private isOpenPopUp: boolean = false;
     
     start(): void {
         director.on(EVENT_NAME.UPDATE_INFO_PROFILE, this.updateProfile, this);
@@ -46,18 +45,9 @@ export class MyProfileHUD extends BaseProfileManager {
             });
             this.onCoinChangeDiamond(UserMeManager.playerDiamond, UserMeManager.playerDiamond);
         }
-        this.infoButton.node.on('click', this.onShowInfo, this);
-    }
-
-    private onShowInfo() {
-        if (this.isOpenPopUp) return;
-        this.isOpenPopUp = true;
-        const param: MyProfileParam = {
-            onActionClose: () => {
-                this.isOpenPopUp = false;
-            }
-        };
-        PopupManager.getInstance().openAnimPopup('UI_My_Profile', MyProfileManager, param);
+        this.infoButton.addAsyncListener(async () => {
+            await PopupManager.getInstance().openAnimPopup('UI_My_Profile', MyProfileManager);
+        });
     }
 
     protected onCoinChangeGold(value, oldValue) {

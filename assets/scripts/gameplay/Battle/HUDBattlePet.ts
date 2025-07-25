@@ -1,5 +1,5 @@
 import { _decorator, Component, Label, Sprite } from 'cc';
-import { PetBattleInfo, PetDTO, PetDTO2 } from '../../Model/PetDTO';
+import { PetBattleInfo} from '../../Model/PetDTO';
 import { SlideObject } from '../../utilities/SlideObject';
 const { ccclass, property } = _decorator;
 

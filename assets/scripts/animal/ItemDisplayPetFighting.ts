@@ -28,8 +28,8 @@ export class ItemDisplayPetFighting extends Component {
         this.petImage.setActivePetByName(pet.name);
         this.iconSlotSprite.spriteFrame = this.iconSlot[slot < this.iconSlot.length ? slot : 0];
         this.slotValue.string = `<outline color=#222222 width=1> ${slot + 1} </outline>`;
-        this.levelPet.string = `<outline color=#222222 width=1> Lv.? </outline>`
-        this.setStar(2);
+        this.levelPet.string = `<outline color=#222222 width=1> Lv.${pet.level} </outline>`
+        this.setStar(pet.stars);
         this.node.setScale(slot == 0 ? new Vec3(1.15, 1.15, 1.15) : Vec3.ONE);
         this.toggle.node.off('toggle', this.onToggleChanged, this);
         this.toggle.node.on('toggle', this.onToggleChanged, this);

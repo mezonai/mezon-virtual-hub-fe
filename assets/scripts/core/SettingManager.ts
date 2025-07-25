@@ -3,8 +3,8 @@ import { SoundManager } from './SoundManager';
 import { CustomSlider } from '../ui/CustomSlider';
 import { BasePopup } from '../PopUp/BasePopup';
 import { PopupManager } from '../PopUp/PopupManager';
-import { UIHelp, UIHelpParam } from '../ui/UIHelp';
-import { UIAbout, UIAboutParam } from '../ui/UIAbout';
+import { UIHelp } from '../ui/UIHelp';
+import { UIAbout } from '../ui/UIAbout';
 
 const { ccclass, property } = _decorator;
 
@@ -52,8 +52,6 @@ export class SettingManager extends BasePopup {
     @property(Button) aboutButton: Button = null;
     @property(Button) closeButton: Button = null;
 
-    private isOpenPopUp: boolean;
-
     public init(param: SettingParam) {
         this.settingsoundmusic = {
             soundOn: this.iconValue[0],
@@ -82,44 +80,18 @@ export class SettingManager extends BasePopup {
         this.soundButton.node.on('click', this.onSoundButtonToggle, this);
         this.musicButton.node.on('click', this.onMusicButtonToggle, this);
 
-        this.helpButton.node.on('click', this.onShowHelp, this);
-        this.aboutButton.node.on('click', this.onShowAbout, this);
-        this.closeButton.node.on('click', this.onClosePopup, this);
+        this.helpButton.addAsyncListener(async () => {
+           await PopupManager.getInstance().openPopup('UI_Help', UIHelp);
+        });
+        this.aboutButton.addAsyncListener(async () => {
+           await PopupManager.getInstance().openPopup('UI_AboutUs', UIAbout);
+        });
+        this.closeButton.addAsyncListener(async () => {
+           await PopupManager.getInstance().closePopup(this.node.uuid);
+        });
 
         this.updateSoundButtonIcon();
         this.updateMusicButtonIcon();
-        if(param != null && param.onActionClose != null){
-            this._onActionClose = param.onActionClose;
-        }
-    }
-
-    private onClosePopup(){
-        PopupManager.getInstance().closePopup(this.node.uuid);
-        this._onActionClose?.();
-    }
-
-    private onShowHelp(){
-        if (this.isOpenPopUp) return;
-        this.isOpenPopUp = true;
-
-        const param: UIHelpParam = {
-            onActionClose: () => {
-                this.isOpenPopUp = false;
-            }
-        };
-        PopupManager.getInstance().openPopup('UI_Help', UIHelp, param);
-    }
-
-    private onShowAbout(){
-        if (this.isOpenPopUp) return;
-        this.isOpenPopUp = true;
-
-        const param: UIAboutParam = {
-            onActionClose: () => {
-                this.isOpenPopUp = false;
-            }
-        };
-        PopupManager.getInstance().openPopup('UI_AboutUs', UIAbout, param);
     }
 
     private onSoundSliderChanged(slider: Slider) {
@@ -166,7 +138,7 @@ export class SettingManager extends BasePopup {
 
         if (this.isMutedMusic) {
             this.currentMusicVolume = 0;
-        } 
+        }
         this.musicSlider.progress = this.currentMusicVolume;
         this.musicCustomSlider.updateSliderHandleAndFill(this.currentMusicVolume);
         SoundManager.instance.setBgmVolume(this.currentMusicVolume);

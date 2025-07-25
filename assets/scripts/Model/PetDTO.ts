@@ -1,38 +1,44 @@
-import { SkillDataInfor } from "../animal/Skills";
-
 export class PetDTO {
   public id: string;
   public name: string;
-  public species: string;
-  public is_caught: boolean;
+  public level: number;
+  public exp: number;
+  public max_exp: number;
+  public stars: number;
+  public hp: number;
+  public attack: number;
+  public defense: number;
+  public speed: number;
   public is_brought: boolean;
+  public is_caught: boolean;
+  public is_selected_battle: boolean;
+  public individual_value: number;
   public room_code: string;
-  public rarity: AnimalRarity;
-  type: AnimalElement;
-  lvl: number;
-  maxHp: number;
-  currentHp: number;
-  maxExp: number;
-  currentExp: number;
-  skills: number[];
+  public pet: BasePetData;
+  public skill_slot_1: SkillSlot;
+  public skill_slot_2: SkillSlot;
+  public skill_slot_3: SkillSlot | null;
+  public skill_slot_4: SkillSlot | null;
 }
 
-export class PetDTO2 {
-  public id: string;
-  public name: string;
-  public species: Species;
-  public is_caught: boolean;
-  public is_brought: boolean;
-  public room_code: string;
-  public rarity: AnimalRarity;
-  public isMe: boolean;
+export interface BasePetData {
+  species: string;
+  type: string;
+  rarity: string;
+}
+
+export interface SkillSlot {
+  skill_code: SkillCode;
+  name: string;
   type: AnimalElement;
-  lvl: number;
-  maxHp: number;
-  currentHp: number;
-  maxExp: number;
-  currentExp: number;
-  skills: SkillDataInfor[];
+  attack: number;
+  accuracy: number;
+  power_points: number;
+  description: string;
+}
+
+export class BattleData {
+  environmentType: AnimalElement;
 }
 
 export class PlayerBattle {
@@ -87,13 +93,13 @@ export enum Pet {
 }
 
 export enum AnimalElement {
-  Normal,
-  Fire,
-  Water,
-  Grass,
-  Electric,
-  Ice,
-  Dragon,
+  Normal = 'normal',
+  Fire = 'fire',
+  Water = 'water',
+  Grass = 'grass',
+  Electric = 'electric',
+  Ice = 'ice',
+  Dragon = 'dragon',
 }
 
 export enum Species {
@@ -114,4 +120,35 @@ export enum Species {
   Rabit,
   Sika,
   Snowria,
+}
+
+export enum SkillCode {
+  GROWL = 'NOR01',
+  PROTECT = 'NOR02',
+  REST = 'NOR03',
+  CONFUSION = 'NOR04',
+  CUT = 'NOR05',
+  POUND = 'NOR06',
+  DOUBLE_KICK = 'NOR07',
+  BITE = 'NOR08',
+  CRUSH_CLAW = 'NOR09',
+  WING_ATTACK = 'NOR10',
+  FLY = 'NOR11',
+  FURY_PUNCH = 'NOR12',
+  EARTHQUAKE = 'GRASS01',
+  RAZOR_LEAF = 'GRASS01',
+  ABSORB = 'GRASS02',
+  THUNDERBOLT = 'ELECTRIC01',
+  THUNDER_WAVE = 'ELECTRIC02',
+  ELECTRO_BALL = 'ELECTRIC03',
+  WATER_GUN = 'WATER01',
+  BUBBLE = 'WATER02',
+  AQUA_CUTTER = 'WATER03',
+  EMBER = 'FIRE01',
+  FIRE_BLAST = 'FIRE02',
+  OVERHEAT = 'FIRE03',
+  ICE_BALL = 'ICE01',
+  ICICLE_CRASH = 'ICE02',
+  ICE_FANG = 'ICE03',
+  DRAGON_CLAW = 'DRAGON01',
 }

@@ -83,15 +83,18 @@ export class UserManager extends Component {
         if (playerData.room.sessionId == playerData.sessionId) {
             this.myClientPlayer = playerController;
         }
-
+        
         // Gắn vào parent & lưu map
         playerNode.setParent(this.playerParent);
         this.players.set(playerData.sessionId, playerNode.getComponent(PlayerController));
-        const pets = JSON.parse(playerData.animals);
-        if (pets != null) {
-            this.intantiatePetFollowPlayer(playerController, pets);
-        }
 
+        if (playerData.room.sessionId == playerData.sessionId) {
+            this.myClientPlayer = playerController;
+            const pets = await this.getMyPetData();
+            if (pets != null) {
+                this.instantiatePetFollowPlayer(playerController, pets);
+            }
+        }
         // Gửi event khi player được tạo xong
         ServerManager.instance.node.emit(EVENT_NAME.ON_PLAYER_ADDED, playerData.sessionId);
 
@@ -102,28 +105,45 @@ export class UserManager extends Component {
         }
     }
 
-    intantiatePetFollowPlayer(playerController: PlayerController, pets: any) {
+    instantiatePetFollowPlayer(playerController: PlayerController, pets: PetDTO[]) {
         if (pets == null) return;
         playerController.resetPets(() => {
             for (const pet of pets) {
-                const animal = ObjectPoolManager.instance.spawnFromPool(pet.species);
+                if (!pet.is_brought) continue;
+                const animal = ObjectPoolManager.instance.spawnFromPool(pet.pet.species);
                 const animalController = animal.getComponent(AnimalController);
                 if (animalController == null) continue;
-                const petDto = Object.assign(new PetDTO(), {
-                    id: pet.id,
-                    name: pet.name,
-                    species: pet.species,
-                    is_caught: true,
-                    is_brought: true,
-                    room_code: '',
-                    rarity: pet.rarity,
-                });
+                const petDto = this.createPetDTOFromRaw(pet);
                 animalController.setDataPet(petDto, AnimalType.FollowTarget, playerController, null, this.animalParent);
                 playerController.savePetFollow(animalController);
                 animal.setParent(this.animalParent);
                 animal.active = false;
             }
             playerController.setPositonPet();
+        });
+    }
+
+    private createPetDTOFromRaw(pet: any): PetDTO {
+        return Object.assign(new PetDTO(), {
+            id: pet.id,
+            name: pet.name,
+            level: pet.level,
+            exp: pet.exp,
+            stars: pet.stars,
+            hp: pet.hp,
+            attack: pet.attack,
+            defense: pet.defense,
+            speed: pet.speed,
+            is_brought: !!pet.is_brought,
+            is_caught: !!pet.is_caught,
+            is_selected_battle: !!pet.is_selected_battle,
+            individual_value: pet.individual_value,
+            room_code: '',
+            pet: pet.pet,
+            skill_slot_1: pet.skill_slot_1,
+            skill_slot_2: pet.skill_slot_2,
+            skill_slot_3: pet.skill_slot_3 ?? null,
+            skill_slot_4: pet.skill_slot_4 ?? null,
         });
     }
 
@@ -326,7 +346,7 @@ export class UserManager extends Component {
 
     public onCatchPetSuccess(data) {
         OfficeSceneController.instance.currentMap.AnimalSpawner.disappearedPet(data.petId, true)
-        if (data.playerCatchId === UserManager.instance.GetMyClientPlayer.myID) this.updateMyData(data.petId);
+        if (data.playerCatchId === UserManager.instance.GetMyClientPlayer.myID) this.UpdateMyPetData(data.petId);
     }
     public onPetAlreadyCaught(data) {
         const param: ConfirmParam = {
@@ -345,11 +365,11 @@ export class UserManager extends Component {
         OfficeSceneController.instance.currentMap.AnimalSpawner.disappearedPet(data.petId, false)
     }
 
-    public onPetFollowPlayer(data) {
-        let playerTarget = this.players.get(data.playerIdFollowPet);
-        let pets = ConvetData.ConvertPets(data.pet);
+    public async onPetFollowPlayer() {
+        let playerTarget = this.GetMyClientPlayer;
+        const pets = await this.getMyPetData();
         if (playerTarget == null || pets == null) return;
-        this.intantiatePetFollowPlayer(playerTarget, pets)
+        this.instantiatePetFollowPlayer(playerTarget, pets)
     }
 
     public onSendTouchPet(data) {
@@ -366,21 +386,32 @@ export class UserManager extends Component {
         targetPet.getRandomProvokeLine(playerTarget.userName, randomIndex);
     }
 
-    private updateMyData(petCaughId: string) {
-        WebRequestManager.instance.getUserProfile(
-            (response) => { this.onGetProfileSuccess(response, petCaughId) },
-            (error) => this.onError(error)
-        );
+    public getMyPetData(): Promise<PetDTO[]> {
+        return new Promise((resolve, reject) => {
+            WebRequestManager.instance.getMyPetData(
+                (response) => resolve(response.data),
+                (error) => reject(error)
+            );
+        });
     }
 
-    private onGetProfileSuccess(respone, petCaughId: string) {
-        UserMeManager.Set = respone.data;
-        const pet = UserMeManager.Get.animals.find(p => p.id === petCaughId);
-        if (UserManager.instance.GetMyClientPlayer) {
-            const content = pet != null ? `Bạn đã bắt thành công <color=#FF0000>${pet.name} (${pet.rarity})</color>` : `Bạn đã bắt pet thành công`
+    private async UpdateMyPetData(petCaughId: string) {
+        try {
+            const petData = await this.getMyPetData();
+            const pet = petData.find(p => p.id === petCaughId);
+            if (UserManager.instance.GetMyClientPlayer) {
+                const content = pet != null ? `Bạn đã bắt thành công <color=#FF0000>${pet.name} (${pet.pet.rarity})</color>` : `Bạn đã bắt pet thành công`
+                const param: ConfirmParam = {
+                    message: content,
+                    title: "Thông báo",
+                };
+                PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
+            }
+        } catch (error) {
+            this.onError(error);
             const param: ConfirmParam = {
-                message: content,
-                title: "Thông báo",
+                message: "Đã có lỗi khi lấy thông tin thú cưng!",
+                title: "Lỗi",
             };
             PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
         }

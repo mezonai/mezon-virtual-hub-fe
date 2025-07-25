@@ -17,7 +17,10 @@ export class PlayerInteractAction extends Ability {
     @property({ type: Button }) actionButton: Button = null;
 
     protected start(): void {
-        this.actionButton.node.on(Node.EventType.TOUCH_START, this.invite, this);
+        this.actionButton.addAsyncListener(async () => {
+            await this.invite();
+        });
+        //this.actionButton.node.on(Node.EventType.TOUCH_START, this.invite, this);
     }
 
     public controller = null;

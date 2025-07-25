@@ -12,7 +12,6 @@ const { ccclass, property } = _decorator;
 
 @ccclass('SendGameCoin')
 export class SendGameCoin extends PlayerInteractAction {
-    private isOpenPopUp: boolean = false;
     private readonly notEnoughGoldResponse = [
         "Bạn nghĩ mình có nhiều tiền thế ư?",
         "Bạn điền nhiều tiền quá rồi",
@@ -25,9 +24,7 @@ export class SendGameCoin extends PlayerInteractAction {
         "Có tâm nhưng không có tiền"
     ];
 
-    protected override invite() {
-        if (this.isOpenPopUp) return;
-        this.isOpenPopUp = true;
+    protected override async invite(): Promise<void> {
         if (UserMeManager.Get) {
             if (UserMeManager.playerDiamond <= 0) {
                 UserManager.instance.GetMyClientPlayer.zoomBubbleChat("Tính năng chỉ dành cho người có tiền");
@@ -38,12 +35,9 @@ export class SendGameCoin extends PlayerInteractAction {
 
         super.invite();
         const param: SendTokenParam = {
-            onActionClose: () => {
-                this.isOpenPopUp = false;
-            },
             onActionSendDiamond: (data) => { this.startAction(data); }
         }
-        PopupManager.getInstance().openAnimPopup("UITransferDiamondPopup", SendTokenPanel, param);
+        await PopupManager.getInstance().openAnimPopup("UITransferDiamondPopup", SendTokenPanel, param);
     }
 
     public onBeingInvited(data) {
