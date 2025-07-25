@@ -59,7 +59,9 @@ export class UIManager extends Component {
             UIManager._instance = this;
         }
         view.on('canvas-resize', UIManager.Instance.onResize.bind(UIManager.Instance));
-        this.showOwnedButton.node.on(Button.EventType.CLICK, () => this.showPopupOwenedAnimal(), this);
+        this.showOwnedButton.addAsyncListener(async () => {
+            await PopupManager.getInstance().openAnimPopup('PopupOwnedAnimals', PopupOwnedAnimals, { message: "" });
+        });
     }
 
     onResize() {
@@ -181,10 +183,6 @@ export class UIManager extends Component {
                 panel.hide();
             }
         }
-    }
-
-    showPopupOwenedAnimal() {
-        PopupManager.getInstance().openAnimPopup('PopupOwnedAnimals', PopupOwnedAnimals, { message: "" });
     }
 
     // TweenEasing = "linear" | "smooth" | "fade" | "constant" | "quadIn" | "quadOut" | "quadInOut" |
