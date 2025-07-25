@@ -3,7 +3,7 @@ import { AnimalElement } from '../Model/PetDTO';
 import { UIGradientColor } from '../core/UIGradient';
 import { SkillDragItem } from './SkillDragItem';
 import { ItemSlotSkill, InteractSlot } from './ItemSlotSkill';
-import { SkillData } from './Skills';
+import { SkillDataInfor } from './Skills';
 import { SkillTooltip } from '../Tooltip/SkillTooltip';
 const { ccclass, property } = _decorator;
 
@@ -31,8 +31,8 @@ export class ItemSkill extends Component {
     @property({ type: [Color] }) colorBoder: Color[] = [];
     @property({ type: [Color] }) colorBoder2: Color[] = [];
     @property({ type: SkillTooltip }) skillTooltip: SkillTooltip = null;
-    currentSkill: SkillData = null;
-    setData(skillData: SkillData, interactSlot: InteractSlot, slotSkillFighting: ItemSlotSkill[] = []) {
+    currentSkill: SkillDataInfor = null;
+    setData(skillData: SkillDataInfor, interactSlot: InteractSlot, slotSkillFighting: ItemSlotSkill[] = []) {
         this.iconSkills.forEach(node => {
             node.active = (node.name === skillData.idSkill);
         });
@@ -41,6 +41,7 @@ export class ItemSkill extends Component {
         this.border2.color = this.getColorBorder2(skillData.type);
         let colorGradient = this.getColorBackgroundIcon(skillData.type);
         this.backgroundIcon.setGradientColors(colorGradient.bl, colorGradient.br, colorGradient.tl, colorGradient.tr);
+        if (interactSlot == InteractSlot.SHOW_UI) return; // chỉ show ui thì không cần set data
         this.skillDragItem.intiData(slotSkillFighting, interactSlot, this.skillTooltip)
         if (this.skillTooltip != null && interactSlot != InteractSlot.DOUBLE_CLICK) {
             this.skillTooltip.setData(skillData);

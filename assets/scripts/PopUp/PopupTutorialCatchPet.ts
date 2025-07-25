@@ -185,10 +185,10 @@ export class PopupTutorialCatchPet extends BasePopup {
             this.animateSelection(this.itemAnimalSlot.node.worldPosition, () => {
                 //this.itemAnimalSlot.toggle.isChecked = true;
                 this.showTalkAndDelay("Cuối cùng nhấn Lưu và cùng vui chơi thôi.", () => {
-                    this.animateSelection(this.popupOwnedAnimals.saveButton.node.worldPosition, () => {
-                        this.popupOwnedAnimals.node.active = false;
-                        this.finishTutorial();
-                    }, true);
+                    // this.animateSelection(this.popupOwnedAnimals.saveButton.node.worldPosition, () => {
+                    //     this.popupOwnedAnimals.node.active = false;
+                    //     this.finishTutorial();
+                    // }, true);
                 });
             }, true);
         });

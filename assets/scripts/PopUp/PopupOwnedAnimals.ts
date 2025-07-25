@@ -12,7 +12,7 @@ import { AnimalController, AnimalType } from '../animal/AnimalController';
 import { PopupSelection, SelectionParam } from './PopupSelection';
 import { ItemDisplayPetFighting } from '../animal/ItemDisplayPetFighting';
 import { InteractSlot, ItemSlotSkill } from '../animal/ItemSlotSkill';
-import { SkillData, SkillList } from '../animal/Skills';
+import { SkillDataInfor, SkillList } from '../animal/Skills';
 const { ccclass, property } = _decorator;
 
 @ccclass('PopupOwnedAnimals')
@@ -51,7 +51,7 @@ export class PopupOwnedAnimals extends BasePopup {
     private timeoutLoadSlot: number = 50;
     //
     species: string[] = ["Bird", "Cat", "Dog", "Rabit", "Sika", "Pokemon", "Dragon", "PhoenixIce", "DragonIce"]
-    skillTest: SkillData[] = [
+    skillTest: SkillDataInfor[] = [
         SkillList[0],
         SkillList[14],
         SkillList[16],

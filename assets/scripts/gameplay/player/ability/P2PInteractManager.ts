@@ -144,15 +144,6 @@ export class P2PInteractManager extends Ability {
         }
     }
 
-    public showCombat(data) {
-        for (const action of this.actionButtons) {
-            if (action.actionType.toString() == ActionType.PetCombat.toString()) {
-                (action as PetCombat).ShowCombat(data)
-                break;
-            }
-        }
-    }
-
     public showCombatResult(result) {
         for (const action of this.actionButtons) {
             if (action.actionType.toString() == ActionType.PetCombat.toString()) {
@@ -162,7 +153,7 @@ export class P2PInteractManager extends Ability {
         }
     }
 
-    
+
     public showSpinResultRPS(result) {
         for (const action of this.actionButtons) {
             if (action.actionType.toString() == ActionType.RPS.toString()) {

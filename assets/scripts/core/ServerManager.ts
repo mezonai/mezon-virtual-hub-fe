@@ -12,7 +12,6 @@ import { MapItemManger } from './MapItemManager';
 import { PopupManager } from '../PopUp/PopupManager';
 import { AudioType, SoundManager } from './SoundManager';
 import Utilities from '../utilities/Utilities';
-import { Office } from '../GameMap/Office';
 import { OfficeSceneController } from '../GameMap/OfficeScene/OfficeSceneController';
 import { UserMeManager } from './UserMeManager';
 import { MessageTypes } from '../utilities/MessageTypes';
@@ -28,6 +27,7 @@ export class ServerManager extends Component {
 
     private client: Colyseus.Client;
     private room: Colyseus.Room<any>;
+    public battleRoom: Colyseus.Room<any> | null = null; //
     private withAmount: number = -1;
     private exchangeAmount: number = -1;
 
@@ -350,12 +350,46 @@ export class ServerManager extends Component {
             OfficeSceneController.instance.currentMap.setDoor(door);
         });
 
-        this.room.onMessage("onp2pCombatActionAccept", (data) => {
-            UserManager.instance.handleCombat(data);
-        });
+        // this.room.state.battlePlayers.onAdd = (player, key) => {
+        //     console.log(`BattleJoin joined: ${player.name} (ID: ${player.id})`);
+        // };
 
+        this.room.onMessage(MessageTypes.BATTE_ROOM_READY, async (data) => {
+            const { roomId, roomName } = data;
+            console.log("data", data);
+            this.battleRoom = await this.client.joinById(roomId, {
+                accessToken: APIConfig.token
+            });
+            this.battleRoom.state.battlePlayers.onAdd((player, sessionId) => {
+                console.log(`BattleJoin joined: ${player.name} (ID: ${player.id})`);
+                if (sessionId != this.battleRoom.sessionId) return;
+                UserManager.instance.GetMyClientPlayer.myClientBattleId = sessionId;
+            });
+
+            this.battleRoom.onMessage(MessageTypes.BATTE_READY, (data) => {
+                if (data == null) return;
+                UserManager.instance.setUpBattle(data);
+            });
+            this.battleRoom.onLeave(() => {
+                //     console.log("Battle room closed");
+                this.battleRoom = null;
+            });
+            this.battleRoom.onMessage(MessageTypes.RESULT_SKILL, (data) => {
+                console.log("ServerManager ", data);
+                if (data == null) return;
+                UserManager.instance.handleBattle(data);
+            });
+            this.battleRoom.onMessage(MessageTypes.SWITCH_PET_AFTER_DEAD_DONE, (data) => {
+                if (data == null) return;
+                UserManager.instance.switchPetAfterPetDead(data);
+            });
+            this.battleRoom.onMessage(MessageTypes.BATTLE_FINISHED, (data) => {
+                if (data == null) return;
+                UserManager.instance.battleFinished(data);
+            });
+        });
         this.room.onMessage("onp2pCombatActionEscape", (data) => {
-            UserManager.instance.handleCombat(data);
+            UserManager.instance.setUpBattle(data);
         });
 
     }
@@ -466,7 +500,29 @@ export class ServerManager extends Component {
         this.room.send(isOpen ? MessageTypes.OPEN_DOOR : MessageTypes.CLOSE_DOOR, data);
     }
 
-    public sendP2pCombatActionEscape(data){
+    public sendP2pCombatActionEscape(data) {
         this.room.send("p2pCombatActionEscape", data);
+    }
+
+    public sendPlayerActionBattle(isAttack: boolean, index: number) {
+        if (this.battleRoom == null) return;
+        this.battleRoom.send(MessageTypes.PLAYER_ACION, {
+            type: isAttack ? "attack" : "swap",
+            skillIndex: index,
+        });
+    }
+    public sendSwitchPetAfterPetDead(choosePetId: string) {
+        if (this.battleRoom == null) return;
+        this.battleRoom.send(MessageTypes.SWITCH_PET_AFTER_DEAD, {
+            petSwitchId: choosePetId,
+        });
+    }
+
+    public leaveBattleRoom() {
+        if (this.battleRoom) {
+            this.battleRoom.leave();
+            this.battleRoom = null;
+            UserManager.instance.GetMyClientPlayer.myClientBattleId = ""
+        }
     }
 }

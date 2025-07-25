@@ -1,6 +1,6 @@
 import { MapData } from "../Interface/DataMapAPI";
 import { Food, Item, RewardItemDTO, RewardType } from "../Model/Item";
-import { PetDTO } from "../Model/PetDTO";
+import { PetBattleInfo, PetDTO, PlayerBattle, SkillData, Species } from "../Model/PetDTO";
 
 export default class ConvetData {
     public static ConvertMap(mapData: any): MapData[] {
@@ -74,6 +74,59 @@ export default class ConvetData {
 
                 return rewardItem;
             });
+    }
+
+    public static ConvertPlayersBattleData(playersBattleData: string): PlayerBattle[] {
+        const dataArray = JSON.parse(playersBattleData);
+        console.log("dataArray: ", dataArray);
+        return dataArray.map((data: any) => {
+            const playerBattle = new PlayerBattle();
+            playerBattle.id = data.id;
+            playerBattle.userId = data.userId;
+            playerBattle.name = data.name;
+            playerBattle.activePetIndex = data.activePetIndex;
+            playerBattle.battlePets = data.battlePets.map((petData: any) => {
+                return this.convertToPetBattleInfo(petData);
+            });
+            return playerBattle;
+        });
+    }
+
+    public static ConvertPlayerBattleData(playerData: any): PlayerBattle {
+        const playerBattle = new PlayerBattle();
+        playerBattle.id = playerData.id;
+        playerBattle.userId = playerData.userId;
+        playerBattle.name = playerData.name;
+        playerBattle.activePetIndex = playerData.activePetIndex;
+        playerBattle.battlePets = playerData.battlePets.map((petData: any) => {
+            return this.convertToPetBattleInfo(petData);
+        });
+        return playerBattle;
+    }
+
+    public static convertToPetBattleInfo(petData: any): PetBattleInfo {
+        const pet = new PetBattleInfo();
+        pet.id = petData.id;
+        pet.name = petData.name;
+        pet.species = Species[petData.species as keyof typeof Species]; // convert string → enum
+        pet.totalHp = petData.totalHp;
+        pet.currentHp = petData.currentHp;
+        pet.level = petData.level;
+        pet.currentExp = petData.currentExp;
+        pet.totalExp = petData.totalExp;
+        pet.speed = petData.speed;
+        console.log("petData.skills ", petData.skills);
+        pet.skills = petData.skills.map((skillData: any) => {
+
+            const skill = new SkillData();
+            skill.id = skillData.id;
+            skill.attack = skillData.attack;
+            skill.accuracy = skillData.accuracy;
+            skill.powerPoint = skillData.powePoint;
+            return skill;
+        });
+        pet.isDead = petData.isDead;
+        return pet;
     }
 
     public static parseFood(foodData: any): Food {
