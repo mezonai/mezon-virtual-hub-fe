@@ -1,7 +1,7 @@
 import { _decorator, Component, Node, RichText } from 'cc';
 import { BasePopup } from '../../scripts/PopUp/BasePopup';
 import { PopupManager } from '../../scripts/PopUp/PopupManager';
-import { SkillData } from '../../scripts/animal/Skills';
+import { SkillDataInfor } from '../../scripts/animal/Skills';
 const { ccclass, property } = _decorator;
 
 @ccclass('PopupTooltipSkill')
@@ -19,7 +19,7 @@ export class PopupTooltipSkill extends BasePopup {
         this.setData(param.skill);
     }
 
-    setData(skill: SkillData) {
+    setData(skill: SkillDataInfor) {
         this.nameSkill.string = skill.name;
         this.valueAttack.string = skill.attack.toString();
         this.valueAcurracy.string = skill.accuracy.toString();
@@ -33,6 +33,6 @@ export class PopupTooltipSkill extends BasePopup {
 }
 
 export interface TooltipSkillParam {
-    skill: SkillData;
+    skill: SkillDataInfor;
 }
 

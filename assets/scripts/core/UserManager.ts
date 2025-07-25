@@ -17,6 +17,9 @@ import { OfficeSceneController } from '../GameMap/OfficeScene/OfficeSceneControl
 import { PetDTO } from '../Model/PetDTO';
 import ConvetData from './ConvertData';
 import { WebRequestManager } from '../network/WebRequestManager';
+import { PopupManager } from '../PopUp/PopupManager';
+import { BatllePetParam, PopupBattlePet } from '../PopUp/PopupBattlePet';
+import { BasePopup } from '../PopUp/BasePopup';
 const { ccclass, property } = _decorator;
 
 @ccclass('UserManager')
@@ -31,6 +34,7 @@ export class UserManager extends Component {
     @property({ type: Prefab }) animalPrefabs: Prefab[] = [];
     private players: Map<string, PlayerController> = new Map();
     private myClientPlayer: PlayerController = null;
+    private popupBattle: BasePopup = null;
     public get GetMyClientPlayer(): PlayerController | null {
         return this.myClientPlayer;
     }
@@ -248,50 +252,31 @@ export class UserManager extends Component {
         });
     }
 
-    public handleCombat(data) {
-        let p1 = this.players.get(data.from);
-        let p2 = this.players.get(data.to);
-        let action = data.action;
-        let result1 = data.result1;
-        let result2 = data.result2;
-        let fee = data.fee;
-        let winner = data.winner;
-        let p1Diamond = data.fromDiamond;
-        let p2Diamond = data.toDiamond;
-        let message = data.message;
-        if (action == ActionType.PetCombat.toString()) {
-            if (p1.myID != this.GetMyClientPlayer.myID) {
-                p1.p2PInteractManager.showCombat(data);
-            }
-            if (p2.myID != this.GetMyClientPlayer.myID) {
-                p2.p2PInteractManager.showCombat(data);
-            }
-            if (p1.myID == this.GetMyClientPlayer.myID) {
-                this.GetMyClientPlayer.p2PInteractManager.onAcceptedActionFromOther(data);
-            }
-        }
-        else if (action == ActionType.PetCombat.toString() + "Done") {
-            p1.p2PInteractManager.showCombatResult(message);
-            p2.p2PInteractManager.showCombatResult(message);
+    public async setUpBattle(data) {
+        const { playersBattleData } = data;
+        let playersBattle = ConvetData.ConvertPlayersBattleData(playersBattleData);
+        const param: BatllePetParam = {
+            data: playersBattle,
+            clientID: this.GetMyClientPlayer.myClientBattleId,
+            onActionClose: () => {
+                this.popupBattle = null;
+            },
+        };
+        this.popupBattle = await PopupManager.getInstance().openAnimPopup('PopupBattlePet', PopupBattlePet, param);
 
-            if (winner == this.GetMyClientPlayer.myID) {
-                this.GetMyClientPlayer.happyAction();
-            }
-            else if (p1.myID == this.GetMyClientPlayer.myID || p2.myID == this.GetMyClientPlayer.myID) {
-                this.GetMyClientPlayer.sadAction();
-            }
-
-            // if (UserMeManager.Get?.user) {
-            //     if (p1.myID == this.GetMyClientPlayer.myID && p1Diamond != null) {
-            //         UserMeManager.playerDiamond = p1Diamond;
-            //     }
-            //     else if (p2.myID == this.GetMyClientPlayer.myID && p2Diamond != null) {
-            //         UserMeManager.playerDiamond = p2Diamond;
-            //     }
-            // }
-        }
     }
 
+    public handleBattle(data) {
+        PopupManager.getInstance().getPopupById(this.popupBattle.node.uuid)?.getComponent(PopupBattlePet)?.handleBattleResult(data);
+    }
+
+    public switchPetAfterPetDead(data) {
+        PopupManager.getInstance().getPopupById(this.popupBattle.node.uuid)?.getComponent(PopupBattlePet)?.switchPetAfterPetDead(data);
+    }
+
+    public battleFinished(data) {
+        PopupManager.getInstance().getPopupById(this.popupBattle.node.uuid)?.getComponent(PopupBattlePet)?.battleFinished(data);
+    }
     public onPlayerRemoteUpdateGold(data) {
         const { sessionId, amountChange } = data;
         let player = this.players.get(sessionId);

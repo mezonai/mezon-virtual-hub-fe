@@ -5,19 +5,15 @@ import { MoveAbility } from './ability/MoveAbility';
 import { AnimationEventController } from './AnimationEventController';
 import { ResourceManager } from '../../core/ResourceManager';
 import { UserMeManager } from '../../core/UserMeManager';
-import { WebRequestManager } from '../../network/WebRequestManager';
 import { ObjectPoolManager } from '../../pooling/ObjectPoolManager';
 import { EVENT_NAME } from '../../network/APIConstant';
 import { Item } from '../../Model/Item';
 import { Tutorial } from '../../tutorial/Tutorial';
 import { PlayerCameraController } from '../camera/PlayerCameraController';
 import { P2PInteractManager } from './ability/P2PInteractManager';
-import { MissionEventManager } from '../../core/MissionEventManager';
 import { AudioType, SoundManager } from '../../core/SoundManager';
-import { MissionEvent } from '../../Interface/DataMapAPI';
 import { GoKart } from '../MapItem/GoKart';
 import { PetCatchingController } from './PetCatchingController';
-import { PetDTO } from '../../Model/PetDTO';
 import { AnimalController } from '../../animal/AnimalController';
 
 @ccclass('PlayerController')
@@ -40,6 +36,7 @@ export class PlayerController extends Component {
     @property(Label) contentBubbleChat: Label = null;
     @property({ type: PetCatchingController }) petCatching: PetCatchingController;
     @property petFollowPrefabs: AnimalController[] = [];
+    myClientBattleId: string = "";
     private tweenAction: Tween<Node> | null = null;
     private hideTimeout: number | null = null;
     private showNameTimer: number | null = null;

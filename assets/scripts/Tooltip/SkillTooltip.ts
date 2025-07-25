@@ -1,7 +1,7 @@
 import { _decorator, Component, Node } from 'cc';
 import { TooltipManager } from '../ui/TooltipManager';
 import { PopupManager } from '../PopUp/PopupManager';
-import { SkillData } from '../animal/Skills';
+import { SkillDataInfor } from '../animal/Skills';
 import { BasePopup } from '../PopUp/BasePopup';
 import { PopupTooltipSkill, TooltipSkillParam } from '../PopUp/PopupTooltipSkill';
 const { ccclass, property } = _decorator;
@@ -10,8 +10,8 @@ const { ccclass, property } = _decorator;
 export class SkillTooltip extends TooltipManager {
 
     popupTooltip: BasePopup = null;
-    skillData: SkillData = null;
-    setData(skill: SkillData) {
+    skillData: SkillDataInfor = null;
+    setData(skill: SkillDataInfor) {
         if (skill == null) return;
         this.skillData = skill;
     }
