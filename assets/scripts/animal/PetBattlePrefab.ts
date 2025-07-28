@@ -4,120 +4,106 @@ const { ccclass, property } = _decorator;
 @ccclass('SpeciesMap')
 export class SpeciesMap {
     @property({ type: Enum(Species) }) species: Species = Species.Dog;
-    @property({ type: SpriteFrame }) spritePet: SpriteFrame = null;
+    @property({ type: Node }) nodeSpritePet: Node = null;
+    @property({ type: [Animation] }) animaltionSpecies: Animation[] = [];
 }
 @ccclass('PetBattlePrefab')
 export class PetBattlePrefab extends Component {
     @property({ type: [SpeciesMap] }) speciesMap: SpeciesMap[] = [];
-    @property({ type: Sprite }) petDisplay: Sprite = null;
-    //Normal
-    @property({ type: Animation }) animationNormal: Animation = null;
-    //Grass
-    @property({ type: Animation }) animationGrass: Animation = null;
-    // Electric
-    @property({ type: Animation }) animElectroBallStart: Animation = null;
-    @property({ type: Animation }) animElectroBallEnd: Animation = null;
-    @property({ type: Animation }) animThunderWave: Animation = null;
-    @property({ type: Animation }) animThunderBolt: Animation = null;
-    //Water
-    @property({ type: Animation }) waterAnim: Animation = null;
-    //Fire
-    @property({ type: Animation }) animEmber: Animation = null;
-    @property({ type: Animation }) animFireBlastStart: Animation = null;
-    @property({ type: Animation }) animFireBlastEnd: Animation = null;
-    @property({ type: Animation }) animOverHeat: Animation = null;
-    //Ice
-    @property({ type: Animation }) animIceFang: Animation = null;
-    @property({ type: Animation }) animIcicleCrash: Animation = null;
-    //Dragon
-    @property({ type: Animation }) animDragonClaw: Animation = null;
 
-    getSkillNameById(id: string): SkillName | undefined {
-        return SkillMapById.get(id);
-    }
+    private currentPet: PetBattleInfo = null;
 
     setDataPet(pet: PetBattleInfo, slot: number) {
         if (pet == null) return;
-        this.petDisplay.spriteFrame = this.getSpritePet(pet.species);
-        this.SetPositionAndScale(pet.species, slot);
-        this.petDisplay.node.active = true;
+        this.currentPet = pet;
+        console.log("pet.species", pet.species);
+        const flipX = slot < 1 ? -1 : 1;
+        for (const x of this.speciesMap) {
+            if (x.species === pet.species) {
+                const scale = x.nodeSpritePet.scale;
+                x.nodeSpritePet.setScale(new Vec3(scale.x * flipX, scale.y, scale.z));
+                x.nodeSpritePet.active = true;
+                break;
+            }
+        }
     }
 
-    getSpritePet(species: Species): SpriteFrame {
-        return this.speciesMap.find(t => t.species === species).spritePet || this.speciesMap[0].spritePet;
+    getAnimPet(species: Species, idAnim: string): Animation | null {
+        const map = this.speciesMap.find(m => m.species === species);
+        if (!map) return null;
+
+        return map.animaltionSpecies.find(anim => anim.node.name === idAnim) ?? null;
     }
 
-    SetPositionAndScale(species: Species, slot: number) {
-        const isLeftSide = slot < 1;
-        const flipX = isLeftSide ? -1 : 1;
+    async playAnimBySpecies(skillId: string, onAnimFinishCallback?: () => Promise<void>): Promise<void> {
+        const anim = this.getAnimPet(this.currentPet.species, skillId);
 
-        // Mặc định
-        let position = new Vec3(0, 0, 0);
-        let scale = new Vec3(flipX, 1, 1);
-
-        switch (species) {
-            case Species.Bubblespark:
-                position = new Vec3(0, 7, 0);
-                scale = new Vec3(0.9 * flipX, 0.9, 1);
-                break;
-            case Species.Dragon:
-                position = new Vec3(0, 8, 0);
-                scale = new Vec3(0.8 * flipX, 0.8, 1);
-                break;
-            case Species.DragonFire:
-            case Species.DragonIce:
-            case Species.DragonNormal:
-                position = new Vec3(0, 12, 0);
-                scale = new Vec3(0.8 * flipX, 0.8, 1);
-                break;
-            case Species.Duskar:
-                position = new Vec3(0, 6, 0);
-                scale = isLeftSide ? new Vec3(-1, 1, 1) : Vec3.ONE;
-                break;
-            case Species.Leafeon:
-                position = new Vec3(0, 9.5, 0);
-                scale = new Vec3(0.6 * flipX, 0.6, 1);
-                break;
-            case Species.Lizard:
-                position = new Vec3(0, 5, 0);
-                scale = new Vec3(0.8 * flipX, 0.8, 1);
-                break;
-            case Species.PhoenixFire:
-            case Species.PhoenixIce:
-                position = new Vec3(0, 15, 0);
-                scale = new Vec3(0.7 * flipX, 0.7, 1);
-                break;
-            case Species.Pokemon:
-                position = new Vec3(0, 2, 0);
-                scale = isLeftSide ? new Vec3(-1, 1, 1) : Vec3.ONE;
-                break;
-            case Species.Sika:
-                position = new Vec3(0, 8, 0);
-                scale = new Vec3(0.9 * flipX, 0.9, 1);
-                break;
-            case Species.Snowria:
-                position = new Vec3(0, 10, 0);
-                scale = new Vec3(0.9 * flipX, 0.9, 1);
-                break;
+        if (!anim) {
+            console.warn("Animation not found:", skillId);
+            return;
         }
 
-        this.petDisplay.node.position = position;
-        this.petDisplay.node.setScale(scale);
+        return new Promise<void>((resolve) => {
+            const onFinished = async () => {
+                anim.off(Animation.EventType.FINISHED, onFinished);
+                anim.node.active = false;
+                if (onAnimFinishCallback) {
+                    await onAnimFinishCallback();
+                }
+
+                resolve();
+            };
+
+            anim.node.active = true;
+            anim.once(Animation.EventType.FINISHED, onFinished);
+            anim.play();
+        });
+    }
+
+    shakeNode(duration = 0.3, strength = 10): Promise<void> {
+        return new Promise((resolve) => {
+            const originalPos = this.node.position.clone();
+            const times = 5;
+            const delay = duration / (times * 2);
+            const sequence = [];
+
+            for (let i = 0; i < times; i++) {
+                sequence.push(
+                    tween().to(delay, { position: new Vec3(originalPos.x + strength, originalPos.y, originalPos.z) }),
+                    tween().to(delay, { position: new Vec3(originalPos.x - strength, originalPos.y, originalPos.z) })
+                );
+            }
+
+            sequence.push(
+                tween().to(delay, { position: originalPos }) // reset position
+            );
+
+            tween(this.node)
+                .sequence(...sequence)
+                .call(() => resolve())
+                .start();
+        });
     }
 
     async setPetDead(callback?: () => void): Promise<void> {
-        const startPosition = this.node.position.clone(); // lưu vị trí ban đầu
+        const startPosition = this.node.position.clone();
         const endPosition = startPosition.clone();
-        endPosition.y -= 300; // rơi thẳng đứng 300 đơn vị
+        endPosition.y -= 300;
 
         await new Promise<void>((resolve) => {
             tween(this.node)
-                .to(0.5, { position: endPosition }, { easing: 'quadIn' }) // thời gian rơi
+                .to(0.5, { position: endPosition }, { easing: 'quadIn' })
                 .call(() => {
-                    this.petDisplay.node.active = false;
-                    this.node.setPosition(startPosition); // reset lại vị trí ban đầu
-                    resolve(); // báo tween đã xong
-                    callback?.(); // gọi callback nếu có
+                    for (const x of this.speciesMap) {
+                        if (x.nodeSpritePet.activeInHierarchy) {
+                            x.nodeSpritePet.active = false;
+                            break;
+                        }
+                    }
+
+                    this.node.setPosition(startPosition);
+                    callback?.();
+                    resolve();
                 })
                 .start();
         });
