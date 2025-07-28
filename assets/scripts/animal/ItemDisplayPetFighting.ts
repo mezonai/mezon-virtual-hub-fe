@@ -27,6 +27,8 @@ export class ItemDisplayPetFighting extends Component {
         };
         this.petImage.setActivePetByName(pet.name);
         this.iconSlotSprite.spriteFrame = this.iconSlot[slot < this.iconSlot.length ? slot : 0];
+        this.petImage.node.active = true;
+        this.iconSlotSprite.node.active = true;
         this.slotValue.string = `<outline color=#222222 width=1> ${slot + 1} </outline>`;
         this.levelPet.string = `<outline color=#222222 width=1> Lv.${pet.level} </outline>`
         this.setStar(pet.stars);
@@ -48,6 +50,18 @@ export class ItemDisplayPetFighting extends Component {
         }
         if (this.selectedCallback == null) return;
         this.selectedCallback();
+    }
+
+    resetData() {
+        this.petImage.node.active = false; 
+        this.iconSlotSprite.node.active = false; 
+        this.slotValue.string = '';
+        this.levelPet.string = '';
+        this.setStar(0);
+        this.node.setScale(Vec3.ONE);
+        this.toggle.isChecked = false;
+        this.toggle.node.off('toggle', this.onToggleChanged, this);
+        this.selectedCallback = null;
     }
 }
 

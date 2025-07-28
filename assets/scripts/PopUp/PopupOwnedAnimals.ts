@@ -107,13 +107,8 @@ export class PopupOwnedAnimals extends BasePopup {
     setSlotPetFighting(pets: PetDTO[]) {
         for (let i = 0; i < this.itemDisplayPetFightings.length; i++) {
             const pet = pets[i];
-            if (pet){
-                console.log("CÓ PET: " ,pets[i].name);
-                this.itemDisplayPetFightings[i].setData(pets[i], i, this.showPetDetail.bind(this));
-            }
-            else{
-                console.log("KHÔNG PET: Slot", i, "không có pet.");
-            }
+            const item = this.itemDisplayPetFightings[i];
+            pet ? item.setData(pet, i, this.showPetDetail.bind(this)) : item.resetData();
         }
     }
 
@@ -184,14 +179,13 @@ export class PopupOwnedAnimals extends BasePopup {
             this.setLayerAnimal(false);
         }
         // Gán dữ liệu cho itemSlotSkills
-
         this.skillPet = [
             pet.skill_slot_1,
             pet.skill_slot_2,
             pet.skill_slot_3,
             pet.skill_slot_4,
         ].filter(Boolean)
-            .map(this.convertSkillSlotToDataInfo); // loại bỏ null nếu có slot rỗng
+        .map(this.convertSkillSlotToDataInfo);
 
         this.itemSlotSkills.forEach((slot, index) => {
             if (!slot) return;
@@ -289,9 +283,6 @@ export class PopupOwnedAnimals extends BasePopup {
 
                 const hasPetUpdate = petData.pets.length > 0;
                 const hasBattleUpdate = petDataBattle.pets.length > 0;
-
-                console.log("petData: ", JSON.stringify(petData));
-                console.log("petDataBattle: ", JSON.stringify(petDataBattle));
 
                 if (hasPetUpdate || hasBattleUpdate) {
                     this.sendUpdatePetDataAsync(petData, petDataBattle, hasPetUpdate, hasBattleUpdate);
