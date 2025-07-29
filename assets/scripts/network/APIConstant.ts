@@ -13,8 +13,9 @@ export default class APIConstant {
     static GAME_EVENT ="game-event";
     static CURRENT ="current";
     static COMPLETE = "complete"
-    static ANIMAL = "animal";
+    static PET_PLAYERS = "pet-players";
     static BRING = "bring-pets";
+    static BATTLE_PET = "select-pets";
     static FOOD = "food";
     static INITIAL_REWARD = "initial-reward";
     static REWARD_PERCENT = "reward-percent";

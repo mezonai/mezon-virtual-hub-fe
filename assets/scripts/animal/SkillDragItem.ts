@@ -1,4 +1,4 @@
-import { _decorator, Component, EventTouch, instantiate, Node, Prefab } from 'cc';
+import { _decorator, Component, EventTouch, instantiate, Node, Prefab, Vec3 } from 'cc';
 import { DraggableBase } from '../utilities/DraggableBase';
 import { ItemSkill } from './ItemSkill';
 import { InteractSlot, ItemSlotSkill } from './ItemSlotSkill';
@@ -14,7 +14,8 @@ export class SkillDragItem extends DraggableBase {
     skillTooltip: SkillTooltip = null;
     private clickCount = 0;
     private clickTimeout: number = 300; // thời gian giữa 2 lần click để nhận là double click (ms)
-    intiData(slotsSkillFighting: ItemSlotSkill[], interactSlot: InteractSlot, skillTooltip: SkillTooltip) {
+
+    intiData(slotsSkillFighting: ItemSlotSkill[], interactSlot: InteractSlot, skillTooltip: SkillTooltip, parentSkillCanMove: Node = null) {
         if (slotsSkillFighting.length <= 0) {
             this.interactionMode = InteractSlot.NONE
             return;
@@ -22,13 +23,20 @@ export class SkillDragItem extends DraggableBase {
         this.skillTooltip = skillTooltip;
         this.slotsSkillFighting = slotsSkillFighting;
         this.interactionMode = interactSlot;
+        parentSkillCanMove != null && (this.containerNode = parentSkillCanMove);
     }
 
     protected onTouchMove(event: EventTouch) {
         if (this.interactionMode != InteractSlot.DRAG) return;
         this.skillTooltip.closePopup();
         const delta = event.getUIDelta();
-        this.node.setPosition(this.node.position.x + delta.x, this.node.position.y + delta.y);
+        const tryPos = new Vec3(
+            this.node.position.x + delta.x,
+            this.node.position.y + delta.y,
+            this.node.position.z
+        );
+        const clampedPos = this.clampToContainer(tryPos);
+        this.node.setPosition(clampedPos);
     }
 
     onTouchStart(event: EventTouch): void {

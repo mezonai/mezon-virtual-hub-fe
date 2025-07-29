@@ -14,6 +14,8 @@ export enum InteractSlot {
 export class ItemSlotSkill extends Component {
     @property({ type: Prefab }) itemSkillPrefab: Prefab = null;
     @property({ type: Node }) parentSkill: Node = null;
+    @property({ type: Node }) parentSkillCanMove: Node = null;
+    @property({ type: Node }) lockItem: Node = null;
     itemSkill: ItemSkill = null;
     interactSlot: InteractSlot = InteractSlot.NONE
 
@@ -29,7 +31,7 @@ export class ItemSlotSkill extends Component {
         newitemSkill.setParent(this.parentSkill);
         this.itemSkill = newitemSkill.getComponent(ItemSkill);
         if (this.itemSkill != null) {
-            this.itemSkill.setData(skillData, this.interactSlot, slotSkillFighting);
+            this.itemSkill.setData(skillData, this.interactSlot, slotSkillFighting, this.parentSkillCanMove);
         }    
     }
 

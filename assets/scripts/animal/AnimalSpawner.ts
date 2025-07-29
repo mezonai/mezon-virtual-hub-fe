@@ -21,9 +21,9 @@ export class AnimalSpawner extends Component {
 
     public spawnPet(petData: PetDTO[]) {
         for (const pet of petData) {
-            if (pet.is_caught || pet.species == "DragonIce")
+            if (pet.is_caught || pet.pet.species == "DragonIce")
                 continue;
-            let petObj = ObjectPoolManager.instance.spawnFromPool(pet.species);
+            let petObj = ObjectPoolManager.instance.spawnFromPool(pet.pet.species);
             if (petObj) {
                 let petParent = this.getRandomZone();
                 petObj.setParent(petParent.node);
@@ -47,7 +47,7 @@ export class AnimalSpawner extends Component {
 
     public spawnPetOnServer(pet: PetColysesusObjectData) {
         if (!pet) return;
-        let petObj = ObjectPoolManager.instance.spawnFromPool(pet.pet.species);
+        let petObj = ObjectPoolManager.instance.spawnFromPool(pet.pet.pet.species);
         if (petObj) {
             petObj.setParent(this.spawnMap);
             petObj.setPosition(new Vec3(pet.x, pet.y, 0));

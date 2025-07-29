@@ -22,11 +22,22 @@ export default class ConvetData {
             const petDTO = new PetDTO();
             petDTO.id = data.id;
             petDTO.name = data.name;
-            petDTO.species = data.species;
-            petDTO.is_caught = data.is_caught;
+            petDTO.level = data.level;
+            petDTO.exp = data.exp;
+            petDTO.stars = data.stars;
+            petDTO.attack = data.attack;
+            petDTO.defense = data.defense;
+            petDTO.speed = data.speed;
             petDTO.is_brought = data.is_brought;
+            petDTO.is_caught = data.is_caught;
+            petDTO.is_selected_battle = data.is_selected_battle;
+            petDTO.individual_value = data.individual_value;
             petDTO.room_code = data.room_code;
-            petDTO.rarity = data.rarity;
+            petDTO.pet = data.pet;
+            petDTO.skill_slot_1 = data.skill_slot_1;
+            petDTO.skill_slot_2 = data.skill_slot_2;
+            petDTO.skill_slot_3 = data.skill_slot_3 ?? null;
+            petDTO.skill_slot_4 = data.skill_slot_4 ?? null;
             return petDTO;
         });
     }
@@ -36,11 +47,22 @@ export default class ConvetData {
         const petDTO = new PetDTO();
         petDTO.id = data.id;
         petDTO.name = data.name;
-        petDTO.species = data.species;
-        petDTO.is_caught = data.is_caught;
+        petDTO.level = data.level;
+        petDTO.exp = data.exp;
+        petDTO.stars = data.stars;
+        petDTO.attack = data.attack;
+        petDTO.defense = data.defense;
+        petDTO.speed = data.speed;
         petDTO.is_brought = data.is_brought;
+        petDTO.is_caught = data.is_caught;
+        petDTO.is_selected_battle = data.is_selected_battle;
+        petDTO.individual_value = data.individual_value;
         petDTO.room_code = data.room_code;
-        petDTO.rarity = data.rarity;
+        petDTO.pet = data.pet;
+        petDTO.skill_slot_1 = data.skill_slot_1;
+        petDTO.skill_slot_2 = data.skill_slot_2;
+        petDTO.skill_slot_3 = data.skill_slot_3 ?? null;
+        petDTO.skill_slot_4 = data.skill_slot_4 ?? null;
         return petDTO;
     }
 

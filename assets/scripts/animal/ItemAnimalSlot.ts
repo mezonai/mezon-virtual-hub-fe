@@ -21,6 +21,7 @@ export class ItemAnimalSlot extends Component {
         this.fightingNode.active = false;
         this.node.setScale(Vec3.ONE);
         this.setBringPet(pet.is_brought);
+        this.setBattlePet(pet.is_selected_battle);
         this.currentPet = pet;
         this.selectedCallback = async () => {
             if (onClikcPet) {
@@ -28,14 +29,14 @@ export class ItemAnimalSlot extends Component {
             }
         };
         this.toggle.node.on('toggle', this.onToggleChanged, this);
-        if (pet.rarity == AnimalRarity.LEGENDARY) {
+        if (pet.pet.rarity == AnimalRarity.LEGENDARY) {
             this.animator.node.active = true;
             this.borderSprite.color = this.colorBorder[0];
-            this.playAnimBorder(pet.rarity);
+            this.playAnimBorder(pet.pet.rarity);
         }
         else {
             this.animator.node.active = false;
-            const indexColor = pet.rarity == AnimalRarity.COMMON ? 0 : pet.rarity == AnimalRarity.RARE ? 1 : 2;
+            const indexColor = pet.pet.rarity == AnimalRarity.COMMON ? 0 : pet.pet.rarity == AnimalRarity.RARE ? 1 : 2;
             this.borderSprite.color = this.colorBorder[indexColor];
         }
         this.petImage.setActivePetByName(pet.name);
@@ -71,6 +72,10 @@ export class ItemAnimalSlot extends Component {
 
     setBringPet(isBrought: boolean = true) {
         this.bringNode.active = isBrought;
+    }
+
+    setBattlePet(isSelectBattle: boolean = true) {
+        this.fightingNode.active = isSelectBattle;
     }
 
     onToggleChanged(toggle: Toggle) {
