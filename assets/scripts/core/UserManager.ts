@@ -20,6 +20,7 @@ import { WebRequestManager } from '../network/WebRequestManager';
 import { PopupManager } from '../PopUp/PopupManager';
 import { BatllePetParam, PopupBattlePet } from '../PopUp/PopupBattlePet';
 import { BasePopup } from '../PopUp/BasePopup';
+import { ConfirmParam, ConfirmPopup } from '../PopUp/ConfirmPopup';
 const { ccclass, property } = _decorator;
 
 @ccclass('UserManager')
@@ -82,15 +83,15 @@ export class UserManager extends Component {
         if (playerData.room.sessionId == playerData.sessionId) {
             this.myClientPlayer = playerController;
         }
-
+        
         // Gắn vào parent & lưu map
         playerNode.setParent(this.playerParent);
         this.players.set(playerData.sessionId, playerNode.getComponent(PlayerController));
-        const pets = JSON.parse(playerData.animals);
-        if (pets != null) {
-            this.intantiatePetFollowPlayer(playerController, pets);
-        }
 
+        const pets = JSON.parse(playerData.pet_players);
+        if (pets != null) {
+            this.instantiatePetFollowPlayer(playerController, pets);
+        }
         // Gửi event khi player được tạo xong
         ServerManager.instance.node.emit(EVENT_NAME.ON_PLAYER_ADDED, playerData.sessionId);
 
@@ -101,10 +102,11 @@ export class UserManager extends Component {
         }
     }
 
-    intantiatePetFollowPlayer(playerController: PlayerController, pets: any) {
+    instantiatePetFollowPlayer(playerController: PlayerController, pets: PetDTO[]) {
         if (pets == null) return;
         playerController.resetPets(() => {
             for (const pet of pets) {
+                if (pet.is_brought === false) continue;
                 const animal = ObjectPoolManager.instance.spawnFromPool(pet.species);
                 const animalController = animal.getComponent(AnimalController);
                 if (animalController == null) continue;
@@ -245,7 +247,11 @@ export class UserManager extends Component {
     public onP2PGameError(data) {
         if (data.from == this.GetMyClientPlayer.myID || data.to == this.GetMyClientPlayer.myID) {
             SoundManager.instance.playSound(AudioType.Lose);
-            UIManager.Instance.showNoticePopup(null, data.message);
+            const param: ConfirmParam = {
+                message: data.message,
+                title: "Chú Ý",
+            };
+            PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
         }
         this.players.forEach(player => {
             player.p2PInteractManager.stopP2pAction(data);
@@ -325,10 +331,14 @@ export class UserManager extends Component {
 
     public onCatchPetSuccess(data) {
         OfficeSceneController.instance.currentMap.AnimalSpawner.disappearedPet(data.petId, true)
-        if (data.playerCatchId === UserManager.instance.GetMyClientPlayer.myID) this.updateMyData(data.petId);
+        if (data.playerCatchId === UserManager.instance.GetMyClientPlayer.myID) this.UpdateMyPetData(data.petId);
     }
     public onPetAlreadyCaught(data) {
-        UIManager.Instance.showNoticePopup("Thông báo", `Thú cưng đã bị bắt. Chúc bạn may mắn lần sau`);
+        const param: ConfirmParam = {
+            message: `Thú cưng đã bị bắt. Chúc bạn may mắn lần sau`,
+            title: "Thông báo",
+        };
+        PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
     }
     public onCatchPetFail(data) {
         let animal = OfficeSceneController.instance.currentMap.AnimalSpawner.getAnimalById(data.petId);
@@ -342,9 +352,8 @@ export class UserManager extends Component {
 
     public onPetFollowPlayer(data) {
         let playerTarget = this.players.get(data.playerIdFollowPet);
-        let pets = ConvetData.ConvertPets(data.pet);
-        if (playerTarget == null || pets == null) return;
-        this.intantiatePetFollowPlayer(playerTarget, pets)
+        if (!playerTarget) return;
+        this.instantiatePetFollowPlayer(playerTarget, data.pet);
     }
 
     public onSendTouchPet(data) {
@@ -361,19 +370,34 @@ export class UserManager extends Component {
         targetPet.getRandomProvokeLine(playerTarget.userName, randomIndex);
     }
 
-    private updateMyData(petCaughId: string) {
-        WebRequestManager.instance.getUserProfile(
-            (response) => { this.onGetProfileSuccess(response, petCaughId) },
-            (error) => this.onError(error)
-        );
+    public getMyPetData(): Promise<PetDTO[]> {
+        return new Promise((resolve, reject) => {
+            WebRequestManager.instance.getMyPetData(
+                (response) => resolve(response.data),
+                (error) => reject(error)
+            );
+        });
     }
 
-    private onGetProfileSuccess(respone, petCaughId: string) {
-        UserMeManager.Set = respone.data;
-        const pet = UserMeManager.Get.animals.find(p => p.id === petCaughId);
-        if (UserManager.instance.GetMyClientPlayer) {
-            const content = pet != null ? `Bạn đã bắt thành công <color=#FF0000>${pet.name} (${pet.rarity})</color>` : `Bạn đã bắt pet thành công`
-            UIManager.Instance.showNoticePopup("Thông báo", content);
+    private async UpdateMyPetData(petCaughId: string) {
+        try {
+            const petData = await this.getMyPetData();
+            const pet = petData.find(p => p.id === petCaughId);
+            if (UserManager.instance.GetMyClientPlayer) {
+                const content = pet != null ? `Bạn đã bắt thành công <color=#FF0000>${pet.name} (${pet.pet.rarity})</color>` : `Bạn đã bắt pet thành công`
+                const param: ConfirmParam = {
+                    message: content,
+                    title: "Thông báo",
+                };
+                PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
+            }
+        } catch (error) {
+            this.onError(error);
+            const param: ConfirmParam = {
+                message: "Đã có lỗi khi lấy thông tin thú cưng!",
+                title: "Lỗi",
+            };
+            PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
         }
     }
 

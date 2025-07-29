@@ -7,13 +7,20 @@ import { PopupManager } from './PopupManager';
 import { ConfirmParam, ConfirmPopup } from './ConfirmPopup';
 import { ServerManager } from '../core/ServerManager';
 import { WebRequestManager } from '../network/WebRequestManager';
-import { AnimalRarity, PetDTO } from '../Model/PetDTO';
+import { AnimalElement, AnimalRarity, PetBattlePayload, PetDTO, PetFollowPayload, SkillData, SkillSlot } from '../Model/PetDTO';
 import { AnimalController, AnimalType } from '../animal/AnimalController';
 import { PopupSelection, SelectionParam } from './PopupSelection';
 import { ItemDisplayPetFighting } from '../animal/ItemDisplayPetFighting';
 import { InteractSlot, ItemSlotSkill } from '../animal/ItemSlotSkill';
 import { SkillDataInfor, SkillList } from '../animal/Skills';
+import { UserManager } from '../core/UserManager';
 const { ccclass, property } = _decorator;
+
+enum PetActionType {
+    BRING,
+    REMOVE,
+    FIGHT,
+}
 
 @ccclass('PopupOwnedAnimals')
 export class PopupOwnedAnimals extends BasePopup {
@@ -46,18 +53,20 @@ export class PopupOwnedAnimals extends BasePopup {
     @property({ type: Button }) summonButton: Button = null;
     private animalSlots: ItemAnimalSlot[] = [];
     private animalBrings: PetDTO[] = [];
+    private animalBattle: PetDTO[] = [];
     private bringPetIdsInit: string[] = [];
+    private battlePetIdsInit: string[] = [];
     private maxBringPets = 3;
     private timeoutLoadSlot: number = 50;
-    //
-    species: string[] = ["Bird", "Cat", "Dog", "Rabit", "Sika", "Pokemon", "Dragon", "PhoenixIce", "DragonIce"]
-    skillTest: SkillDataInfor[] = [
-        SkillList[0],
-        SkillList[14],
-        SkillList[16],
-        SkillList[19]
-    ];
+    private listAllPetPlayer: PetDTO[] = [];
+    private expMax: number = 1000;
+    private skillPet: SkillDataInfor[];
+
     groupPetsBySpecies(pets: PetDTO[]): PetDTO[] {
+        return this.sortPetsBySpeciesAndRarity(pets);
+    }
+
+    private sortPetsBySpeciesAndRarity(pets: PetDTO[]): PetDTO[] {
         const rarityOrder: Record<AnimalRarity, number> = {
             [AnimalRarity.COMMON]: 0,
             [AnimalRarity.RARE]: 1,
@@ -66,52 +75,40 @@ export class PopupOwnedAnimals extends BasePopup {
         };
 
         return pets.slice().sort((a, b) => {
-            // So sánh species trước
-            if (a.species < b.species) return -1;
-            if (a.species > b.species) return 1;
-
-            // Nếu species giống nhau, so sánh rarity
-            return rarityOrder[a.rarity] - rarityOrder[b.rarity];
+            if (a.pet.species < b.pet.species) return -1;
+            if (a.pet.species > b.pet.species) return 1;
+            return rarityOrder[a.pet.rarity] - rarityOrder[b.pet.rarity];
         });
     }
-    getTop3LegendaryPets(pets: PetDTO[]): PetDTO[] {// data test sau nãy sẽ xóa
-        const rarityOrder: Record<AnimalRarity, number> = {
-            [AnimalRarity.COMMON]: 0,
-            [AnimalRarity.RARE]: 1,
-            [AnimalRarity.EPIC]: 2,
-            [AnimalRarity.LEGENDARY]: 3,
-        };
 
-        const sortedPets = pets.slice().sort((a, b) => {
-            if (a.species < b.species) return -1;
-            if (a.species > b.species) return 1;
-            return rarityOrder[a.rarity] - rarityOrder[b.rarity];
-        });
 
-        // Lọc ra 3 pet LEGENDARY đầu tiên trong danh sách đã sort
-        return sortedPets.filter(pet => pet.rarity === AnimalRarity.LEGENDARY).slice(0, 3);
-    }
     showPopup() {
-        let animals = UserMeManager.Get.animals;
-        if (animals == null || animals.length <= 0) {
+        WebRequestManager.instance.getMyPetData((respone) => { this.onGetMyPet(respone) }, (error) => { this.onApiError(error); });
+    }
+
+    private onGetMyPet(respone) {
+        this.listAllPetPlayer = respone.data;
+        if (this.listAllPetPlayer == null || this.listAllPetPlayer.length <= 0) {
             this.noPetPanel.active = true;
             return;
         }
         this.noPetPanel.active = false;
-        const rarityOrder: Record<AnimalRarity, number> = {
-            [AnimalRarity.COMMON]: 0,
-            [AnimalRarity.RARE]: 1,
-            [AnimalRarity.EPIC]: 2,
-            [AnimalRarity.LEGENDARY]: 3,
+        this.InitPet(this.groupPetsBySpecies(this.listAllPetPlayer));
+    }
+
+    private onApiError(error) {
+        const param: ConfirmParam = {
+            message: error.error_message,
+            title: "Waning",
         };
-        this.setSlotPetFighting(animals);
-        this.InitPet(this.groupPetsBySpecies(animals));
+        PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
     }
 
     setSlotPetFighting(pets: PetDTO[]) {
-        let pets3 = this.getTop3LegendaryPets(pets);
         for (let i = 0; i < this.itemDisplayPetFightings.length; i++) {
-            this.itemDisplayPetFightings[i].setData(pets3[i], i, this.showPetDetail.bind(this));
+            const pet = pets[i];
+            const item = this.itemDisplayPetFightings[i];
+            pet ? item.setData(pet, i, this.showPetDetail.bind(this)) : item.resetData();
         }
     }
 
@@ -148,7 +145,12 @@ export class PopupOwnedAnimals extends BasePopup {
                 this.animalBrings.push(pet);
                 this.bringPetIdsInit.push(pet.id);
             }
+            if (pet.is_selected_battle) {
+                this.animalBattle.push(pet);
+                this.battlePetIdsInit.push(pet.id);
+            }
         }
+        this.setSlotPetFighting(this.animalBattle);
         this.setDefaultDetailPet();
     }
 
@@ -156,14 +158,14 @@ export class PopupOwnedAnimals extends BasePopup {
         if (pet == null) return;
         if (this.animalObject != null) {
             if (pet?.id === this.animalController?.Pet?.id) return;
-            if (pet?.species == this.animalController?.Pet?.species) {
+            if (pet?.pet?.species == this.animalController?.Pet?.pet.species) {
                 this.animalController.setDataPet(pet, AnimalType.NoMove);
                 this.setDataDetail(pet);
                 return;
             }
             await this.resePet();
         }
-        this.animalObject = ObjectPoolManager.instance.spawnFromPool(pet.species);
+        this.animalObject = ObjectPoolManager.instance.spawnFromPool(pet.pet.species);
         if (this.animalObject == null) return;
         this.animalObject.setParent(this.parentPet);
         this.animalObject.setPosition(new Vec3(0, 0, 0));
@@ -177,9 +179,25 @@ export class PopupOwnedAnimals extends BasePopup {
             this.setLayerAnimal(false);
         }
         // Gán dữ liệu cho itemSlotSkills
-        this.skillTest.forEach((skill, index) => {
-            if (this.itemSlotSkills[index]) {
-                this.itemSlotSkills[index].initData(skill, InteractSlot.DRAG, this.slotSkillFighting);
+        this.skillPet = [
+            pet.skill_slot_1,
+            pet.skill_slot_2,
+            pet.skill_slot_3,
+            pet.skill_slot_4,
+        ].filter(Boolean)
+        .map(this.convertSkillSlotToDataInfo);
+
+        this.itemSlotSkills.forEach((slot, index) => {
+            if (!slot) return;
+
+            const skill = this.skillPet[index];
+
+            if (skill) {
+                slot.initData(skill, InteractSlot.DRAG, this.slotSkillFighting);
+                if (slot.lockItem) slot.lockItem.active = false;
+            } else {
+                slot.resetSkill();
+                if (slot.lockItem) slot.lockItem.active = true;
             }
         });
 
@@ -191,23 +209,33 @@ export class PopupOwnedAnimals extends BasePopup {
         });
     }
 
-
+    convertSkillSlotToDataInfo(slot: SkillSlot): SkillDataInfor {
+        return {
+            idSkill: slot.skill_code,
+            name: slot.name,
+            type: slot.type,
+            attack: slot.attack,
+            accuracy: slot.accuracy,
+            powerPoints: slot.power_points,
+            description: slot.description,
+        };
+    }
 
     setLayerAnimal(isReturnPool: boolean) {
         this.animalController.spriteNode.layer = isReturnPool ? this.defaultLayer : Layers.Enum.UI_2D;
     }
 
     setDataDetail(pet: PetDTO) {
-        this.namePet.string = `<outline color=#222222 width=1> ${pet.name} (${pet.rarity}) </outline>`;
-        this.currentExp.string = `<outline color=#222222 width=1> ?/? </outline>`;
-        this.hpValue.string = `<outline color=#222222 width=1> ? </outline>`;
-        this.attackValue.string = `<outline color=#222222 width=1> ? </outline>`;
-        this.denfenseValue.string = `<outline color=#222222 width=1> ? </outline>`;
-        this.speedValue.string = `<outline color=#222222 width=1> ? </outline>`;
-        this.levelValue.string = `<outline color=#222222 width=1> ? </outline>`;
-        this.typeValue.string = `<outline color=#222222 width=1> Normal </outline>`;
-        this.setStar(pet.rarity == AnimalRarity.COMMON ? 0 : pet.rarity == AnimalRarity.RARE ? 1 : pet.rarity == AnimalRarity.EPIC ? 2 : 3)
-        this.setActiveButton(pet.is_brought);
+        this.namePet.string = `<outline color=#222222 width=1> ${pet.name} (${pet.pet.rarity}) </outline>`;
+        this.currentExp.string = `<outline color=#222222 width=1> ${pet.exp} / ${pet.max_exp} </outline>`;
+        this.hpValue.string = `<outline color=#222222 width=1> ${pet.hp} </outline>`;
+        this.attackValue.string = `<outline color=#222222 width=1> ${pet.attack} </outline>`;
+        this.denfenseValue.string = `<outline color=#222222 width=1> ${pet.defense} </outline>`;
+        this.speedValue.string = `<outline color=#222222 width=1> ${pet.speed} </outline>`;
+        this.levelValue.string = `<outline color=#222222 width=1> ${pet.level} </outline>`;
+        this.typeValue.string = `<outline color=#222222 width=1> ${pet.pet.type} </outline>`;
+        this.setStar(pet.stars)
+        this.updatePetActionButtons(pet);
     }
 
     resePet(): Promise<void> {
@@ -228,88 +256,197 @@ export class PopupOwnedAnimals extends BasePopup {
 
     saveChange() {
         const bringPetIds: string[] = this.animalBrings.map(pet => pet.id);
-        if (
-            this.bringPetIdsInit.length === bringPetIds.length &&
-            this.bringPetIdsInit.every(id => bringPetIds.includes(id))
-        ) {
+        const battlePetIds: string[] = this.animalBattle.map(pet => pet.id);
+
+        const isSameBring = this.bringPetIdsInit.length === bringPetIds.length &&
+            this.bringPetIdsInit.every(id => bringPetIds.includes(id));
+
+        const isSameBattle = this.battlePetIdsInit.length === battlePetIds.length &&
+            this.battlePetIdsInit.every(id => battlePetIds.includes(id));
+
+        if (isSameBring && isSameBattle) {
             this.closePopup();
             return;
         }
+
         const param: SelectionParam = {
             content: `Bạn có muốn lưu những thay đổi không?`,
             textButtonLeft: "Không",
             textButtonRight: "Có",
             textButtonCenter: "",
             onActionButtonRight: () => {
-                const pets = UserMeManager.Get.animals;
-                console.log("Save", pets);
+                const pets = this.listAllPetPlayer;
                 if (!pets || pets.length === 0) return;
 
-                // Cập nhật is_brought và tạo danh sách pet được chọn
-                const petFollowUser = pets.filter(pet => {
-                    pet.is_brought = bringPetIds.includes(pet.id);
-                    return pet.is_brought;
-                });
-                const petData = { pets: pets };
-                if (pets.length > 0) {
-                    WebRequestManager.instance.updateListPetFollowUser(
-                        petData,
-                        (response) => {
-                            const data = {
-                                pets: JSON.stringify(petFollowUser)
-                            };
-                            ServerManager.instance.sendPetFollowPlayer(data);
-                            this.closePopup();
-                        },
-                        (error) => this.onError(error)
-                    );
-                } else this.closePopup();
-            },
+                const petData = this.buildPetFollowData(pets);
+                const petDataBattle = this.buildPetBattleData(pets);
+
+                const hasPetUpdate = petData.pets.length > 0;
+                const hasBattleUpdate = petDataBattle.pets.length > 0;
+
+                if (hasPetUpdate || hasBattleUpdate) {
+                    this.sendUpdatePetDataAsync(petData, petDataBattle, hasPetUpdate, hasBattleUpdate);
+                } else {
+                    this.closePopup();
+                }
+            }
+            ,
+            onActionButtonLeft: () => {
+                this.closePopup();
+            }
         };
         PopupManager.getInstance().openAnimPopup("PopupSelection", PopupSelection, param);
     }
-    public async init(param?) {
+
+    private buildPetFollowData(pets: PetDTO[]) {
+        const petFollowUser = pets.filter(pet => {
+            const shouldBring = this.animalBrings.some(p => p.id === pet.id);
+            const wasBrought = this.bringPetIdsInit.includes(pet.id);
+            pet.is_brought = shouldBring;
+            return shouldBring || wasBrought;
+        });
+
+        return {
+            pets: petFollowUser.map(pet => ({
+                id: pet.id,
+                is_brought: pet.is_brought,
+                room_code: pet.room_code,
+                species: pet.pet?.species ?? null,
+                type: pet.pet?.type ?? null,
+                rarity: pet.pet?.rarity ?? null
+            }))
+        };
+    }
+
+    private buildPetBattleData(pets: PetDTO[]) {
+        const petBattleUser = pets.filter(pet => {
+            const shouldBattle = this.animalBattle.some(p => p.id === pet.id);
+            const wasBattle = this.battlePetIdsInit.includes(pet.id);
+            pet.is_selected_battle = shouldBattle;
+            return shouldBattle || wasBattle;
+        });
+
+        return {
+            pets: petBattleUser.map(pet => ({
+                id: pet.id,
+                is_selected_battle: pet.is_selected_battle
+            }))
+        };
+    }
+
+    private async sendUpdatePetDataAsync(
+        petData: PetFollowPayload,
+        petDataBattle: PetBattlePayload,
+        hasPetUpdate: boolean,
+        hasBattleUpdate: boolean
+    ) {
+        try {
+            if (hasBattleUpdate) await this.updateListPetBattleUserAsync(petDataBattle);
+            if (hasPetUpdate) await this.updateListPetFollowUserAsync(petData);
+        } finally {
+            this.closePopup();
+        }
+    }
+
+    private updateListPetFollowUserAsync(petData: PetFollowPayload): Promise<void> {
+        return new Promise<void>((resolve) => {
+            WebRequestManager.instance.updateListPetFollowUser(
+                petData,
+                () => {
+                    const data = {
+                        pets: petData.pets
+                    };
+                    ServerManager.instance.sendPetFollowPlayer(data);
+                    resolve();
+                },
+                (error) => {
+                    this.onError(error);
+                    resolve();
+                }
+            );
+        });
+    }
+
+    private updateListPetBattleUserAsync(petDataBattle: PetBattlePayload): Promise<void> {
+        return new Promise<void>((resolve) => {
+            WebRequestManager.instance.updateListPetBattleUser(
+                petDataBattle,
+                () => resolve(),
+                (error) => {
+                    this.onError(error);
+                    resolve();
+                }
+            );
+        });
+    }
+
+    public async init() {
+        this.closeButton.node.on(Button.EventType.CLICK, this.saveChange, this);
+        this.bringButton.node.on(Button.EventType.CLICK, () => this.handlePetAction(PetActionType.BRING), this);
+        this.fightingButton.node.on(Button.EventType.CLICK, () => this.handlePetAction(PetActionType.FIGHT), this);
+        this.summonButton.node.on(Button.EventType.CLICK, () => this.handlePetAction(PetActionType.REMOVE), this);
         this.showPopup();
     }
 
-    protected onLoad(): void {
-        this.closeButton.node.on(Button.EventType.CLICK, this.saveChange, this);
-        this.bringButton.node.on(Button.EventType.CLICK, this.onButtonBringPetClick, this);
-        this.summonButton.node.on(Button.EventType.CLICK, this.onSummonPetPetClick, this);
-    }
 
-    onButtonBringPetClick() {
-        if (this.animalController == null) return;
-        if (this.animalBrings.length >= this.maxBringPets) {
-            const param: ConfirmParam = {
-                message: "Bạn chỉ được chọn 3 thú cưng mang theo",
-                title: "Thông báo",
-            };
-            PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
+    private handlePetAction(actionType: PetActionType) {
+        if (!this.animalController) return;
+        const pet = this.animalController.Pet;
+        const actions = {
+            [PetActionType.BRING]: {
+                content: `Bạn có muốn mang theo ${pet.name} bên mình?`,
+                handler: () => this.onBringPet(true),
+                deny: pet.is_selected_battle
+                    ? "Pet đang được chọn để thi đấu nên không thể mang theo."
+                    : this.animalBrings.length >= this.maxBringPets
+                        ? "Bạn chỉ được chọn 3 thú cưng mang theo"
+                        : null
+            },
+            [PetActionType.FIGHT]: {
+                content: `Bạn có muốn chọn ${pet.name} để thi đấu?`,
+                handler: () => this.onSelectPetBattle(true),
+                deny: pet.is_brought
+                    ? "Pet đang được mang theo nên không thể chọn để thi đấu."
+                    : this.animalBattle.length >= this.maxBringPets
+                        ? "Bạn chỉ được chọn 3 thú cưng thi đấu"
+                        : null
+            },
+            [PetActionType.REMOVE]: {
+                content: pet.is_brought
+                    ? `Bạn có muốn gỡ Pet này khỏi danh sách mang theo không?`
+                    : `Bạn có muốn gỡ Pet này khỏi danh sách chiến đấu không?`,
+                handler: () =>
+                    pet.is_brought
+                        ? this.onBringPet(false)
+                        : this.onSelectPetBattle(false),
+                deny: null
+            }
+        };
+
+        const { content, handler, deny } = actions[actionType];
+        if (deny) {
+            this.showConfirm(deny);
             return;
         }
-        const param: SelectionParam = {
-            content: `Bạn có muốn mang theo ${this.animalController.Pet.name} bên mình?`,
-            textButtonLeft: "Không",
-            textButtonRight: "Có",
-            textButtonCenter: "",
-            onActionButtonRight: () => {
-                this.onBringPet(true);
-            },
-        };
-        PopupManager.getInstance().openAnimPopup("PopupSelection", PopupSelection, param);
+
+        this.showSelection(content, handler);
     }
 
-    onSummonPetPetClick() {
-        if (this.animalController == null) return;
+    private showConfirm(message: string) {
+        const param: ConfirmParam = {
+            message,
+            title: "Thông báo",
+        };
+        PopupManager.getInstance().openPopup("ConfirmPopup", ConfirmPopup, param);
+    }
+
+    private showSelection(content: string, onConfirm: () => void) {
         const param: SelectionParam = {
-            content: this.animalController.Pet.is_brought ? `Bạn có muốn gỡ Pet này khỏi danh sách mang theo không?` : `Bạn có muốn gỡ Pet này khỏi danh sách chiến đấu không??`,
+            content,
             textButtonLeft: "Không",
             textButtonRight: "Có",
             textButtonCenter: "",
-            onActionButtonRight: () => {
-                this.onBringPet(false);
-            },
+            onActionButtonRight: onConfirm,
         };
         PopupManager.getInstance().openAnimPopup("PopupSelection", PopupSelection, param);
     }
@@ -317,6 +454,7 @@ export class PopupOwnedAnimals extends BasePopup {
     async closePopup() {
         await this.resePet();
         await PopupManager.getInstance().closePopup(this.node.uuid, true);
+        this._onActionClose?.();
     }
     private onError(error: any) {
         console.error("Error occurred:", error);
@@ -331,13 +469,36 @@ export class PopupOwnedAnimals extends BasePopup {
         this.bringButton.node.active = !isBrought;
         this.bringNode.active = isBrought;
     }
+
+    updatePetActionButtons(pet: PetDTO) {
+        const isBrought = pet.is_brought;
+        const isInBattle = pet.is_selected_battle;
+
+        this.summonButton.node.active = false;
+        this.bringButton.node.active = false;
+        this.fightingButton.node.active = false;
+
+        if (!isBrought && !isInBattle) {
+            this.bringButton.node.active = true;
+            this.fightingButton.node.active = true;
+        }
+        else if (isBrought && !isInBattle) {
+            this.summonButton.node.active = true;
+            this.fightingButton.node.active = true;
+        }
+        else if (isInBattle && !isBrought) {
+            this.summonButton.node.active = true;
+            this.bringButton.node.active = true;
+        }
+        this.bringNode.active = isBrought;
+    }
+
+
     onBringPet(isBring: boolean) {
         const pet = this.animalController?.Pet;
         if (!pet) return;
-
         pet.is_brought = isBring;
-        this.setActiveButton(isBring);
-
+        this.updatePetActionButtons(pet);
         if (isBring) {
             this.animalBrings.push(pet);
         } else {
@@ -352,6 +513,31 @@ export class PopupOwnedAnimals extends BasePopup {
             currentAnimalSlot.setBringPet(isBring);
         }
     }
+
+    onSelectPetBattle(isSelectBattle: boolean) {
+        const pet = this.animalController?.Pet;
+        if (!pet) return;
+
+        pet.is_selected_battle = isSelectBattle;
+        this.updatePetActionButtons(pet);
+        if (isSelectBattle) {
+            const existedIndex = this.animalBattle.findIndex(p => p.id === pet.id);
+            if (existedIndex !== -1) {
+                return;
+            }
+            this.animalBattle.push(pet);
+        } else {
+            const index = this.animalBattle.findIndex(p => p.id === pet.id);
+            if (index !== -1) {
+                this.animalBattle.splice(index, 1);
+            }
+        }
+
+        this.setSlotPetFighting(this.animalBattle);
+
+        const currentAnimalSlot = this.animalSlots.find(slot => slot.currentPet.id === pet?.id);
+        if (currentAnimalSlot) {
+            currentAnimalSlot.setBattlePet(isSelectBattle);
+        }
+    }
 }
-
-

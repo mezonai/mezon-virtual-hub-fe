@@ -16,6 +16,9 @@ export class PopupTooltipSkill extends BasePopup {
             this.closePopup();
             return;
         }
+        if (param != null && param.onActionClose != null) {
+            this._onActionClose = param.onActionClose;
+        }
         this.setData(param.skill);
     }
 
@@ -27,12 +30,14 @@ export class PopupTooltipSkill extends BasePopup {
         this.description.string = skill.description;
     }
 
-    async closePopup() {
+    public async closePopup() {
         await PopupManager.getInstance().closePopup(this.node.uuid, true);
+        this._onActionClose?.();
     }
 }
 
 export interface TooltipSkillParam {
     skill: SkillDataInfor;
+    onActionClose?: () => void;
 }
 

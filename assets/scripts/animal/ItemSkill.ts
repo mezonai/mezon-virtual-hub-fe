@@ -32,7 +32,7 @@ export class ItemSkill extends Component {
     @property({ type: [Color] }) colorBoder2: Color[] = [];
     @property({ type: SkillTooltip }) skillTooltip: SkillTooltip = null;
     currentSkill: SkillDataInfor = null;
-    setData(skillData: SkillDataInfor, interactSlot: InteractSlot, slotSkillFighting: ItemSlotSkill[] = []) {
+    setData(skillData: SkillDataInfor, interactSlot: InteractSlot, slotSkillFighting: ItemSlotSkill[] = [], parentSkillCanMove: Node = null) {
         this.iconSkills.forEach(node => {
             node.active = (node.name === skillData.idSkill);
         });
@@ -42,7 +42,7 @@ export class ItemSkill extends Component {
         let colorGradient = this.getColorBackgroundIcon(skillData.type);
         this.backgroundIcon.setGradientColors(colorGradient.bl, colorGradient.br, colorGradient.tl, colorGradient.tr);
         if (interactSlot == InteractSlot.SHOW_UI) return; // chỉ show ui thì không cần set data
-        this.skillDragItem.intiData(slotSkillFighting, interactSlot, this.skillTooltip)
+        this.skillDragItem.intiData(slotSkillFighting, interactSlot, this.skillTooltip, parentSkillCanMove)
         if (this.skillTooltip != null && interactSlot != InteractSlot.DOUBLE_CLICK) {
             this.skillTooltip.setData(skillData);
         }

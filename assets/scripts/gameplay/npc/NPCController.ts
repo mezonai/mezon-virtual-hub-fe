@@ -7,8 +7,9 @@ import { EVENT_NAME } from '../../network/APIConstant';
 import { UserManager } from '../../core/UserManager';
 import { UIManager } from '../../core/UIManager';
 import { UIID } from '../../ui/enum/UIID';
-import { MathProblemPopup } from '../../ui/MathProblemPopup';
+import { MathProblemParam, MathProblemPopup } from '../../ui/MathProblemPopup';
 import { AudioType, SoundManager } from '../../core/SoundManager';
+import { PopupManager } from '../../PopUp/PopupManager';
 const { ccclass, property } = _decorator;
 
 export enum NPC_TYPE {
@@ -115,17 +116,25 @@ export class NPCController extends Component {
             if (UserManager.instance?.GetMyClientPlayer) {
                 let distance = Vec3.distance(this.node.worldPosition, UserManager.instance.GetMyClientPlayer.node.worldPosition);
                 if (distance < this.maxDistancePlayerCanInteract) {
-                     SoundManager.instance.playSound(AudioType.Notice);
-                    let panel = UIManager.Instance.showUI(UIID.MathProblem);
-                    panel.getComponent(MathProblemPopup).setData(id, question, options.split(","));
-                    setTimeout(() => {
-                        if (UIManager.Instance) {
-                            UIManager.Instance.HideUI(UIID.MathProblem);
-                        }
-                    }, this.showDialogueTime * 1000);
+                    SoundManager.instance.playSound(AudioType.Notice);
+                    const mathParam: MathProblemParam = {
+                        id: id,
+                        question: question,
+                        options: options.split(","),
+                    };
+                    this.ShowBubbleChatMath(mathParam);
                 }
             }
         }
+    }
+
+    async ShowBubbleChatMath(mathParam: MathProblemParam) {
+        const popup = await PopupManager.getInstance().openPopup("MathProblemPopup", MathProblemPopup, mathParam);
+         if (popup?.isValid) {
+            setTimeout(() => {
+                popup.closePopup();
+            }, this.showDialogueTime * 1000);
+        } 
     }
 
     private loadDialogue() {

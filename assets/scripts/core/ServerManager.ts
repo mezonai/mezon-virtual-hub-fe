@@ -15,6 +15,8 @@ import Utilities from '../utilities/Utilities';
 import { OfficeSceneController } from '../GameMap/OfficeScene/OfficeSceneController';
 import { UserMeManager } from './UserMeManager';
 import { MessageTypes } from '../utilities/MessageTypes';
+import { ConfirmParam, ConfirmPopup } from '../PopUp/ConfirmPopup';
+import { PopupSelectionMini, SelectionMiniParam } from '../PopUp/PopupSelectionMini';
 
 @ccclass('ServerManager')
 export class ServerManager extends Component {
@@ -71,8 +73,7 @@ export class ServerManager extends Component {
         });
 
         this.room.state.players.onAdd((player, sessionId) => {
-            console.log(` New player joined: ${sessionId}`, player.user_id);
-            let playerData = new PlayerColysesusObjectData(sessionId, this.room, player.x, player.y, player.display_name, player.skin_set, player.user_id, player.is_show_name, player.animals);
+            let playerData = new PlayerColysesusObjectData(sessionId, this.room, player.x, player.y, player.display_name, player.skin_set, player.user_id, player.is_show_name, player.pet_players);
             UserManager.instance.createPlayer(playerData);
         });
 
@@ -106,7 +107,11 @@ export class ServerManager extends Component {
         });
 
         this.room.onMessage("noticeMessage", (data) => {
-            UIManager.Instance.showNoticePopup(null, data.message)
+            const param: ConfirmParam = {
+                message: data.message,
+                title: "Chú Ý",
+            };
+            PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
             UserManager.instance.GetMyClientPlayer.p2PInteractManager.onRejectedActionFromOther(data);
         });
 
@@ -124,7 +129,11 @@ export class ServerManager extends Component {
 
         this.room.onMessage("serverBroadcast", (data) => {
             SoundManager.instance.playSound(AudioType.Notice);
-            UIManager.Instance.showNoticePopup(null, data.message)
+            const param: ConfirmParam = {
+                message: data.message,
+                title: "Chú Ý",
+            };
+            PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
         });
 
         this.room.onMessage("onP2pActionResult", (data) => {
@@ -185,9 +194,17 @@ export class ServerManager extends Component {
             console.log("Disconnected from room. Code:", code);
             if (code == 1006) {
                 if (UIManager.Instance) {
-                    UIManager.Instance.showNoticePopup(null, "Ta mất kết nối thật rồi bạn ơi!!!", () => {
-                        SceneManagerController.loadScene(SceneName.SCENE_GAME_MAP, null);
-                    })
+                    const param: SelectionMiniParam = {
+                        title: "Chú Ý",
+                        content: "Ta mất kết nối thật rồi bạn ơi!!!",
+                        textButtonLeft: "",
+                        textButtonRight: "",
+                        textButtonCenter: "OK",
+                        onActionButtonCenter: () => {
+                            SceneManagerController.loadScene(SceneName.SCENE_GAME_MAP, null);
+                        },
+                    };
+                    PopupManager.getInstance().openAnimPopup("PopupSelectionMini", PopupSelectionMini, param);
                 }
             }
         });
@@ -223,7 +240,11 @@ export class ServerManager extends Component {
         });
 
         this.room.onMessage("onWithdrawFailed", (data) => {
-            UIManager.Instance.showNoticePopup(null, data.reason);
+            const param: ConfirmParam = {
+                message: data.reason,
+                title: "Chú Ý",
+            };
+            PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
             SoundManager.instance.playSound(AudioType.NoReward);
         });
 
@@ -231,15 +252,27 @@ export class ServerManager extends Component {
             const { sessionId } = data;
             if (this.withAmount > 0 && UserMeManager.Get && sessionId == UserManager.instance.GetMyClientPlayer.myID) {
                 SoundManager.instance.playSound(AudioType.ReceiveReward);
-                UIManager.Instance.showNoticePopup("Thông báo", `<color=#FF0000>${Utilities.convertBigNumberToStr(this.withAmount)} Diamond</color> được trừ từ tài khoản`, () => {
-                    UserMeManager.playerDiamond -= this.withAmount;
-                    this.withAmount = -1;
-                })
+                const param: SelectionMiniParam = {
+                    title: "Thông báo",
+                    content: `<color=#FF0000>${Utilities.convertBigNumberToStr(this.withAmount)} Diamond</color> được trừ từ tài khoản`,
+                    textButtonLeft: "",
+                    textButtonRight: "",
+                    textButtonCenter: "OK",
+                    onActionButtonCenter: () => {
+                        UserMeManager.playerDiamond -= this.withAmount;
+                        this.withAmount = -1;
+                    },
+                };
+                PopupManager.getInstance().openAnimPopup("PopupSelectionMini", PopupSelectionMini, param);
             }
         });
 
         this.room.onMessage("onExchangeFailed", (data) => {
-            UIManager.Instance.showNoticePopup(null, data.reason);
+            const param: ConfirmParam = {
+                message: data.reason,
+                title: "Chú Ý",
+            };
+            PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
             SoundManager.instance.playSound(AudioType.NoReward);
         });
 
@@ -249,11 +282,19 @@ export class ServerManager extends Component {
             if (this.exchangeAmount > 0 && UserMeManager.Get && sessionId == UserManager.instance.GetMyClientPlayer.myID) {
                 SoundManager.instance.playSound(AudioType.ReceiveReward);
                 const msg = `<color=#FF0000>${Utilities.convertBigNumberToStr(Math.abs(diamondChange))} Diamond</color> đã được chuyển thành <color=#00FF00>${coinChange} coin</color>`;
-                UIManager.Instance.showNoticePopup("Thông báo", msg, () => {
-                    UserMeManager.playerDiamond += diamondChange;
-                    UserMeManager.playerCoin += coinChange;
-                    this.exchangeAmount = -1;
-                });
+                const param: SelectionMiniParam = {
+                    title: "Thông báo",
+                    content: msg,
+                    textButtonLeft: "",
+                    textButtonRight: "",
+                    textButtonCenter: "OK",
+                    onActionButtonCenter: () => {
+                        UserMeManager.playerDiamond += diamondChange;
+                        UserMeManager.playerCoin += coinChange;
+                        this.exchangeAmount = -1;
+                    },
+                };
+                PopupManager.getInstance().openAnimPopup("PopupSelectionMini", PopupSelectionMini, param);
             }
         });
         this.room.onMessage("onCatchPetSuccess", (data) => {
@@ -269,13 +310,10 @@ export class ServerManager extends Component {
             UserManager.instance.onCatchPetFail(data);
         });
         this.room.onMessage("onPetFollowPlayer", (data) => {
+            if (data == null) return;
             UserManager.instance.onPetFollowPlayer(data);
 
         });
-        this.room.onMessage("onPetFollowPlayer", (data) => {
-            UserManager.instance.onPetFollowPlayer(data);
-        });
-
         this.room.onMessage("onSendTouchPet", (data) => {
             UserManager.instance.onSendTouchPet(data);
         });
@@ -451,12 +489,12 @@ export class ServerManager extends Component {
         this.room.send("catchPet", data);
     }
 
-    public sendPetFollowPlayer(data) {
-        this.room.send("sendPetFollowPlayer", data);
-    }
-
     public sendTouchPet(data) {
         this.room.send("sendTouchPet", data);
+    }
+
+    public sendPetFollowPlayer(data) {
+        this.room.send("sendPetFollowPlayer", data);
     }
 
     public sendInteracDoor(data, isOpen: boolean) {

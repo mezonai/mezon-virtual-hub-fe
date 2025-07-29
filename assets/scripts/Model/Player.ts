@@ -70,13 +70,13 @@ export class PlayerColysesusObjectData extends ColysesusObjectData{
     public skinSet: string
     public userId: string
     public isShowName: boolean;
-    public animals : string
-    constructor(sessionId: string, room: Colyseus.Room<any>, x: number, y: number, name: string, skinSet: string, id: string, isShowName: boolean, animals: string) {
+    public pet_players : string
+    constructor(sessionId: string, room: Colyseus.Room<any>, x: number, y: number, name: string, skinSet: string, id: string, isShowName: boolean, pet_players: string) {
         super(sessionId, room, x, y, name);
         this.skinSet = skinSet;
         this.userId = id;
         this.isShowName = isShowName;
-        this.animals = animals;
+        this.pet_players = pet_players;
     }
     
 }

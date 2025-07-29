@@ -4,6 +4,8 @@ import { ActionType, PlayerInteractAction } from './PlayerInteractAction';
 import { UIManager } from '../../../core/UIManager';
 import { RPSGame } from './RPSGame';
 import { PetCombat } from './PetCombat';
+import { PopupManager } from '../../../PopUp/PopupManager';
+import { MessageTimeoutParam, PopupMessageTimeout } from '../../../PopUp/PopupMessageTimeout';
 const { ccclass, property } = _decorator;
 
 @ccclass('P2PInteractManager')
@@ -14,6 +16,7 @@ export class P2PInteractManager extends Ability {
     @property({ type: CCFloat }) interactDistance: number = 60;
     private lastActionTime: number = 0;
     private interactDelay: number = 1000;
+    private closeNoticeTimeOut?: (() => void) | null = null;
 
     private get CanShowUI(): boolean {
         if (this.InteractTarget != null) {
@@ -65,7 +68,7 @@ export class P2PInteractManager extends Ability {
         for (const action of this.actionButtons) {
             if (action.actionType.toString() == data.action) {
                 action.onStartAction(data);
-                UIManager.Instance.hideMessageTimeout();
+                this.closePopUp();
                 break;
             }
         }
@@ -75,7 +78,7 @@ export class P2PInteractManager extends Ability {
         for (const action of this.actionButtons) {
             if (action.actionType.toString() == data.action) {
                 action.onRejectAction(data);
-                UIManager.Instance.hideMessageTimeout();
+                this.closePopUp();
                 break;
             }
         }
@@ -83,11 +86,34 @@ export class P2PInteractManager extends Ability {
 
     public onCallbackAction(data) {
         if (data.action == ActionType.RPS) {
-            UIManager.Instance.showMessageTimeout(`Chờ ${data.toName} phản hồi`, 5);
+            const param: MessageTimeoutParam = {
+                message: `Chờ ${data.toName} phản hồi`,
+                closeAfter: 5,
+            };
+            this.showNoticePopup(param);
         }
         else if (data.action == ActionType.SendCoin || data.action == ActionType.CatchUser) {
             this.showActionResult(data);
         }
+    }
+
+    private async showNoticePopup(param: MessageTimeoutParam) {
+        this.closeNoticeTimeOut?.();
+        const popup = await PopupManager.getInstance().openPopup("TimeoutPopup", PopupMessageTimeout, param);
+        if (popup?.isValid) {
+            this.closeNoticeTimeOut = () => {
+               popup.ClosePopup();
+            };
+        } else {
+            this.closeNoticeTimeOut = null;
+        }
+    }
+
+    private async closePopUp() {
+        if (this.closeNoticeTimeOut) {
+            await this.closeNoticeTimeOut();
+        }
+        this.closeNoticeTimeOut = null;
     }
 
     public toggleShowUI(show: boolean) {

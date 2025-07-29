@@ -1,5 +1,5 @@
 import { _decorator, Component, Node, Sprite, SpriteFrame, Animation, Enum, Vec3, tween } from 'cc';
-import { PetBattleInfo, PetDTO2, Species } from '../Model/PetDTO';
+import { PetBattleInfo, Species } from '../Model/PetDTO';
 const { ccclass, property } = _decorator;
 @ccclass('SpeciesMap')
 export class SpeciesMap {
