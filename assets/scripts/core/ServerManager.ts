@@ -345,6 +345,11 @@ export class ServerManager extends Component {
                 if (data == null) return;
                 UserManager.instance.battleFinished(data);
             });
+            this.battleRoom.onMessage(MessageTypes.WAITING_OTHER_USER, (data) => {
+                console.log("waiting", data);
+                if (data == null) return;
+                UserManager.instance.waitingOpponents(data);
+            });
         });
         this.room.onMessage("onp2pCombatActionEscape", (data) => {
             UserManager.instance.setUpBattle(data);

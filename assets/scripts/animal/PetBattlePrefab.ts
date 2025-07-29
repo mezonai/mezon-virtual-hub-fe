@@ -11,7 +11,7 @@ export class SpeciesMap {
 export class PetBattlePrefab extends Component {
     @property({ type: [SpeciesMap] }) speciesMap: SpeciesMap[] = [];
 
-    private currentPet: PetBattleInfo = null;
+    currentPet: PetBattleInfo = null;
 
     setDataPet(pet: PetBattleInfo, slot: number) {
         if (pet == null) return;
@@ -35,7 +35,11 @@ export class PetBattlePrefab extends Component {
         return map.animaltionSpecies.find(anim => anim.node.name === idAnim) ?? null;
     }
 
-    async playAnimBySpecies(skillId: string, onAnimFinishCallback?: () => Promise<void>): Promise<void> {
+    async playAnimBySpecies(skillId: string, direction: string, onAnimFinishCallback?: () => Promise<void>): Promise<void> {
+        if (skillId == "ATTACK01") {
+            await this.playTackleEffect(direction);
+            return;
+        }
         const anim = this.getAnimPet(this.currentPet.species, skillId);
 
         if (!anim) {
@@ -57,6 +61,26 @@ export class PetBattlePrefab extends Component {
             anim.node.active = true;
             anim.once(Animation.EventType.FINISHED, onFinished);
             anim.play();
+        });
+    }
+
+    async playTackleEffect(direction: string, onAnimFinishCallback?: () => Promise<void>): Promise<void> {
+        return new Promise((resolve) => {
+
+            const originalPos = this.node.getPosition().clone(); // clone để giữ lại gốc ban đầu
+            const offsetX = direction === 'right' ? 20 : -20;
+            const forward = originalPos.clone().add(new Vec3(offsetX, 0, 0));
+
+            tween(this.node)
+                .to(0.1, { position: forward }, { easing: 'quadIn' })
+                .to(0.1, { position: originalPos }, { easing: 'quadOut' })
+                .call(async () => {
+                    if (onAnimFinishCallback) {
+                        await onAnimFinishCallback();
+                    }
+                    resolve();
+                })
+                .start();
         });
     }
 

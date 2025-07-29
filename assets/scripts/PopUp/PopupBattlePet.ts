@@ -10,6 +10,8 @@ import { CombatEnvController } from '../gameplay/Battle/CombatEnvController';
 import { BattleSkillButton } from '../gameplay/Battle/BattleSkillButton';
 import ConvetData from '../core/ConvertData';
 import { ServerManager } from '../core/ServerManager';
+import { TalkAnimation } from '../utilities/TalkAnimation';
+import { SkillList } from '../animal/Skills';
 const { ccclass, property } = _decorator;
 @ccclass('PlayerBattleStats')
 export class PlayerBattleStats {
@@ -26,6 +28,8 @@ export class PopupBattlePet extends BasePopup {
     @property({ type: CombatEnvController }) combatEnvController: CombatEnvController = null;
     @property({ type: SlideObject }) slideChooseButtons: SlideObject = null;
     @property({ type: SlideObject }) slideSkillButtons: SlideObject = null;
+    @property({ type: SlideObject }) slideTalkAnimation: SlideObject = null;
+    @property({ type: TalkAnimation }) talkAnimation: TalkAnimation = null;
     //Button
     @property({ type: Button }) fightButton: Button = null;
     @property({ type: Button }) runButton: Button = null;
@@ -64,6 +68,7 @@ export class PopupBattlePet extends BasePopup {
         });
         this.slideChooseButtons.slide(false, 0);
         this.slideSkillButtons.slide(false, 0);
+        this.hideTalkAnimation();
     }
 
     async SetDataBattle(param?: BatllePetParam) {
@@ -95,11 +100,17 @@ export class PopupBattlePet extends BasePopup {
         const isSelfAttacker = playerAttackId === this.clientIdInRoom;
         const attacker = this.playerBattleStats[isSelfAttacker ? 1 : 0];
         const defender = this.playerBattleStats[isSelfAttacker ? 0 : 1];
-        await attacker.petBattlePrefab.playAnimBySpecies(skillAttackID, async () => {
-            if (damage <= 0) return;
-            await defender.petBattlePrefab.shakeNode();
-            await defender.hudBattlePet.takeDamage(damage, petDefense.currentHp, petDefense.totalHp);
-        });
+        const skill = SkillList.find(s => s.idSkill === skillAttackID);
+        if (skill != null) {
+            const talk = isSelfAttacker ? `${attacker.petBattlePrefab.currentPet.name} tấn công đối thủ bằng ${skill.name}`
+                : `${petDefense.name} đang bị tấn công`;
+            await this.showTalkAnimation(talk);
+        }
+        await attacker.petBattlePrefab.playAnimBySpecies(skillAttackID, isSelfAttacker ? 'right' : 'left');
+        if (damage <= 0) return;
+        await defender.petBattlePrefab.shakeNode();
+        await defender.hudBattlePet.takeDamage(damage, petDefense.currentHp, petDefense.totalHp);
+        this.hideTalkAnimation();
 
     }
 
@@ -131,7 +142,7 @@ export class PopupBattlePet extends BasePopup {
         this.slideChooseButtons.slide(true, 0.3);
     }
 
-    onClickSkill() {
+    async onClickSkill() {
         this.slideSkillButtons.slide(false, 0.3);
     }
 
@@ -141,6 +152,7 @@ export class PopupBattlePet extends BasePopup {
     }
 
     public async handleBattleResult(data) {
+        this.hideTalkAnimation();
         const isTurn1PetAlive = await this.handleBattlePlayer(data.player1Id, data.skillAttacPlayer1Id, data.damagePlayer1, data.playerTargetP1);
         if (!isTurn1PetAlive) return;
         const isTurn2PetAlive = await this.handleBattlePlayer(data.player2Id, data.skillAttacPlayer2Id, data.damagePlayer2, data.playerTargetP2);
@@ -164,6 +176,10 @@ export class PopupBattlePet extends BasePopup {
         const petTarget = playerTarget.battlePets[playerTarget.activePetIndex];
         await this.handleActionSkill(playerId, killAttacPlayer, damagePlayer, petTarget);
         if (petTarget.isDead) {
+            if (isMyClient) {
+                await this.showTalkAnimation(`Pet mất khả năng chiến đấu rồi!`);
+                this.hideTalkAnimation();
+            }
             await this.updatePetDead(isMyClient, () => {
                 let nextPet = this.getActivePetIndexById(playerTarget);
                 if (isMyClient) {
@@ -207,6 +223,10 @@ export class PopupBattlePet extends BasePopup {
 
     }
 
+    public WaitingOpponents(data) {
+        this.showTalkAnimation("Vui lòng đợi đối thủ chọn kỹ năng");
+    }
+
     async updatePetDead(isMyClient: boolean, callback?: () => void): Promise<void> {
         const playerStats = isMyClient ? this.playerBattleStats[1] : this.playerBattleStats[0];
 
@@ -239,6 +259,18 @@ export class PopupBattlePet extends BasePopup {
     fakeCombatData: BattleData = {
         environmentType: AnimalElement.Grass,
     };
+
+    async showTalkAnimation(content: string): Promise<void> {
+        this.hideTalkAnimation();
+        this.slideTalkAnimation.slide(true, 0);
+        this.talkAnimation.displayDialog(content, 0.3, null, false);
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Chờ hiệu ứng bubble chạy xong 0.3s
+    }
+
+    async hideTalkAnimation() {
+        this.talkAnimation.cancelDisplayDialog();
+        this.slideTalkAnimation.slide(false, 0);
+    }
 }
 
 export interface BatllePetParam {

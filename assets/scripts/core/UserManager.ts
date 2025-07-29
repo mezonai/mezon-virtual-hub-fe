@@ -277,6 +277,10 @@ export class UserManager extends Component {
     public battleFinished(data) {
         PopupManager.getInstance().getPopupById(this.popupBattle.node.uuid)?.getComponent(PopupBattlePet)?.battleFinished(data);
     }
+
+    public waitingOpponents(data) {
+        PopupManager.getInstance().getPopupById(this.popupBattle.node.uuid)?.getComponent(PopupBattlePet)?.WaitingOpponents(data);
+    }
     public onPlayerRemoteUpdateGold(data) {
         const { sessionId, amountChange } = data;
         let player = this.players.get(sessionId);

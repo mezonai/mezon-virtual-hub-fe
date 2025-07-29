@@ -19,7 +19,6 @@ export class BattleSkillButton extends Component {
     @property({ type: Label }) powerPoint: Label = null;
     @property({ type: Button }) clickButton: Button = null;
     @property({ type: [BattleSkillStats] }) battleSkillStats: BattleSkillStats[] = [];
-    private _onAfterClickSkill?: () => void
     idAttack: string = "ATTACK01";
     indexSkill: number = 0;
     setData(skillData: SkillData, index: number, onAfterClickSkill?: () => void) {
@@ -32,7 +31,6 @@ export class BattleSkillButton extends Component {
         if (skillData.id != this.idAttack) this.itemSkill.setData(skillDataInfo, InteractSlot.SHOW_UI);
         this.backgroundType.color = colorbackground;
         this.nameSkil.string = skillDataInfo.name;
-        if (onAfterClickSkill) this._onAfterClickSkill = onAfterClickSkill;
         this.clickButton.addAsyncListener(async () => {
             if (onAfterClickSkill) {
                 onAfterClickSkill();
@@ -40,12 +38,6 @@ export class BattleSkillButton extends Component {
             ServerManager.instance.sendPlayerActionBattle(true, this.indexSkill);
         })
     }
-
-    sendAction() {
-        this._onAfterClickSkill();
-
-    }
-
     updateParameter(skillData: SkillData) {
         this.powerPoint.string = skillData.powerPoint.toString();
     }

@@ -7,7 +7,7 @@ export class TalkAnimation extends Component {
     @property(Label) contentBubbleChat: Label = null;
     private tweenAction: Tween<Node> | null = null;
     private hideTimeout: number | null = null;
-
+    private _currentDialogCallback: Function | null = null;
     protected onLoad(): void {
         //this.bubbleChat.setScale(0, 1, 1);
     }
@@ -92,7 +92,8 @@ export class TalkAnimation extends Component {
             .start();
     }
 
-    displayDialog(textShow: string, timeShow: number, onComplete?: () => void) {
+    displayDialog(textShow: string, timeShow: number, onComplete?: () => void, isCloseBubbuChat: boolean = true) {
+        this.cancelDisplayDialog();
         let text = '';
         let index = 0;
         const totalLength = textShow.length;
@@ -105,14 +106,24 @@ export class TalkAnimation extends Component {
                 index++;
             } else {
                 this.unschedule(callback);
-                setTimeout(() => {
-                    this.shrinkBubbleChat(0.5, onComplete);
-                }, 500);
+                if (isCloseBubbuChat) {
+                    setTimeout(() => {
+                        this.shrinkBubbleChat(0.5, onComplete);
+                    }, 500);
 
+                }
             }
         };
 
+        this._currentDialogCallback = callback;
         this.schedule(callback, interval);
+    }
+
+    cancelDisplayDialog() {
+        if (this._currentDialogCallback) {
+            this.unschedule(this._currentDialogCallback);
+            this._currentDialogCallback = null;
+        }
     }
 }
 
