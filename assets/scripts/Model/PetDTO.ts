@@ -1,6 +1,12 @@
 export class PetDTO {
   public id: string;
   public name: string;
+  public is_brought: boolean;
+  public is_caught: boolean;
+  public room_code: string;
+  public species: string;
+  public type: string;
+  public rarity: string;
   public level: number;
   public exp: number;
   public max_exp: number;
@@ -9,11 +15,8 @@ export class PetDTO {
   public attack: number;
   public defense: number;
   public speed: number;
-  public is_brought: boolean;
-  public is_caught: boolean;
   public is_selected_battle: boolean;
   public individual_value: number;
-  public room_code: string;
   public pet: BasePetData;
   public skill_slot_1: SkillSlot;
   public skill_slot_2: SkillSlot;
@@ -151,4 +154,26 @@ export enum SkillCode {
   ICICLE_CRASH = 'ICE02',
   ICE_FANG = 'ICE03',
   DRAGON_CLAW = 'DRAGON01',
+}
+
+export interface PetFollowPayload {
+  pets: PetFollowData[];
+}
+
+export interface PetFollowData {
+  id: string;
+  is_brought: boolean;
+  room_code?: string;
+  species: string | null;
+  type: string | null;
+  rarity: string | null;
+}
+
+export interface PetBattlePayload {
+  pets: PetBattleData[];
+}
+
+export interface PetBattleData {
+  id: string;
+  is_selected_battle: boolean;
 }

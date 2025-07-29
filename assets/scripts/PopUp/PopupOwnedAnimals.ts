@@ -7,7 +7,7 @@ import { PopupManager } from './PopupManager';
 import { ConfirmParam, ConfirmPopup } from './ConfirmPopup';
 import { ServerManager } from '../core/ServerManager';
 import { WebRequestManager } from '../network/WebRequestManager';
-import { AnimalElement, AnimalRarity, PetDTO, SkillData, SkillSlot } from '../Model/PetDTO';
+import { AnimalElement, AnimalRarity, PetBattlePayload, PetDTO, PetFollowPayload, SkillData, SkillSlot } from '../Model/PetDTO';
 import { AnimalController, AnimalType } from '../animal/AnimalController';
 import { PopupSelection, SelectionParam } from './PopupSelection';
 import { ItemDisplayPetFighting } from '../animal/ItemDisplayPetFighting';
@@ -309,7 +309,11 @@ export class PopupOwnedAnimals extends BasePopup {
         return {
             pets: petFollowUser.map(pet => ({
                 id: pet.id,
-                is_brought: pet.is_brought
+                is_brought: pet.is_brought,
+                room_code: pet.room_code,
+                species: pet.pet?.species ?? null,
+                type: pet.pet?.type ?? null,
+                rarity: pet.pet?.rarity ?? null
             }))
         };
     }
@@ -331,8 +335,8 @@ export class PopupOwnedAnimals extends BasePopup {
     }
 
     private async sendUpdatePetDataAsync(
-        petData: { pets: { id: string, is_brought: boolean }[] },
-        petDataBattle: { pets: { id: string, is_selected_battle: boolean }[] },
+        petData: PetFollowPayload,
+        petDataBattle: PetBattlePayload,
         hasPetUpdate: boolean,
         hasBattleUpdate: boolean
     ) {
@@ -344,12 +348,15 @@ export class PopupOwnedAnimals extends BasePopup {
         }
     }
 
-    private updateListPetFollowUserAsync(petData: { pets: { id: string, is_brought: boolean }[] }): Promise<void> {
+    private updateListPetFollowUserAsync(petData: PetFollowPayload): Promise<void> {
         return new Promise<void>((resolve) => {
             WebRequestManager.instance.updateListPetFollowUser(
                 petData,
                 () => {
-                    UserManager.instance.onPetFollowPlayer();
+                    const data = {
+                        pets: petData.pets
+                    };
+                    ServerManager.instance.sendPetFollowPlayer(data);
                     resolve();
                 },
                 (error) => {
@@ -360,7 +367,7 @@ export class PopupOwnedAnimals extends BasePopup {
         });
     }
 
-    private updateListPetBattleUserAsync(petDataBattle: { pets: { id: string, is_selected_battle: boolean }[] }): Promise<void> {
+    private updateListPetBattleUserAsync(petDataBattle: PetBattlePayload): Promise<void> {
         return new Promise<void>((resolve) => {
             WebRequestManager.instance.updateListPetBattleUser(
                 petDataBattle,

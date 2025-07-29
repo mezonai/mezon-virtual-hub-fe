@@ -88,12 +88,9 @@ export class UserManager extends Component {
         playerNode.setParent(this.playerParent);
         this.players.set(playerData.sessionId, playerNode.getComponent(PlayerController));
 
-        if (playerData.room.sessionId == playerData.sessionId) {
-            this.myClientPlayer = playerController;
-            const pets = await this.getMyPetData();
-            if (pets != null) {
-                this.instantiatePetFollowPlayer(playerController, pets);
-            }
+        const pets = JSON.parse(playerData.pet_players);
+        if (pets != null) {
+            this.instantiatePetFollowPlayer(playerController, pets);
         }
         // Gửi event khi player được tạo xong
         ServerManager.instance.node.emit(EVENT_NAME.ON_PLAYER_ADDED, playerData.sessionId);
@@ -109,41 +106,25 @@ export class UserManager extends Component {
         if (pets == null) return;
         playerController.resetPets(() => {
             for (const pet of pets) {
-                if (!pet.is_brought) continue;
-                const animal = ObjectPoolManager.instance.spawnFromPool(pet.pet.species);
+                if (pet.is_brought === false) continue;
+                const animal = ObjectPoolManager.instance.spawnFromPool(pet.species);
                 const animalController = animal.getComponent(AnimalController);
                 if (animalController == null) continue;
-                const petDto = this.createPetDTOFromRaw(pet);
+                const petDto = Object.assign(new PetDTO(), {
+                    id: pet.id,
+                    name: pet.name,
+                    species: pet.species,
+                    is_caught: true,
+                    is_brought: true,
+                    room_code: '',
+                    rarity: pet.rarity,
+                });
                 animalController.setDataPet(petDto, AnimalType.FollowTarget, playerController, null, this.animalParent);
                 playerController.savePetFollow(animalController);
                 animal.setParent(this.animalParent);
                 animal.active = false;
             }
             playerController.setPositonPet();
-        });
-    }
-
-    private createPetDTOFromRaw(pet: any): PetDTO {
-        return Object.assign(new PetDTO(), {
-            id: pet.id,
-            name: pet.name,
-            level: pet.level,
-            exp: pet.exp,
-            stars: pet.stars,
-            hp: pet.hp,
-            attack: pet.attack,
-            defense: pet.defense,
-            speed: pet.speed,
-            is_brought: !!pet.is_brought,
-            is_caught: !!pet.is_caught,
-            is_selected_battle: !!pet.is_selected_battle,
-            individual_value: pet.individual_value,
-            room_code: '',
-            pet: pet.pet,
-            skill_slot_1: pet.skill_slot_1,
-            skill_slot_2: pet.skill_slot_2,
-            skill_slot_3: pet.skill_slot_3 ?? null,
-            skill_slot_4: pet.skill_slot_4 ?? null,
         });
     }
 
@@ -365,11 +346,10 @@ export class UserManager extends Component {
         OfficeSceneController.instance.currentMap.AnimalSpawner.disappearedPet(data.petId, false)
     }
 
-    public async onPetFollowPlayer() {
-        let playerTarget = this.GetMyClientPlayer;
-        const pets = await this.getMyPetData();
-        if (playerTarget == null || pets == null) return;
-        this.instantiatePetFollowPlayer(playerTarget, pets)
+    public onPetFollowPlayer(data) {
+        let playerTarget = this.players.get(data.playerIdFollowPet);
+        if (!playerTarget) return;
+        this.instantiatePetFollowPlayer(playerTarget, data.pet);
     }
 
     public onSendTouchPet(data) {

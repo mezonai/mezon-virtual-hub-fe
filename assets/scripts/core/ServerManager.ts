@@ -73,8 +73,7 @@ export class ServerManager extends Component {
         });
 
         this.room.state.players.onAdd((player, sessionId) => {
-            console.log(` New player joined: ${sessionId}`, player.user_id);
-            let playerData = new PlayerColysesusObjectData(sessionId, this.room, player.x, player.y, player.display_name, player.skin_set, player.user_id, player.is_show_name, player.animals);
+            let playerData = new PlayerColysesusObjectData(sessionId, this.room, player.x, player.y, player.display_name, player.skin_set, player.user_id, player.is_show_name, player.pet_players);
             UserManager.instance.createPlayer(playerData);
         });
 
@@ -310,7 +309,11 @@ export class ServerManager extends Component {
         this.room.onMessage("onCatchPetFail", (data) => {
             UserManager.instance.onCatchPetFail(data);
         });
+        this.room.onMessage("onPetFollowPlayer", (data) => {
+            if (data == null) return;
+            UserManager.instance.onPetFollowPlayer(data);
 
+        });
         this.room.onMessage("onSendTouchPet", (data) => {
             UserManager.instance.onSendTouchPet(data);
         });
@@ -483,6 +486,10 @@ export class ServerManager extends Component {
 
     public sendTouchPet(data) {
         this.room.send("sendTouchPet", data);
+    }
+
+    public sendPetFollowPlayer(data) {
+        this.room.send("sendPetFollowPlayer", data);
     }
 
     public sendInteracDoor(data, isOpen: boolean) {
