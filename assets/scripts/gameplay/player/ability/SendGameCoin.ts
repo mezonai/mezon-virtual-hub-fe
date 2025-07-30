@@ -42,7 +42,6 @@ export class SendGameCoin extends PlayerInteractAction {
 
     public onBeingInvited(data) {
         const { fromName, amount, currentDiamond } = data;
-        SoundManager.instance.playSound(AudioType.Notice);
         const param: SelectionMiniParam = {
             title: "Thông báo",
             content: `Nhận <color=#FF0000> ${amount} Diamond</color> từ ${fromName}`,

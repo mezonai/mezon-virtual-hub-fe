@@ -1,6 +1,7 @@
 import { _decorator, Button, RichText } from 'cc';
 import { PopupManager } from './PopupManager';
 import { BasePopup } from './BasePopup';
+import { AudioType, SoundManager } from '../core/SoundManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('ConfirmPopup')
@@ -14,6 +15,7 @@ export class ConfirmPopup extends BasePopup {
     closeButton: Button = null;
 
     public init(param?: ConfirmParam) {
+        SoundManager.instance.playSound(AudioType.Notice);
         if(param == null){
             this.onButtonClick();
             return;

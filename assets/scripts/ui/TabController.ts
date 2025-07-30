@@ -3,6 +3,7 @@ import { EVENT_NAME } from '../network/APIConstant';
 const { ccclass, property } = _decorator;
 import { ObjectPoolManager } from '../pooling/ObjectPoolManager';
 import { FoodType, InventoryDTO, InventoryType, ItemType } from '../Model/Item';
+import { AudioType, SoundManager } from '../core/SoundManager';
 
 @ccclass('TabController')
 export class TabController extends Component {
@@ -61,6 +62,7 @@ export class TabController extends Component {
 
     private onToggleChanged(toggle: Toggle) {
         if (toggle.isChecked) {
+            SoundManager.instance.playSound(AudioType.Toggle);
             this.node.emit(EVENT_NAME.ON_CHANGE_TAB, toggle.node.name);
         }
     }

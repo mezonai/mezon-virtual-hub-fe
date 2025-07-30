@@ -150,7 +150,6 @@ export class UIMission extends Component {
         this.hasJoinEvent = true;
         if (isTargetUser) {
             if (!MissionEventManager.isShowUserTargetJoin) {
-                SoundManager.instance.playSound(AudioType.Notice);
                 const param: ConfirmParam = {
                     message: "Bạn là mục tiêu mọi người tìm kiếm, chạy thật nhanh và đừng để người khác chạm vào",
                     title: "Chú Ý",
