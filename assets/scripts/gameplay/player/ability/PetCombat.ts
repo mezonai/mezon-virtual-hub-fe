@@ -6,6 +6,7 @@ import { PopupManager } from '../../../PopUp/PopupManager';
 import { GameData } from './RPSGame';
 import { ServerManager } from '../../../core/ServerManager';
 import { BatllePetParam, PopupBattlePet } from '../../../PopUp/PopupBattlePet';
+import { PopupSelectionTimeOut, SelectionTimeOutParam, TargetButton } from '../../../PopUp/PopupSelectionTimeOut';
 const { ccclass, property } = _decorator;
 
 @ccclass('PetCombat')
@@ -39,14 +40,24 @@ export class PetCombat extends PlayerInteractAction {
 
     public onBeingInvited(data) {
         SoundManager.instance.playSound(AudioType.Notice);
-        UIManager.Instance.showYesNoPopup(null, `${data.fromName} mời bạn chơi đấu pet. Phí <color=#FF0000> ${this.fee} diamond</color>`,
-            () => {
+        const param: SelectionTimeOutParam = {
+            title: "Thông Báo",
+            content: `${data.fromName} mời bạn chơi đấu pet. Phí <color=#FF0000> ${this.fee} diamond</color>`,
+            textButtonLeft: "Chơi",
+            textButtonRight: "Thôi",
+            textButtonCenter: "",
+            timeout: {
+                seconds: this.inviteTimeout,
+                targetButton: TargetButton.LEFT,
+            },
+            onActionButtonLeft: () => {
                 this.startAction(data);
             },
-            () => {
+            onActionButtonRight: () => {
                 this.rejectAction(data);
             },
-            "Chơi", "Thôi", this.inviteTimeout)
+        };
+        PopupManager.getInstance().openAnimPopup("PopupSelectionTimeOut", PopupSelectionTimeOut, param);
     }
 
     protected startAction(data) {

@@ -70,6 +70,7 @@ export class SkillData {
   public attack: number = 0;
   public accuracy: number = 0;
   public powerPoint: number = 0;
+  public typeSkill: TypeSkill;
 }
 export interface BattleData {
   environmentType: AnimalElement;
@@ -96,14 +97,32 @@ export enum Pet {
 }
 
 export enum AnimalElement {
-  Normal = 'normal',
-  Fire = 'fire',
-  Water = 'water',
-  Grass = 'grass',
-  Electric = 'electric',
-  Ice = 'ice',
-  Dragon = 'dragon',
+  Normal,
+  Fire,
+  Water,
+  Grass,
+  Electric,
+  Ice,
+  Dragon,
 }
+
+export enum TypeSkill {
+  Attack,
+  Defenese,
+  IncreaseAttack,
+  DecreaseAttack,
+  Heal,
+}
+
+export const AnimalElementString: Record<AnimalElement, string> = {
+  [AnimalElement.Normal]: 'normal',
+  [AnimalElement.Fire]: 'fire',
+  [AnimalElement.Water]: 'water',
+  [AnimalElement.Grass]: 'grass',
+  [AnimalElement.Electric]: 'electric',
+  [AnimalElement.Ice]: 'ice',
+  [AnimalElement.Dragon]: 'dragon',
+};
 
 export enum Species {
   Bird,

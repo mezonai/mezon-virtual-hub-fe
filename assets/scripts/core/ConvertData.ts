@@ -100,7 +100,6 @@ export default class ConvetData {
 
     public static ConvertPlayersBattleData(playersBattleData: string): PlayerBattle[] {
         const dataArray = JSON.parse(playersBattleData);
-        console.log("dataArray: ", dataArray);
         return dataArray.map((data: any) => {
             const playerBattle = new PlayerBattle();
             playerBattle.id = data.id;
@@ -139,11 +138,11 @@ export default class ConvetData {
         pet.speed = petData.speed;
         console.log("petData.skills ", petData.skills);
         pet.skills = petData.skills.map((skillData: any) => {
-
             const skill = new SkillData();
             skill.id = skillData.id;
             skill.attack = skillData.attack;
             skill.accuracy = skillData.accuracy;
+            skill.typeSkill = skillData.skillType;
             skill.powerPoint = skillData.powePoint;
             return skill;
         });

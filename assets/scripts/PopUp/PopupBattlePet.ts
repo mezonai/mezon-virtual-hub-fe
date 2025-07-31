@@ -24,6 +24,7 @@ export class PopupBattlePet extends BasePopup {
     @property({ type: [PlayerBattleStats] }) playerBattleStats: PlayerBattleStats[] = [];// 0 = competitor, 1 = userMe
     @property({ type: Prefab }) battleSkillButtonPrefab: Prefab = null;
     @property({ type: Node }) parentMySkill: Node = null;
+    @property({ type: Node }) parentBatteUI: Node = null;
     @property({ type: HandleOpenSplash }) centerOpenSplash: HandleOpenSplash = null;
     @property({ type: CombatEnvController }) combatEnvController: CombatEnvController = null;
     @property({ type: SlideObject }) slideChooseButtons: SlideObject = null;
@@ -106,7 +107,11 @@ export class PopupBattlePet extends BasePopup {
                 : `${petDefense.name} đang bị tấn công`;
             await this.showTalkAnimation(talk);
         }
-        await attacker.petBattlePrefab.playAnimBySpecies(skillAttackID, isSelfAttacker ? 'right' : 'left');
+        await attacker.petBattlePrefab.playAnimBySpecies(skillAttackID
+            , isSelfAttacker ? 'right' : 'left'
+            , attacker.petBattlePrefab
+            , defender.petBattlePrefab
+            , this.parentBatteUI);
         if (damage <= 0) return;
         await defender.petBattlePrefab.shakeNode();
         await defender.hudBattlePet.takeDamage(damage, petDefense.currentHp, petDefense.totalHp);
