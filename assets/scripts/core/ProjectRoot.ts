@@ -4,6 +4,7 @@ import { LoadBundleController } from '../bundle/LoadBundleController';
 import { UILoginControll } from '../UILogin/UILoginControl';
 import { RandomlyMover } from '../utilities/RandomlyMover';
 import { EVENT_NAME } from '../network/APIConstant';
+import { LoadingScene } from '../GameMap/LoadingScene/LoadingScene';
 
 @ccclass('ProjectRoot')
 export class ProjectRoot extends Component {
@@ -12,6 +13,7 @@ export class ProjectRoot extends Component {
     @property({ type: RandomlyMover }) planeNotice: RandomlyMover = null;
     @property({ type: RichText }) progressText: RichText = null;
     @property({ type: RichText }) noticeText: RichText = null;
+    @property({ type: LoadingScene }) loadingScene: LoadingScene = null;
     private totalCoreNeedLoad = 1;
     private _loadedCore = 0;
     private initIntervalId = 0;
@@ -39,7 +41,10 @@ export class ProjectRoot extends Component {
 
     protected start() {
         this.init();
-        this.onSceneLoaded({ name: "GameMap" });
+        this.loadingScene.setData(() => {
+            this.onSceneLoaded({ name: "GameMap" });
+        })
+
     }
 
     private async init() {
