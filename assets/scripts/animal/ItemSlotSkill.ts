@@ -9,6 +9,7 @@ export enum InteractSlot {
     DRAG,
     DOUBLE_CLICK,
     SHOW_UI,
+    CLICK
 }
 @ccclass('ItemSlotSkill')
 export class ItemSlotSkill extends Component {

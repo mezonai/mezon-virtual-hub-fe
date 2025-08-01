@@ -15,7 +15,7 @@ export class PetDTO {
   public attack: number;
   public defense: number;
   public speed: number;
-  public is_selected_battle: boolean;
+  public battle_slot: number;
   public individual_value: number;
   public pet: BasePetData;
   public skill_slot_1: SkillSlot;
@@ -175,5 +175,5 @@ export interface PetBattlePayload {
 
 export interface PetBattleData {
   id: string;
-  is_selected_battle: boolean;
+  battle_slot: number;
 }

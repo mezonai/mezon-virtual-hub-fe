@@ -15,7 +15,7 @@ export default class APIConstant {
     static COMPLETE = "complete"
     static PET_PLAYERS = "pet-players";
     static BRING = "bring-pets";
-    static BATTLE_PET = "select-pets";
+    static BATTLE_PET = "battle-slots";
     static FOOD = "food";
     static INITIAL_REWARD = "initial-reward";
     static REWARD_PERCENT = "reward-percent";
