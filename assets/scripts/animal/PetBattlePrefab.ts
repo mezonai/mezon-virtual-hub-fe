@@ -43,49 +43,6 @@ export class PetBattlePrefab extends Component {
         return map.anmationSkillMoveFromTo.find(anim => anim.node.name === idAnim) ?? null;
     }
 
-    async playAnimBySpecies(
-        skillId: string,
-        direction: string,
-        attacker: PetBattlePrefab,
-        target: PetBattlePrefab,
-        parent: Node,
-        onAnimFinishCallback?: () => Promise<void>
-    ): Promise<void> {
-        console.log("skillId: ", skillId);
-        switch (skillId) {
-            case "ATTACK01":
-                await this.playTackleEffect(direction);
-                break;
-
-            case "NOR10":
-                await this.skillMovementFromTo(skillId, attacker, target, parent);
-                break;
-            case "NOR13":
-                await this.earthquake(parent, 0.5, 15);
-                break;
-            case "ELECTRIC03":
-            case "FIRE02":
-                await this.skillMovementFromTo(skillId, attacker, target, parent);
-                await target.usingSkillYourself(skillId, onAnimFinishCallback);
-                break;
-            case "WATER01":
-                await this.throwSkillImage(skillId, attacker, target, parent);
-                await target.usingSkillYourself(skillId, onAnimFinishCallback);
-                break;
-            case "FIRE01":
-                await this.spraySkill(skillId, attacker, target, parent);
-                await target.usingSkillYourself(skillId, onAnimFinishCallback);
-                break;
-            case "ICE01":
-                await this.throwSkillImage(skillId, attacker, target, parent);
-                break;
-
-            default:
-                await this.usingSkillYourself(skillId, onAnimFinishCallback);
-                break;
-        }
-    }
-
     async playTackleEffect(direction: string, onAnimFinishCallback?: () => Promise<void>): Promise<void> {
         return new Promise((resolve) => {
 

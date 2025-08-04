@@ -1,6 +1,6 @@
 import { MapData } from "../Interface/DataMapAPI";
 import { Food, Item, RewardItemDTO, RewardType } from "../Model/Item";
-import { PetBattleInfo, PetDTO, PlayerBattle, SkillData, Species } from "../Model/PetDTO";
+import { PetBattleInfo, PetDTO, PlayerBattle, SkillData, Species, TypeSkill } from "../Model/PetDTO";
 
 export default class ConvetData {
     public static ConvertMap(mapData: any): MapData[] {
@@ -136,18 +136,22 @@ export default class ConvetData {
         pet.currentExp = petData.currentExp;
         pet.totalExp = petData.totalExp;
         pet.speed = petData.speed;
-        console.log("petData.skills ", petData.skills);
+
         pet.skills = petData.skills.map((skillData: any) => {
-            const skill = new SkillData();
-            skill.id = skillData.id;
-            skill.attack = skillData.attack;
-            skill.accuracy = skillData.accuracy;
-            skill.typeSkill = skillData.skillType;
-            skill.powerPoint = skillData.powePoint;
-            return skill;
+            return this.convertToSkillData(skillData);
         });
         pet.isDead = petData.isDead;
         return pet;
+    }
+
+    public static convertToSkillData(skillData: any): SkillData {
+        const skill = new SkillData();
+        skill.id = skillData.id;
+        skill.attack = skillData.attack;
+        skill.accuracy = skillData.accuracy;
+        skill.typeSkill = this.mapServerSkillToClient(skillData.skillType);
+        skill.powerPoint = skillData.powerPoint;
+        return skill;
     }
 
     public static parseFood(foodData: any): Food {
@@ -162,6 +166,23 @@ export default class ConvetData {
         item.iconSF = [];
         item.mappingLocalData = null;
         return item;
+    }
+
+    public static mapServerSkillToClient(serverSkill: string): TypeSkill | null {
+        switch (serverSkill) {
+            case 'attack':
+                return TypeSkill.ATTACK;
+            case 'defense':
+                return TypeSkill.DEFENSE;
+            case 'increase_attack':
+                return TypeSkill.INCREASE_ATTACK;
+            case 'decrease_attack':
+                return TypeSkill.DECREASE_ATTACK;
+            case 'heal':
+                return TypeSkill.HEAL;
+            default:
+                return null; // hoặc throw new Error("Unknown skill type")
+        }
     }
 }
 

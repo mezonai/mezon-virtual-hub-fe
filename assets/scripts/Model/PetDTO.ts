@@ -107,11 +107,11 @@ export enum AnimalElement {
 }
 
 export enum TypeSkill {
-  Attack,
-  Defenese,
-  IncreaseAttack,
-  DecreaseAttack,
-  Heal,
+  ATTACK,
+  DEFENSE,
+  INCREASE_ATTACK,
+  DECREASE_ATTACK,
+  HEAL,
 }
 
 export const AnimalElementString: Record<AnimalElement, string> = {
