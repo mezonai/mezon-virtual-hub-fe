@@ -18,7 +18,6 @@ export class ItemSlotPet extends Component {
     private onClickCallback: () => void = null;
 
     initData(petData: PetDTO, interactSlot: InteractSlot, slotPlacePet: ItemSlotPet[] = [], onClickCallback: () => void = null) {
-        console.log(petData);
         this.interactSlot = interactSlot;
         this.onClickCallback = onClickCallback;
         this.resetpet();

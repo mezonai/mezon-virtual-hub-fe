@@ -6,6 +6,7 @@ import { EventTouch } from 'cc';
 import { Vec3 } from 'cc';
 import { ItemSlotPet } from './ItemSlotpet';
 import { ItemPlacePet } from './ItemPlacePet';
+import { UITransform } from 'cc';
 const { ccclass, property } = _decorator;
 
 @ccclass('PetDragItem')
@@ -39,7 +40,13 @@ export class PetDragItem extends DraggableBase {
     onTouchStart(event: EventTouch): void {
         if (this.interactionMode == InteractSlot.DRAG) {
             this.touchStart();
-            this.node.setSiblingIndex(this.containerNode.parent.children.length - 1);
+            if (this.containerNode && this.node.parent !== this.containerNode) {
+                const worldPos = this.node.getWorldPosition();
+                this.node.parent = this.containerNode;
+                const newPos = this.containerNode.getComponent(UITransform).convertToNodeSpaceAR(worldPos);
+                this.node.setPosition(newPos);
+            }
+            this.node.setSiblingIndex(this.node.parent.children.length - 1);
         }
     }
 

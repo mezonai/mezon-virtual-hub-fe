@@ -12,7 +12,7 @@ export class PopupBattlePlace extends BasePopup {
     @property({ type: Button }) closeButton: Button = null;
     @property({ type: Button }) confirmButton: Button = null;
     @property({ type: [ItemSlotPet] }) itemSlotPets: ItemSlotPet[] = [];
-    private replacedSlotHistory: Set<number> = new Set<number>();
+    private replacedPetIds: Set<string> = new Set<string>();
     private lastAssignedSlot: number | null = null;
     private param: PopupBattlePlaceParam;
 
@@ -33,7 +33,7 @@ export class PopupBattlePlace extends BasePopup {
             slot.resetpet();
             const pet = petMap.get(index + 1) || null;
             if (param.isPetItemDrag)
-                slot.initData(pet, InteractSlot.DRAG, this.itemSlotPets);
+                slot.initData(pet, InteractSlot.DRAG, this.itemSlotPets, null);
             else
                 slot.initData(pet, InteractSlot.CLICK, this.itemSlotPets, () => {
                     this.handleSlotClick(param, index);
@@ -56,8 +56,9 @@ export class PopupBattlePlace extends BasePopup {
         const selectedPet = param.petSelected;
         if (!selectedPet) return;
         const currentPetInSlot = param.pets.find(p => p.battle_slot === slotIndex + 1) || null;
+        if (currentPetInSlot && currentPetInSlot.id === selectedPet.id) return;
         if (currentPetInSlot) {
-            const content = `Vị trí <color=#ff4d4f> " ${slotIndex + 1} "</color> đã có sẵn pet. Bạn có muốn thay thế bằng <color=#1890ff> " ${selectedPet.name} "</color>?`;
+            const content = `Vị trí <color=#ff4d4f>[${slotIndex + 1}]</color> đã có sẵn pet. Bạn có muốn thay thế bằng <color=#1890ff>" ${selectedPet.name} " </color>?`;
             const paramSelectionMini: SelectionMiniParam = {
                 title: "Thông báo",
                 content: content,
@@ -81,7 +82,10 @@ export class PopupBattlePlace extends BasePopup {
 
     private replacePetInSlot(param: PopupBattlePlaceParam, slotIndex: number, newPet: PetDTO) {
         const battleSlot = slotIndex + 1;
-        this.replacedSlotHistory.add(battleSlot);
+        const oldPet = param.pets.find(p => p.battle_slot === battleSlot);
+        if (oldPet && oldPet.id !== newPet.id) {
+            this.replacedPetIds.add(oldPet.id);
+        }
         const clonedPet: PetDTO = { ...newPet, battle_slot: battleSlot };
         param.pets = param.pets.filter(p => p.id !== newPet.id && p.battle_slot !== battleSlot);
         param.pets.push(clonedPet);
@@ -91,60 +95,41 @@ export class PopupBattlePlace extends BasePopup {
         this.param = param;
     }
 
-    private collectPetFromSlotUI(): PetDTO[] {
-        const result: PetDTO[] = [];
-
-        this.itemSlotPets.forEach((slot, index) => {
-            const pet = slot.itemPlacePet?.currentpet;
-            if (pet) {
-                result.push({
-                    ...pet,
-                    battle_slot: index + 1,
-                });
-            }
-        });
-
-        return result;
+    confirmSort() {
+        for (let i = 0; i < this.itemSlotPets.length; i++) {
+            const pet = this.itemSlotPets[i].itemPlacePet?.currentpet;
+            if (pet) pet.battle_slot = i + 1;
+        }
+        this.param.onFinishSort?.(this.param.pets);
     }
 
-
     onClosePopupBattlePlace() {
-        const updatedPets = this.collectPetFromSlotUI();
-
         if (this.param.isPetItemDrag) {
-            this.ShowPopUpConfirm(updatedPets);
+            this.ShowPopUpConfirm();
         } else {
             if (this.param?.onFinishSelect && this.lastAssignedSlot != null) {
                 this.param.onFinishSelect(
                     this.lastAssignedSlot,
                     this.param.petSelected,
-                    Array.from(this.replacedSlotHistory)
+                    Array.from(this.replacedPetIds)
                 );
             }
             this.onClose();
         }
     }
 
-
-    onClose(){
+    onClose() {
         PopupManager.getInstance().closePopup(this.node.uuid);
     }
 
-    async ShowPopUpConfirm(updatedPets: PetDTO[]) {
+    async ShowPopUpConfirm() {
         const panel = await PopupManager.getInstance().openAnimPopup("PopupSelectionMini", PopupSelectionMini, {
-            content: `Bạn có chắc chắn muốn lưu thay đổi?`,
+            content: "Bạn có chắc chắn muốn lưu thay đổi?",
             textButtonLeft: "Có",
             textButtonRight: "Không",
             textButtonCenter: "",
             onActionButtonLeft: () => {
-                if (this.param?.onFinishSelect && this.lastAssignedSlot != null) {
-                    this.param.onFinishSelect(
-                        this.lastAssignedSlot,
-                        this.param.petSelected,
-                        Array.from(this.replacedSlotHistory)
-                    );
-                }
-                this.param.pets = updatedPets;
+                this.confirmSort();
                 PopupManager.getInstance().closePopup(this.node.uuid);
             },
             onActionButtonRight: async () => {
@@ -163,7 +148,8 @@ export class PopupBattlePlace extends BasePopup {
 export interface PopupBattlePlaceParam {
     isPetItemDrag: boolean,
     pets: PetDTO[];
-    petSelected: PetDTO;
-    onFinishSelect?: (isSelectBattle: number, pet: PetDTO, replacedSlots?: number[]) => void;
+    petSelected?: PetDTO;
+    onFinishSelect?: (isSelectBattle: number, pet: PetDTO, replacedSlots?: string[]) => void;
+    onFinishSort?: (sortedPets: PetDTO[]) => void;
 }
 

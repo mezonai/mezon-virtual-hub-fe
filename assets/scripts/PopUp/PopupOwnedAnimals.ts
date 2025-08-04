@@ -58,7 +58,7 @@ export class PopupOwnedAnimals extends BasePopup {
     private animalBrings: PetDTO[] = [];
     private animalBattle: PetDTO[] = [];
     private bringPetIdsInit: string[] = [];
-    private battlePetIdsInit: string[] = [];
+    private battlePetIdsInit: { id: string, battle_slot: number }[] = [];
     private maxBringPets = 3;
     private timeoutLoadSlot: number = 50;
     private listAllPetPlayer: PetDTO[] = [];
@@ -155,7 +155,7 @@ export class PopupOwnedAnimals extends BasePopup {
             }
             if (pet.battle_slot) {
                 this.animalBattle.push(pet);
-                this.battlePetIdsInit.push(pet.id);
+                this.battlePetIdsInit.push({ id: pet.id, battle_slot: pet.battle_slot });
             }
         }
         this.setSlotPetFighting(this.animalBattle);
@@ -264,13 +264,13 @@ export class PopupOwnedAnimals extends BasePopup {
 
     saveChange() {
         const bringPetIds: string[] = this.animalBrings.map(pet => pet.id);
-        const battlePetIds: string[] = this.animalBattle.map(pet => pet.id);
-
-        const isSameBring = this.bringPetIdsInit.length === bringPetIds.length &&
-            this.bringPetIdsInit.every(id => bringPetIds.includes(id));
-
-        const isSameBattle = this.battlePetIdsInit.length === battlePetIds.length &&
-            this.battlePetIdsInit.every(id => battlePetIds.includes(id));
+        const battlePetIdsSlots: { id: string, battle_slot: number }[] = this.animalBattle.map(p => ({ id: p.id, battle_slot: p.battle_slot}));
+        const isSameBring = this.bringPetIdsInit.length === bringPetIds.length && this.bringPetIdsInit.every(id => bringPetIds.includes(id));
+        const isSameBattle = this.battlePetIdsInit.length === battlePetIdsSlots.length && !this.battlePetIdsInit.some(initPet => {
+            const currentPet = battlePetIdsSlots.find(p => p.id === initPet.id);
+            const isDifferent = !currentPet || currentPet.battle_slot !== initPet.battle_slot;
+            return isDifferent;
+        });
 
         if (isSameBring && isSameBattle) {
             this.closePopup();
@@ -329,7 +329,7 @@ export class PopupOwnedAnimals extends BasePopup {
     private buildPetBattleData(pets: PetDTO[]) {
         const petBattleUser = pets.filter(pet => {
             const shouldBattle = this.animalBattle.some(p => p.id === pet.id);
-            const wasBattle = this.battlePetIdsInit.includes(pet.id);
+            const wasBattle = this.battlePetIdsInit.some(p => p.id === pet.id && p.battle_slot === pet.battle_slot);
             return shouldBattle || wasBattle;
         });
         const result = petBattleUser.map(pet => {
@@ -343,10 +343,7 @@ export class PopupOwnedAnimals extends BasePopup {
         return { pets: result };
     }
 
-    private async sendUpdatePetDataAsync(
-        petData: PetFollowPayload,
-        petDataBattle: PetBattlePayload,
-        hasPetUpdate: boolean,
+    private async sendUpdatePetDataAsync(petData: PetFollowPayload, petDataBattle: PetBattlePayload, hasPetUpdate: boolean,
         hasBattleUpdate: boolean
     ) {
         try {
@@ -397,7 +394,6 @@ export class PopupOwnedAnimals extends BasePopup {
         this.sortPetBattleBtn.addAsyncListener(async () => { this.handlePetAction(PetActionType.SORTBATTLE); });
         this.showPopup();
     }
-
 
     private handlePetAction(actionType: PetActionType) {
         if (!this.animalController) return;
@@ -516,32 +512,30 @@ export class PopupOwnedAnimals extends BasePopup {
         } else {
             const index = this.animalBattle.findIndex(p => p.id === pet.id);
             if (index !== -1) {
+                this.clearSlotByPetId(pet.id);
                 this.animalBattle.splice(index, 1);
-                pet.battle_slot = 0;
-                this.updateSlotPet(pet, 0, isSelectBattle);
+                this.updateAnimalSlotUI(pet, isSelectBattle);
             }
         }
     }
 
     onSortPetBattle() {
-        const pet = this.animalController?.Pet;
-        if (!pet) return;
-        this.showPopupSortBattlePlace(this.animalBattle, pet);
+        const clonedPets = this.animalBattle.map(p => ({ ...p }));
+        this.showPopupSortBattlePlace(clonedPets);
     }
 
-    private async showPopupSortBattlePlace(pets: PetDTO[], pet: PetDTO) {
+    private async showPopupSortBattlePlace(pets: PetDTO[]) {
         const param: PopupBattlePlaceParam = {
-            isPetItemDrag : true,
+            isPetItemDrag: true,
             pets: pets,
-            petSelected: pet,
-            onFinishSelect: (slotIndex, pet, replacedSlot) => this.onFinishSelectPetBattlet(slotIndex, pet, replacedSlot)
+            onFinishSort: (sortedPets: PetDTO[]) => this.onFinishSortPetBattle(sortedPets)
         };
         await PopupManager.getInstance().openPopup('PopupBattlePlace', PopupBattlePlace, param);
     }
 
     private async showPopupBattlePlace(pets: PetDTO[], pet: PetDTO, isSelectBattle: boolean) {
         const param: PopupBattlePlaceParam = {
-            isPetItemDrag : false,
+            isPetItemDrag: false,
             pets: pets,
             petSelected: pet,
             onFinishSelect: (slotIndex, pet, replacedSlot) => this.onFinishSelectPetBattlet(slotIndex, pet, replacedSlot, isSelectBattle)
@@ -549,34 +543,57 @@ export class PopupOwnedAnimals extends BasePopup {
         await PopupManager.getInstance().openPopup('PopupBattlePlace', PopupBattlePlace, param);
     }
 
-    private onFinishSelectPetBattlet(finalBattleSlot: number, selectedPet: PetDTO, replacedSlots: number[],  isSelectBattle: boolean = false) {
-        for (const slot of replacedSlots) {
-            if (slot !== finalBattleSlot) {
-                const petInSlot = this.animalBattle.find(p => p.battle_slot === slot);
-                if (petInSlot) {
-                    const slotToReset = this.animalSlots.find(s => s.currentPet.id === petInSlot.id);
-                    if (slotToReset) {
-                        slotToReset.setBattlePet(0);
-                    }
-                }
-            }
+    private onFinishSortPetBattle(sortedPets: PetDTO[]) {
+        this.animalBattle = sortedPets;
+        this.itemDisplayPetFightings.forEach((item, index) => {
+            item.clearPetInfoOnly();
+        });
+        for (const pet of sortedPets) {
+            this.updateSlotPet(pet);
         }
-
-        this.animalBattle = this.animalBattle.filter(
-            p => p.id !== selectedPet.id && !replacedSlots.includes(p.battle_slot)
-        );
-        const clonedPet: PetDTO = { ...selectedPet, battle_slot: finalBattleSlot };
-        this.animalBattle.push(clonedPet);
-        this.updateSlotPet(clonedPet, finalBattleSlot, isSelectBattle);
     }
 
-    private updateSlotPet(pet: PetDTO, battle_slot: number, isSelectBattle: boolean) {
-        this.setSlotPetFighting(this.animalBattle);
-        const currentAnimalSlot = this.animalSlots.find(slot => slot.currentPet.id === pet.id);
-        if (currentAnimalSlot) {
-            currentAnimalSlot.setBattlePet(isSelectBattle ? battle_slot : 0);
+    private onFinishSelectPetBattlet(finalBattleSlot: number, selectedPet: PetDTO, replacedPetIds: string[], isSelectBattle: boolean = false) {
+        const removedPets = this.animalBattle.filter(p => replacedPetIds.includes(p.id) && p.id !== selectedPet.id);
+        for (const petInSlot of removedPets) {
+            this.clearSlotByPetId(petInSlot.id);
         }
-        pet.battle_slot = battle_slot;
+        this.animalBattle = this.animalBattle.filter(
+            p => p.id !== selectedPet.id && !replacedPetIds.includes(p.id)
+        );
+        selectedPet.battle_slot = finalBattleSlot;
+        this.animalBattle.push(selectedPet);
+        this.updateSlotPet(selectedPet);
+        this.updateAnimalSlotUI(selectedPet, isSelectBattle);
+    }
+
+    updateSlotPet(pet: PetDTO) {
+        const slotIndex = pet.battle_slot - 1;
+        const item = this.getFightingSlotItem(slotIndex);
+        item?.setData(pet, slotIndex, this.showPetDetail.bind(this));
+    }
+
+    clearSlotByPetId(petId: string) {
+        const pet = this.animalBattle.find(p => p.id === petId);
+        if (!pet || pet.battle_slot <= 0) return;
+        const item = this.getFightingSlotItem(pet.battle_slot - 1);
+        item?.clearPetInfoOnly?.();
+        const slotToReset = this.animalSlots.find(s => s.currentPet?.id === petId);
+        if (slotToReset) slotToReset.setBattlePet(0);
+        pet.battle_slot = 0;
+    }
+
+    getFightingSlotItem(slotIndex: number): ItemDisplayPetFighting | null {
+        return (slotIndex >= 0 && slotIndex < this.itemDisplayPetFightings.length)
+            ? this.itemDisplayPetFightings[slotIndex]
+            : null;
+    }
+
+    updateAnimalSlotUI(pet: PetDTO, isSelectBattle: boolean) {
+        const currentAnimalSlot = this.animalSlots.find(slot => slot.currentPet?.id === pet.id);
+        if (currentAnimalSlot) {
+            currentAnimalSlot.setBattlePet(isSelectBattle ? pet.battle_slot : 0);
+        }
         this.updatePetActionButtons(pet);
     }
 }

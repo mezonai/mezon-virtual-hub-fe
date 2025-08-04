@@ -17,6 +17,6 @@ export class ItemPlacePet extends Component {
         });
         this.currentpet = petData;
         if (interactSlot == InteractSlot.SHOW_UI) return; // chỉ show ui thì không cần set data
-        this.petDragItem.intiData(slotSkillFighting, interactSlot, parentSkillCanMove)
+        this.petDragItem.intiData(slotSkillFighting, interactSlot, parentSkillCanMove);
     }
 }

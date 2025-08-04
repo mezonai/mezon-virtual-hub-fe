@@ -13,6 +13,8 @@ export class ItemDisplayPetFighting extends Component {
     @property({ type: RichText }) slotValue: RichText = null;
     @property({ type: RichText }) levelPet: RichText = null;
     selectedCallback: () => void;
+    private  _pet: PetDTO;
+    
     setData(pet: PetDTO, slot: number, onClikcPet: (pet: PetDTO) => void) {
 
         if (pet == null) {
@@ -20,6 +22,7 @@ export class ItemDisplayPetFighting extends Component {
             this.setStar(0);
             return
         }
+        this._pet = pet;
         this.selectedCallback = async () => {
             if (onClikcPet) {
                 await onClikcPet(pet);
@@ -37,6 +40,10 @@ export class ItemDisplayPetFighting extends Component {
         this.toggle.node.on('toggle', this.onToggleChanged, this);
     }
 
+    public getPet(): PetDTO {
+        return this._pet;
+    }
+
     setStar(valueStar: number) {
         for (let i = 0; i < this.stars.length; i++) {
             this.stars[i].active = i < valueStar;
@@ -52,13 +59,17 @@ export class ItemDisplayPetFighting extends Component {
         this.selectedCallback();
     }
 
-    resetData() {
+    clearPetInfoOnly(){
         this.petImage.node.active = false; 
         this.iconSlotSprite.node.active = false; 
         this.slotValue.string = '';
         this.levelPet.string = '';
         this.setStar(0);
         this.node.setScale(Vec3.ONE);
+    }
+
+    resetData() {
+       this.clearPetInfoOnly();
         this.toggle.isChecked = false;
         this.toggle.node.off('toggle', this.onToggleChanged, this);
         this.selectedCallback = null;
