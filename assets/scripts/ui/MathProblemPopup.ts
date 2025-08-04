@@ -3,6 +3,7 @@ import { ServerManager } from '../core/ServerManager';
 import { UIIdentify } from './UIIdentify';
 import { BasePopup } from '../PopUp/BasePopup';
 import { PopupManager } from '../PopUp/PopupManager';
+import { AudioType, SoundManager } from '../core/SoundManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('MathProblemPopup')
@@ -13,6 +14,7 @@ export class MathProblemPopup extends BasePopup {
     private id: string = "";
     
     public init(param?: MathProblemParam): void {
+        SoundManager.instance.playSound(AudioType.Notice);
         this.close.node.on(Button.EventType.CLICK, this.closePopup, this);
         if (!param) return;
         this.setData(param.id, param.question, param.options);

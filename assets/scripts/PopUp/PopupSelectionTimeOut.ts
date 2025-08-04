@@ -1,6 +1,7 @@
 import { _decorator, Button, Component, Node, Label, RichText } from 'cc';
 import { BasePopup } from './BasePopup';
 import { PopupManager } from './PopupManager';
+import { AudioType, SoundManager } from '../core/SoundManager';
 const { ccclass, property } = _decorator;
 
 export enum TargetButton {
@@ -28,6 +29,7 @@ export class PopupSelectionTimeOut extends BasePopup {
             this.closePopup();
             return;
         }
+        SoundManager.instance.playSound(AudioType.Notice);
 
         this.contentPopup.string = param.content;
         if (param.textButtonLeft != "") {

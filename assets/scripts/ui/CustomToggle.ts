@@ -1,5 +1,6 @@
-import { _decorator, RichText, Toggle } from 'cc';
+import { _decorator, RichText, EventTouch, Toggle } from 'cc';
 import { AudioType, SoundManager } from '../core/SoundManager';
+import { Input } from 'cc';
 const { ccclass, property } = _decorator;
 
 @ccclass('CustomToggle')
@@ -8,6 +9,7 @@ export class CustomToggle extends Toggle {
 
     onLoad() {
         this.node.on('toggle', this.onToggleChanged, this);
+        this.node.on(Input.EventType.TOUCH_END, this.onUserClicked, this);
     }
 
     onEnable(): void {
@@ -16,13 +18,17 @@ export class CustomToggle extends Toggle {
 
     onDestroy() {
         this.node.off('toggle', this.onToggleChanged, this);
+        this.node.off(Input.EventType.TOUCH_END, this.onUserClicked, this);
         super.onDestroy();
     }
 
-    onToggleChanged(toggle: Toggle) {
-        if(SoundManager.instance){
+    private onUserClicked() {
+        if (SoundManager.instance) {
             SoundManager.instance.playSound(AudioType.Toggle);
         }
+    }
+
+    onToggleChanged(toggle: Toggle) {
         if(this.label) this.label.string = toggle.isChecked ? "<color=#34ff77>ON</color>" : "<color=#fe5454>OFF</color>";
     }
 }

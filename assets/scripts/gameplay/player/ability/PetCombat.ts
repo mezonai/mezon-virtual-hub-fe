@@ -39,9 +39,8 @@ export class PetCombat extends PlayerInteractAction {
     }
 
     public onBeingInvited(data) {
-        SoundManager.instance.playSound(AudioType.Notice);
         const param: SelectionTimeOutParam = {
-            title: "Thông Báo",
+            title: "Thông báo",
             content: `${data.fromName} mời bạn chơi đấu pet. Phí <color=#FF0000> ${this.fee} diamond</color>`,
             textButtonLeft: "Chơi",
             textButtonRight: "Thôi",

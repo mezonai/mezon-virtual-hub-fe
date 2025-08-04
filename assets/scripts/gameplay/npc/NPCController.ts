@@ -8,7 +8,6 @@ import { UserManager } from '../../core/UserManager';
 import { UIManager } from '../../core/UIManager';
 import { UIID } from '../../ui/enum/UIID';
 import { MathProblemParam, MathProblemPopup } from '../../ui/MathProblemPopup';
-import { AudioType, SoundManager } from '../../core/SoundManager';
 import { PopupManager } from '../../PopUp/PopupManager';
 const { ccclass, property } = _decorator;
 
@@ -116,7 +115,6 @@ export class NPCController extends Component {
             if (UserManager.instance?.GetMyClientPlayer) {
                 let distance = Vec3.distance(this.node.worldPosition, UserManager.instance.GetMyClientPlayer.node.worldPosition);
                 if (distance < this.maxDistancePlayerCanInteract) {
-                    SoundManager.instance.playSound(AudioType.Notice);
                     const mathParam: MathProblemParam = {
                         id: id,
                         question: question,

@@ -128,7 +128,6 @@ export class ServerManager extends Component {
         });
 
         this.room.onMessage("serverBroadcast", (data) => {
-            SoundManager.instance.playSound(AudioType.Notice);
             const param: ConfirmParam = {
                 message: data.message,
                 title: "Chú Ý",

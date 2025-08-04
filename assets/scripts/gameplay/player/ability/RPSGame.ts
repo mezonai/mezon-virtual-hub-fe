@@ -76,7 +76,6 @@ export class RPSGame extends PlayerInteractAction {
     }
 
     public override onBeingInvited(data: any): void {
-        SoundManager.instance.playSound(AudioType.Notice);
         const param: SelectionTimeOutParam = {
             title: "Chú Ý",
             content: `${data.fromName} mời bạn chơi kéo búa bao. Phí <color=#FF0000> ${this.fee} diamond</color>`,
