@@ -5,6 +5,7 @@ import { UILoginControll } from '../UILogin/UILoginControl';
 import { RandomlyMover } from '../utilities/RandomlyMover';
 import { EVENT_NAME } from '../network/APIConstant';
 import { LoadingScene } from '../GameMap/LoadingScene/LoadingScene';
+import { SceneManagerController } from '../utilities/SceneManagerController';
 
 @ccclass('ProjectRoot')
 export class ProjectRoot extends Component {
@@ -41,10 +42,17 @@ export class ProjectRoot extends Component {
 
     protected start() {
         this.init();
-        this.loadingScene.setData(() => {
+        const onLoaded = () => {
             this.onSceneLoaded({ name: "GameMap" });
-        })
+            this.loadingScene.node.active = false;
+        };
 
+        const param = SceneManagerController.getSceneParam<{ params: any }>();
+        if (param) {
+            onLoaded();
+        } else {
+            this.loadingScene.setData(onLoaded);
+        }
     }
 
     private async init() {
