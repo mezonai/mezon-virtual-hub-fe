@@ -329,7 +329,7 @@ export class PopupOwnedAnimals extends BasePopup {
     private buildPetBattleData(pets: PetDTO[]) {
         const petBattleUser = pets.filter(pet => {
             const shouldBattle = this.animalBattle.some(p => p.id === pet.id);
-            const wasBattle = this.battlePetIdsInit.some(p => p.id === pet.id && p.battle_slot === pet.battle_slot);
+            const wasBattle = this.battlePetIdsInit.some(p => p.id === pet.id);
             return shouldBattle || wasBattle;
         });
         const result = petBattleUser.map(pet => {

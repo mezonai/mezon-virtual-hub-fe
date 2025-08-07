@@ -40,13 +40,6 @@ export class PetDragItem extends DraggableBase {
     onTouchStart(event: EventTouch): void {
         if (this.interactionMode == InteractSlot.DRAG) {
             this.touchStart();
-            if (this.containerNode && this.node.parent !== this.containerNode) {
-                const worldPos = this.node.getWorldPosition();
-                this.node.parent = this.containerNode;
-                const newPos = this.containerNode.getComponent(UITransform).convertToNodeSpaceAR(worldPos);
-                this.node.setPosition(newPos);
-            }
-            this.node.setSiblingIndex(this.node.parent.children.length - 1);
         }
     }
 
