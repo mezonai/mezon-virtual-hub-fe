@@ -35,7 +35,6 @@ export class UserManager extends Component {
     @property({ type: Prefab }) animalPrefabs: Prefab[] = [];
     private players: Map<string, PlayerController> = new Map();
     private myClientPlayer: PlayerController = null;
-    private popupBattle: BasePopup = null;
     public get GetMyClientPlayer(): PlayerController | null {
         return this.myClientPlayer;
     }
@@ -83,7 +82,7 @@ export class UserManager extends Component {
         if (playerData.room.sessionId == playerData.sessionId) {
             this.myClientPlayer = playerController;
         }
-        
+
         // Gắn vào parent & lưu map
         playerNode.setParent(this.playerParent);
         this.players.set(playerData.sessionId, playerNode.getComponent(PlayerController));
@@ -263,29 +262,42 @@ export class UserManager extends Component {
         let playersBattle = ConvetData.ConvertPlayersBattleData(playersBattleData);
         const param: BatllePetParam = {
             data: playersBattle,
-            clientID: this.GetMyClientPlayer.myClientBattleId,
             onActionClose: () => {
-                this.popupBattle = null;
+
             },
         };
-        this.popupBattle = await PopupManager.getInstance().openAnimPopup('PopupBattlePet', PopupBattlePet, param);
-
+        if (UIManager.Instance == null) return;
+        UIManager.Instance.batteScene.setData(param);
     }
 
     public handleBattle(data) {
-        PopupManager.getInstance().getPopupById(this.popupBattle.node.uuid)?.getComponent(PopupBattlePet)?.handleBattleResult(data);
+        if (UIManager.Instance == null) return;
+        UIManager.Instance.batteScene.handleBattleResult(data);
     }
 
     public switchPetAfterPetDead(data) {
-        PopupManager.getInstance().getPopupById(this.popupBattle.node.uuid)?.getComponent(PopupBattlePet)?.switchPetAfterPetDead(data);
+        if (UIManager.Instance == null) return;
+        UIManager.Instance.batteScene.switchPetAfterPetDead(data);
     }
 
-    public battleFinished(data) {
-        PopupManager.getInstance().getPopupById(this.popupBattle.node.uuid)?.getComponent(PopupBattlePet)?.battleFinished(data);
+    public async battleFinished(data: any) {
+        if (UIManager.Instance == null) return;
+        UIManager.Instance.batteScene.battleFinished(data);
     }
 
     public waitingOpponents(data) {
-        PopupManager.getInstance().getPopupById(this.popupBattle.node.uuid)?.getComponent(PopupBattlePet)?.WaitingOpponents(data);
+        if (UIManager.Instance == null) return;
+        UIManager.Instance.batteScene.WaitingOpponents(data);
+    }
+
+    public disconnected(data) {
+        const param: ConfirmParam = {
+            message: "Đối Thủ Bị Mất Kết Nôi",
+            title: "Thông báo",
+        };
+        PopupManager.getInstance().openPopup("ConfirmPopup", ConfirmPopup, param);
+        if (UIManager.Instance == null) return;
+        UIManager.Instance.batteScene.closeBattle();
     }
     public onPlayerRemoteUpdateGold(data) {
         const { sessionId, amountChange } = data;

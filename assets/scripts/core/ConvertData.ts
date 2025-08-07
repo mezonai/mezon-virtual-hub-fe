@@ -135,8 +135,10 @@ export default class ConvetData {
         pet.level = petData.level;
         pet.currentExp = petData.currentExp;
         pet.totalExp = petData.totalExp;
+        pet.attack = petData.attack;
+        pet.defense = petData.defense;
         pet.speed = petData.speed;
-
+        pet.isSleeping = petData.isSleeping;
         pet.skills = petData.skills.map((skillData: any) => {
             return this.convertToSkillData(skillData);
         });
@@ -150,7 +152,8 @@ export default class ConvetData {
         skill.attack = skillData.attack;
         skill.accuracy = skillData.accuracy;
         skill.typeSkill = this.mapServerSkillToClient(skillData.skillType);
-        skill.powerPoint = skillData.powerPoint;
+        skill.currentPowerPoint = skillData.currentPowerPoint;
+        skill.totalPowerPoint = skillData.totalPowerPoint;
         return skill;
     }
 

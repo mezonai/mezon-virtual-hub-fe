@@ -1,11 +1,7 @@
 import { _decorator } from 'cc';
 import { ActionType, PlayerInteractAction } from './PlayerInteractAction';
 import { AudioType, SoundManager } from '../../../core/SoundManager';
-import { UIManager } from '../../../core/UIManager';
 import { PopupManager } from '../../../PopUp/PopupManager';
-import { GameData } from './RPSGame';
-import { ServerManager } from '../../../core/ServerManager';
-import { BatllePetParam, PopupBattlePet } from '../../../PopUp/PopupBattlePet';
 import { PopupSelectionTimeOut, SelectionTimeOutParam, TargetButton } from '../../../PopUp/PopupSelectionTimeOut';
 const { ccclass, property } = _decorator;
 

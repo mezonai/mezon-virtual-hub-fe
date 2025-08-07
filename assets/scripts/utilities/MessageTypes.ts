@@ -11,4 +11,7 @@ export enum MessageTypes {
     SWITCH_PET_AFTER_DEAD_DONE = "switch_pet_after_dead_done",
     BATTLE_FINISHED = "battle_finished",
     WAITING_OTHER_USER = "waiting_other_user",
+    SURRENDER_BATTLE = "surrender_battle",
+    SET_PET_SLEEP = "set_pet_sleep",
+    DISCONNECTED = "Disconnected",
 }

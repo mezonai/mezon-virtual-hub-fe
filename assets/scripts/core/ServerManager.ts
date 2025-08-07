@@ -370,22 +370,26 @@ export class ServerManager extends Component {
                 this.battleRoom = null;
             });
             this.battleRoom.onMessage(MessageTypes.RESULT_SKILL, (data) => {
-                console.log("ServerManager ", data);
                 if (data == null) return;
                 UserManager.instance.handleBattle(data);
             });
+
             this.battleRoom.onMessage(MessageTypes.SWITCH_PET_AFTER_DEAD_DONE, (data) => {
                 if (data == null) return;
                 UserManager.instance.switchPetAfterPetDead(data);
             });
             this.battleRoom.onMessage(MessageTypes.BATTLE_FINISHED, (data) => {
                 if (data == null) return;
+                console.log("Battle Leave");
                 UserManager.instance.battleFinished(data);
             });
             this.battleRoom.onMessage(MessageTypes.WAITING_OTHER_USER, (data) => {
-                console.log("waiting", data);
                 if (data == null) return;
                 UserManager.instance.waitingOpponents(data);
+            });
+            this.battleRoom.onMessage(MessageTypes.DISCONNECTED, (data) => {
+                if (data == null) return;
+                UserManager.instance.disconnected(data);
             });
         });
         this.room.onMessage("onp2pCombatActionEscape", (data) => {
@@ -516,6 +520,16 @@ export class ServerManager extends Component {
         this.battleRoom.send(MessageTypes.SWITCH_PET_AFTER_DEAD, {
             petSwitchId: choosePetId,
         });
+    }
+    public sendPetSleeping(petSleepingId: string) {
+        if (this.battleRoom == null) return;
+        this.battleRoom.send(MessageTypes.SET_PET_SLEEP, {
+            petSleepingId: petSleepingId,
+        });
+    }
+    public sendSurrenderBattle() {
+        if (this.battleRoom == null) return;
+        this.battleRoom.send(MessageTypes.SURRENDER_BATTLE, { message: "", });
     }
 
     public leaveBattleRoom() {

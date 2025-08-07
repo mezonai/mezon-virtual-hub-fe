@@ -61,15 +61,19 @@ export class PetBattleInfo {
   public level: number;
   public currentExp: number;
   public totalExp: number;
+  public attack: number;
   public speed: number;
+  public defense: number;
   public skills: SkillData[];
   public isDead: boolean;
+  public isSleeping: boolean;
 }
 export class SkillData {
   public id: string = "";
   public attack: number = 0;
   public accuracy: number = 0;
-  public powerPoint: number = 0;
+  public currentPowerPoint: number = 0;
+  public totalPowerPoint: number = 0;
   public typeSkill: TypeSkill;
 }
 export interface BattleData {

@@ -7,6 +7,7 @@ import { _decorator, Component, Enum, view, Node, director, Button, View } from 
 import { PopupManager } from '../PopUp/PopupManager';
 import { PopupOwnedAnimals } from '../PopUp/PopupOwnedAnimals';
 import { ToolSpawnPet } from '../utilities/ToolSpawnPet';
+import { PopupBattlePet } from '../PopUp/PopupBattlePet';
 const { ccclass, property } = _decorator;
 
 @ccclass('UIManager')
@@ -20,6 +21,7 @@ export class UIManager extends Component {
     @property({ type: Button }) outmapButton: Button;
     @property({ type: Button }) showOwnedButton: Button;
     @property({ type: ToolSpawnPet }) toolcreatePet: ToolSpawnPet;
+    @property({ type: PopupBattlePet }) batteScene: PopupBattlePet;
     private _popup: UIPopup = null;
     private _bigPopup: UIPopup = null;
     private _fadePopup: UIPopup = null;
@@ -62,6 +64,7 @@ export class UIManager extends Component {
         this.showOwnedButton.addAsyncListener(async () => {
             await PopupManager.getInstance().openAnimPopup('PopupOwnedAnimals', PopupOwnedAnimals, { message: "" });
         });
+        this.batteScene.node.active = false;
     }
 
     onResize() {

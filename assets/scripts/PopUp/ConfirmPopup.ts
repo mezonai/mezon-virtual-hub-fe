@@ -16,7 +16,7 @@ export class ConfirmPopup extends BasePopup {
 
     public init(param?: ConfirmParam) {
         SoundManager.instance.playSound(AudioType.Notice);
-        if(param == null){
+        if (param == null) {
             this.onButtonClick();
             return;
         }
@@ -24,7 +24,9 @@ export class ConfirmPopup extends BasePopup {
         if (this.messageLabel && param?.message != "") {
             this.messageLabel.string = param?.message;
         }
-        this.closeButton.node.on(Button.EventType.CLICK, this.onButtonClick, this);
+        this.closeButton.addAsyncListener(async () => {
+            this.onButtonClick();
+        })
     }
 
     async onButtonClick() {

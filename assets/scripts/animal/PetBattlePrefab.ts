@@ -29,6 +29,14 @@ export class PetBattlePrefab extends Component {
         }
     }
 
+    resetPet() {
+        for (const x of this.speciesMap) {
+            x.nodeSpritePet.active = false;
+            const scale = x.nodeSpritePet.scale;
+            x.nodeSpritePet.setScale(new Vec3(Math.abs(scale.x), scale.y, scale.z));
+        }
+    }
+
     getAnimPet(species: Species, idAnim: string): Animation | null {
         const map = this.speciesMap.find(m => m.species === species);
         if (!map) return null;
@@ -209,6 +217,20 @@ export class PetBattlePrefab extends Component {
         });
     }
 
+    scaleInOut(pet: PetBattlePrefab): Promise<void> {
+        const originalScale = pet.node.scale.clone(); // Lưu scale gốc
+
+        return new Promise<void>((resolve) => {
+            tween(pet.node)
+                .to(0.5, { scale: originalScale.clone().multiplyScalar(0.5) }) // Thu nhỏ
+                .call(() => {
+                    pet.node.scale = originalScale;
+                    resolve();
+                })
+                .start();
+        });
+    }
+
     async throwSkillImage(
         skillId: string,
         from: PetBattlePrefab,
@@ -277,14 +299,14 @@ export class PetBattlePrefab extends Component {
     }
 
     convertSkillIdStart(skillId: string): string {
-        if (skillId === "ELECTRIC03" || skillId === "FIRE02" || skillId === "WATER01" || skillId === "FIRE01") {
+        if (skillId === "ELECTRIC03" || skillId === "FIRE02" || skillId === "WATER01" || skillId === "FIRE01" || skillId === "FIRE03") {
             return `${skillId}_START`;
         }
         return skillId;
     }
 
     convertSkillIdForSkill(skillId: string): string {
-        if (skillId === "ELECTRIC03" || skillId === "FIRE02") {
+        if (skillId === "ELECTRIC03" || skillId === "FIRE02" || skillId == "FIRE03") {
             return `${skillId}_END`;
         }
         return skillId;
