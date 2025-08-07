@@ -19,6 +19,7 @@ export default class APIConstant {
     static FOOD = "food";
     static INITIAL_REWARD = "initial-reward";
     static REWARD_PERCENT = "reward-percent";
+    static BATTLE_SKILLS = "battle-skills";
 }
 
 export class APIConfig {

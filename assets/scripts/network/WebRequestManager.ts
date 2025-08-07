@@ -116,6 +116,11 @@ export class WebRequestManager extends Component {
         APIManager.patchData(this.combineWithSlash(APIConstant.PET_PLAYERS, APIConstant.BATTLE_PET), data, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
+    public updateSkillsPetBattleUser(petplayerId, data, successCallback, errorCallback) {
+        const url = `${APIConstant.PET_PLAYERS}/${petplayerId}`;
+        APIManager.putData(this.combineWithSlash(url, APIConstant.BATTLE_SKILLS), data, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    }
+
     public getAllItemFood(successCallback, errorCallback) {
         APIManager.getData(this.combineWithSlash(APIConstant.FOOD), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }

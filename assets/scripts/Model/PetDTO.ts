@@ -22,6 +22,7 @@ export class PetDTO {
   public skill_slot_2: SkillSlot;
   public skill_slot_3: SkillSlot | null;
   public skill_slot_4: SkillSlot | null;
+  public equipped_skill_codes : SkillCode[]| null;
 }
 
 export interface BasePetData {
@@ -177,3 +178,7 @@ export interface PetBattleData {
   id: string;
   battle_slot: number;
 }
+
+export interface SkillPayload{
+    equipped_skill_codes: SkillCode[];
+};

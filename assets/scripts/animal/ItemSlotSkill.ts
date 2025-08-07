@@ -1,8 +1,7 @@
 import { _decorator, Component, Node, Prefab } from 'cc';
-import { AnimalElement } from '../Model/PetDTO';
+import { SkillPayload, SkillSlot } from '../Model/PetDTO';
 import { ObjectPoolManager } from '../pooling/ObjectPoolManager';
 import { ItemSkill } from './ItemSkill';
-import { SkillDataInfor } from './Skills';
 const { ccclass, property } = _decorator;
 export enum InteractSlot {
     NONE,
@@ -18,31 +17,56 @@ export class ItemSlotSkill extends Component {
     @property({ type: Node }) parentSkillCanMove: Node = null;
     @property({ type: Node }) lockItem: Node = null;
     itemSkill: ItemSkill = null;
-    interactSlot: InteractSlot = InteractSlot.NONE
+    interactSlot: InteractSlot = InteractSlot.NONE;
+    onSkillChanged: () => void = () => { };
+    skillData: SkillSlot = null;
+    public slotIndex: number = -1;
 
-    initData(skillData: SkillDataInfor, interactSlot: InteractSlot, slotSkillFighting: ItemSlotSkill[] = []) {
+    initData(skillData: SkillSlot, interactSlot: InteractSlot, slotSkillFighting: ItemSlotSkill[] = [], onSkillChanged: () => void = () => { }) {
+        if (skillData == null) {
+            this.refeshSlot();
+            this.setLockSkill(true);
+            return;
+        }
+        this.setLockSkill(false);
+        this.onSkillChanged = onSkillChanged;
         this.interactSlot = interactSlot;
-        if (skillData == null) return;
         this.setDataSlotSkill(skillData, slotSkillFighting);
     }
 
-    setDataSlotSkill(skillData: SkillDataInfor, slotSkillFighting: ItemSlotSkill[] = []) {
-        this.resetSkill();
+    setLockSkill(isLocked: boolean) {
+        if (this.lockItem != null) this.lockItem.active = isLocked
+    }
+
+    setDataSlotSkill(skillData: SkillSlot, slotSkillFighting: ItemSlotSkill[] = []) {
+        this.refeshSlot();
+        if (skillData == null) {
+            return;
+        }
+        this.skillData = skillData;
         let newitemSkill = ObjectPoolManager.instance.spawnFromPool(this.itemSkillPrefab.name);
         newitemSkill.setParent(this.parentSkill);
         this.itemSkill = newitemSkill.getComponent(ItemSkill);
-        if (this.itemSkill != null) {
-            this.itemSkill.setData(skillData, this.interactSlot, slotSkillFighting, this.parentSkillCanMove);
-        }    
+        if (this.itemSkill == null) return;
+        this.itemSkill.setData(skillData, this.interactSlot, slotSkillFighting, this.parentSkillCanMove);
     }
 
-    setItemSkill(itemSkill: ItemSkill) {
-        this.itemSkill = itemSkill
+    updateSlotSkill(skillData: SkillSlot, slotSkillFighting: ItemSlotSkill[] = [], isUpdateChange = false) {
+        this.setDataSlotSkill(skillData, slotSkillFighting);
+        if (!isUpdateChange) return;
+        this.onSkillChanged?.();
     }
 
-    resetSkill() {
+    refeshSlot() {
         this.parentSkill.removeAllChildren();
         this.itemSkill = null;
+        this.skillData = null;
+    }
+
+
+    resetSkill() {
+        this.refeshSlot();
+        this.onSkillChanged?.();
     }
 }
 

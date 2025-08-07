@@ -3,16 +3,17 @@ import { TooltipManager } from '../ui/TooltipManager';
 import { PopupManager } from '../PopUp/PopupManager';
 import { SkillDataInfor } from '../animal/Skills';
 import { PopupTooltipSkill, TooltipSkillParam } from '../PopUp/PopupTooltipSkill';
+import { SkillSlot } from '../Model/PetDTO';
 const { ccclass, property } = _decorator;
 
 @ccclass('SkillTooltip')
 export class SkillTooltip extends TooltipManager {
 
     popupTooltip: PopupTooltipSkill = null;
-    skillData: SkillDataInfor = null;
+    skillData: SkillSlot = null;
     hoverVersion = 0;
 
-    setData(skill: SkillDataInfor) {
+    setData(skill: SkillSlot) {
         if (!skill) return;
         this.skillData = skill;
     }
