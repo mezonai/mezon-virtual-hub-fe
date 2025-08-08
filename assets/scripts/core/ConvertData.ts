@@ -31,7 +31,7 @@ export default class ConvetData {
             petDTO.speed = data.speed;
             petDTO.is_brought = data.is_brought;
             petDTO.is_caught = data.is_caught;
-            petDTO.is_selected_battle = data.is_selected_battle;
+            petDTO.battle_slot = data.is_selected_battle;
             petDTO.individual_value = data.individual_value;
             petDTO.room_code = data.room_code;
             petDTO.pet = data.pet;
@@ -39,6 +39,7 @@ export default class ConvetData {
             petDTO.skill_slot_2 = data.skill_slot_2;
             petDTO.skill_slot_3 = data.skill_slot_3 ?? null;
             petDTO.skill_slot_4 = data.skill_slot_4 ?? null;
+            petDTO.equipped_skill_codes = data.equipped_skill_codes ?? null;
             return petDTO;
         });
     }
@@ -56,7 +57,7 @@ export default class ConvetData {
         petDTO.speed = data.speed;
         petDTO.is_brought = data.is_brought;
         petDTO.is_caught = data.is_caught;
-        petDTO.is_selected_battle = data.is_selected_battle;
+        petDTO.battle_slot = data.is_selected_battle;
         petDTO.individual_value = data.individual_value;
         petDTO.room_code = data.room_code;
         petDTO.pet = data.pet;
@@ -64,6 +65,7 @@ export default class ConvetData {
         petDTO.skill_slot_2 = data.skill_slot_2;
         petDTO.skill_slot_3 = data.skill_slot_3 ?? null;
         petDTO.skill_slot_4 = data.skill_slot_4 ?? null;
+        petDTO.equipped_skill_codes = data.equipped_skill_codes ?? null;
         return petDTO;
     }
 

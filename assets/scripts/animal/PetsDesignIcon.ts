@@ -11,5 +11,3 @@ export class PetsDesignIcon extends Component {
         }
     }
 }
-
-

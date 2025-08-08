@@ -47,7 +47,7 @@ export class AnimalSpawner extends Component {
 
     public spawnPetOnServer(pet: PetColysesusObjectData) {
         if (!pet) return;
-        let petObj = ObjectPoolManager.instance.spawnFromPool(pet.pet.pet.species);
+        let petObj = ObjectPoolManager.instance.spawnFromPool(pet.pet.species);
         if (petObj) {
             petObj.setParent(this.spawnMap);
             petObj.setPosition(new Vec3(pet.x, pet.y, 0));

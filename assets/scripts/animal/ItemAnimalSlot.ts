@@ -21,7 +21,7 @@ export class ItemAnimalSlot extends Component {
         this.fightingNode.active = false;
         this.node.setScale(Vec3.ONE);
         this.setBringPet(pet.is_brought);
-        this.setBattlePet(pet.is_selected_battle);
+        this.setBattlePet(pet.battle_slot);
         this.currentPet = pet;
         this.selectedCallback = async () => {
             if (onClikcPet) {
@@ -74,8 +74,8 @@ export class ItemAnimalSlot extends Component {
         this.bringNode.active = isBrought;
     }
 
-    setBattlePet(isSelectBattle: boolean = true) {
-        this.fightingNode.active = isSelectBattle;
+    setBattlePet(battle_slot: number = 0) {
+        this.fightingNode.active = battle_slot > 0;
     }
 
     onToggleChanged(toggle: Toggle) {
