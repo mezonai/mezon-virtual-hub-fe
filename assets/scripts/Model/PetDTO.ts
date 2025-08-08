@@ -35,7 +35,7 @@ export interface SkillSlot {
   skill_code: SkillCode;
   name: string;
   type: AnimalElement;
-  attack: number;
+  damage: number;
   accuracy: number;
   power_points: number;
   description: string;
