@@ -279,34 +279,37 @@ export class PopupOwnedAnimals extends BasePopup {
             this.closePopup();
             return;
         }
+        const pets = this.listAllPetPlayer;
+        if (!pets || pets.length === 0) return;
 
-        const param: SelectionParam = {
-            content: `Bạn có muốn lưu những thay đổi không?`,
-            textButtonLeft: "Không",
-            textButtonRight: "Có",
-            textButtonCenter: "",
-            onActionButtonRight: async () => {
-                const pets = this.listAllPetPlayer;
-                if (!pets || pets.length === 0) return;
+        const petBring = this.buildPetFollowData(pets);
+        const petDataBattle = this.buildPetBattleData(pets);
 
-                const petData = this.buildPetFollowData(pets);
-                const petDataBattle = this.buildPetBattleData(pets);
-
-                const hasPetUpdate = petData.pets.length > 0;
-                const hasBattleUpdate = petDataBattle.pets.length > 0;
-
-                if (hasPetUpdate || hasBattleUpdate) {
-                    await this.sendUpdatePetDataAsync(petData, petDataBattle, hasPetUpdate, hasBattleUpdate);
+        const hasPetBringUpdate = petBring.pets.length > 0;
+        const hasBattleUpdate = petDataBattle.pets.length > 0;
+        if (hasPetBringUpdate || hasBattleUpdate) {
+            const param: SelectionParam = {
+                content: `Bạn có muốn lưu những thay đổi không?`,
+                textButtonLeft: "Không",
+                textButtonRight: "Có",
+                textButtonCenter: "",
+                onActionButtonRight: async () => {
+                    if (hasBattleUpdate) {
+                        await this.updateListPetBattleUserAsync(petDataBattle);
+                    }
+                    if (hasPetBringUpdate) {
+                        await this.updateListPetFollowUserAsync(petBring);
+                    }
                 }
-            }
-            ,
-            onActionButtonLeft: async () => {
+                ,
+                onActionButtonLeft: async () => {
 
-            }
-        };
-        const popup = await PopupManager.getInstance().openAnimPopup("PopupSelection", PopupSelection, param);
-        await PopupManager.getInstance()?.waitCloseAsync(popup.node.uuid);
-        await this.UpdateMyPets();
+                }
+            };
+            const popup = await PopupManager.getInstance().openAnimPopup("PopupSelection", PopupSelection, param);
+            await PopupManager.getInstance()?.waitCloseAsync(popup.node.uuid);
+            await this.UpdateMyPets();
+        }
         this.closePopup();
     }
 
@@ -347,26 +350,6 @@ export class PopupOwnedAnimals extends BasePopup {
         return { pets: result };
     }
 
-    private sendUpdatePetDataAsync(
-        petData: PetFollowPayload,
-        petDataBattle: PetBattlePayload,
-        hasPetUpdate: boolean,
-        hasBattleUpdate: boolean
-    ): Promise<void> {
-        return new Promise(async (resolve, reject) => {
-            try {
-                if (hasBattleUpdate) {
-                    await this.updateListPetBattleUserAsync(petDataBattle);
-                }
-                if (hasPetUpdate) {
-                    await this.updateListPetFollowUserAsync(petData);
-                }
-                resolve();
-            } catch (error) {
-                reject(error);
-            }
-        });
-    }
 
     private updateListPetFollowUserAsync(petData: PetFollowPayload): Promise<void> {
         return new Promise<void>((resolve) => {
@@ -387,17 +370,6 @@ export class PopupOwnedAnimals extends BasePopup {
     }
 
     private updateListPetBattleUserAsync(petDataBattle: PetBattlePayload): Promise<void> {
-        return new Promise<void>((resolve) => {
-            WebRequestManager.instance.updateListPetBattleUser(
-                petDataBattle,
-                () => resolve(),
-                (error) => {
-                    this.onError(error);
-                }
-            );
-        });
-    }
-    private updateMyPets(petDataBattle: PetBattlePayload): Promise<void> {
         return new Promise<void>((resolve) => {
             WebRequestManager.instance.updateListPetBattleUser(
                 petDataBattle,
