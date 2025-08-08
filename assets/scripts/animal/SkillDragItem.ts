@@ -76,7 +76,7 @@ export class SkillDragItem extends DraggableBase {
             this.clickCount = 0;
             const itemSkill = this.node.getComponent(ItemSkill);
             if (!itemSkill) return;
-            const slot = this.slotsSkillFighting.find(s => s.itemSkill?.currentSkill?.idSkill === itemSkill?.currentSkill.idSkill);
+            const slot = this.slotsSkillFighting.find(s => s.itemSkill?.currentSkill?.skill_code === itemSkill?.currentSkill.skill_code);
             if (slot) {
                 slot.resetSkill();
             }
@@ -97,28 +97,27 @@ export class SkillDragItem extends DraggableBase {
                 const draggedSkill = itemSkill?.currentSkill;
                 if (draggedSkill == null) continue;
 
-                const currentSlotId = slot.itemSkill?.currentSkill.idSkill;
-                const otherSlotId = otherSlot.itemSkill?.currentSkill.idSkill;
+                const currentSlotId = slot.itemSkill?.currentSkill.skill_code;
+                const otherSlotId = otherSlot.itemSkill?.currentSkill.skill_code;
 
-                if (currentSlotId === draggedSkill.idSkill) {
+                if (currentSlotId === draggedSkill.skill_code) {
                     this.resetPosition();
                     return;
                 }
 
-                if (otherSlotId === draggedSkill.idSkill && currentSlotId) {
+                if (otherSlotId === draggedSkill.skill_code && currentSlotId) {
                     const currentSkill = slot.itemSkill;
-                    slot.setDataSlotSkill(draggedSkill, this.slotsSkillFighting);
-                    otherSlot.setDataSlotSkill(currentSkill.currentSkill, this.slotsSkillFighting);
+                    slot.updateSlotSkill(draggedSkill, this.slotsSkillFighting);
+                    otherSlot.updateSlotSkill(currentSkill.currentSkill, this.slotsSkillFighting, true);
                     this.resetPosition();
                     return;
                 }
 
-                if (otherSlotId === draggedSkill.idSkill) {
-                    otherSlot.itemSkill.node.destroy();
-                    otherSlot.setItemSkill(null);
+                if (otherSlotId === draggedSkill.skill_code) {
+                    otherSlot.resetSkill();
                 }
 
-                slot.setDataSlotSkill(draggedSkill, this.slotsSkillFighting);
+                slot.updateSlotSkill(draggedSkill, this.slotsSkillFighting, true);
                 this.resetPosition();
                 return;
             }

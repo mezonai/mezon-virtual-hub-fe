@@ -26,6 +26,16 @@ export class APIManager{
             errorCallback(result);
         });
     }
+
+    public static patchData(path, param, successCallback, errorCallback, needAuth) {
+        let json = JSON.stringify(param);
+        let out = this.callPatch(this.getPath(path), json, needAuth)
+        out.then(function (result) {
+            successCallback(result);
+        }).catch(function (result) {
+            errorCallback(result);
+        });
+    }
   
     public static postData(path, param, callback, errorCallback, needAuth) {
         let json = JSON.stringify(param);
@@ -71,6 +81,10 @@ export class APIManager{
     }
     private static callPut(url, param, needAuth = true) {
         return this.xmlBase('PUT', url, param, needAuth);
+    }
+
+    private static callPatch(url, param, needAuth = true) {
+        return this.xmlBase('PATCH', url, param, needAuth);
     }
 
     private static callDelete(url, param, needAuth = true) {

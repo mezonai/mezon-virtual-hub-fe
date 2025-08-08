@@ -15,13 +15,14 @@ export class PetDTO {
   public attack: number;
   public defense: number;
   public speed: number;
-  public is_selected_battle: boolean;
+  public battle_slot: number;
   public individual_value: number;
   public pet: BasePetData;
   public skill_slot_1: SkillSlot;
   public skill_slot_2: SkillSlot;
   public skill_slot_3: SkillSlot | null;
   public skill_slot_4: SkillSlot | null;
+  public equipped_skill_codes : SkillCode[]| null;
 }
 
 export interface BasePetData {
@@ -175,5 +176,9 @@ export interface PetBattlePayload {
 
 export interface PetBattleData {
   id: string;
-  is_selected_battle: boolean;
+  battle_slot: number;
 }
+
+export interface SkillPayload{
+    equipped_skill_codes: SkillCode[];
+};
