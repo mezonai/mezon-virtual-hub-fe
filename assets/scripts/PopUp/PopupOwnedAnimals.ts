@@ -21,6 +21,10 @@ enum PetActionType {
     FIGHT,
     SORTBATTLE
 }
+export enum SkillBattle{
+    SKILLPET,
+    SKILLFIGHTING
+}
 
 @ccclass('PopupOwnedAnimals')
 export class PopupOwnedAnimals extends BasePopup {
@@ -188,7 +192,7 @@ export class PopupOwnedAnimals extends BasePopup {
 
     }
 
-    private SetDetailSkill(pet: PetDTO) {
+    private setSkillsPet(pet: PetDTO) {
         // Gán dữ liệu cho itemSlotSkills
         const skillPet: SkillSlot[] = [
             pet.skill_slot_1,
@@ -200,7 +204,7 @@ export class PopupOwnedAnimals extends BasePopup {
         this.itemSlotSkills.forEach((slot, index) => {
             if (!slot) return;
             const skill = skillPet[index];
-            slot.initData(skill, InteractSlot.DRAG, this.slotSkillFighting);
+            slot.initData(skill, InteractSlot.DRAG, this.slotSkillFighting, null, SkillBattle.SKILLPET);
         });
         this.showSkillBattle(pet, skillPet);
     }
@@ -210,26 +214,21 @@ export class PopupOwnedAnimals extends BasePopup {
         this.slotSkillFighting.forEach((slot, index) => {
             slot.slotIndex = index;
             const skillCode = this.skillIdsInit[index];
-            if (skillCode) {
-                const skill = skillPet.find(s => s.skill_code === skillCode);
-                if (skill) {
-                    slot.initData(
-                        skill,
-                        InteractSlot.DOUBLE_CLICK,
-                        this.slotSkillFighting,
-                        () => {
-                            this.handleSkillSlotChange(pet);
-                        }
-                    );
-                }
-            }
+            const skill = skillCode == null ? null : skillPet.find(s => s.skill_code === skillCode);
+            slot.initData(
+                skill,
+                InteractSlot.DOUBLE_CLICK,
+                this.slotSkillFighting,
+                () => {
+                    this.handleSkillSlotChange(pet);
+                }, SkillBattle.SKILLFIGHTING
+            );
         });
     }
 
     private async handleSkillSlotChange(pet: PetDTO) {
         const skillIds: SkillCode[] = this.slotSkillFighting
-        .map(slot => slot?.skillData?.skill_code ?? null);
-
+            .map(slot => slot?.skillData?.skill_code ?? null);
         if (this.isSameArray(this.skillIdsInit, skillIds)) return;
         const payload: SkillPayload = {
             equipped_skill_codes: skillIds
@@ -259,7 +258,7 @@ export class PopupOwnedAnimals extends BasePopup {
         this.typeValue.string = `<outline color=#222222 width=1> ${pet.pet.type} </outline>`;
         this.setStar(pet.stars)
         this.updatePetActionButtons(pet);
-        this.SetDetailSkill(pet);
+        this.setSkillsPet(pet);
     }
 
     resePet(): Promise<void> {
@@ -419,13 +418,13 @@ export class PopupOwnedAnimals extends BasePopup {
         this.bringButton.addAsyncListener(async () => {
             this.bringButton.interactable = false; await this.handlePetAction(PetActionType.BRING); this.bringButton.interactable = true;
         });
-        this.fightingButton.addAsyncListener(async () => { 
-            this.fightingButton.interactable = false; await this.handlePetAction(PetActionType.FIGHT);  this.fightingButton.interactable = true;
+        this.fightingButton.addAsyncListener(async () => {
+            this.fightingButton.interactable = false; await this.handlePetAction(PetActionType.FIGHT); this.fightingButton.interactable = true;
         });
-        this.summonButton.addAsyncListener(async () => { 
-            this.summonButton.interactable = false;  await this.handlePetAction(PetActionType.REMOVE); this.summonButton.interactable = true; 
+        this.summonButton.addAsyncListener(async () => {
+            this.summonButton.interactable = false; await this.handlePetAction(PetActionType.REMOVE); this.summonButton.interactable = true;
         });
-        this.sortPetBattleBtn.addAsyncListener(async () => { 
+        this.sortPetBattleBtn.addAsyncListener(async () => {
             this.sortPetBattleBtn.interactable = false; await this.handlePetAction(PetActionType.SORTBATTLE); this.sortPetBattleBtn.interactable = true;
         });
         this.showPopup();
@@ -556,7 +555,7 @@ export class PopupOwnedAnimals extends BasePopup {
     }
 
     async onSortPetBattle() {
-        if(this.animalBattle.length < 1){
+        if (this.animalBattle.length < 1) {
             await this.showConfirm("Không có pet để sắp xếp !!!");
         }
         const clonedPets = this.animalBattle.map(p => ({ ...p }));

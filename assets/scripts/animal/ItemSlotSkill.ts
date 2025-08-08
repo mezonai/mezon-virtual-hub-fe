@@ -2,6 +2,7 @@ import { _decorator, Component, Node, Prefab } from 'cc';
 import { SkillPayload, SkillSlot } from '../Model/PetDTO';
 import { ObjectPoolManager } from '../pooling/ObjectPoolManager';
 import { ItemSkill } from './ItemSkill';
+import { SkillBattle } from '../PopUp/PopupOwnedAnimals';
 const { ccclass, property } = _decorator;
 export enum InteractSlot {
     NONE,
@@ -22,14 +23,13 @@ export class ItemSlotSkill extends Component {
     skillData: SkillSlot = null;
     public slotIndex: number = -1;
 
-    initData(skillData: SkillSlot, interactSlot: InteractSlot, slotSkillFighting: ItemSlotSkill[] = [], onSkillChanged: () => void = () => { }) {
+    initData(skillData: SkillSlot, interactSlot: InteractSlot, slotSkillFighting: ItemSlotSkill[] = [], onSkillChanged: () => void = () => { }, skillBattle: SkillBattle) {
+        this.onSkillChanged = onSkillChanged;
+        this.setLockSkill(skillData == null && skillBattle == SkillBattle.SKILLPET);
         if (skillData == null) {
             this.refeshSlot();
-            this.setLockSkill(true);
             return;
         }
-        this.setLockSkill(false);
-        this.onSkillChanged = onSkillChanged;
         this.interactSlot = interactSlot;
         this.setDataSlotSkill(skillData, slotSkillFighting);
     }
