@@ -34,8 +34,8 @@ export interface BasePetData {
 export interface SkillSlot {
   skill_code: SkillCode;
   name: string;
-  type: Element;
-  attack: number;
+  type: Element
+  damage: number;
   accuracy: number;
   power_points: number;
   description: string;

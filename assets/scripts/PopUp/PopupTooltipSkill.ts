@@ -24,11 +24,11 @@ export class PopupTooltipSkill extends BasePopup {
     }
 
     setData(skill: SkillSlot) {
-        this.nameSkill.string = skill.name;
-        this.valueAttack.string = skill.attack.toString();
-        this.valueAcurracy.string = skill.accuracy.toString();
-        this.valuePowerPoint.string = skill.power_points.toString();
-        this.description.string = skill.description;
+        this.nameSkill.string = skill.name ?? "";
+        this.valueAttack.string = skill.damage?.toString() ?? "0";
+        this.valueAcurracy.string = skill.accuracy?.toString() ?? "0";
+        this.valuePowerPoint.string = skill.power_points?.toString() ?? "0";
+        this.description.string = skill.description ?? "";
     }
 
     public async closePopup() {

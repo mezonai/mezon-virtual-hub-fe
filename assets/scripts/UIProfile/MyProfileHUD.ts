@@ -46,7 +46,9 @@ export class MyProfileHUD extends BaseProfileManager {
             this.onCoinChangeDiamond(UserMeManager.playerDiamond, UserMeManager.playerDiamond);
         }
         this.infoButton.addAsyncListener(async () => {
+            this.infoButton.interactable = false;
             await PopupManager.getInstance().openAnimPopup('UI_My_Profile', MyProfileManager);
+            this.infoButton.interactable = true;
         });
     }
 

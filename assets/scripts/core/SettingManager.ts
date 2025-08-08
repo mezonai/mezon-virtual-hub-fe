@@ -81,13 +81,17 @@ export class SettingManager extends BasePopup {
         this.musicButton.node.on('click', this.onMusicButtonToggle, this);
 
         this.helpButton.addAsyncListener(async () => {
-           await PopupManager.getInstance().openPopup('UI_Help', UIHelp);
+            this.helpButton.interactable = false;
+            await PopupManager.getInstance().openPopup('UI_Help', UIHelp);
+            this.helpButton.interactable = true;
         });
         this.aboutButton.addAsyncListener(async () => {
-           await PopupManager.getInstance().openPopup('UI_AboutUs', UIAbout);
+            this.aboutButton.interactable = false;
+            await PopupManager.getInstance().openPopup('UI_AboutUs', UIAbout);
+            this.aboutButton.interactable = true;
         });
         this.closeButton.addAsyncListener(async () => {
-           await PopupManager.getInstance().closePopup(this.node.uuid);
+            await PopupManager.getInstance().closePopup(this.node.uuid);
         });
 
         this.updateSoundButtonIcon();
