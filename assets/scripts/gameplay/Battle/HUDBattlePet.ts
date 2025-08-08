@@ -103,7 +103,7 @@ export class HUDBattlePet extends Component {
         });
     }
 
-    public async takeDamage(damage: number, currentHp: number, maxHp: number): Promise<void> {
+    public async takeDamage(currentHp: number, maxHp: number): Promise<void> {
         // Tính toán máu mới
         currentHp = Math.max(0, currentHp);
         const newRatio = currentHp / maxHp;

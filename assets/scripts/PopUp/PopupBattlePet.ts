@@ -16,6 +16,7 @@ import { PopupWinLoseBattle, StatusBattle, WinLoseBattleParam } from './PopupWin
 import { Component } from 'cc';
 import { UserManager } from '../core/UserManager';
 import { Constants } from '../utilities/Constants';
+import { AnimalType } from '../animal/AnimalController';
 const { ccclass, property } = _decorator;
 @ccclass('PlayerBattleStats')
 export class PlayerBattleStats {
@@ -93,7 +94,7 @@ export class PopupBattlePet extends Component {
             return;
         }
         this.clientIdInRoom = UserManager.instance.GetMyClientPlayer.myClientBattleId;
-        this.combatEnvController.setEnvironmentByType(this.fakeCombatData.environmentType);
+        this.combatEnvController.setEnvironmentByType(param.enviromentBattle);
         this.myClient = param.data.find(p => p.id === this.clientIdInRoom);
         this.targetClient = param.data.find(p => p.id !== this.clientIdInRoom);
 
@@ -233,7 +234,7 @@ export class PopupBattlePet extends Component {
         const takeDamageIfNeeded = async () => {
             if (damage > 0) {
                 await defender.petBattlePrefab.shakeNode();
-                await defender.hudBattlePet.takeDamage(damage, petDefense.currentHp, petDefense.totalHp);
+                await defender.hudBattlePet.takeDamage(petDefense.currentHp, petDefense.totalHp);
             }
         };
 
@@ -249,7 +250,7 @@ export class PopupBattlePet extends Component {
         switch (typeSkill) {
             case TypeSkill.ATTACK:
                 await takeDamageIfNeeded();
-                console.log("TakeDame Done");
+                await attacker.hudBattlePet.takeDamage(petAttack.currentHp, petDefense.totalHp);
                 break;
 
             case TypeSkill.DECREASE_ATTACK:
@@ -265,7 +266,6 @@ export class PopupBattlePet extends Component {
                 break;
 
             case TypeSkill.HEAL:
-                console.log("Heal");
                 await showEffectAndUpdate(attacker, petAttack, TypeSkill.HEAL);
                 await attacker.hudBattlePet.heal(effectValueSkill, petAttack.currentHp, petAttack.totalHp);
                 break;
@@ -395,18 +395,13 @@ export class PopupBattlePet extends Component {
 
     public async battleFinished(data) {
         const { winnerId, loserId } = data;
-        console.log("Battle Leave 2");
-        console.log("this.myClient", this.myClient);
-        console.log("winnerId", winnerId);
         const win = UserManager.instance.GetMyClientPlayer.myClientBattleId == winnerId;
-        console.log("Battle Leave 3", win);
         const param: WinLoseBattleParam = {
             pets: this.myClient.battlePets,
             statusBattle: win ? StatusBattle.WIN : StatusBattle.LOSE,
         };
-        await PopupManager.getInstance().openAnimPopup('PopupWinLoseBattle', PopupWinLoseBattle, param);
         this.closeBattle();
-
+        await PopupManager.getInstance().openAnimPopup('PopupWinLoseBattle', PopupWinLoseBattle, param);
     }
 
     public WaitingOpponents(data) {
@@ -444,10 +439,6 @@ export class PopupBattlePet extends Component {
         return player.battlePets[player.activePetIndex + 1];
     }
 
-    fakeCombatData: BattleData = {
-        environmentType: AnimalElement.Grass,
-    };
-
     async showTalkAnimation(content: string): Promise<void> {
         this.hideTalkAnimation();
         this.slideTalkAnimation.slide(true, 0);
@@ -466,5 +457,6 @@ export class PopupBattlePet extends Component {
 
 export interface BatllePetParam {
     data: PlayerBattle[];
+    enviromentBattle: AnimalElement;
     onActionClose?: () => void;
 }

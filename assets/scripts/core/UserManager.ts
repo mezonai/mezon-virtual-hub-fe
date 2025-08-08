@@ -258,10 +258,12 @@ export class UserManager extends Component {
     }
 
     public async setUpBattle(data) {
-        const { playersBattleData } = data;
+        const { playersBattleData, enviromentType } = data;
         let playersBattle = ConvetData.ConvertPlayersBattleData(playersBattleData);
+        const enviormentType = ConvetData.mapEnviromentType(enviromentType);
         const param: BatllePetParam = {
             data: playersBattle,
+            enviromentBattle: enviormentType,
             onActionClose: () => {
 
             },

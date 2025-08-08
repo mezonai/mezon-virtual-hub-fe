@@ -1,6 +1,7 @@
+import { AnimalType } from "../animal/AnimalController";
 import { MapData } from "../Interface/DataMapAPI";
 import { Food, Item, RewardItemDTO, RewardType } from "../Model/Item";
-import { PetBattleInfo, PetDTO, PlayerBattle, SkillData, Species, TypeSkill } from "../Model/PetDTO";
+import { AnimalElement, PetBattleInfo, PetDTO, PlayerBattle, SkillData, Species, TypeSkill } from "../Model/PetDTO";
 
 export default class ConvetData {
     public static ConvertMap(mapData: any): MapData[] {
@@ -185,6 +186,19 @@ export default class ConvetData {
                 return TypeSkill.HEAL;
             default:
                 return null; // hoặc throw new Error("Unknown skill type")
+        }
+    }
+
+    public static mapEnviromentType(enviroment: string): AnimalElement {
+        switch (enviroment) {
+            case 'grass':
+                return AnimalElement.Grass;
+            case 'ice':
+                return AnimalElement.Ice;
+            case 'water':
+                return AnimalElement.Water;
+            default:
+                return AnimalElement.Grass;
         }
     }
 }
