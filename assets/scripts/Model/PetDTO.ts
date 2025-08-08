@@ -22,7 +22,7 @@ export class PetDTO {
   public skill_slot_2: SkillSlot;
   public skill_slot_3: SkillSlot | null;
   public skill_slot_4: SkillSlot | null;
-  public equipped_skill_codes : SkillCode[]| null;
+  public equipped_skill_codes: SkillCode[] | null;
 }
 
 export interface BasePetData {
@@ -34,7 +34,7 @@ export interface BasePetData {
 export interface SkillSlot {
   skill_code: SkillCode;
   name: string;
-  type: AnimalElement;
+  type: Element;
   attack: number;
   accuracy: number;
   power_points: number;
@@ -42,7 +42,7 @@ export interface SkillSlot {
 }
 
 export class BattleData {
-  environmentType: AnimalElement;
+  environmentType: Element;
 }
 
 export class PlayerBattle {
@@ -65,20 +65,21 @@ export class PetBattleInfo {
   public attack: number;
   public speed: number;
   public defense: number;
-  public skills: SkillData[];
+  public skills: SkillBattleInfo[];
   public isDead: boolean;
   public isSleeping: boolean;
 }
-export class SkillData {
-  public id: string = "";
+export class SkillBattleInfo {
+  public skill_code: SkillCode;
   public attack: number = 0;
   public accuracy: number = 0;
   public currentPowerPoint: number = 0;
   public totalPowerPoint: number = 0;
+  public type: Element = Element.Normal;
   public typeSkill: TypeSkill;
 }
 export interface BattleData {
-  environmentType: AnimalElement;
+  environmentType: Element;
 }
 
 
@@ -101,7 +102,7 @@ export enum Pet {
   SIKA
 }
 
-export enum AnimalElement {
+export enum Element {
   Normal,
   Fire,
   Water,
@@ -119,14 +120,14 @@ export enum TypeSkill {
   HEAL,
 }
 
-export const AnimalElementString: Record<AnimalElement, string> = {
-  [AnimalElement.Normal]: 'normal',
-  [AnimalElement.Fire]: 'fire',
-  [AnimalElement.Water]: 'water',
-  [AnimalElement.Grass]: 'grass',
-  [AnimalElement.Electric]: 'electric',
-  [AnimalElement.Ice]: 'ice',
-  [AnimalElement.Dragon]: 'dragon',
+export const AnimalElementString: Record<Element, string> = {
+  [Element.Normal]: 'normal',
+  [Element.Fire]: 'fire',
+  [Element.Water]: 'water',
+  [Element.Grass]: 'grass',
+  [Element.Electric]: 'electric',
+  [Element.Ice]: 'ice',
+  [Element.Dragon]: 'dragon',
 };
 
 export enum Species {
@@ -150,6 +151,7 @@ export enum Species {
 }
 
 export enum SkillCode {
+  ATTACK = "ATTACK01",
   GROWL = 'NOR01',
   PROTECT = 'NOR02',
   REST = 'NOR03',
@@ -164,6 +166,7 @@ export enum SkillCode {
   FURY_PUNCH = 'NOR12',
   EARTHQUAKE = 'GRASS01',
   RAZOR_LEAF = 'GRASS01',
+  VINE_WHIP = 'GRASS03',
   ABSORB = 'GRASS02',
   THUNDERBOLT = 'ELECTRIC01',
   THUNDER_WAVE = 'ELECTRIC02',
@@ -202,6 +205,6 @@ export interface PetBattleData {
   battle_slot: number;
 }
 
-export interface SkillPayload{
-    equipped_skill_codes: SkillCode[];
+export interface SkillPayload {
+  equipped_skill_codes: SkillCode[];
 };

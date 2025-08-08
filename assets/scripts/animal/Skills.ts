@@ -1,10 +1,10 @@
 import { _decorator, Component, Node } from 'cc';
-import { AnimalElement, TypeSkill } from '../Model/PetDTO';
+import { Element, TypeSkill } from '../Model/PetDTO';
 const { ccclass, property } = _decorator;
 export interface SkillDataInfor {
     idSkill: string;
     name: string;
-    type: AnimalElement;
+    type: Element;
     typeSkill: TypeSkill;
     attack: number;
     accuracy: number;
@@ -16,7 +16,7 @@ export const SkillList: SkillDataInfor[] = [
     {
         idSkill: "ATTACK01",
         name: "Đánh Thường",
-        type: AnimalElement.Normal,
+        type: Element.Normal,
         typeSkill: TypeSkill.ATTACK,
         attack: 20,
         accuracy: 100,
@@ -26,7 +26,7 @@ export const SkillList: SkillDataInfor[] = [
     {
         idSkill: "NOR01",
         name: "Growl - Gầm Gừ",
-        type: AnimalElement.Normal,
+        type: Element.Normal,
         typeSkill: TypeSkill.INCREASE_ATTACK,
         attack: 0,
         accuracy: 100,
@@ -36,7 +36,7 @@ export const SkillList: SkillDataInfor[] = [
     {
         idSkill: "NOR02",
         name: "Protect - Bảo Vệ",
-        type: AnimalElement.Normal,
+        type: Element.Normal,
         typeSkill: TypeSkill.DEFENSE,
         attack: 0,
         accuracy: 100,
@@ -46,7 +46,7 @@ export const SkillList: SkillDataInfor[] = [
     {
         idSkill: "NOR03",
         name: "Rest - Nghỉ Ngơi",
-        type: AnimalElement.Normal,
+        type: Element.Normal,
         typeSkill: TypeSkill.HEAL,
         attack: 0,
         accuracy: 100,
@@ -56,7 +56,7 @@ export const SkillList: SkillDataInfor[] = [
     {
         idSkill: "NOR04",
         name: "Confusion - Rối Loạn Tâm Trí",
-        type: AnimalElement.Normal,
+        type: Element.Normal,
         typeSkill: TypeSkill.DECREASE_ATTACK,
         attack: 10,
         accuracy: 100,
@@ -66,7 +66,7 @@ export const SkillList: SkillDataInfor[] = [
     {
         idSkill: "NOR05",
         name: "Cut - Cắt",
-        type: AnimalElement.Normal,
+        type: Element.Normal,
         typeSkill: TypeSkill.ATTACK,
         attack: 0,
         accuracy: 50,
@@ -76,7 +76,7 @@ export const SkillList: SkillDataInfor[] = [
     {
         idSkill: "NOR06",
         name: "Pound - Đánh Thẳng",
-        type: AnimalElement.Normal,
+        type: Element.Normal,
         typeSkill: TypeSkill.ATTACK,
         attack: 35,
         accuracy: 100,
@@ -86,7 +86,7 @@ export const SkillList: SkillDataInfor[] = [
     {
         idSkill: "NOR07",
         name: "Double Kick - Song Cước",
-        type: AnimalElement.Normal,
+        type: Element.Normal,
         typeSkill: TypeSkill.ATTACK,
         attack: 30,
         accuracy: 100,
@@ -96,7 +96,7 @@ export const SkillList: SkillDataInfor[] = [
     {
         idSkill: "NOR08",
         name: "Bite - Cắn",
-        type: AnimalElement.Normal,
+        type: Element.Normal,
         typeSkill: TypeSkill.ATTACK,
         attack: 60,
         accuracy: 100,
@@ -106,7 +106,7 @@ export const SkillList: SkillDataInfor[] = [
     {
         idSkill: "NOR09",
         name: "Crush Claw - Vuốt Nghiền",
-        type: AnimalElement.Normal,
+        type: Element.Normal,
         typeSkill: TypeSkill.ATTACK,
         attack: 75,
         accuracy: 95,
@@ -116,7 +116,7 @@ export const SkillList: SkillDataInfor[] = [
     {
         idSkill: "NOR10",
         name: "Wing Attack – Cánh Tấn Công",
-        type: AnimalElement.Normal,
+        type: Element.Normal,
         typeSkill: TypeSkill.ATTACK,
         attack: 60,
         accuracy: 100,
@@ -126,7 +126,7 @@ export const SkillList: SkillDataInfor[] = [
     {
         idSkill: "NOR11",
         name: "Fly - Bay",
-        type: AnimalElement.Normal,
+        type: Element.Normal,
         typeSkill: TypeSkill.ATTACK,
         attack: 75,
         accuracy: 95,
@@ -136,7 +136,7 @@ export const SkillList: SkillDataInfor[] = [
     {
         idSkill: "NOR12",
         name: "Fury Punch - Cú đấm liên hoàn",
-        type: AnimalElement.Normal,
+        type: Element.Normal,
         typeSkill: TypeSkill.ATTACK,
         attack: -1,
         accuracy: 30,
@@ -147,7 +147,7 @@ export const SkillList: SkillDataInfor[] = [
         idSkill: "NOR13",
         name: "Earthquake - Động Đất",
         typeSkill: TypeSkill.ATTACK,
-        type: AnimalElement.Normal,
+        type: Element.Normal,
         attack: 100,
         accuracy: 100,
         powerPoints: 95,
@@ -156,7 +156,7 @@ export const SkillList: SkillDataInfor[] = [
     {
         idSkill: "GRASS01",
         name: "Razor Leaf - Phi Dao Lá",
-        type: AnimalElement.Grass,
+        type: Element.Grass,
         typeSkill: TypeSkill.ATTACK,
         attack: 50,
         accuracy: 100,
@@ -166,7 +166,7 @@ export const SkillList: SkillDataInfor[] = [
     {
         idSkill: "GRASS02",
         name: "Absorb - Hấp Thụ",
-        type: AnimalElement.Grass,
+        type: Element.Grass,
         typeSkill: TypeSkill.ATTACK,
         attack: 0,
         accuracy: 100,
@@ -176,7 +176,7 @@ export const SkillList: SkillDataInfor[] = [
     {
         idSkill: "ELECTRIC01",
         name: "Thunderbolt - Tia Sét",
-        type: AnimalElement.Electric,
+        type: Element.Electric,
         typeSkill: TypeSkill.ATTACK,
         attack: 110,
         accuracy: 100,
@@ -186,7 +186,7 @@ export const SkillList: SkillDataInfor[] = [
     {
         idSkill: "ELECTRIC02",
         name: "Thunder Wave - Sóng Điện",
-        type: AnimalElement.Electric,
+        type: Element.Electric,
         typeSkill: TypeSkill.ATTACK,
         attack: 90,
         accuracy: 70,
@@ -196,7 +196,7 @@ export const SkillList: SkillDataInfor[] = [
     {
         idSkill: "ELECTRIC03",
         name: "Electro Ball -  Quả cầu điện",
-        type: AnimalElement.Electric,
+        type: Element.Electric,
         typeSkill: TypeSkill.ATTACK,
         attack: 100,
         accuracy: 100,
@@ -206,7 +206,7 @@ export const SkillList: SkillDataInfor[] = [
     {
         idSkill: "WATER01",
         name: "Water Gun - Quăng bóng nước",
-        type: AnimalElement.Water,
+        type: Element.Water,
         typeSkill: TypeSkill.ATTACK,
         attack: 40,
         accuracy: 100,
@@ -216,7 +216,7 @@ export const SkillList: SkillDataInfor[] = [
     {
         idSkill: "WATER02",
         name: "Bubble - Thả bóng nước",
-        type: AnimalElement.Water,
+        type: Element.Water,
         typeSkill: TypeSkill.ATTACK,
         attack: 60,
         accuracy: 100,
@@ -226,7 +226,7 @@ export const SkillList: SkillDataInfor[] = [
     {
         idSkill: "WATER03",
         name: "Aqua Cutter - Chém Nước",
-        type: AnimalElement.Water,
+        type: Element.Water,
         typeSkill: TypeSkill.ATTACK,
         attack: 110,
         accuracy: 100,
@@ -236,7 +236,7 @@ export const SkillList: SkillDataInfor[] = [
     {
         idSkill: "FIRE01",
         name: "Ember - Tia Lửa",
-        type: AnimalElement.Fire,
+        type: Element.Fire,
         typeSkill: TypeSkill.ATTACK,
         attack: 40,
         accuracy: 100,
@@ -246,7 +246,7 @@ export const SkillList: SkillDataInfor[] = [
     {
         idSkill: "FIRE02",
         name: "Fire Blast - Đại Hỏa Bạo",
-        type: AnimalElement.Fire,
+        type: Element.Fire,
         typeSkill: TypeSkill.ATTACK,
         attack: 120,
         accuracy: 100,
@@ -256,7 +256,7 @@ export const SkillList: SkillDataInfor[] = [
     {
         idSkill: "FIRE03",
         name: "Overheat - Nhiệt Hủy Diệt",
-        type: AnimalElement.Fire,
+        type: Element.Fire,
         typeSkill: TypeSkill.ATTACK,
         attack: 90,
         accuracy: 100,
@@ -266,7 +266,7 @@ export const SkillList: SkillDataInfor[] = [
     {
         idSkill: "ICE01",
         name: "Ice Ball - Cầu Băng",
-        type: AnimalElement.Ice,
+        type: Element.Ice,
         typeSkill: TypeSkill.ATTACK,
         attack: 30,
         accuracy: 70,
@@ -276,7 +276,7 @@ export const SkillList: SkillDataInfor[] = [
     {
         idSkill: "ICE02",
         name: "Icicle Crash - Băng Rơi",
-        type: AnimalElement.Ice,
+        type: Element.Ice,
         typeSkill: TypeSkill.ATTACK,
         attack: 90,
         accuracy: 100,
@@ -286,7 +286,7 @@ export const SkillList: SkillDataInfor[] = [
     {
         idSkill: "ICE03",
         name: "Ice Fang - Nanh băng",
-        type: AnimalElement.Ice,
+        type: Element.Ice,
         typeSkill: TypeSkill.ATTACK,
         attack: 90,
         accuracy: 100,
@@ -296,7 +296,7 @@ export const SkillList: SkillDataInfor[] = [
     {
         idSkill: "DRAGON01",
         name: "Dragon Claw - Vuốt Rồng",
-        type: AnimalElement.Dragon,
+        type: Element.Dragon,
         typeSkill: TypeSkill.ATTACK,
         attack: 100,
         accuracy: 100,

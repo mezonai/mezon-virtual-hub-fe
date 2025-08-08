@@ -1,7 +1,7 @@
 import { _decorator, Node, Prefab, instantiate, Button } from 'cc';
 import { PopupManager } from './PopupManager';
 import { BasePopup } from './BasePopup';
-import { BattleData, AnimalElement, PlayerBattle, PetBattleInfo, SkillData, TypeSkill } from '../Model/PetDTO';
+import { BattleData, Element, PlayerBattle, PetBattleInfo, SkillBattleInfo, TypeSkill, SkillCode } from '../Model/PetDTO';
 import { HandleOpenSplash } from '../utilities/HandleOpenSplash';
 import { PetBattlePrefab } from '../animal/PetBattlePrefab';
 import { SlideObject } from '../utilities/SlideObject';
@@ -37,6 +37,7 @@ export class PopupBattlePet extends Component {
     @property({ type: SlideObject }) slideTalkAnimation: SlideObject = null;
     @property({ type: TalkAnimation }) talkAnimation: TalkAnimation = null;
     //Button
+    @property({ type: Button }) hideSkillButton: Button = null;
     @property({ type: Button }) fightButton: Button = null;
     @property({ type: Button }) surrenderButton: Button = null;
     private mySkillsBatte: BattleSkillButton[] = []
@@ -59,6 +60,12 @@ export class PopupBattlePet extends Component {
         this.surrenderButton.addAsyncListener(async () => {
             ServerManager.instance.sendSurrenderBattle();
             await Constants.waitUntil(() => !this.node.activeInHierarchy);
+        });
+        this.hideSkillButton.addAsyncListener(async () => {
+            this.hideSkillButton.interactable = false;
+            await this.slideSkillButtons.slide(false, 0.3);
+            await this.slideChooseButtons.slide(true, 0.3);
+            this.hideSkillButton.interactable = true;
         });
     }
 
@@ -93,6 +100,7 @@ export class PopupBattlePet extends Component {
             this.closeBattle();
             return;
         }
+        if (param.onActionClose) this._onActionCompleted = param.onActionClose;
         this.clientIdInRoom = UserManager.instance.GetMyClientPlayer.myClientBattleId;
         this.combatEnvController.setEnvironmentByType(param.enviromentBattle);
         this.myClient = param.data.find(p => p.id === this.clientIdInRoom);
@@ -127,17 +135,17 @@ export class PopupBattlePet extends Component {
         this.createPet(targetPet, false); // tạo pet của đối thủ (hoặc pet2)
     }
 
-    async handleActionSkill(playerAttackId: string, petAttack: PetBattleInfo, skillUsing: SkillData, effectValueSkill: number, damage: number, petDefense: PetBattleInfo): Promise<void> {
+    async handleActionSkill(playerAttackId: string, petAttack: PetBattleInfo, skillUsing: SkillBattleInfo, effectValueSkill: number, damage: number, petDefense: PetBattleInfo): Promise<void> {
         const isSelfAttacker = playerAttackId === this.clientIdInRoom;
         const attacker = this.playerBattleStats[isSelfAttacker ? 1 : 0];
         const defender = this.playerBattleStats[isSelfAttacker ? 0 : 1];
-        const skill = SkillList.find(s => s.idSkill === skillUsing.id);
+        const skill = SkillList.find(s => s.idSkill === skillUsing.skill_code);
         if (skill != null && isSelfAttacker) {
             const talk = `${attacker.petBattlePrefab.currentPet.name} đang sủ dụng ${skill.name}`;
             this.updateMySkillInBattle(skillUsing);
             await this.showTalkAnimation(talk);
         }
-        await this.usingSkill(skillUsing.id
+        await this.usingSkill(skillUsing.skill_code
             , isSelfAttacker
             , attacker
             , defender
@@ -148,7 +156,7 @@ export class PopupBattlePet extends Component {
     }
 
     async usingSkill(
-        skillId: string,
+        skillId: SkillCode,
         isSelfAttacker: boolean,
         attacker: PlayerBattleStats,
         defender: PlayerBattleStats,
@@ -159,48 +167,48 @@ export class PopupBattlePet extends Component {
         const targetPrefab = defender.petBattlePrefab;
 
         const skillSelfTarget = [
-            "NOR05", "NOR06", "NOR07", "NOR08", "NOR09", "NOR12",
-            "GRASS01", "GRASS03", "ELECTRIC01", "ELECTRIC02", "WATER02",
-            "ICE02", "ICE03", "DRAGON01"
+            SkillCode.ATTACK, SkillCode.CUT, SkillCode.POUND, SkillCode.DOUBLE_KICK, SkillCode.BITE, SkillCode.CRUSH_CLAW, SkillCode.FURY_PUNCH,
+            SkillCode.RAZOR_LEAF, SkillCode.VINE_WHIP, SkillCode.THUNDERBOLT, SkillCode.THUNDER_WAVE, SkillCode.BUBBLE,
+            SkillCode.ICICLE_CRASH, SkillCode.ICE_FANG, SkillCode.DRAGON_CLAW
         ];
         attacker.hudBattlePet.setSleep(petAttack.isSleeping);
-        const skillSelfAttacker = ["NOR01", "NOR02", "GRASS02", "WATER03"];
+        const skillSelfAttacker = [SkillCode.GROWL, SkillCode.PROTECT, SkillCode.ABSORB, SkillCode.AQUA_CUTTER];
 
         switch (skillId) {
-            case "ATTACK01":
+            case SkillCode.ATTACK:
                 await attackerPrefab.playTackleEffect(isSelfAttacker ? 'right' : 'left');
                 break;
-            case "NOR03":
+            case SkillCode.REST:
                 await attackerPrefab.scaleInOut(attackerPrefab);
                 if (isSelfAttacker) {
                     ServerManager.instance.sendPetSleeping(petAttack.id);
                 }
                 attacker.hudBattlePet.setSleep(true);
                 break;
-            case "NOR10":
+            case SkillCode.WING_ATTACK:
                 await attackerPrefab.skillMovementFromTo(skillId, attackerPrefab, targetPrefab, parent);
                 break;
 
-            case "NOR13":
+            case SkillCode.EARTHQUAKE:
                 await attackerPrefab.earthquake(parent, 0.5, 15);
                 break;
 
-            case "ELECTRIC03":
-            case "FIRE02":
+            case SkillCode.ELECTRO_BALL:
+            case SkillCode.FIRE_BLAST:
                 await attackerPrefab.skillMovementFromTo(skillId, attackerPrefab, targetPrefab, parent);
                 await targetPrefab.usingSkillYourself(skillId);
                 break;
 
-            case "WATER01":
+            case SkillCode.WATER_GUN:
                 await attackerPrefab.throwSkillImage(skillId, attackerPrefab, targetPrefab, parent);
                 await targetPrefab.usingSkillYourself(skillId);
                 break;
 
-            case "FIRE01":
+            case SkillCode.EMBER:
                 await attackerPrefab.spraySkill(skillId, attackerPrefab, targetPrefab, parent);
                 await targetPrefab.usingSkillYourself(skillId);
                 break;
-            case "FIRE03":
+            case SkillCode.OVERHEAT:
                 await attackerPrefab.spraySkill(skillId, attackerPrefab, targetPrefab, parent);
                 await targetPrefab.usingSkillYourself(skillId);
                 break;
@@ -221,7 +229,7 @@ export class PopupBattlePet extends Component {
     }
 
     async handleChangeEffectValue(
-        skill: SkillData,
+        skill: SkillBattleInfo,
         attacker: PlayerBattleStats,
         defender: PlayerBattleStats,
         effectValueSkill: number,
@@ -234,6 +242,7 @@ export class PopupBattlePet extends Component {
         const takeDamageIfNeeded = async () => {
             if (damage > 0) {
                 await defender.petBattlePrefab.shakeNode();
+                await defender.hudBattlePet.showEffectChangeValue(TypeSkill.ATTACK, damage);
                 await defender.hudBattlePet.takeDamage(petDefense.currentHp, petDefense.totalHp);
             }
         };
@@ -250,7 +259,6 @@ export class PopupBattlePet extends Component {
         switch (typeSkill) {
             case TypeSkill.ATTACK:
                 await takeDamageIfNeeded();
-                await attacker.hudBattlePet.takeDamage(petAttack.currentHp, petDefense.totalHp);
                 break;
 
             case TypeSkill.DECREASE_ATTACK:
@@ -305,9 +313,9 @@ export class PopupBattlePet extends Component {
         this.slideChooseButtons.slide(true, 0.3);
     }
 
-    updateMySkillInBattle(skillUsing: SkillData) {
+    updateMySkillInBattle(skillUsing: SkillBattleInfo) {
         if (skillUsing == null) return;
-        const skillButton = this.mySkillsBatte.find(x => x.idSkill === skillUsing.id);
+        const skillButton = this.mySkillsBatte.find(x => x.idSkill === skillUsing.skill_code);
         skillButton?.updatePowerPoint(skillUsing);
     }
 
@@ -457,6 +465,6 @@ export class PopupBattlePet extends Component {
 
 export interface BatllePetParam {
     data: PlayerBattle[];
-    enviromentBattle: AnimalElement;
+    enviromentBattle: Element;
     onActionClose?: () => void;
 }

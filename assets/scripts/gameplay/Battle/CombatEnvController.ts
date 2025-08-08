@@ -1,10 +1,10 @@
 import { _decorator, Component, Enum, Sprite, SpriteFrame } from 'cc';
-import { AnimalElement } from '../../Model/PetDTO';
+import { Element } from '../../Model/PetDTO';
 const { ccclass, property } = _decorator;
 
 @ccclass('TypeMap')
 export class TypeMap {
-    @property({ type: Enum(AnimalElement) }) animalElement: AnimalElement = AnimalElement.Normal;
+    @property({ type: Enum(Element) }) animalElement: Element = Element.Normal;
     @property({ type: SpriteFrame }) background: SpriteFrame = null;
     @property({ type: SpriteFrame }) ground: SpriteFrame = null;
 }
@@ -17,7 +17,7 @@ export class CombatEnvController extends Component {
 
 
 
-    public setEnvironmentByType(type: AnimalElement) {
+    public setEnvironmentByType(type: Element) {
         const currentTypeMap = this.getTypeMapByType(type);
 
         if (currentTypeMap.background) {
@@ -30,7 +30,7 @@ export class CombatEnvController extends Component {
         }
     }
 
-    private getTypeMapByType(type: AnimalElement): TypeMap {
+    private getTypeMapByType(type: Element): TypeMap {
         return this.typeMaps.find(t => t.animalElement === type) || this.typeMaps[0];
     }
 }

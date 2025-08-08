@@ -44,16 +44,18 @@ export class HUDBattlePet extends Component {
         const isIncrease = typeSkill === TypeSkill.INCREASE_ATTACK;
         const isDecrease = typeSkill === TypeSkill.DECREASE_ATTACK;
         const isHeal = typeSkill === TypeSkill.HEAL;
-        const showValueChange = isIncrease || isDecrease || isHeal;
+        const isAttack = typeSkill === TypeSkill.ATTACK && value > 0;
+        const showValueChange = isIncrease || isDecrease || isHeal || isAttack;
         this.valueChange.node.active = showValueChange;
         this.nodeChange[0].active = isIncrease;
         this.nodeChange[1].active = isDecrease;
         this.nodeChange[2].active = false;
         this.nodeChange[3].active = isHeal;
+        this.nodeChange[4].active = isAttack;
 
         if (!showValueChange) return;
         this.valueChange.string = value.toString();
-        if (isIncrease || isDecrease) {
+        if (isIncrease || isDecrease || isAttack) {
             this.valueChange.color = this.colorValueChange[0]; // tăng hoặc giảm => cùng 1 màu
         } else if (isHeal) {
             this.valueChange.color = this.colorValueChange[2]; // hồi máu

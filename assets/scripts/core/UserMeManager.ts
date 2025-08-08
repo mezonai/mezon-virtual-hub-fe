@@ -1,9 +1,11 @@
 import { UserDataResponse } from "../Interface/DataMapAPI";
 import { Food, FoodType, InventoryDTO } from "../Model/Item";
+import { PetDTO } from "../Model/PetDTO";
 import { PlayerPropertyWatcher } from "../utilities/PlayerPropertyWatcher";
 
 export class UserMeManager {
     private static me: UserDataResponse | null = null;
+    private static myPets: PetDTO[] | null = null;
     private static _playerProperty = null;
 
     public static get Get(): UserDataResponse | null {
@@ -35,6 +37,14 @@ export class UserMeManager {
                 .filter((inv): inv is InventoryDTO & { food: Food } => inv.food != null)
     }
 
+    public static set SetMyPets(pets: PetDTO[]) {
+        this.myPets = pets;
+    }
+
+    public static MyPets(): PetDTO[] | null {
+        return this.myPets
+    }
+
     public static set SetFood(food: Food) {
         if (!this.me || !this.me.inventories) return;
 
@@ -49,7 +59,7 @@ export class UserMeManager {
         }
     }
 
-    public static AddQuantityFood(foodType: FoodType, quantity: number) : boolean {
+    public static AddQuantityFood(foodType: FoodType, quantity: number): boolean {
         if (!this.me || !this.me.inventories) return false;
 
         const targetInventory = this.me.inventories.find(

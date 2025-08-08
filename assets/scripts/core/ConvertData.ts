@@ -1,7 +1,7 @@
 import { AnimalType } from "../animal/AnimalController";
 import { MapData } from "../Interface/DataMapAPI";
 import { Food, Item, RewardItemDTO, RewardType } from "../Model/Item";
-import { AnimalElement, PetBattleInfo, PetDTO, PlayerBattle, SkillData, Species, TypeSkill } from "../Model/PetDTO";
+import { Element, PetBattleInfo, PetDTO, PlayerBattle, SkillBattleInfo, Species, TypeSkill } from "../Model/PetDTO";
 
 export default class ConvetData {
     public static ConvertMap(mapData: any): MapData[] {
@@ -149,11 +149,12 @@ export default class ConvetData {
         return pet;
     }
 
-    public static convertToSkillData(skillData: any): SkillData {
-        const skill = new SkillData();
-        skill.id = skillData.id;
+    public static convertToSkillData(skillData: any): SkillBattleInfo {
+        const skill = new SkillBattleInfo();
+        skill.skill_code = skillData.id;
         skill.attack = skillData.attack;
         skill.accuracy = skillData.accuracy;
+        skill.type = skillData.type;
         skill.typeSkill = this.mapServerSkillToClient(skillData.skillType);
         skill.currentPowerPoint = skillData.currentPowerPoint;
         skill.totalPowerPoint = skillData.totalPowerPoint;
@@ -191,16 +192,16 @@ export default class ConvetData {
         }
     }
 
-    public static mapEnviromentType(enviroment: string): AnimalElement {
+    public static mapEnviromentType(enviroment: string): Element {
         switch (enviroment) {
             case 'grass':
-                return AnimalElement.Grass;
+                return Element.Grass;
             case 'ice':
-                return AnimalElement.Ice;
+                return Element.Ice;
             case 'water':
-                return AnimalElement.Water;
+                return Element.Water;
             default:
-                return AnimalElement.Grass;
+                return Element.Grass;
         }
     }
 }

@@ -55,7 +55,7 @@ export class WebRequestManager extends Component {
     }
 
     public getMyPetData(successCallback, errorCallback) {
-        APIManager.getData(this.combineWithSlash(APIConstant.PET_PLAYERS), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+        APIManager.getData(this.combineWithSlash(APIConstant.PET_PLAYERS), (data) => { UserMeManager.SetMyPets = data.data; this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
     public getRewardsSpin(successCallback, errorCallback) {
@@ -105,7 +105,7 @@ export class WebRequestManager extends Component {
     }
 
     public updateCompletedMission(eventId, data, successCallback, errorCallback) {
-        APIManager.putData(this.combineWithSlash(APIConstant.GAME_EVENT,eventId,APIConstant.COMPLETE), data, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+        APIManager.putData(this.combineWithSlash(APIConstant.GAME_EVENT, eventId, APIConstant.COMPLETE), data, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
     public updateListPetFollowUser(data, successCallback, errorCallback) {
@@ -130,12 +130,12 @@ export class WebRequestManager extends Component {
         APIManager.postData(url, {}, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
-    public createPet(data,successCallback, errorCallback) {
+    public createPet(data, successCallback, errorCallback) {
         APIManager.postData(APIConstant.PET_PLAYERS, data, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
-    public deletePet(foodId,successCallback, errorCallback) {
-         const url = `${APIConstant.PET_PLAYERS}/${foodId}`;
+    public deletePet(foodId, successCallback, errorCallback) {
+        const url = `${APIConstant.PET_PLAYERS}/${foodId}`;
         APIManager.deleteData(url, {}, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
@@ -220,11 +220,11 @@ export class WebRequestManager extends Component {
             textButtonCenter: "Refresh",
             onActionButtonCenter: () => {
                 APIConfig.token = "";
-            if (ServerManager.instance?.Room) {
-                ServerManager.instance.Room.leave();
-            }
-            director.emit(EVENT_NAME.RELOAD_SCENE);
-            director.loadScene("GameMap");
+                if (ServerManager.instance?.Room) {
+                    ServerManager.instance.Room.leave();
+                }
+                director.emit(EVENT_NAME.RELOAD_SCENE);
+                director.loadScene("GameMap");
             },
         };
         PopupManager.getInstance().openAnimPopup("PopupSelectionMini", PopupSelectionMini, param);

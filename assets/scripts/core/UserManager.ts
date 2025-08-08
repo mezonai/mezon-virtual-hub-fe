@@ -18,7 +18,7 @@ import { PetDTO } from '../Model/PetDTO';
 import ConvetData from './ConvertData';
 import { WebRequestManager } from '../network/WebRequestManager';
 import { PopupManager } from '../PopUp/PopupManager';
-import { BatllePetParam, PopupBattlePet } from '../PopUp/PopupBattlePet';
+import { BatllePetParam } from '../PopUp/PopupBattlePet';
 import { BasePopup } from '../PopUp/BasePopup';
 import { ConfirmParam, ConfirmPopup } from '../PopUp/ConfirmPopup';
 const { ccclass, property } = _decorator;
@@ -265,10 +265,13 @@ export class UserManager extends Component {
             data: playersBattle,
             enviromentBattle: enviormentType,
             onActionClose: () => {
-
+                UserManager.instance.GetMyClientPlayer.moveAbility.startMove();
             },
         };
         if (UIManager.Instance == null) return;
+        if (UserManager.instance) {
+            UserManager.instance.GetMyClientPlayer.moveAbility.StopMove();
+        }
         UIManager.Instance.batteScene.setData(param);
     }
 

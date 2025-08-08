@@ -3,6 +3,9 @@ import { ActionType, PlayerInteractAction } from './PlayerInteractAction';
 import { AudioType, SoundManager } from '../../../core/SoundManager';
 import { PopupManager } from '../../../PopUp/PopupManager';
 import { PopupSelectionTimeOut, SelectionTimeOutParam, TargetButton } from '../../../PopUp/PopupSelectionTimeOut';
+import { ConfirmParam, ConfirmPopup } from '../../../PopUp/ConfirmPopup';
+import { UserManager } from '../../../core/UserManager';
+import { UserMeManager } from '../../../core/UserMeManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('PetCombat')
@@ -13,25 +16,38 @@ export class PetCombat extends PlayerInteractAction {
     }
 
     protected override invite() {
-        // UIManager.Instance.showYesNoPopup(null, `mời bạn chơi đấu pet.</color>`,
-        //     () => {
-        //         PopupManager.getInstance().openAnimPopup('PopupStartCombatPet', PopupStartCombatPet, { message: "" });
-        //     },
-        //     () => {
-        //     },
-        //     "Chơi", "Thôi", this.inviteTimeout)
-        // if (UserMeManager.Get) {
-        //     if (UserMeManager.playerDiamond < this.fee) {
-        //         UIManager.Instance.showNoticePopup(null, `Cần <color=#FF0000>${this.fee} diamond</color> để chơi`)
-        //         return;
-        //     }
-        // }
+        const myPets = UserMeManager?.MyPets();
+        if (!myPets || myPets.length === 0) {
+            return this.showNotice("Bạn chưa có Pet để đấu. Vui lòng hãy bắt pet");
+        }
+
+        const petsInBattle = myPets.filter(pet => pet && pet.battle_slot > 0);
+
+        if (petsInBattle.length < 3) {
+            return this.showNotice("Bạn cần có đủ 3 Pet chiến đấu để thách đấu");
+        }
+
+        const allSetTwoSkills = petsInBattle.every(
+            pet => pet.equipped_skill_codes?.length >= 2
+        );
+        if (!allSetTwoSkills) {
+            return this.showNotice("Pet chiến đấu chưa thiết lập đủ kỹ năng chiến đấu, Vui lòng hãy thiết lập");
+        }
+
+        // Nếu qua được hết kiểm tra
         super.invite();
-        let data = {
+        this.room.send("p2pAction", {
             targetClientId: this.playerController.myID,
             action: this.actionType.toString()
-        }
-        this.room.send("p2pAction", data);
+        });
+    }
+
+    private showNotice(message: string) {
+        const param: ConfirmParam = {
+            title: "Thông báo",
+            message
+        };
+        PopupManager.getInstance().openAnimPopup("ConfirmPopup", ConfirmPopup, param);
     }
 
     public onBeingInvited(data) {

@@ -1,5 +1,5 @@
 import { _decorator, Color, Component, Node, Sprite, SpriteFrame } from 'cc';
-import { AnimalElement, SkillSlot } from '../Model/PetDTO';
+import { Element, SkillBattleInfo, SkillSlot } from '../Model/PetDTO';
 import { UIGradientColor } from '../core/UIGradient';
 import { SkillDragItem } from './SkillDragItem';
 import { ItemSlotSkill, InteractSlot } from './ItemSlotSkill';
@@ -32,7 +32,7 @@ export class ItemSkill extends Component {
     @property({ type: [Color] }) colorBoder2: Color[] = [];
     @property({ type: SkillTooltip }) skillTooltip: SkillTooltip = null;
     currentSkill: SkillSlot = null;
-  
+
     setData(skillData: SkillSlot, interactSlot: InteractSlot, slotSkillFighting: ItemSlotSkill[] = [], parentSkillCanMove: Node = null) {
         this.iconSkills.forEach(node => {
             node.active = (node.name === skillData.skill_code);
@@ -49,63 +49,74 @@ export class ItemSkill extends Component {
         }
     }
 
-    getColorBackgroundIcon(element: AnimalElement): CornerColors {
+    setSkillBattle(skillData: SkillBattleInfo) {
+        this.iconSkills.forEach(node => {
+            node.active = (node.name === skillData.skill_code);
+        });
+        this.currentSkill = null;
+        this.border1.color = this.getColorBorder1(skillData.type);
+        this.border2.color = this.getColorBorder2(skillData.type);
+        let colorGradient = this.getColorBackgroundIcon(skillData.type);
+        this.backgroundIcon.setGradientColors(colorGradient.bl, colorGradient.br, colorGradient.tl, colorGradient.tr);
+    }
+
+    getColorBackgroundIcon(element: Element): CornerColors {
         switch (element) {
-            case AnimalElement.Normal:
+            case Element.Normal:
                 return this.colorBackgroundIcon[0];
-            case AnimalElement.Grass:
+            case Element.Grass:
                 return this.colorBackgroundIcon[1];
-            case AnimalElement.Electric:
+            case Element.Electric:
                 return this.colorBackgroundIcon[2];
-            case AnimalElement.Water:
+            case Element.Water:
                 return this.colorBackgroundIcon[3];
-            case AnimalElement.Fire:
+            case Element.Fire:
                 return this.colorBackgroundIcon[4];
-            case AnimalElement.Ice:
+            case Element.Ice:
                 return this.colorBackgroundIcon[5];
-            case AnimalElement.Dragon:
+            case Element.Dragon:
                 return this.colorBackgroundIcon[6];
             default:
                 return this.colorBackgroundIcon[0];
         }
     }
 
-    getColorBorder1(element: AnimalElement): Color {
+    getColorBorder1(element: Element): Color {
         switch (element) {
-            case AnimalElement.Normal:
+            case Element.Normal:
                 return this.colorBoder[0];
-            case AnimalElement.Grass:
+            case Element.Grass:
                 return this.colorBoder[1];
-            case AnimalElement.Electric:
+            case Element.Electric:
                 return this.colorBoder[2];
-            case AnimalElement.Water:
+            case Element.Water:
                 return this.colorBoder[3];
-            case AnimalElement.Fire:
+            case Element.Fire:
                 return this.colorBoder[4];
-            case AnimalElement.Ice:
+            case Element.Ice:
                 return this.colorBoder[5];
-            case AnimalElement.Dragon:
+            case Element.Dragon:
                 return this.colorBoder[6];
             default:
                 return this.colorBoder[0];
         }
     }
 
-    getColorBorder2(element: AnimalElement): Color {
+    getColorBorder2(element: Element): Color {
         switch (element) {
-            case AnimalElement.Normal:
+            case Element.Normal:
                 return this.colorBoder2[0];
-            case AnimalElement.Grass:
+            case Element.Grass:
                 return this.colorBoder2[1];
-            case AnimalElement.Electric:
+            case Element.Electric:
                 return this.colorBoder2[2];
-            case AnimalElement.Water:
+            case Element.Water:
                 return this.colorBoder2[3];
-            case AnimalElement.Fire:
+            case Element.Fire:
                 return this.colorBoder2[4];
-            case AnimalElement.Ice:
+            case Element.Ice:
                 return this.colorBoder2[5];
-            case AnimalElement.Dragon:
+            case Element.Dragon:
                 return this.colorBoder2[6];
             default:
                 return this.colorBoder2[0];
