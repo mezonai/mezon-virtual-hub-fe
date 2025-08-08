@@ -70,7 +70,6 @@ export class WebRequestManager extends Component {
         return new Promise((resolve, reject) => {
             this.toggleLoading(true);
             APIManager.getData("map", (data: any) => {
-                console.log("Map: " + JSON.stringify(data, null, 2))
                 const maps: MapData[] = ConvetData.ConvertMap(data);
                 this.toggleLoading(false);
                 resolve(maps); // Trả về danh sách MapData

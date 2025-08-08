@@ -129,6 +129,17 @@ export class PopupManager extends Component {
         return null;
     }
 
+    waitCloseAsync(uniqueKey: string): Promise<void> {
+        return new Promise((resolve) => {
+            const id = setInterval(() => {
+                if (!this.popupDict.has(uniqueKey)) {
+                    clearInterval(id);
+                    resolve();
+                }
+            }, 100);
+        });
+    }
+
     public getPopupById<T extends Node>(uuid: string): T | null {
         const popupNode = this.popupDict.get(uuid);
         console.log("popupNode ", popupNode);
