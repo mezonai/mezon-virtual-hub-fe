@@ -13,6 +13,7 @@ import { ItemDisplayPetFighting } from '../animal/ItemDisplayPetFighting';
 import { InteractSlot, ItemSlotSkill } from '../animal/ItemSlotSkill';
 import { PopupBattlePlace, PopupBattlePlaceParam } from './PopupBattlePlace';
 import { Sprite } from 'cc';
+import { UserMeManager } from '../core/UserMeManager';
 const { ccclass, property } = _decorator;
 
 enum PetActionType {
@@ -21,7 +22,7 @@ enum PetActionType {
     FIGHT,
     SORTBATTLE
 }
-export enum SkillBattle{
+export enum SkillBattle {
     SKILLPET,
     SKILLFIGHTING
 }
@@ -87,27 +88,14 @@ export class PopupOwnedAnimals extends BasePopup {
         });
     }
 
-
-    showPopup() {
-        WebRequestManager.instance.getMyPetData((respone) => { this.onGetMyPet(respone) }, (error) => { this.onApiError(error); });
-    }
-
-    private onGetMyPet(respone) {
-        this.listAllPetPlayer = respone.data;
+    private onGetMyPet(myPets: PetDTO[]) {
+        this.listAllPetPlayer = myPets;
         if (this.listAllPetPlayer == null || this.listAllPetPlayer.length <= 0) {
             this.noPetPanel.active = true;
             return;
         }
         this.noPetPanel.active = false;
         this.InitPet(this.groupPetsBySpecies(this.listAllPetPlayer));
-    }
-
-    private onApiError(error) {
-        const param: ConfirmParam = {
-            message: error.error_message,
-            title: "Waning",
-        };
-        PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
     }
 
     setSlotPetFighting(pets: PetDTO[]) {
@@ -277,7 +265,7 @@ export class PopupOwnedAnimals extends BasePopup {
         }
     }
 
-    saveChange() {
+    async saveChange() {
         const bringPetIds: string[] = this.animalBrings.map(pet => pet.id);
         const battlePetIdsSlots: { id: string, battle_slot: number }[] = this.animalBattle.map(p => ({ id: p.id, battle_slot: p.battle_slot }));
         const isSameBring = this.bringPetIdsInit.length === bringPetIds.length && this.bringPetIdsInit.every(id => bringPetIds.includes(id));
@@ -297,7 +285,7 @@ export class PopupOwnedAnimals extends BasePopup {
             textButtonLeft: "Không",
             textButtonRight: "Có",
             textButtonCenter: "",
-            onActionButtonRight: () => {
+            onActionButtonRight: async () => {
                 const pets = this.listAllPetPlayer;
                 if (!pets || pets.length === 0) return;
 
@@ -308,17 +296,18 @@ export class PopupOwnedAnimals extends BasePopup {
                 const hasBattleUpdate = petDataBattle.pets.length > 0;
 
                 if (hasPetUpdate || hasBattleUpdate) {
-                    this.sendUpdatePetDataAsync(petData, petDataBattle, hasPetUpdate, hasBattleUpdate);
-                } else {
-                    this.closePopup();
+                    await this.sendUpdatePetDataAsync(petData, petDataBattle, hasPetUpdate, hasBattleUpdate);
                 }
             }
             ,
-            onActionButtonLeft: () => {
-                this.closePopup();
+            onActionButtonLeft: async () => {
+
             }
         };
-        PopupManager.getInstance().openAnimPopup("PopupSelection", PopupSelection, param);
+        const popup = await PopupManager.getInstance().openAnimPopup("PopupSelection", PopupSelection, param);
+        await PopupManager.getInstance()?.waitCloseAsync(popup.node.uuid);
+        await this.UpdateMyPets();
+        this.closePopup();
     }
 
     private buildPetFollowData(pets: PetDTO[]) {
@@ -358,15 +347,25 @@ export class PopupOwnedAnimals extends BasePopup {
         return { pets: result };
     }
 
-    private async sendUpdatePetDataAsync(petData: PetFollowPayload, petDataBattle: PetBattlePayload, hasPetUpdate: boolean,
+    private sendUpdatePetDataAsync(
+        petData: PetFollowPayload,
+        petDataBattle: PetBattlePayload,
+        hasPetUpdate: boolean,
         hasBattleUpdate: boolean
-    ) {
-        try {
-            if (hasBattleUpdate) await this.updateListPetBattleUserAsync(petDataBattle);
-            if (hasPetUpdate) await this.updateListPetFollowUserAsync(petData);
-        } finally {
-            this.closePopup();
-        }
+    ): Promise<void> {
+        return new Promise(async (resolve, reject) => {
+            try {
+                if (hasBattleUpdate) {
+                    await this.updateListPetBattleUserAsync(petDataBattle);
+                }
+                if (hasPetUpdate) {
+                    await this.updateListPetFollowUserAsync(petData);
+                }
+                resolve();
+            } catch (error) {
+                reject(error);
+            }
+        });
     }
 
     private updateListPetFollowUserAsync(petData: PetFollowPayload): Promise<void> {
@@ -398,6 +397,17 @@ export class PopupOwnedAnimals extends BasePopup {
             );
         });
     }
+    private updateMyPets(petDataBattle: PetBattlePayload): Promise<void> {
+        return new Promise<void>((resolve) => {
+            WebRequestManager.instance.updateListPetBattleUser(
+                petDataBattle,
+                () => resolve(),
+                (error) => {
+                    this.onError(error);
+                }
+            );
+        });
+    }
 
     private updateListSkillsPetBattleUserAsync(petID: string, skillData: SkillPayload): Promise<void> {
         return new Promise<void>((resolve) => {
@@ -413,21 +423,41 @@ export class PopupOwnedAnimals extends BasePopup {
         });
     }
 
+    public async UpdateMyPets(): Promise<void> {
+        return await new Promise((resolve, reject) => {
+            WebRequestManager.instance.getMyPetData(
+                (response) => resolve(),
+                (error) => reject(error)
+            );
+        });
+    }
     public init() {
-        this.closeButton.node.on(Button.EventType.CLICK, this.saveChange, this);
+        this.closeButton.addAsyncListener(async () => {
+            this.closeButton.interactable = false;
+            this.saveChange();
+
+        });
         this.bringButton.addAsyncListener(async () => {
-            this.bringButton.interactable = false; await this.handlePetAction(PetActionType.BRING); this.bringButton.interactable = true;
+            this.bringButton.interactable = false;
+            await this.handlePetAction(PetActionType.BRING);
+            this.bringButton.interactable = true;
         });
         this.fightingButton.addAsyncListener(async () => {
-            this.fightingButton.interactable = false; await this.handlePetAction(PetActionType.FIGHT); this.fightingButton.interactable = true;
+            this.fightingButton.interactable = false;
+            await this.handlePetAction(PetActionType.FIGHT);
+            this.fightingButton.interactable = true;
         });
         this.summonButton.addAsyncListener(async () => {
-            this.summonButton.interactable = false; await this.handlePetAction(PetActionType.REMOVE); this.summonButton.interactable = true;
+            this.summonButton.interactable = false;
+            await this.handlePetAction(PetActionType.REMOVE);
+            this.summonButton.interactable = true;
         });
         this.sortPetBattleBtn.addAsyncListener(async () => {
-            this.sortPetBattleBtn.interactable = false; await this.handlePetAction(PetActionType.SORTBATTLE); this.sortPetBattleBtn.interactable = true;
+            this.sortPetBattleBtn.interactable = false;
+            await this.handlePetAction(PetActionType.SORTBATTLE);
+            this.sortPetBattleBtn.interactable = true;
         });
-        this.showPopup();
+        this.onGetMyPet(UserMeManager.MyPets());
     }
 
     private async handlePetAction(actionType: PetActionType) {
@@ -491,7 +521,7 @@ export class PopupOwnedAnimals extends BasePopup {
             textButtonLeft: "Không",
             textButtonRight: "Có",
             textButtonCenter: "",
-            onActionButtonRight: onConfirm,
+            onActionButtonRight: async () => { onConfirm(); },
         };
         await PopupManager.getInstance().openAnimPopup("PopupSelection", PopupSelection, param);
     }
