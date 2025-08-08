@@ -12,6 +12,7 @@ import { PopupSelection, SelectionParam } from './PopupSelection';
 import { ItemDisplayPetFighting } from '../animal/ItemDisplayPetFighting';
 import { InteractSlot, ItemSlotSkill } from '../animal/ItemSlotSkill';
 import { PopupBattlePlace, PopupBattlePlaceParam } from './PopupBattlePlace';
+import { Sprite } from 'cc';
 const { ccclass, property } = _decorator;
 
 enum PetActionType {
@@ -35,6 +36,7 @@ export class PopupOwnedAnimals extends BasePopup {
     @property({ type: Button }) bringButton: Button = null;
     @property({ type: RichText }) namePet: RichText = null;
     @property({ type: RichText }) currentExp: RichText = null;
+    @property({ type: Sprite }) progressBarExp: Sprite = null;
     @property({ type: RichText }) hpValue: RichText = null;
     @property({ type: RichText }) attackValue: RichText = null;
     @property({ type: RichText }) denfenseValue: RichText = null;
@@ -248,6 +250,7 @@ export class PopupOwnedAnimals extends BasePopup {
     setDataDetail(pet: PetDTO) {
         this.namePet.string = `<outline color=#222222 width=1> ${pet.name} (${pet.pet.rarity}) </outline>`;
         this.currentExp.string = `<outline color=#222222 width=1> ${pet.exp} / ${pet.max_exp} </outline>`;
+        this.progressBarExp.fillRange = Math.min(pet.exp / pet.max_exp, 1);
         this.hpValue.string = `<outline color=#222222 width=1> ${pet.hp} </outline>`;
         this.attackValue.string = `<outline color=#222222 width=1> ${pet.attack} </outline>`;
         this.denfenseValue.string = `<outline color=#222222 width=1> ${pet.defense} </outline>`;
