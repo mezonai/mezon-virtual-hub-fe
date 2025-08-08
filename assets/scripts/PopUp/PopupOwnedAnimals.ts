@@ -411,22 +411,30 @@ export class PopupOwnedAnimals extends BasePopup {
         });
     }
 
-    public async init() {
+    public init() {
         this.closeButton.node.on(Button.EventType.CLICK, this.saveChange, this);
-        this.bringButton.addAsyncListener(async () => { this.handlePetAction(PetActionType.BRING)});
-        this.fightingButton.addAsyncListener(async () => { this.handlePetAction(PetActionType.FIGHT); });
-        this.summonButton.addAsyncListener(async () => { this.handlePetAction(PetActionType.REMOVE);});
-        this.sortPetBattleBtn.addAsyncListener(async () => { this.handlePetAction(PetActionType.SORTBATTLE); });
+        this.bringButton.addAsyncListener(async () => {
+            this.bringButton.interactable = false; await this.handlePetAction(PetActionType.BRING); this.bringButton.interactable = true;
+        });
+        this.fightingButton.addAsyncListener(async () => { 
+            this.fightingButton.interactable = false; await this.handlePetAction(PetActionType.FIGHT);  this.fightingButton.interactable = true;
+        });
+        this.summonButton.addAsyncListener(async () => { 
+            this.summonButton.interactable = false;  await this.handlePetAction(PetActionType.REMOVE); this.summonButton.interactable = true; 
+        });
+        this.sortPetBattleBtn.addAsyncListener(async () => { 
+            this.sortPetBattleBtn.interactable = false; await this.handlePetAction(PetActionType.SORTBATTLE); this.sortPetBattleBtn.interactable = true;
+        });
         this.showPopup();
     }
 
-    private handlePetAction(actionType: PetActionType) {
+    private async handlePetAction(actionType: PetActionType) {
         if (!this.animalController) return;
         const pet = this.animalController.Pet;
         const actions = {
             [PetActionType.BRING]: {
                 content: `Bạn có muốn mang theo ${pet.name} bên mình?`,
-                handler: () => this.onBringPet(true),
+                handler: async () => await this.onBringPet(true),
                 deny: pet.battle_slot > 0
                     ? "Pet đang được chọn để thi đấu nên không thể mang theo."
                     : this.animalBrings.length >= this.maxBringPets
@@ -435,7 +443,7 @@ export class PopupOwnedAnimals extends BasePopup {
             },
             [PetActionType.FIGHT]: {
                 content: `Bạn có muốn chọn ${pet.name} để thi đấu?`,
-                handler: () => this.onSelectPetBattle(true),
+                handler: async () => await this.onSelectPetBattle(true),
                 deny: pet.is_brought
                     ? "Pet đang được mang theo nên không thể chọn để thi đấu."
                     : this.animalBattle.length >= this.maxBringPets
@@ -446,36 +454,36 @@ export class PopupOwnedAnimals extends BasePopup {
                 content: pet.is_brought
                     ? `Bạn có muốn gỡ Pet này khỏi danh sách mang theo không?`
                     : `Bạn có muốn gỡ Pet này khỏi danh sách chiến đấu không?`,
-                handler: () =>
+                handler: async () =>
                     pet.is_brought
                         ? this.onBringPet(false)
                         : this.onSelectPetBattle(false),
                 deny: null
             },
             [PetActionType.SORTBATTLE]: {
-                handler: () => this.onSortPetBattle(),
+                handler: async () => await this.onSortPetBattle(),
             },
         };
 
         const action = actions[actionType];
         if ('deny' in action && action.deny) {
-            return this.showConfirm(action.deny);
+            return await this.showConfirm(action.deny);
         }
         if ('content' in action && action.content && action.handler) {
-            return this.showSelection(action.content, action.handler);
+            return await this.showSelection(action.content, action.handler);
         }
-        action.handler?.();
+        await action.handler?.();
     }
 
-    private showConfirm(message: string) {
+    private async showConfirm(message: string) {
         const param: ConfirmParam = {
             message,
             title: "Thông báo",
         };
-        PopupManager.getInstance().openPopup("ConfirmPopup", ConfirmPopup, param);
+        await PopupManager.getInstance().openPopup("ConfirmPopup", ConfirmPopup, param);
     }
 
-    private showSelection(content: string, onConfirm: () => void) {
+    private async showSelection(content: string, onConfirm: () => void) {
         const param: SelectionParam = {
             content,
             textButtonLeft: "Không",
@@ -483,7 +491,7 @@ export class PopupOwnedAnimals extends BasePopup {
             textButtonCenter: "",
             onActionButtonRight: onConfirm,
         };
-        PopupManager.getInstance().openAnimPopup("PopupSelection", PopupSelection, param);
+        await PopupManager.getInstance().openAnimPopup("PopupSelection", PopupSelection, param);
     }
 
     async closePopup() {
@@ -544,18 +552,21 @@ export class PopupOwnedAnimals extends BasePopup {
         }
     }
 
-    onSortPetBattle() {
+    async onSortPetBattle() {
+        if(this.animalBattle.length < 1){
+            await this.showConfirm("Không có pet để sắp xếp !!!");
+        }
         const clonedPets = this.animalBattle.map(p => ({ ...p }));
-        this.showPopupSortBattlePlace(clonedPets);
+        await this.showPopupSortBattlePlace(clonedPets);
     }
 
-    private showPopupSortBattlePlace(pets: PetDTO[]) {
+    private async showPopupSortBattlePlace(pets: PetDTO[]) {
         const param: PopupBattlePlaceParam = {
             isPetItemDrag: true,
             pets: pets,
             onFinishSort: (sortedPets: PetDTO[]) => this.onFinishSortPetBattle(sortedPets)
         };
-        PopupManager.getInstance().openPopup('PopupBattlePlace', PopupBattlePlace, param);
+        await PopupManager.getInstance().openAnimPopup('PopupBattlePlace', PopupBattlePlace, param);
     }
 
     private async showPopupBattlePlace(pets: PetDTO[], pet: PetDTO, isSelectBattle: boolean) {
@@ -565,7 +576,7 @@ export class PopupOwnedAnimals extends BasePopup {
             petSelected: pet,
             onFinishSelect: (slotIndex, pet, replacedSlot) => this.onFinishSelectPetBattlet(slotIndex, pet, replacedSlot, isSelectBattle)
         };
-        await PopupManager.getInstance().openPopup('PopupBattlePlace', PopupBattlePlace, param);
+        await PopupManager.getInstance().openAnimPopup('PopupBattlePlace', PopupBattlePlace, param);
     }
 
     private onFinishSortPetBattle(sortedPets: PetDTO[]) {

@@ -60,7 +60,9 @@ export class UIManager extends Component {
         }
         view.on('canvas-resize', UIManager.Instance.onResize.bind(UIManager.Instance));
         this.showOwnedButton.addAsyncListener(async () => {
+            this.showOwnedButton.interactable = false;
             await PopupManager.getInstance().openAnimPopup('PopupOwnedAnimals', PopupOwnedAnimals, { message: "" });
+            this.showOwnedButton.interactable = true;
         });
     }
 
