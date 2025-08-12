@@ -66,22 +66,24 @@ export class ColysesusObjectData {
     }
 }
 
-export class PlayerColysesusObjectData extends ColysesusObjectData{
+export class PlayerColysesusObjectData extends ColysesusObjectData {
     public skinSet: string
     public userId: string
     public isShowName: boolean;
-    public pet_players : string
-    constructor(sessionId: string, room: Colyseus.Room<any>, x: number, y: number, name: string, skinSet: string, id: string, isShowName: boolean, pet_players: string) {
+    public pet_players: string
+    public isInBattle: boolean;
+    constructor(sessionId: string, room: Colyseus.Room<any>, x: number, y: number, name: string, skinSet: string, id: string, isShowName: boolean, pet_players: string, isInBattle: boolean) {
         super(sessionId, room, x, y, name);
         this.skinSet = skinSet;
         this.userId = id;
         this.isShowName = isShowName;
         this.pet_players = pet_players;
+        this.isInBattle = isInBattle;
     }
-    
+
 }
 
-export class ItemColysesusObjectData extends ColysesusObjectData{
+export class ItemColysesusObjectData extends ColysesusObjectData {
     public ownerId: string
 
     constructor(sessionId: string, room: Colyseus.Room<any>, x: number, y: number, name: string, ownerId: string) {
@@ -90,7 +92,7 @@ export class ItemColysesusObjectData extends ColysesusObjectData{
     }
 }
 
-export class PetColysesusObjectData extends ColysesusObjectData{
+export class PetColysesusObjectData extends ColysesusObjectData {
     public pet: PetDTO;
     public angle: Vec2;
     constructor(sessionId: string, room: Colyseus.Room<any>, x: number, y: number, name: string, angle: Vec2, pet: PetDTO) {

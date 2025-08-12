@@ -78,7 +78,7 @@ export class UserManager extends Component {
         const playerNode = ObjectPoolManager.instance.spawnFromPool(this.playerPrefab.name);
         let playerController = playerNode.getComponent(PlayerController);
         playerNode.setPosition(new Vec3(playerData.x, playerData.y, 0));
-        await playerController.init(playerData.sessionId, playerData.room, playerData.name, playerData.skinSet, playerData.userId, playerData.isShowName);
+        await playerController.init(playerData.sessionId, playerData.room, playerData.name, playerData.skinSet, playerData.userId, playerData.isShowName, playerData.isInBattle);
         if (playerData.room.sessionId == playerData.sessionId) {
             this.myClientPlayer = playerController;
         }
@@ -272,10 +272,11 @@ export class UserManager extends Component {
         if (UserManager.instance) {
             UserManager.instance.GetMyClientPlayer.moveAbility.StopMove();
         }
+        PopupManager.getInstance().closeAllPopups();
         UIManager.Instance.batteScene.setData(param);
     }
 
-    public handleBattle(data) {
+    public handleBattleResult(data) {
         if (UIManager.Instance == null) return;
         UIManager.Instance.batteScene.handleBattleResult(data);
     }
@@ -416,6 +417,38 @@ export class UserManager extends Component {
             };
             PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
         }
+    }
+
+    public async playerJoinRoomBattle(data, joinRoomBattle: () => Promise<void>) {
+        const { player1Id, player2Id } = data;
+        let p1 = this.setStatusBattle(player1Id, true);
+        let p2 = this.setStatusBattle(player2Id, true);
+        if (joinRoomBattle == null || p1 == null || p2 == null) return;
+        if (p1.myID != UserManager.instance.GetMyClientPlayer.myID && p2.myID != UserManager.instance.GetMyClientPlayer.myID) return;
+        await joinRoomBattle();
+    }
+
+    public async updatePlayerEndBattle(data) {
+        const { playerUpdateStatusBattle } = data;
+        this.setStatusBattle(playerUpdateStatusBattle, false);
+    }
+
+    public async NotifyBattle(data) {
+        const { message } = data;
+        const param: ConfirmParam = {
+            message: message,
+            title: "Chú Ý",
+        };
+        PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
+    }
+
+    public setStatusBattle(playerId, isInBattle: boolean): PlayerController {
+        let player = this.players.get(playerId);
+        if (player != null) {
+            player.setStatusBattle(isInBattle);
+            return player;
+        }
+        return null;
     }
 
     private onError(error: any) {

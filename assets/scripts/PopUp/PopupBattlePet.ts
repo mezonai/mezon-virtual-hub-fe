@@ -69,22 +69,7 @@ export class PopupBattlePet extends Component {
         });
     }
 
-
-    private resetData() {
-        this.myClient = null;
-        this.targetClient = null;
-        this.clientIdInRoom = "";
-        this.mySkillsBatte = [];
-        this._onActionCompleted = null;
-    }
-
     private Init(param?: BatllePetParam) {
-        this.resetUIState();
-        this.resetData();
-        this.centerOpenSplash.playSplash(() => this.SetDataBattle(param));
-    }
-
-    private resetUIState() {
         this.playerBattleStats.forEach(playerBattleStat => {
             playerBattleStat.landSpawnPet.slide(false, 0);
             playerBattleStat.hudBattlePet.slide.slide(false, 0);
@@ -93,6 +78,12 @@ export class PopupBattlePet extends Component {
         this.slideChooseButtons.slide(false, 0);
         this.slideSkillButtons.slide(false, 0);
         this.hideTalkAnimation();
+        this.myClient = null;
+        this.targetClient = null;
+        this.clientIdInRoom = "";
+        this.mySkillsBatte = [];
+        this._onActionCompleted = null;
+        this.centerOpenSplash.playSplash(() => this.SetDataBattle(param));
     }
 
     async SetDataBattle(param?: BatllePetParam) {
@@ -104,6 +95,7 @@ export class PopupBattlePet extends Component {
         this.clientIdInRoom = UserManager.instance.GetMyClientPlayer.myClientBattleId;
         this.combatEnvController.setEnvironmentByType(param.enviromentBattle);
         this.myClient = param.data.find(p => p.id === this.clientIdInRoom);
+        console.log("Set my client: ", this.myClient);
         this.targetClient = param.data.find(p => p.id !== this.clientIdInRoom);
 
 
@@ -404,6 +396,9 @@ export class PopupBattlePet extends Component {
     public async battleFinished(data) {
         const { winnerId, loserId } = data;
         const win = UserManager.instance.GetMyClientPlayer.myClientBattleId == winnerId;
+        await Constants.waitUntil(() => this.myClient != null);
+        console.log("this.myClient:", this.myClient)
+        console.log("this.myClient.battlePets: ", this.myClient.battlePets)
         const param: WinLoseBattleParam = {
             pets: this.myClient.battlePets,
             statusBattle: win ? StatusBattle.WIN : StatusBattle.LOSE,

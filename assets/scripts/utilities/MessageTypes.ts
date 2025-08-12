@@ -14,4 +14,10 @@ export enum MessageTypes {
     SURRENDER_BATTLE = "surrender_battle",
     SET_PET_SLEEP = "set_pet_sleep",
     DISCONNECTED = "Disconnected",
+    END_BATTLE = "end_battle",
+    END_BATTLE_COMPLETED = " end_battle_completed",
+    NOT_PET_BATTLE = "not_pet_battle",
+    NOT_ENOUGH_PET_BATTLE = "not_enough_pet_battle",
+    NOT_ENOUGH_SKILL_PET_BATTLE = "not_enough_skill_pet_battle",
+    NOTIFY_BATTLE = "notify_battle",
 }

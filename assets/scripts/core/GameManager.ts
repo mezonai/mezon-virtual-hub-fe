@@ -38,17 +38,18 @@ export class GameManager extends Component {
     }
 
     tutorialCacthPet() {
-        if (localStorage.getItem(Constants.TUTORIAL_CACTH_PET) === null) {
-            const param: PopupTutorialCatchPetParam = {
-                onActionCompleted: () => {
-                    this.getReward();
-                },
-            };
-            PopupManager.getInstance().openPopup("PopupTutorialCatchPet", PopupTutorialCatchPet, param);
-        }
-        else {
-            this.getReward();
-        }
+        // if (localStorage.getItem(Constants.TUTORIAL_CACTH_PET) === null) {
+        //     const param: PopupTutorialCatchPetParam = {
+        //         onActionCompleted: () => {
+        //             this.getReward();
+        //         },
+        //     };
+        //     PopupManager.getInstance().openPopup("PopupTutorialCatchPet", PopupTutorialCatchPet, param);
+        // }
+        // else {
+        //     this.getReward();
+        // }
+        this.getReward();
     }
 
     getReward() {
