@@ -22,7 +22,7 @@ export class PetBattlePrefab extends Component {
         for (const x of this.speciesMap) {
             if (x.species === pet.species) {
                 const scale = x.nodeSpritePet.scale;
-                x.nodeSpritePet.setScale(new Vec3(scale.x * flipX, scale.y, scale.z));
+                x.nodeSpritePet.setScale(new Vec3(Math.abs(scale.x) * flipX, scale.y, scale.z));
                 x.nodeSpritePet.active = true;
                 break;
             }
