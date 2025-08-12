@@ -46,6 +46,7 @@ export class PopupBattlePet extends Component {
     targetClient: PlayerBattle = null;
     clientIdInRoom: string = "";
 
+
     setData(param?: BatllePetParam) {
         this.Init(param);
         this.addListenerButton();
@@ -95,7 +96,6 @@ export class PopupBattlePet extends Component {
         this.clientIdInRoom = UserManager.instance.GetMyClientPlayer.myClientBattleId;
         this.combatEnvController.setEnvironmentByType(param.enviromentBattle);
         this.myClient = param.data.find(p => p.id === this.clientIdInRoom);
-        console.log("Set my client: ", this.myClient);
         this.targetClient = param.data.find(p => p.id !== this.clientIdInRoom);
 
 
@@ -422,10 +422,10 @@ export class PopupBattlePet extends Component {
     }
 
     closeBattle() {
-        this.centerOpenSplash.playSplash(() => {
+        this.centerOpenSplash.playSplash(async () => {
             this._onActionCompleted?.();
             this.cancelTween();
-            ServerManager.instance.leaveBattleRoom();
+            await ServerManager.instance.leaveBattleRoom();
             this.node.active = false;
         });
     }

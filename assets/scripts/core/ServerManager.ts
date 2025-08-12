@@ -17,6 +17,7 @@ import { UserMeManager } from './UserMeManager';
 import { MessageTypes } from '../utilities/MessageTypes';
 import { ConfirmParam, ConfirmPopup } from '../PopUp/ConfirmPopup';
 import { PopupSelectionMini, SelectionMiniParam } from '../PopUp/PopupSelectionMini';
+import { WebRequestManager } from '../network/WebRequestManager';
 
 @ccclass('ServerManager')
 export class ServerManager extends Component {
@@ -352,9 +353,10 @@ export class ServerManager extends Component {
         this.room.onMessage(MessageTypes.BATTE_ROOM_READY, async (data) => {
             if (data == null) return;
             const { roomId } = data;
-            console.log("data", data);
+            WebRequestManager.instance.toggleLoading(true);
             UserManager.instance.playerJoinRoomBattle(data, async () => {
                 await this.joinBattleRoom(roomId);
+                WebRequestManager.instance.toggleLoading(false);
             });
         });
 
@@ -370,44 +372,60 @@ export class ServerManager extends Component {
     }
 
     public async joinBattleRoom(roomId: string): Promise<void> {
-        console.log("Join");
         this.battleRoom = await this.client.joinById(roomId, {
             accessToken: APIConfig.token
         });
         this.battleRoom.state.battlePlayers.onAdd((player, sessionId) => {
-            console.log(`BattleJoin joined: ${player.name} (ID: ${player.id})`);
             if (sessionId != this.battleRoom.sessionId) return;
+            if (UserManager.instance?.GetMyClientPlayer == null) return;
             UserManager.instance.GetMyClientPlayer.myClientBattleId = sessionId;
         });
 
         this.battleRoom.onMessage(MessageTypes.BATTE_READY, (data) => {
-            if (data == null) return;
-            UserManager.instance.setUpBattle(data);
+            if (data == null) {
+                this.leaveBattleRoom();
+                return;
+            }
+            UserManager.instance?.setUpBattle(data);
         });
         this.battleRoom.onLeave(() => {
-            //     console.log("Battle room closed");
             this.battleRoom = null;
         });
         this.battleRoom.onMessage(MessageTypes.RESULT_SKILL, (data) => {
-            if (data == null) return;
+            if (data == null) {
+                this.leaveBattleRoom();
+                return;
+            }
             UserManager.instance.handleBattleResult(data);
         });
 
         this.battleRoom.onMessage(MessageTypes.SWITCH_PET_AFTER_DEAD_DONE, (data) => {
-            if (data == null) return;
+            if (data == null) {
+                this.leaveBattleRoom();
+                return;
+            }
             UserManager.instance.switchPetAfterPetDead(data);
         });
         this.battleRoom.onMessage(MessageTypes.BATTLE_FINISHED, (data) => {
-            if (data == null) return;
-            console.log("Battle Leave");
+            if (data == null) {
+                this.leaveBattleRoom();
+                return;
+            }
             UserManager.instance.battleFinished(data);
         });
         this.battleRoom.onMessage(MessageTypes.WAITING_OTHER_USER, (data) => {
-            if (data == null) return;
+            if (data == null) {
+                this.leaveBattleRoom();
+                return;
+            }
             UserManager.instance.waitingOpponents(data);
         });
         this.battleRoom.onMessage(MessageTypes.DISCONNECTED, (data) => {
-            if (data == null) return;
+            if (data == null) {
+                this.leaveBattleRoom();
+                return;
+            }
+            if (UserManager.instance == null) return;
             UserManager.instance.disconnected(data);
         });
     }
@@ -542,13 +560,23 @@ export class ServerManager extends Component {
         this.battleRoom.send(MessageTypes.SURRENDER_BATTLE, { message: "", });
     }
 
-    public leaveBattleRoom() {
+    public async leaveBattleRoom(): Promise<void> {
         if (this.battleRoom) {
-            this.battleRoom.leave();
+            await this.battleRoom.leave();
             this.battleRoom = null;
-            UserManager.instance.GetMyClientPlayer.myClientBattleId = ""
+            if (UserManager.instance.GetMyClientPlayer != null)
+                UserManager.instance.GetMyClientPlayer.myClientBattleId = "";
+            this.room.send(MessageTypes.END_BATTLE, { message: "", });
         }
-        this.room.send(MessageTypes.END_BATTLE, { message: "", });
+
+    }
+
+    public async leaveRoom(): Promise<void> {
+        await this.leaveBattleRoom();
+        if (this.room) {
+            await this.room.leave();
+            this.room = null;
+        }
     }
 
     public sendNotEnoughPet(data) {

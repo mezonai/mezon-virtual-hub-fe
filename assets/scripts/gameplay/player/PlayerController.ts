@@ -16,6 +16,7 @@ import { GoKart } from '../MapItem/GoKart';
 import { PetCatchingController } from './PetCatchingController';
 import { AnimalController } from '../../animal/AnimalController';
 import { Sprite } from 'cc';
+import { ServerManager } from '../../core/ServerManager';
 
 @ccclass('PlayerController')
 export class PlayerController extends Component {
@@ -210,10 +211,9 @@ export class PlayerController extends Component {
         this.moveAbility.updateRemotePosition(data);
     }
 
-    public leaveRoom(onDone?: () => void) {
+    public async leaveRoom(onDone?: () => void) {
         this.resetPets(async () => {
-            await this.room.leave();
-            console.log("Left Room");
+            await ServerManager.instance.leaveRoom();
             if (onDone) {
                 onDone();
             }
