@@ -191,6 +191,7 @@ export interface PetFollowData {
   id: string;
   is_brought: boolean;
   room_code?: string;
+  name: string | null;
   species: string | null;
   type: string | null;
   rarity: string | null;

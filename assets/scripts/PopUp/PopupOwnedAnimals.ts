@@ -326,6 +326,7 @@ export class PopupOwnedAnimals extends BasePopup {
                 id: pet.id,
                 is_brought: pet.is_brought,
                 room_code: pet.room_code,
+                name: pet?.name ?? null,
                 species: pet.pet?.species ?? null,
                 type: pet.pet?.type ?? null,
                 rarity: pet.pet?.rarity ?? null
