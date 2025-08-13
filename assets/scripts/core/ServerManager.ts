@@ -17,6 +17,7 @@ import { UserMeManager } from './UserMeManager';
 import { MessageTypes } from '../utilities/MessageTypes';
 import { ConfirmParam, ConfirmPopup } from '../PopUp/ConfirmPopup';
 import { PopupSelectionMini, SelectionMiniParam } from '../PopUp/PopupSelectionMini';
+import { WebRequestManager } from '../network/WebRequestManager';
 
 @ccclass('ServerManager')
 export class ServerManager extends Component {
@@ -73,7 +74,7 @@ export class ServerManager extends Component {
         });
 
         this.room.state.players.onAdd((player, sessionId) => {
-            let playerData = new PlayerColysesusObjectData(sessionId, this.room, player.x, player.y, player.display_name, player.skin_set, player.user_id, player.is_show_name, player.pet_players);
+            let playerData = new PlayerColysesusObjectData(sessionId, this.room, player.x, player.y, player.display_name, player.skin_set, player.user_id, player.is_show_name, player.pet_players, player.isInBattle);
             UserManager.instance.createPlayer(playerData);
         });
 
@@ -350,43 +351,83 @@ export class ServerManager extends Component {
         // };
 
         this.room.onMessage(MessageTypes.BATTE_ROOM_READY, async (data) => {
-            const { roomId, roomName } = data;
-            console.log("data", data);
-            this.battleRoom = await this.client.joinById(roomId, {
-                accessToken: APIConfig.token
-            });
-            this.battleRoom.state.battlePlayers.onAdd((player, sessionId) => {
-                console.log(`BattleJoin joined: ${player.name} (ID: ${player.id})`);
-                if (sessionId != this.battleRoom.sessionId) return;
-                UserManager.instance.GetMyClientPlayer.myClientBattleId = sessionId;
-            });
-
-            this.battleRoom.onMessage(MessageTypes.BATTE_READY, (data) => {
-                if (data == null) return;
-                UserManager.instance.setUpBattle(data);
-            });
-            this.battleRoom.onLeave(() => {
-                //     console.log("Battle room closed");
-                this.battleRoom = null;
-            });
-            this.battleRoom.onMessage(MessageTypes.RESULT_SKILL, (data) => {
-                console.log("ServerManager ", data);
-                if (data == null) return;
-                UserManager.instance.handleBattle(data);
-            });
-            this.battleRoom.onMessage(MessageTypes.SWITCH_PET_AFTER_DEAD_DONE, (data) => {
-                if (data == null) return;
-                UserManager.instance.switchPetAfterPetDead(data);
-            });
-            this.battleRoom.onMessage(MessageTypes.BATTLE_FINISHED, (data) => {
-                if (data == null) return;
-                UserManager.instance.battleFinished(data);
+            if (data == null) return;
+            const { roomId } = data;
+            WebRequestManager.instance.toggleLoading(true);
+            UserManager.instance.playerJoinRoomBattle(data, async () => {
+                await this.joinBattleRoom(roomId);
+                WebRequestManager.instance.toggleLoading(false);
             });
         });
-        this.room.onMessage("onp2pCombatActionEscape", (data) => {
-            UserManager.instance.setUpBattle(data);
+
+        this.room.onMessage(MessageTypes.END_BATTLE_COMPLETED, (data) => {
+            if (data == null) return;
+            UserManager.instance.updatePlayerEndBattle(data);
         });
 
+        this.room.onMessage(MessageTypes.NOTIFY_BATTLE, (data) => {
+            if (data == null) return;
+            UserManager.instance.NotifyBattle(data);
+        });
+    }
+
+    public async joinBattleRoom(roomId: string): Promise<void> {
+        this.battleRoom = await this.client.joinById(roomId, {
+            accessToken: APIConfig.token
+        });
+        this.battleRoom.state.battlePlayers.onAdd((player, sessionId) => {
+            if (sessionId != this.battleRoom.sessionId) return;
+            if (UserManager.instance?.GetMyClientPlayer == null) return;
+            UserManager.instance.GetMyClientPlayer.myClientBattleId = sessionId;
+        });
+
+        this.battleRoom.onMessage(MessageTypes.BATTE_READY, (data) => {
+            if (data == null) {
+                this.leaveBattleRoom();
+                return;
+            }
+            UserManager.instance?.setUpBattle(data);
+        });
+        this.battleRoom.onLeave(() => {
+            this.battleRoom = null;
+        });
+        this.battleRoom.onMessage(MessageTypes.RESULT_SKILL, (data) => {
+            if (data == null) {
+                this.leaveBattleRoom();
+                return;
+            }
+            UserManager.instance.handleBattleResult(data);
+        });
+
+        this.battleRoom.onMessage(MessageTypes.SWITCH_PET_AFTER_DEAD_DONE, (data) => {
+            if (data == null) {
+                this.leaveBattleRoom();
+                return;
+            }
+            UserManager.instance.switchPetAfterPetDead(data);
+        });
+        this.battleRoom.onMessage(MessageTypes.BATTLE_FINISHED, (data) => {
+            if (data == null) {
+                this.leaveBattleRoom();
+                return;
+            }
+            UserManager.instance.battleFinished(data);
+        });
+        this.battleRoom.onMessage(MessageTypes.WAITING_OTHER_USER, (data) => {
+            if (data == null) {
+                this.leaveBattleRoom();
+                return;
+            }
+            UserManager.instance.waitingOpponents(data);
+        });
+        this.battleRoom.onMessage(MessageTypes.DISCONNECTED, (data) => {
+            if (data == null) {
+                this.leaveBattleRoom();
+                return;
+            }
+            if (UserManager.instance == null) return;
+            UserManager.instance.disconnected(data);
+        });
     }
 
     private decodeMoveData(uint8Array: ArrayBuffer) {
@@ -495,10 +536,6 @@ export class ServerManager extends Component {
         this.room.send(isOpen ? MessageTypes.OPEN_DOOR : MessageTypes.CLOSE_DOOR, data);
     }
 
-    public sendP2pCombatActionEscape(data) {
-        this.room.send("p2pCombatActionEscape", data);
-    }
-
     public sendPlayerActionBattle(isAttack: boolean, index: number) {
         if (this.battleRoom == null) return;
         this.battleRoom.send(MessageTypes.PLAYER_ACION, {
@@ -512,12 +549,45 @@ export class ServerManager extends Component {
             petSwitchId: choosePetId,
         });
     }
+    public sendPetSleeping(petSleepingId: string) {
+        if (this.battleRoom == null) return;
+        this.battleRoom.send(MessageTypes.SET_PET_SLEEP, {
+            petSleepingId: petSleepingId,
+        });
+    }
+    public sendSurrenderBattle() {
+        if (this.battleRoom == null) return;
+        this.battleRoom.send(MessageTypes.SURRENDER_BATTLE, { message: "", });
+    }
 
-    public leaveBattleRoom() {
+    public async leaveBattleRoom(): Promise<void> {
         if (this.battleRoom) {
-            this.battleRoom.leave();
+            await this.battleRoom.leave();
             this.battleRoom = null;
-            UserManager.instance.GetMyClientPlayer.myClientBattleId = ""
+            if (UserManager.instance.GetMyClientPlayer != null)
+                UserManager.instance.GetMyClientPlayer.myClientBattleId = "";
+            this.room.send(MessageTypes.END_BATTLE, { message: "", });
         }
+
+    }
+
+    public async leaveRoom(): Promise<void> {
+        await this.leaveBattleRoom();
+        if (this.room) {
+            await this.room.leave();
+            this.room = null;
+        }
+    }
+
+    public sendNotEnoughPet(data) {
+        this.room.send(MessageTypes.NOT_ENOUGH_PET_BATTLE, data);
+    }
+
+    public sendNotPet(data) {
+        this.room.send(MessageTypes.NOT_PET_BATTLE, data);
+    }
+
+    public sendNotEnoughSkillPet(data) {
+        this.room.send(MessageTypes.NOT_ENOUGH_SKILL_PET_BATTLE, data);
     }
 }

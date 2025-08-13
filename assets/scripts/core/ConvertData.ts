@@ -1,6 +1,7 @@
+import { AnimalType } from "../animal/AnimalController";
 import { MapData } from "../Interface/DataMapAPI";
 import { Food, Item, RewardItemDTO, RewardType } from "../Model/Item";
-import { PetBattleInfo, PetDTO, PlayerBattle, SkillData, Species } from "../Model/PetDTO";
+import { Element, PetBattleInfo, PetDTO, PlayerBattle, SkillBattleInfo, Species, TypeSkill } from "../Model/PetDTO";
 
 export default class ConvetData {
     public static ConvertMap(mapData: any): MapData[] {
@@ -137,18 +138,27 @@ export default class ConvetData {
         pet.level = petData.level;
         pet.currentExp = petData.currentExp;
         pet.totalExp = petData.totalExp;
+        pet.attack = petData.attack;
+        pet.defense = petData.defense;
         pet.speed = petData.speed;
+        pet.isSleeping = petData.isSleeping;
         pet.skills = petData.skills.map((skillData: any) => {
-
-            const skill = new SkillData();
-            skill.id = skillData.id;
-            skill.attack = skillData.attack;
-            skill.accuracy = skillData.accuracy;
-            skill.powerPoint = skillData.powePoint;
-            return skill;
+            return this.convertToSkillData(skillData);
         });
         pet.isDead = petData.isDead;
         return pet;
+    }
+
+    public static convertToSkillData(skillData: any): SkillBattleInfo {
+        const skill = new SkillBattleInfo();
+        skill.skill_code = skillData.id;
+        skill.attack = skillData.attack;
+        skill.accuracy = skillData.accuracy;
+        skill.type = skillData.type;
+        skill.typeSkill = this.mapServerSkillToClient(skillData.skillType);
+        skill.currentPowerPoint = skillData.currentPowerPoint;
+        skill.totalPowerPoint = skillData.totalPowerPoint;
+        return skill;
     }
 
     public static parseFood(foodData: any): Food {
@@ -163,6 +173,36 @@ export default class ConvetData {
         item.iconSF = [];
         item.mappingLocalData = null;
         return item;
+    }
+
+    public static mapServerSkillToClient(serverSkill: string): TypeSkill | null {
+        switch (serverSkill) {
+            case 'attack':
+                return TypeSkill.ATTACK;
+            case 'defense':
+                return TypeSkill.DEFENSE;
+            case 'increase_attack':
+                return TypeSkill.INCREASE_ATTACK;
+            case 'decrease_attack':
+                return TypeSkill.DECREASE_ATTACK;
+            case 'heal':
+                return TypeSkill.HEAL;
+            default:
+                return null; // hoặc throw new Error("Unknown skill type")
+        }
+    }
+
+    public static mapEnviromentType(enviroment: string): Element {
+        switch (enviroment) {
+            case 'grass':
+                return Element.Grass;
+            case 'ice':
+                return Element.Ice;
+            case 'water':
+                return Element.Water;
+            default:
+                return Element.Grass;
+        }
     }
 }
 

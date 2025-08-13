@@ -1,7 +1,9 @@
-import { _decorator, Component, Label, Sprite } from 'cc';
-import { PetBattleInfo} from '../../Model/PetDTO';
+import { _decorator, Component, Label, Sprite, Node } from 'cc';
+import { PetBattleInfo, PlayerBattle, TypeSkill } from '../../Model/PetDTO';
 import { SlideObject } from '../../utilities/SlideObject';
 import { tween } from 'cc';
+import { Color } from 'cc';
+import { Constants } from '../../utilities/Constants';
 const { ccclass, property } = _decorator;
 
 @ccclass('HUDBattlePet')
@@ -10,18 +12,80 @@ export class HUDBattlePet extends Component {
     @property(Label) lvlLabel: Label = null;
     @property(Label) hpLabel: Label = null;
     @property(Label) expLabel: Label = null;
-
+    @property(Label) valueAttack: Label = null;
+    @property(Label) valueDef: Label = null;
+    @property(Label) valueSpeed: Label = null;
     @property(Sprite) hpFillSprite: Sprite = null;
     @property(Sprite) expFillSprite: Sprite = null;
     @property({ type: SlideObject }) slide: SlideObject = null;
+    @property({ type: Node }) nodeValue: Node = null;
+    @property({ type: Node }) iconSleep: Node = null;
+    @property({ type: [Node] }) nodeChange: Node[] = [];// 1:IncreaseAttack, 2:DecreaseAttack, 3:DecreaseDefense, 4:Healing
+    @property({ type: [Color] }) colorValueChange: Color[] = [];
+    @property({ type: Label }) valueChange: Label = null;
     private timeEffect: number = 1;
-    public updateHUD(petGotoBattle: PetBattleInfo) {
-        this.nameLabel.string = petGotoBattle.name;
+    public updateHUD(petGotoBattle: PetBattleInfo, player: PlayerBattle) {
+        this.nameLabel.string = `${petGotoBattle.name} [${player.name}]`;
         this.hpLabel.string = `${petGotoBattle.currentHp}/${petGotoBattle.totalHp}`;
         this.lvlLabel.string = `Lvl ${petGotoBattle.level}`;
         this.expLabel.string = `${petGotoBattle.currentExp}/${petGotoBattle.totalExp}`;
         this.hpFillSprite.fillRange = Math.min(petGotoBattle.currentHp / petGotoBattle.totalHp, 1);
         this.expFillSprite.fillRange = Math.min(petGotoBattle.currentExp / petGotoBattle.totalExp, 1);
+        this.updatePetStatsDisplay(petGotoBattle);
+        this.setSleep(false);
+        this.nodeValue.active = false;
+    }
+
+    setSleep(isleeping: boolean) {
+        this.iconSleep.active = isleeping;
+    }
+
+    async showEffectChangeValue(typeSkill: TypeSkill, value: number): Promise<void> {
+        const isIncrease = typeSkill === TypeSkill.INCREASE_ATTACK;
+        const isDecrease = typeSkill === TypeSkill.DECREASE_ATTACK;
+        const isHeal = typeSkill === TypeSkill.HEAL;
+        const isAttack = typeSkill === TypeSkill.ATTACK && value > 0;
+        const showValueChange = isIncrease || isDecrease || isHeal || isAttack;
+        this.valueChange.node.active = showValueChange;
+        this.nodeChange[0].active = isIncrease;
+        this.nodeChange[1].active = isDecrease;
+        this.nodeChange[2].active = false;
+        this.nodeChange[3].active = isHeal;
+        this.nodeChange[4].active = isAttack;
+
+        if (!showValueChange) return;
+        this.valueChange.string = value.toString();
+        if (isIncrease || isDecrease || isAttack) {
+            this.valueChange.color = this.colorValueChange[0]; // tăng hoặc giảm => cùng 1 màu
+        } else if (isHeal) {
+            this.valueChange.color = this.colorValueChange[2]; // hồi máu
+        } else {
+            this.valueChange.color = this.colorValueChange[1]; // fallback (nếu có)
+        }
+        await this.playBounceTween(0.5);
+    }
+
+    updatePetStatsDisplay(petGotoBattle: PetBattleInfo) {
+        this.valueAttack.string = `${petGotoBattle.attack}`;
+        this.valueDef.string = `${petGotoBattle.defense}`;
+        this.valueSpeed.string = `${petGotoBattle.speed}`;
+    }
+
+    async playBounceTween(duration: number = 0.15): Promise<void> {
+        return new Promise<void>((resolve) => {
+            const originalPos = this.nodeValue.position.clone();
+            this.nodeValue.active = true;
+
+            tween(this.nodeValue)
+                .to(duration, { position: originalPos.clone().add3f(0, 50, 0) }, { easing: 'quadOut' })
+                .to(duration, { position: originalPos }, { easing: 'quadIn' })
+                .call(() => {
+                    this.nodeValue.active = false;
+                    this.nodeValue.setPosition(originalPos); // reset chắc chắn
+                    resolve();
+                })
+                .start();
+        });
     }
 
     public async heal(healNumber: number, currentHp: number, maxHp: number): Promise<void> {
@@ -41,9 +105,9 @@ export class HUDBattlePet extends Component {
         });
     }
 
-    public async takeDamage(damage: number, currentHp: number, maxHp: number): Promise<void> {
+    public async takeDamage(currentHp: number, maxHp: number): Promise<void> {
         // Tính toán máu mới
-        currentHp = Math.max(0, currentHp - damage);
+        currentHp = Math.max(0, currentHp);
         const newRatio = currentHp / maxHp;
 
         // Trả về Promise hoàn tất sau khi tween xong

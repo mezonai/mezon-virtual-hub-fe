@@ -1,7 +1,7 @@
 import { _decorator, Node, Prefab, instantiate, Button } from 'cc';
 import { PopupManager } from './PopupManager';
 import { BasePopup } from './BasePopup';
-import { BattleData, AnimalElement, PlayerBattle, PetBattleInfo, SkillData } from '../Model/PetDTO';
+import { BattleData, Element, PlayerBattle, PetBattleInfo, SkillBattleInfo, TypeSkill, SkillCode } from '../Model/PetDTO';
 import { HandleOpenSplash } from '../utilities/HandleOpenSplash';
 import { PetBattlePrefab } from '../animal/PetBattlePrefab';
 import { SlideObject } from '../utilities/SlideObject';
@@ -10,6 +10,13 @@ import { CombatEnvController } from '../gameplay/Battle/CombatEnvController';
 import { BattleSkillButton } from '../gameplay/Battle/BattleSkillButton';
 import ConvetData from '../core/ConvertData';
 import { ServerManager } from '../core/ServerManager';
+import { TalkAnimation } from '../utilities/TalkAnimation';
+import { SkillList } from '../animal/Skills';
+import { PopupWinLoseBattle, StatusBattle, WinLoseBattleParam } from './PopupWinLoseBattle';
+import { Component } from 'cc';
+import { UserManager } from '../core/UserManager';
+import { Constants } from '../utilities/Constants';
+import { AnimalType } from '../animal/AnimalController';
 const { ccclass, property } = _decorator;
 @ccclass('PlayerBattleStats')
 export class PlayerBattleStats {
@@ -18,95 +25,260 @@ export class PlayerBattleStats {
     @property({ type: PetBattlePrefab }) petBattlePrefab: PetBattlePrefab = null;
 }
 @ccclass('PopupBattlePet')
-export class PopupBattlePet extends BasePopup {
+export class PopupBattlePet extends Component {
     @property({ type: [PlayerBattleStats] }) playerBattleStats: PlayerBattleStats[] = [];// 0 = competitor, 1 = userMe
     @property({ type: Prefab }) battleSkillButtonPrefab: Prefab = null;
     @property({ type: Node }) parentMySkill: Node = null;
+    @property({ type: Node }) parentBatteUI: Node = null;
     @property({ type: HandleOpenSplash }) centerOpenSplash: HandleOpenSplash = null;
     @property({ type: CombatEnvController }) combatEnvController: CombatEnvController = null;
     @property({ type: SlideObject }) slideChooseButtons: SlideObject = null;
     @property({ type: SlideObject }) slideSkillButtons: SlideObject = null;
+    @property({ type: SlideObject }) slideTalkAnimation: SlideObject = null;
+    @property({ type: TalkAnimation }) talkAnimation: TalkAnimation = null;
     //Button
+    @property({ type: Button }) hideSkillButton: Button = null;
     @property({ type: Button }) fightButton: Button = null;
-    @property({ type: Button }) runButton: Button = null;
-
+    @property({ type: Button }) surrenderButton: Button = null;
+    private mySkillsBatte: BattleSkillButton[] = []
+    private _onActionCompleted: (() => void) | null = null;
     myClient: PlayerBattle = null;
     targetClient: PlayerBattle = null;
     clientIdInRoom: string = "";
-    private _onActionCompleted: (() => void) | null = null;
 
-    public async init(param?: BatllePetParam) {
-        if (!param) {
-            this.closePopup();
-            return;
-        }
+
+    setData(param?: BatllePetParam) {
         this.Init(param);
         this.addListenerButton();
+        this.node.active = true;
     }
 
     addListenerButton() {
-        this.fightButton.node.on(Button.EventType.CLICK, async () => {
+        this.fightButton.addAsyncListener(async () => {
             await this.slideChooseButtons.slide(false, 0.3);
             await this.slideSkillButtons.slide(true, 0.3);
-        }, this);
+        });
+        this.surrenderButton.addAsyncListener(async () => {
+            ServerManager.instance.sendSurrenderBattle();
+            await Constants.waitUntil(() => !this.node.activeInHierarchy);
+        });
+        this.hideSkillButton.addAsyncListener(async () => {
+            this.hideSkillButton.interactable = false;
+            await this.slideSkillButtons.slide(false, 0.3);
+            await this.slideChooseButtons.slide(true, 0.3);
+            this.hideSkillButton.interactable = true;
+        });
     }
-
 
     private Init(param?: BatllePetParam) {
-        this.resetUIState();
-        this.centerOpenSplash.playSplash(() => this.SetDataBattle(param));
-    }
-
-    private resetUIState() {
         this.playerBattleStats.forEach(playerBattleStat => {
             playerBattleStat.landSpawnPet.slide(false, 0);
             playerBattleStat.hudBattlePet.slide.slide(false, 0);
+            playerBattleStat.petBattlePrefab.resetPet();
         });
         this.slideChooseButtons.slide(false, 0);
         this.slideSkillButtons.slide(false, 0);
+        this.hideTalkAnimation();
+        this.myClient = null;
+        this.targetClient = null;
+        this.clientIdInRoom = "";
+        this.mySkillsBatte = [];
+        this._onActionCompleted = null;
+        this.centerOpenSplash.playSplash(() => this.SetDataBattle(param));
     }
 
     async SetDataBattle(param?: BatllePetParam) {
-        this.combatEnvController.setEnvironmentByType(this.fakeCombatData.environmentType);
-        this.myClient = param.data.find(p => p.id === param.clientID);
-        this.targetClient = param.data.find(p => p.id !== param.clientID);
-        this.clientIdInRoom = param.clientID;
-        if (this.myClient == null || this.targetClient == null) return;
-        if (this.myClient.battlePets && this.targetClient != null) {
-            const mypet = this.myClient.battlePets[this.myClient.activePetIndex];
-            const targetPet = this.targetClient.battlePets[this.targetClient.activePetIndex];
-            if (mypet != null && targetPet != null) {
-                this.updateHUDPet(mypet, true);
-                this.updateHUDPet(targetPet, false);
-                for (const playerBattleStat of this.playerBattleStats) {
-                    await playerBattleStat.landSpawnPet.slide(true, 0.5);
-                    await playerBattleStat.hudBattlePet.slide.slide(true, 0.5);
-                }
-                this.createPet(mypet, true); // tạo pet của đối thủ (hoặc pet1)
-
-                setTimeout(async () => {
-                    this.createPet(targetPet, false); // tạo pet của mình (hoặc pet2)
-                }, 500);
-            }
+        if (!param || !param.data) {
+            this.closeBattle();
+            return;
         }
+        if (param.onActionClose) this._onActionCompleted = param.onActionClose;
+        this.clientIdInRoom = UserManager.instance.GetMyClientPlayer.myClientBattleId;
+        this.combatEnvController.setEnvironmentByType(param.enviromentBattle);
+        this.myClient = param.data.find(p => p.id === this.clientIdInRoom);
+        this.targetClient = param.data.find(p => p.id !== this.clientIdInRoom);
+
+
+        if (!this.myClient || !this.targetClient) {
+            this.closeBattle();
+            return;
+        }
+
+        const myPet = this.myClient.battlePets?.[this.myClient.activePetIndex];
+        const targetPet = this.targetClient.battlePets?.[this.targetClient.activePetIndex];
+
+        if (!myPet || !targetPet) {
+            this.closeBattle();
+            return;
+        }
+
+        this.updateHUDPet(myPet, this.myClient, true);
+        this.updateHUDPet(targetPet, this.targetClient, false);
+
+        for (const playerBattleStat of this.playerBattleStats) {
+            await playerBattleStat.landSpawnPet.slide(true, 0.5);
+            await playerBattleStat.hudBattlePet.slide.slide(true, 0.5);
+        }
+
+        this.createPet(myPet, true); // tạo pet của mình (hoặc pet1)
+
+        await this.delay(500); // thay cho setTimeout
+
+        this.createPet(targetPet, false); // tạo pet của đối thủ (hoặc pet2)
     }
 
-    async handleActionSkill(playerAttackId: string, skillAttackID: string, damage: number, petDefense: PetBattleInfo): Promise<void> {
+    async handleActionSkill(playerAttackId: string, petAttack: PetBattleInfo, skillUsing: SkillBattleInfo, effectValueSkill: number, damage: number, petDefense: PetBattleInfo): Promise<void> {
         const isSelfAttacker = playerAttackId === this.clientIdInRoom;
         const attacker = this.playerBattleStats[isSelfAttacker ? 1 : 0];
         const defender = this.playerBattleStats[isSelfAttacker ? 0 : 1];
-        await attacker.petBattlePrefab.playAnimBySpecies(skillAttackID, async () => {
-            if (damage <= 0) return;
-            await defender.petBattlePrefab.shakeNode();
-            await defender.hudBattlePet.takeDamage(damage, petDefense.currentHp, petDefense.totalHp);
-        });
-
+        const skill = SkillList.find(s => s.idSkill === skillUsing.skill_code);
+        if (skill != null && isSelfAttacker) {
+            const talk = `${attacker.petBattlePrefab.currentPet.name} đang sủ dụng ${skill.name}`;
+            this.updateMySkillInBattle(skillUsing);
+            await this.showTalkAnimation(talk);
+        }
+        await this.usingSkill(skillUsing.skill_code
+            , isSelfAttacker
+            , attacker
+            , defender
+            , petAttack
+            , this.parentBatteUI);
+        await this.handleChangeEffectValue(skillUsing, attacker, defender, effectValueSkill, damage, petAttack, petDefense);
+        this.hideTalkAnimation();
     }
 
-    updateHUDPet(pet: PetBattleInfo, isMyClient: boolean) {
+    async usingSkill(
+        skillId: SkillCode,
+        isSelfAttacker: boolean,
+        attacker: PlayerBattleStats,
+        defender: PlayerBattleStats,
+        petAttack: PetBattleInfo,
+        parent: Node
+    ): Promise<void> {
+        const attackerPrefab = attacker.petBattlePrefab;
+        const targetPrefab = defender.petBattlePrefab;
+
+        const skillSelfTarget = [
+            SkillCode.ATTACK, SkillCode.CUT, SkillCode.POUND, SkillCode.DOUBLE_KICK, SkillCode.BITE, SkillCode.CRUSH_CLAW, SkillCode.FURY_PUNCH,
+            SkillCode.RAZOR_LEAF, SkillCode.VINE_WHIP, SkillCode.THUNDERBOLT, SkillCode.THUNDER_WAVE, SkillCode.BUBBLE,
+            SkillCode.ICICLE_CRASH, SkillCode.ICE_FANG, SkillCode.DRAGON_CLAW
+        ];
+        attacker.hudBattlePet.setSleep(petAttack.isSleeping);
+        const skillSelfAttacker = [SkillCode.GROWL, SkillCode.PROTECT, SkillCode.ABSORB, SkillCode.AQUA_CUTTER];
+
+        switch (skillId) {
+            case SkillCode.ATTACK:
+                await attackerPrefab.playTackleEffect(isSelfAttacker ? 'right' : 'left');
+                break;
+            case SkillCode.REST:
+                await attackerPrefab.scaleInOut(attackerPrefab);
+                if (isSelfAttacker) {
+                    ServerManager.instance.sendPetSleeping(petAttack.id);
+                }
+                attacker.hudBattlePet.setSleep(true);
+                break;
+            case SkillCode.WING_ATTACK:
+                await attackerPrefab.skillMovementFromTo(skillId, attackerPrefab, targetPrefab, parent);
+                break;
+
+            case SkillCode.EARTHQUAKE:
+                await attackerPrefab.earthquake(parent, 0.5, 15);
+                break;
+
+            case SkillCode.ELECTRO_BALL:
+            case SkillCode.FIRE_BLAST:
+                await attackerPrefab.skillMovementFromTo(skillId, attackerPrefab, targetPrefab, parent);
+                await targetPrefab.usingSkillYourself(skillId);
+                break;
+
+            case SkillCode.WATER_GUN:
+                await attackerPrefab.throwSkillImage(skillId, attackerPrefab, targetPrefab, parent);
+                await targetPrefab.usingSkillYourself(skillId);
+                break;
+
+            case SkillCode.EMBER:
+                await attackerPrefab.spraySkill(skillId, attackerPrefab, targetPrefab, parent);
+                await targetPrefab.usingSkillYourself(skillId);
+                break;
+            case SkillCode.OVERHEAT:
+                await attackerPrefab.spraySkill(skillId, attackerPrefab, targetPrefab, parent);
+                await targetPrefab.usingSkillYourself(skillId);
+                break;
+            case "ICE01":
+                await attackerPrefab.throwSkillImage(skillId, attackerPrefab, targetPrefab, parent);
+                break;
+
+            default:
+                if (skillSelfAttacker.includes(skillId)) {
+                    await attackerPrefab.usingSkillYourself(skillId);
+                } else if (skillSelfTarget.includes(skillId)) {
+                    await targetPrefab.usingSkillYourself(skillId);
+                } else {
+                    await attackerPrefab.usingSkillYourself(skillId); // fallback
+                }
+                break;
+        }
+    }
+
+    async handleChangeEffectValue(
+        skill: SkillBattleInfo,
+        attacker: PlayerBattleStats,
+        defender: PlayerBattleStats,
+        effectValueSkill: number,
+        damage: number,
+        petAttack: PetBattleInfo,
+        petDefense: PetBattleInfo
+    ): Promise<void> {
+        const { typeSkill } = skill;
+
+        const takeDamageIfNeeded = async () => {
+            if (damage > 0) {
+                await defender.petBattlePrefab.shakeNode();
+                await defender.hudBattlePet.showEffectChangeValue(TypeSkill.ATTACK, damage);
+                await defender.hudBattlePet.takeDamage(petDefense.currentHp, petDefense.totalHp);
+            }
+        };
+
+        const showEffectAndUpdate = async (
+            player: PlayerBattleStats,
+            pet: PetBattleInfo,
+            effectType: TypeSkill
+        ) => {
+            await player.hudBattlePet.showEffectChangeValue(effectType, effectValueSkill);
+            player.hudBattlePet.updatePetStatsDisplay(pet);
+        };
+
+        switch (typeSkill) {
+            case TypeSkill.ATTACK:
+                await takeDamageIfNeeded();
+                break;
+
+            case TypeSkill.DECREASE_ATTACK:
+                await takeDamageIfNeeded();
+                if (!petDefense.isDead) {
+                    await showEffectAndUpdate(defender, petDefense, TypeSkill.DECREASE_ATTACK);
+                }
+                break;
+
+            case TypeSkill.INCREASE_ATTACK:
+                await takeDamageIfNeeded();
+                await showEffectAndUpdate(attacker, petAttack, TypeSkill.INCREASE_ATTACK);
+                break;
+
+            case TypeSkill.HEAL:
+                await showEffectAndUpdate(attacker, petAttack, TypeSkill.HEAL);
+                await attacker.hudBattlePet.heal(effectValueSkill, petAttack.currentHp, petAttack.totalHp);
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    updateHUDPet(pet: PetBattleInfo, player: PlayerBattle, isMyClient: boolean) {
         const index = isMyClient ? 1 : 0;
         const playerBattleStat = this.playerBattleStats[index];
-        playerBattleStat.hudBattlePet.updateHUD(pet);
+        playerBattleStat.hudBattlePet.updateHUD(pet, player);
     }
 
     createPet(pet: PetBattleInfo, isMyClient: boolean) {
@@ -114,59 +286,79 @@ export class PopupBattlePet extends BasePopup {
         const playerBattleStat = this.playerBattleStats[index];
         playerBattleStat.petBattlePrefab.setDataPet(pet, index);
         if (!isMyClient) return;
-        this.createMySkill(pet.skills)
+        this.createMySkill(pet)
     }
 
 
-    createMySkill(skillIdsFromServer: SkillData[]) {
+    createMySkill(pet: PetBattleInfo) {
         this.slideChooseButtons.slide(false, 0);
         this.parentMySkill.removeAllChildren();
+        this.mySkillsBatte = [];
         // Sau đó tạo các nút skill có dữ liệu
-        skillIdsFromServer.forEach((data, index) => {
+        pet.skills.forEach((skill, index) => {
             const newItem = instantiate(this.battleSkillButtonPrefab);
             newItem.setParent(this.parentMySkill);
             const skillButton = newItem.getComponent(BattleSkillButton);
-            skillButton?.setData(data, index, this.onClickSkill.bind(this));
+            skillButton?.setData(skill, index, this.onClickSkill.bind(this));
+            this.mySkillsBatte.push(skillButton);
         });
         this.slideChooseButtons.slide(true, 0.3);
     }
 
-    onClickSkill() {
+    updateMySkillInBattle(skillUsing: SkillBattleInfo) {
+        if (skillUsing == null) return;
+        const skillButton = this.mySkillsBatte.find(x => x.idSkill === skillUsing.skill_code);
+        skillButton?.updatePowerPoint(skillUsing);
+    }
+
+    async onClickSkill() {
         this.slideSkillButtons.slide(false, 0.3);
     }
 
-    async closePopup() {
-        this.cancelTween();
-        await PopupManager.getInstance().closePopup(this.node.uuid);
-    }
-
     public async handleBattleResult(data) {
-        const isTurn1PetAlive = await this.handleBattlePlayer(data.player1Id, data.skillAttacPlayer1Id, data.damagePlayer1, data.playerTargetP1);
+        const { turn1, turn2 } = data;
+        this.hideTalkAnimation();
+        const isTurn1PetAlive = await this.handleBattlePlayer(turn1.playerAttackTurn1, turn1.skillAttackTurn1, turn1.effectValueTurn1, turn1.damageTurn1, turn1.playerDefenseTurn1);
         if (!isTurn1PetAlive) return;
-        const isTurn2PetAlive = await this.handleBattlePlayer(data.player2Id, data.skillAttacPlayer2Id, data.damagePlayer2, data.playerTargetP2);
+        const isTurn2PetAlive = await this.handleBattlePlayer(turn2.playerAttackTurn2, turn2.skillAttackTurn2, turn2.effectValueTurn2, turn2.damageTurn2, turn2.playerDefenseTurn2);
         if (!isTurn2PetAlive) return;
         this.slideSkillButtons.slide(true, 0.3);
     }
 
     private async handleBattlePlayer(
-        playerId: string,
-        killAttacPlayer: string,
+        attacker: any,
+        skillAttack: any,
+        effectValueSkill: number,
         damagePlayer: number,
-        target: any,
+        defender: any,
     ): Promise<boolean> {
-        const playerTarget = ConvetData.ConvertPlayerBattleData(target);
-        const isMyClient = playerTarget.id === this.clientIdInRoom;
-        if (isMyClient) {
-            this.myClient = playerTarget;
+        const playerAttack = ConvetData.ConvertPlayerBattleData(attacker);
+        const playerDefense = ConvetData.ConvertPlayerBattleData(defender);
+        const isMyClientTarget = playerDefense.id === this.clientIdInRoom;
+        if (isMyClientTarget) {
+            this.myClient = playerDefense;
         } else {
-            this.targetClient = playerTarget;
+            this.targetClient = playerDefense;
         }
-        const petTarget = playerTarget.battlePets[playerTarget.activePetIndex];
-        await this.handleActionSkill(playerId, killAttacPlayer, damagePlayer, petTarget);
-        if (petTarget.isDead) {
-            await this.updatePetDead(isMyClient, () => {
-                let nextPet = this.getActivePetIndexById(playerTarget);
-                if (isMyClient) {
+        const petAttack = playerAttack.battlePets[playerAttack.activePetIndex];
+        const petDefense = playerDefense.battlePets[playerDefense.activePetIndex];
+        if (petAttack.isSleeping) {
+            if (!isMyClientTarget) {
+                await this.showTalkAnimation(`Pet vẫn đang ngủ!`);
+                this.hideTalkAnimation();
+            }
+            return true;
+        }
+        const skillUsing = ConvetData.convertToSkillData(skillAttack);
+        await this.handleActionSkill(playerAttack.id, petAttack, skillUsing, effectValueSkill, damagePlayer, petDefense);
+        if (petDefense.isDead) {
+            if (isMyClientTarget) {
+                await this.showTalkAnimation(`Pet mất khả năng chiến đấu rồi!`);
+                this.hideTalkAnimation();
+            }
+            await this.updatePetDead(isMyClientTarget, () => {
+                let nextPet = this.getActivePetIndexById(playerDefense);
+                if (isMyClientTarget) {
                     let petSwitchId = nextPet == null ? "-1" : nextPet.id;
                     ServerManager.instance.sendSwitchPetAfterPetDead(petSwitchId);
                 }
@@ -176,7 +368,7 @@ export class PopupBattlePet extends BasePopup {
         return true;
     }
 
-    public switchPetAfterPetDead(data) {
+    public async switchPetAfterPetDead(data) {
         const { playerSwitch, petChosenId } = data;
 
         const updatedPlayer = ConvetData.ConvertPlayerBattleData(playerSwitch);
@@ -189,8 +381,9 @@ export class PopupBattlePet extends BasePopup {
             console.warn("Không tìm thấy pet với ID:", petChosenId);
             return;
         }
+        await this.delay(1000);
         this.createPet(switchedPet, isMyClient);
-        this.updateHUDPet(switchedPet, isMyClient);
+        this.updateHUDPet(switchedPet, updatedPlayer, isMyClient);
         // Cập nhật thông tin người chơi tương ứng
         if (isMyClient) {
             this.myClient = updatedPlayer;
@@ -200,11 +393,22 @@ export class PopupBattlePet extends BasePopup {
         }
     }
 
-    public battleFinished(data) {
+    public async battleFinished(data) {
         const { winnerId, loserId } = data;
-        let winner = this.myClient.id == winnerId;
-        console.log("playerWinner", winner);
+        const win = UserManager.instance.GetMyClientPlayer.myClientBattleId == winnerId;
+        await Constants.waitUntil(() => this.myClient != null);
+        console.log("this.myClient:", this.myClient)
+        console.log("this.myClient.battlePets: ", this.myClient.battlePets)
+        const param: WinLoseBattleParam = {
+            pets: this.myClient.battlePets,
+            statusBattle: win ? StatusBattle.WIN : StatusBattle.LOSE,
+        };
+        this.closeBattle();
+        await PopupManager.getInstance().openAnimPopup('PopupWinLoseBattle', PopupWinLoseBattle, param);
+    }
 
+    public WaitingOpponents(data) {
+        this.showTalkAnimation("Vui lòng đợi đối thủ chọn kỹ năng");
     }
 
     async updatePetDead(isMyClient: boolean, callback?: () => void): Promise<void> {
@@ -218,9 +422,11 @@ export class PopupBattlePet extends BasePopup {
     }
 
     closeBattle() {
-        this.centerOpenSplash.playSplash(() => {
+        this.centerOpenSplash.playSplash(async () => {
             this._onActionCompleted?.();
-            this.closePopup();
+            this.cancelTween();
+            await ServerManager.instance.leaveBattleRoom();
+            this.node.active = false;
         });
     }
 
@@ -236,13 +442,24 @@ export class PopupBattlePet extends BasePopup {
         return player.battlePets[player.activePetIndex + 1];
     }
 
-    fakeCombatData: BattleData = {
-        environmentType: AnimalElement.Grass,
-    };
+    async showTalkAnimation(content: string): Promise<void> {
+        this.hideTalkAnimation();
+        this.slideTalkAnimation.slide(true, 0);
+        this.talkAnimation.displayDialog(content, 0.3, null, false);
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Chờ hiệu ứng bubble chạy xong 0.3s
+    }
+
+    async hideTalkAnimation() {
+        this.talkAnimation.cancelDisplayDialog();
+        this.slideTalkAnimation.slide(false, 0);
+    }
+    private delay(ms: number): Promise<void> {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
 }
 
 export interface BatllePetParam {
     data: PlayerBattle[];
-    clientID: string;
+    enviromentBattle: Element;
     onActionClose?: () => void;
 }

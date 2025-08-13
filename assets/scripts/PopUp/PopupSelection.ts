@@ -22,27 +22,30 @@ export class PopupSelection extends BasePopup {
         this.contentPopup.string = param.content;
         if (param.textButtonLeft != "") {
             this.contentButtonLeft.string = param.textButtonLeft;
-            this.buttonLeft.node.on(Button.EventType.CLICK, () => {
-                param.onActionButtonLeft?.();
+            this.buttonLeft.addAsyncListener(async () => {
+                this.buttonLeft.interactable = true;
+                await param.onActionButtonLeft?.();
                 this.closePopup();
-            }, this);
+            })
         }
         else this.buttonLeft.node.active = false;
 
         if (param.textButtonRight != "") {
             this.contentButtonRight.string = param.textButtonRight;
-            this.buttonRight.node.on(Button.EventType.CLICK, () => {
-                param.onActionButtonRight?.();
+            this.buttonRight.addAsyncListener(async () => {
+                this.buttonRight.interactable = true;
+                await param.onActionButtonRight?.();
                 this.closePopup();
-            }, this);
+            })
         } else this.buttonRight.node.active = false;
 
         if (param.textButtonCenter != "") {
             this.contentButtonCenter.string = param.textButtonCenter;
-            this.buttonCenter.node.on(Button.EventType.CLICK, () => {
+            this.buttonCenter.addAsyncListener(async () => {
+                this.buttonCenter.interactable = true;
                 param.onActionButtonCenter?.();
                 this.closePopup();
-            }, this);
+            })
         } else this.buttonCenter.node.active = false;
 
     }
@@ -61,9 +64,9 @@ export interface SelectionParam {
     textButtonRight: string;
     textButtonCenter: string;
     content: string;
-    onActionButtonLeft?: () => void;
-    onActionButtonRight?: () => void;
-    onActionButtonCenter?: () => void;
+    onActionButtonLeft?: () => Promise<void>;
+    onActionButtonRight?: () => Promise<void>;
+    onActionButtonCenter?: () => Promise<void>;
 }
 
 

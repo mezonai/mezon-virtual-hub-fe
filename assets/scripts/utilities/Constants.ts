@@ -67,7 +67,23 @@ export class Constants {
 
     public static GetMapData(office: OfficePosition): MapData {
         let mapData = ServerMapManager.Get.find(map => map.map_key == this.convertKeyOffice(office));
-        return mapData == null ? ServerMapManager.Get[0]: mapData;
+        return mapData == null ? ServerMapManager.Get[0] : mapData;
+    }
+
+    public static capitalizeFirstLetter(str) {
+        if (!str) return '';
+        return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+
+    public static waitUntil(condition: () => boolean): Promise<void> {
+        return new Promise(resolve => {
+            const interval = setInterval(() => {
+                if (condition()) {
+                    clearInterval(interval);
+                    resolve();
+                }
+            }, 50);
+        });
     }
 }
 

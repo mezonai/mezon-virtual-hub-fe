@@ -43,6 +43,9 @@ export class P2PInteractManager extends Ability {
     }
 
     onTouchStart(event) {
+        if (this.playerController.isInBattle) {
+            return;
+        }
         if (this.CanShowUI) {
             if (Date.now() - this.lastActionTime > this.interactDelay) {
                 this.lastActionTime = Date.now()
@@ -102,7 +105,7 @@ export class P2PInteractManager extends Ability {
         const popup = await PopupManager.getInstance().openPopup("TimeoutPopup", PopupMessageTimeout, param);
         if (popup?.isValid) {
             this.closeNoticeTimeOut = () => {
-               popup.ClosePopup();
+                popup.ClosePopup();
             };
         } else {
             this.closeNoticeTimeOut = null;

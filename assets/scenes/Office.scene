@@ -32,7 +32,7 @@
     "_active": true,
     "_components": [],
     "_prefab": {
-      "__id__": 195
+      "__id__": 223
     },
     "_lpos": {
       "__type__": "cc.Vec3",
@@ -63,7 +63,7 @@
     },
     "autoReleaseAssets": false,
     "_globals": {
-      "__id__": 237
+      "__id__": 267
     },
     "_id": "f606aa9a-5d93-499e-a06c-da1fcba4b7aa"
   },
@@ -426,7 +426,9 @@
     "defaultUI": 1,
     "listPanel": [],
     "outmapButton": null,
+    "showOwnedButton": null,
     "toolcreatePet": null,
+    "batteScene": null,
     "_id": "ceSNb4C4VMm40cZQ7aSOh3"
   },
   {
@@ -762,7 +764,7 @@
     "_priority": 0,
     "_fov": 45,
     "_fovAxis": 0,
-    "_orthoHeight": 75.82435791217895,
+    "_orthoHeight": 85.61968680089485,
     "_near": 0,
     "_far": 1000,
     "_color": {
@@ -2209,18 +2211,21 @@
       },
       {
         "__id__": 133
+      },
+      {
+        "__id__": 192
       }
     ],
     "_active": true,
     "_components": [
       {
-        "__id__": 192
+        "__id__": 220
       },
       {
-        "__id__": 193
+        "__id__": 221
       },
       {
-        "__id__": 194
+        "__id__": 222
       }
     ],
     "_prefab": null,
@@ -2403,7 +2408,7 @@
     "_priority": 10,
     "_fov": 45,
     "_fovAxis": 0,
-    "_orthoHeight": 75.82435791217895,
+    "_orthoHeight": 85.61968680089485,
     "_near": 0,
     "_far": 1000,
     "_color": {
@@ -3761,6 +3766,331 @@
     ]
   },
   {
+    "__type__": "cc.Node",
+    "_objFlags": 0,
+    "_parent": {
+      "__id__": 71
+    },
+    "_prefab": {
+      "__id__": 193
+    },
+    "__editorExtras__": {}
+  },
+  {
+    "__type__": "cc.PrefabInfo",
+    "root": {
+      "__id__": 192
+    },
+    "asset": {
+      "__uuid__": "578f7732-43b2-4337-abee-68f5ac027559",
+      "__expectedType__": "cc.Prefab"
+    },
+    "fileId": "a2AbuKBPpCYpw6DcQ/Fb3G",
+    "instance": {
+      "__id__": 194
+    },
+    "targetOverrides": [
+      {
+        "__id__": 200
+      },
+      {
+        "__id__": 203
+      },
+      {
+        "__id__": 206
+      },
+      {
+        "__id__": 209
+      },
+      {
+        "__id__": 212
+      },
+      {
+        "__id__": 214
+      },
+      {
+        "__id__": 216
+      },
+      {
+        "__id__": 218
+      }
+    ]
+  },
+  {
+    "__type__": "cc.PrefabInstance",
+    "fileId": "e5oMNUEE9Jb5HBmqtbkQOw",
+    "prefabRootNode": null,
+    "mountedChildren": [],
+    "mountedComponents": [],
+    "propertyOverrides": [
+      {
+        "__id__": 195
+      },
+      {
+        "__id__": 197
+      },
+      {
+        "__id__": 198
+      },
+      {
+        "__id__": 199
+      }
+    ],
+    "removedComponents": []
+  },
+  {
+    "__type__": "CCPropertyOverrideInfo",
+    "targetInfo": {
+      "__id__": 196
+    },
+    "propertyPath": [
+      "_name"
+    ],
+    "value": "PopupBattlePet"
+  },
+  {
+    "__type__": "cc.TargetInfo",
+    "localID": [
+      "a2AbuKBPpCYpw6DcQ/Fb3G"
+    ]
+  },
+  {
+    "__type__": "CCPropertyOverrideInfo",
+    "targetInfo": {
+      "__id__": 196
+    },
+    "propertyPath": [
+      "_lpos"
+    ],
+    "value": {
+      "__type__": "cc.Vec3",
+      "x": 0,
+      "y": 0,
+      "z": 0
+    }
+  },
+  {
+    "__type__": "CCPropertyOverrideInfo",
+    "targetInfo": {
+      "__id__": 196
+    },
+    "propertyPath": [
+      "_lrot"
+    ],
+    "value": {
+      "__type__": "cc.Quat",
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "w": 1
+    }
+  },
+  {
+    "__type__": "CCPropertyOverrideInfo",
+    "targetInfo": {
+      "__id__": 196
+    },
+    "propertyPath": [
+      "_euler"
+    ],
+    "value": {
+      "__type__": "cc.Vec3",
+      "x": 0,
+      "y": 0,
+      "z": 0
+    }
+  },
+  {
+    "__type__": "cc.TargetOverrideInfo",
+    "source": null,
+    "sourceInfo": null,
+    "propertyPath": [
+      "playerBattleStats",
+      "0",
+      "landSpawnPet"
+    ],
+    "target": {
+      "__id__": 201
+    },
+    "targetInfo": {
+      "__id__": 202
+    }
+  },
+  {
+    "__type__": "cc.Node",
+    "__editorExtras__": {}
+  },
+  {
+    "__type__": "cc.TargetInfo",
+    "localID": [
+      "50hvFBLNBK1ap9qq72Vcf1"
+    ]
+  },
+  {
+    "__type__": "cc.TargetOverrideInfo",
+    "source": null,
+    "sourceInfo": null,
+    "propertyPath": [
+      "playerBattleStats",
+      "0",
+      "hudBattlePet"
+    ],
+    "target": {
+      "__id__": 204
+    },
+    "targetInfo": {
+      "__id__": 205
+    }
+  },
+  {
+    "__type__": "cc.Node",
+    "__editorExtras__": {}
+  },
+  {
+    "__type__": "cc.TargetInfo",
+    "localID": [
+      "26xxakFKVEVb13NNyJqpML"
+    ]
+  },
+  {
+    "__type__": "cc.TargetOverrideInfo",
+    "source": null,
+    "sourceInfo": null,
+    "propertyPath": [
+      "playerBattleStats",
+      "1",
+      "landSpawnPet"
+    ],
+    "target": {
+      "__id__": 207
+    },
+    "targetInfo": {
+      "__id__": 208
+    }
+  },
+  {
+    "__type__": "cc.Node",
+    "__editorExtras__": {}
+  },
+  {
+    "__type__": "cc.TargetInfo",
+    "localID": [
+      "50hvFBLNBK1ap9qq72Vcf1"
+    ]
+  },
+  {
+    "__type__": "cc.TargetOverrideInfo",
+    "source": null,
+    "sourceInfo": null,
+    "propertyPath": [
+      "playerBattleStats",
+      "1",
+      "hudBattlePet"
+    ],
+    "target": {
+      "__id__": 210
+    },
+    "targetInfo": {
+      "__id__": 211
+    }
+  },
+  {
+    "__type__": "cc.Node",
+    "__editorExtras__": {}
+  },
+  {
+    "__type__": "cc.TargetInfo",
+    "localID": [
+      "26xxakFKVEVb13NNyJqpML"
+    ]
+  },
+  {
+    "__type__": "cc.TargetOverrideInfo",
+    "source": null,
+    "sourceInfo": null,
+    "propertyPath": [
+      "bgLand1"
+    ],
+    "target": {
+      "__id__": 201
+    },
+    "targetInfo": {
+      "__id__": 213
+    }
+  },
+  {
+    "__type__": "cc.TargetInfo",
+    "localID": [
+      "53YSNnGhNE9rS+2jtGGQnr"
+    ]
+  },
+  {
+    "__type__": "cc.TargetOverrideInfo",
+    "source": null,
+    "sourceInfo": null,
+    "propertyPath": [
+      "bgLand2"
+    ],
+    "target": {
+      "__id__": 207
+    },
+    "targetInfo": {
+      "__id__": 215
+    }
+  },
+  {
+    "__type__": "cc.TargetInfo",
+    "localID": [
+      "53YSNnGhNE9rS+2jtGGQnr"
+    ]
+  },
+  {
+    "__type__": "cc.TargetOverrideInfo",
+    "source": null,
+    "sourceInfo": null,
+    "propertyPath": [
+      "playerBattleStats",
+      "0",
+      "petBattlePrefab"
+    ],
+    "target": {
+      "__id__": 201
+    },
+    "targetInfo": {
+      "__id__": 217
+    }
+  },
+  {
+    "__type__": "cc.TargetInfo",
+    "localID": [
+      "96ds5sj3lAPa/oF5GgaCkr",
+      "76TFCe3d1Go7MXA1uSDbsO"
+    ]
+  },
+  {
+    "__type__": "cc.TargetOverrideInfo",
+    "source": null,
+    "sourceInfo": null,
+    "propertyPath": [
+      "playerBattleStats",
+      "1",
+      "petBattlePrefab"
+    ],
+    "target": {
+      "__id__": 207
+    },
+    "targetInfo": {
+      "__id__": 219
+    }
+  },
+  {
+    "__type__": "cc.TargetInfo",
+    "localID": [
+      "96ds5sj3lAPa/oF5GgaCkr",
+      "76TFCe3d1Go7MXA1uSDbsO"
+    ]
+  },
+  {
     "__type__": "cc.UITransform",
     "_name": "",
     "_objFlags": 0,
@@ -3836,55 +4166,58 @@
     "instance": null,
     "targetOverrides": [
       {
-        "__id__": 196
+        "__id__": 224
       },
       {
-        "__id__": 198
-      },
-      {
-        "__id__": 200
-      },
-      {
-        "__id__": 202
-      },
-      {
-        "__id__": 204
-      },
-      {
-        "__id__": 206
-      },
-      {
-        "__id__": 208
-      },
-      {
-        "__id__": 210
-      },
-      {
-        "__id__": 213
-      },
-      {
-        "__id__": 216
-      },
-      {
-        "__id__": 219
-      },
-      {
-        "__id__": 222
-      },
-      {
-        "__id__": 225
+        "__id__": 226
       },
       {
         "__id__": 228
       },
       {
-        "__id__": 231
+        "__id__": 230
       },
       {
-        "__id__": 233
+        "__id__": 232
       },
       {
-        "__id__": 235
+        "__id__": 234
+      },
+      {
+        "__id__": 236
+      },
+      {
+        "__id__": 238
+      },
+      {
+        "__id__": 241
+      },
+      {
+        "__id__": 244
+      },
+      {
+        "__id__": 247
+      },
+      {
+        "__id__": 250
+      },
+      {
+        "__id__": 253
+      },
+      {
+        "__id__": 256
+      },
+      {
+        "__id__": 259
+      },
+      {
+        "__id__": 261
+      },
+      {
+        "__id__": 263
+      },
+      {
+        "__id__": 265
       }
     ],
     "nestedPrefabInstanceRoots": [
@@ -3905,6 +4238,9 @@
       },
       {
         "__id__": 133
+      },
+      {
+        "__id__": 192
       }
     ]
   },
@@ -3921,7 +4257,7 @@
       "__id__": 76
     },
     "targetInfo": {
-      "__id__": 197
+      "__id__": 225
     }
   },
   {
@@ -3941,7 +4277,7 @@
     ],
     "target": null,
     "targetInfo": {
-      "__id__": 199
+      "__id__": 227
     }
   },
   {
@@ -3961,7 +4297,7 @@
     ],
     "target": null,
     "targetInfo": {
-      "__id__": 201
+      "__id__": 229
     }
   },
   {
@@ -3983,7 +4319,7 @@
       "__id__": 84
     },
     "targetInfo": {
-      "__id__": 203
+      "__id__": 231
     }
   },
   {
@@ -4005,7 +4341,7 @@
       "__id__": 103
     },
     "targetInfo": {
-      "__id__": 205
+      "__id__": 233
     }
   },
   {
@@ -4025,7 +4361,7 @@
     ],
     "target": null,
     "targetInfo": {
-      "__id__": 207
+      "__id__": 235
     }
   },
   {
@@ -4047,7 +4383,7 @@
       "__id__": 76
     },
     "targetInfo": {
-      "__id__": 209
+      "__id__": 237
     }
   },
   {
@@ -4062,7 +4398,7 @@
       "__id__": 103
     },
     "sourceInfo": {
-      "__id__": 211
+      "__id__": 239
     },
     "propertyPath": [
       "chatScrollView"
@@ -4071,7 +4407,7 @@
       "__id__": 103
     },
     "targetInfo": {
-      "__id__": 212
+      "__id__": 240
     }
   },
   {
@@ -4092,7 +4428,7 @@
       "__id__": 103
     },
     "sourceInfo": {
-      "__id__": 214
+      "__id__": 242
     },
     "propertyPath": [
       "dimNode"
@@ -4101,7 +4437,7 @@
       "__id__": 103
     },
     "targetInfo": {
-      "__id__": 215
+      "__id__": 243
     }
   },
   {
@@ -4122,7 +4458,7 @@
       "__id__": 103
     },
     "sourceInfo": {
-      "__id__": 217
+      "__id__": 245
     },
     "propertyPath": [
       "objectShow"
@@ -4131,7 +4467,7 @@
       "__id__": 103
     },
     "targetInfo": {
-      "__id__": 218
+      "__id__": 246
     }
   },
   {
@@ -4152,7 +4488,7 @@
       "__id__": 103
     },
     "sourceInfo": {
-      "__id__": 220
+      "__id__": 248
     },
     "propertyPath": [
       "buttonShow"
@@ -4161,7 +4497,7 @@
       "__id__": 103
     },
     "targetInfo": {
-      "__id__": 221
+      "__id__": 249
     }
   },
   {
@@ -4182,7 +4518,7 @@
       "__id__": 103
     },
     "sourceInfo": {
-      "__id__": 223
+      "__id__": 251
     },
     "propertyPath": [
       "buttonHide"
@@ -4191,7 +4527,7 @@
       "__id__": 103
     },
     "targetInfo": {
-      "__id__": 224
+      "__id__": 252
     }
   },
   {
@@ -4212,7 +4548,7 @@
       "__id__": 103
     },
     "sourceInfo": {
-      "__id__": 226
+      "__id__": 254
     },
     "propertyPath": [
       "buttonShowDetailMission"
@@ -4221,7 +4557,7 @@
       "__id__": 103
     },
     "targetInfo": {
-      "__id__": 227
+      "__id__": 255
     }
   },
   {
@@ -4242,7 +4578,7 @@
       "__id__": 103
     },
     "sourceInfo": {
-      "__id__": 229
+      "__id__": 257
     },
     "propertyPath": [
       "outmapButton"
@@ -4251,7 +4587,7 @@
       "__id__": 76
     },
     "targetInfo": {
-      "__id__": 230
+      "__id__": 258
     }
   },
   {
@@ -4279,7 +4615,7 @@
       "__id__": 76
     },
     "targetInfo": {
-      "__id__": 232
+      "__id__": 260
     }
   },
   {
@@ -4299,7 +4635,7 @@
     ],
     "target": null,
     "targetInfo": {
-      "__id__": 234
+      "__id__": 262
     }
   },
   {
@@ -4321,7 +4657,7 @@
       "__id__": 133
     },
     "targetInfo": {
-      "__id__": 236
+      "__id__": 264
     }
   },
   {
@@ -4331,30 +4667,52 @@
     ]
   },
   {
+    "__type__": "cc.TargetOverrideInfo",
+    "source": {
+      "__id__": 18
+    },
+    "sourceInfo": null,
+    "propertyPath": [
+      "batteScene"
+    ],
+    "target": {
+      "__id__": 192
+    },
+    "targetInfo": {
+      "__id__": 266
+    }
+  },
+  {
+    "__type__": "cc.TargetInfo",
+    "localID": [
+      "77SiUB25lJv7U8taV1OAlC"
+    ]
+  },
+  {
     "__type__": "cc.SceneGlobals",
     "ambient": {
-      "__id__": 238
+      "__id__": 268
     },
     "shadows": {
-      "__id__": 239
+      "__id__": 269
     },
     "_skybox": {
-      "__id__": 240
+      "__id__": 270
     },
     "fog": {
-      "__id__": 241
+      "__id__": 271
     },
     "octree": {
-      "__id__": 242
+      "__id__": 272
     },
     "skin": {
-      "__id__": 243
+      "__id__": 273
     },
     "lightProbeInfo": {
-      "__id__": 244
+      "__id__": 274
     },
     "postSettings": {
-      "__id__": 245
+      "__id__": 275
     },
     "bakedWithStationaryMainLight": false,
     "bakedWithHighpLightmap": false

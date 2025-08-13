@@ -15,6 +15,8 @@ import { AudioType, SoundManager } from '../../core/SoundManager';
 import { GoKart } from '../MapItem/GoKart';
 import { PetCatchingController } from './PetCatchingController';
 import { AnimalController } from '../../animal/AnimalController';
+import { Sprite } from 'cc';
+import { ServerManager } from '../../core/ServerManager';
 
 @ccclass('PlayerController')
 export class PlayerController extends Component {
@@ -22,8 +24,6 @@ export class PlayerController extends Component {
     @property({ type: CCString }) myID: string = "";
     @property({ type: CCString }) userName: string = "";
     @property({ type: CCString }) userId: string = "";
-    private rigidbody = false;
-    private _body: RigidBody2D | null = null;
     @property({ type: Collider2D }) collider: Collider2D | null = null;
     @property({ type: RichText }) playerNameText: RichText = null;
     @property({ type: MoveAbility }) moveAbility: MoveAbility = null;
@@ -31,12 +31,18 @@ export class PlayerController extends Component {
     @property({ type: Node }) equipItemAnchor: Node = null;
     @property({ type: [Color] }) playerNameColor: Color[] = [];
     @property({ type: P2PInteractManager }) p2PInteractManager: P2PInteractManager = null;
+    @property({ type: Node }) iconBattle: Node | null = null;
     /////Bubble Chat
     @property(Node) bubbleChat: Node = null;
     @property(Label) contentBubbleChat: Label = null;
     @property({ type: PetCatchingController }) petCatching: PetCatchingController;
     @property petFollowPrefabs: AnimalController[] = [];
+    ////
     myClientBattleId: string = "";
+    isInBattle: boolean = false;
+    ////
+    private rigidbody = false;
+    private _body: RigidBody2D | null = null;
     private tweenAction: Tween<Node> | null = null;
     private hideTimeout: number | null = null;
     private showNameTimer: number | null = null;
@@ -90,11 +96,17 @@ export class PlayerController extends Component {
         this.petFollowPrefabs.push(petPrefab);
     }
 
-    public async init(sessionId, room, name = "", skinSet: string, userID: string, isShowName: boolean) {
+    setStatusBattle(isInBattle: boolean) {
+        this.isInBattle = isInBattle;
+        this.iconBattle.active = isInBattle;
+    }
+
+    public async init(sessionId, room, name = "", skinSet: string, userID: string, isShowName: boolean, isInBattle: boolean) {
         this.room = room;
         this.myID = sessionId;
         this.userId = userID;
         this.shrinkBubbleChat(0);
+        this.setStatusBattle(isInBattle);
         await this.animationEventController.init(this.isMyClient ? UserMeManager.Get.user.skin_set : skinSet != "" ? skinSet.split("/") : ResourceManager.instance.LocalSkinConfig.male.defaultSet);
         if (this.rigidbody) {
             this._body = this.node.getComponent(RigidBody2D);
@@ -199,10 +211,9 @@ export class PlayerController extends Component {
         this.moveAbility.updateRemotePosition(data);
     }
 
-    public leaveRoom(onDone?: () => void) {
+    public async leaveRoom(onDone?: () => void) {
         this.resetPets(async () => {
-            await this.room.leave();
-            console.log("Left Room");
+            await ServerManager.instance.leaveRoom();
             if (onDone) {
                 onDone();
             }

@@ -89,8 +89,7 @@ export class NPCController extends Component {
     }
 
     private checkShowDialogue(data) {
-        if (!this.inited) return;
-
+        if (!this.inited || UserManager.instance.GetMyClientPlayer?.isInBattle) return;
         if (this.type == NPC_TYPE.FACT) {
             let content = ResourceManager.instance.FactData.data[randomRangeInt(0, ResourceManager.instance.FactData.data.length)].fact;
             if (content != "") {
@@ -128,11 +127,11 @@ export class NPCController extends Component {
 
     async ShowBubbleChatMath(mathParam: MathProblemParam) {
         const popup = await PopupManager.getInstance().openPopup("MathProblemPopup", MathProblemPopup, mathParam);
-         if (popup?.isValid) {
+        if (popup?.isValid) {
             setTimeout(() => {
                 popup.closePopup();
             }, this.showDialogueTime * 1000);
-        } 
+        }
     }
 
     private loadDialogue() {

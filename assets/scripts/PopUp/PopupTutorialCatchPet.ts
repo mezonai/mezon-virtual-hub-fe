@@ -205,7 +205,7 @@ export class PopupTutorialCatchPet extends BasePopup {
                             textButtonLeft: "",
                             textButtonRight: "",
                             textButtonCenter: "Bắt Đầu",
-                            onActionButtonCenter: () => {
+                            onActionButtonCenter: async () => {
                                 localStorage.setItem(Constants.TUTORIAL_CACTH_PET, 'true');
                                 this.cancelTutorial();
                             },

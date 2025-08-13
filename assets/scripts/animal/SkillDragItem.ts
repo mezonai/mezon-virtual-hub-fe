@@ -8,7 +8,6 @@ const { ccclass, property } = _decorator;
 
 @ccclass('SkillDragItem')
 export class SkillDragItem extends DraggableBase {
-    @property({ type: Prefab }) itemSkillPrefab: Prefab = null;
     slotsSkillFighting: ItemSlotSkill[] = [];
     interactionMode: InteractSlot = InteractSlot.NONE;
     skillTooltip: SkillTooltip = null;

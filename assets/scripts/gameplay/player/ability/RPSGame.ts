@@ -87,6 +87,7 @@ export class RPSGame extends PlayerInteractAction {
                 targetButton: TargetButton.LEFT,
             },
             onActionButtonLeft: () => {
+                PopupManager.getInstance().closeAllPopups();
                 this.startAction(data);
             },
             onActionButtonRight: () => {
