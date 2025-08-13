@@ -202,10 +202,11 @@ export class WebRequestManager extends Component {
         }
         try {
             json = JSON.parse(response);
-            if (this.errorMessageMap.has(json.code)) {
-                json.error_message = this.errorMessageMap.get(json.code) || '';
-
+            const errorCode = Number(json.code)
+            if (this.errorMessageMap.has(errorCode)) {
+                json.error_message = this.errorMessageMap.get(errorCode) || '';
             }
+
         }
         catch (e) {
             console.log(e);
