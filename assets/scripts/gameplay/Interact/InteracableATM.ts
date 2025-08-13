@@ -1,13 +1,10 @@
-import { _decorator, Collider2D, IPhysics2DContact, randomRangeInt } from 'cc';
+import { _decorator, randomRangeInt } from 'cc';
 import { MapItemController } from '../MapItem/MapItemController';
-import { UIManager } from '../../core/UIManager';
-import { UIID } from '../../ui/enum/UIID';
-import { SendActionType, SendTokenPanel } from '../../ui/SendTokenPanel';
+import {SendTokenPanel, SendTokenParam } from '../../ui/SendTokenPanel';
 import { ServerManager } from '../../core/ServerManager';
 import { EVENT_NAME } from '../../network/APIConstant';
 import { UserManager } from '../../core/UserManager';
-import { UserMeManager } from '../../core/UserMeManager';
-import { ResourceManager } from '../../core/ResourceManager';
+import { PopupManager } from '../../PopUp/PopupManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('InteractATM')
@@ -19,22 +16,18 @@ export class InteractATM extends MapItemController {
     ];
 
     protected override async interact(playerSessionId: string) {
-        let panel = UIManager.Instance.showUI(UIID.SendToken);
-        let panelComp = panel.getComponent(SendTokenPanel);
-
-        panelComp.setBuyCallback((data) => {
-            this.onBuyClick(data);
-        });
+        if(this.isOpenPopUp) return;
+        this.isOpenPopUp = true;
         
-        panelComp.setChangeDiamondToCoinCallback((data) => {
-            this.onChangeDiamondToCoinClick(data);
-        });
-        
-        panelComp.setWithdrawCallback((data) => {
-            this.onWithdrawClick(data);
-        });
-
-    
+        const param: SendTokenParam = {
+            onActionClose:()=>{
+                this.isOpenPopUp = false;
+            },    
+            onActionBuyDiamond: (data) => { this.onBuyClick(data); },
+            onActionWithdrawDiamond: (data) => { this.onWithdrawClick(data); },
+            onActionChangeDiamondToCoin: (data) => { this.onChangeDiamondToCoinClick(data); }
+        };
+        PopupManager.getInstance().openAnimPopup("UITransferDiamondPopup", SendTokenPanel, param);
         this.handleEndContact(null, null, null);
     }
 

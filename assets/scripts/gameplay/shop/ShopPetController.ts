@@ -1,6 +1,5 @@
 import { _decorator, Button, EditBox, Label, Node, RichText, Sprite } from 'cc';
 import { UserMeManager } from '../../core/UserMeManager';
-import { UIManager } from '../../core/UIManager';
 import { WebRequestManager } from '../../network/WebRequestManager';
 import { Food, InventoryType, Item, PurchaseMethod } from '../../Model/Item';
 import { ResourceManager } from '../../core/ResourceManager';
@@ -10,12 +9,15 @@ import { BaseInventoryManager } from '../player/inventory/BaseInventoryManager';
 import { LocalItemDataConfig } from '../../Model/LocalItemConfig';
 import UIPopup from '../../ui/UI_Popup';
 import Utilities from '../../utilities/Utilities';
-import { GameManager } from '../../core/GameManager';
+import { PopupManager } from '../../PopUp/PopupManager';
+import { ConfirmParam, ConfirmPopup } from '../../PopUp/ConfirmPopup';
+import { PopupBuyItem, PopupBuyItemParam } from '../../PopUp/PopupBuyItem';
+import { PopupBuyQuantityItem, PopupBuyQuantityItemParam } from '../../PopUp/PopupBuyQuantityItem';
 const { ccclass, property } = _decorator;
 
 @ccclass('ShopPetController')
 export class ShopPetController extends BaseInventoryManager {
-    @property({ type: UIPopup }) noticePopup: UIPopup = null;
+    //@property({ type: UIPopup }) noticePopup: UIPopup = null;
     @property({ type: RichText }) itemPrice: RichText = null;
     @property({ type: RichText }) descriptionFood: RichText = null;
     @property({ type: Node }) itemPriceContainer: Node = null;
@@ -23,17 +25,9 @@ export class ShopPetController extends BaseInventoryManager {
     protected override groupedItems: Record<string, Food[]> = null;
     protected override selectingUIItem: ShopUIItem = null;
     @property({ type: Sprite }) iconFrame: Sprite = null;
-    @property({ type: Sprite }) iconMoneyFrame: Sprite = null;
-
-
-    @property({ type: EditBox }) quantityItemFood: EditBox = null;
-    @property({ type: Button }) increaseQuantityBtn: Button = null;
-    @property({ type: Button }) decreaseQuantityBtn: Button = null;
-    @property({ type: Label }) priceBuyQuantity: Label = null;
 
     private quantity: number = 1;
-    private quantityLimit: number = 1;
-    private quantityIncreaseBtn: number = 1;
+    private isOpenPopUp: boolean = false;
 
     protected override async actionButtonClick() {
         try {
@@ -51,24 +45,46 @@ export class ShopPetController extends BaseInventoryManager {
             }
 
         } catch (error) {
-            UIManager.Instance.showNoticePopup("Chú ý", error.message);
+            const param: ConfirmParam = {
+                message: error.message,
+                title: "Chú ý",
+            };
+            PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
         }
+    }
+
+    protected override closeUIBtnClick() {
+        PopupManager.getInstance().closePopup(this.node.uuid);
+        this._onActionClose?.();
     }
 
     private async showPopupAndReset(): Promise<boolean> {
         let result = await new Promise<boolean>((resolve, reject) => {
             this.ResetQuantity();
-            this.noticePopup.showYesNoPopup(
-                null,
-                Utilities.convertBigNumberToStr(this.selectingUIItem.dataFood.price),
-                () => {
+            if (this.isOpenPopUp || !this.selectingUIItem?.dataFood?.price || this.selectingUIItem.dataFood.price <= 0) 
+            {
+                reject(false);
+                return;
+            }
+
+            this.isOpenPopUp = true;
+            const param: PopupBuyQuantityItemParam = {
+                selectedItemPrice: this.selectingUIItem.dataFood.price,
+                spriteMoneyValue:  this.iconFrame.spriteFrame,
+                textButtonLeft: "Thôi",
+                textButtonRight: "Mua",
+                onActionButtonLeft: () => {
+                    reject(false);
+                },
+                onActionButtonRight: (quantity: number) => {
+                    this.quantity = quantity;
                     resolve(true);
                 },
-                null, null,
-                () => {
-                    reject(false);
-                }
-            );
+                onActionClose: () => {
+                    this.isOpenPopUp = false;
+                },
+            };
+            PopupManager.getInstance().openAnimPopup("PopupBuyQuantityItem", PopupBuyQuantityItem, param);
         });
 
         return result;
@@ -77,7 +93,11 @@ export class ShopPetController extends BaseInventoryManager {
     private addItemToInventory(response) {
         UserMeManager.playerCoin = response.data.user_balance.gold;
         UserMeManager.playerDiamond = response.data.user_balance.diamond;
-        UIManager.Instance.showNoticePopup("Thông báo", "Mua thành công!");
+        const param: ConfirmParam = {
+            message: "Mua thành công!",
+            title: "Thông báo",
+        };
+        PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
     }
 
     private async buyItem() {
@@ -108,14 +128,17 @@ export class ShopPetController extends BaseInventoryManager {
         WebRequestManager.instance.getUserProfile(
             (response) => {
                 UserMeManager.Set = response.data;
-                GameManager.instance.inventoryController.addFoodToInventory(UserMeManager.GetFoods);
             },
             (error) => this.onApiError(error)
         );
     }
 
     private onApiError(error) {
-        UIManager.Instance.showNoticePopup("Chú ý", error.error_message);
+        const param: ConfirmParam = {
+            message: error.error_message,
+            title: "Chú ý",
+        };
+        PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
     }
 
     private checkGoldUser(price: number) {
@@ -130,47 +153,13 @@ export class ShopPetController extends BaseInventoryManager {
         }
     }
 
-    private setupQuantityHandlers() {
-        this.increaseQuantityBtn.node.on(Button.EventType.CLICK, this.onIncreaseQuantity, this);
-        this.decreaseQuantityBtn.node.on(Button.EventType.CLICK, this.onDecreaseQuantity, this);
-        this.quantityItemFood.node.on(EditBox.EventType.TEXT_CHANGED, this.onQuantityChanged, this);
-    }
-
-    private onIncreaseQuantity() {
-        this.quantity += this.quantityIncreaseBtn;
-        this.updateQuantityUI();
-    }
-
-    private onDecreaseQuantity() {
-        this.quantity = Math.max(this.quantity - this.quantityIncreaseBtn, this.quantityLimit);
-        this.updateQuantityUI();
-    }
-
-    private onQuantityChanged(editbox: EditBox) {
-       const cleanString = editbox.string.replace(/[^0-9]/g, '');
-        if (editbox.string !== cleanString) {
-            editbox.string = cleanString;
-        }
-
-        const value = parseInt(cleanString);
-        this.quantity = isNaN(value) || value < this.quantityLimit ? this.quantityLimit : value;
-
-        this.updateQuantityUI();
-    }
-
-    private updateQuantityUI() {
-        this.quantityItemFood.string = this.quantity.toString();
-
-        if (this.selectingUIItem?.dataFood) {
-            const totalPrice = this.selectingUIItem.dataFood.price * this.quantity;
-            this.priceBuyQuantity.string = Utilities.convertBigNumberToStr(totalPrice);
-        }
-        this.decreaseQuantityBtn.interactable = this.quantity > this.quantityLimit;
-    }
-
-    public override init() {
+    public init(param: InteractShopPetParam) {
+        super.init();
         this.initGroupData();
-        this.setupQuantityHandlers();
+        this.onTabChange(this.categories[0]);
+        if (param != null && param.onActionClose != null) {
+            this._onActionClose = param.onActionClose;
+        }
     }
 
     protected override reset() {
@@ -207,9 +196,11 @@ export class ShopPetController extends BaseInventoryManager {
         this.setupFoodReward(uiItem, item.type);
         uiItem.initFood(item);
         uiItem.toggleActive(false);
+        uiItem.reset();
     }
 
     public override setupFoodReward(uiItem: any, foodType: string) {
+        super.setupFoodReward(uiItem, foodType);
         const normalizedType = foodType.replace(/-/g, "");
         const sprite = this.foodIconMap[normalizedType];
         if (sprite) {
@@ -229,7 +220,6 @@ export class ShopPetController extends BaseInventoryManager {
 
     private ResetQuantity() {
         this.quantity = 1;
-        this.updateQuantityUI();
     }
 
     protected onDisable(): void {
@@ -237,15 +227,7 @@ export class ShopPetController extends BaseInventoryManager {
     }
 
     protected override onUIItemClickFood(uiItem: ShopUIItem, data: Food) {
-        if (this.selectingUIItem) {
-            this.selectingUIItem.toggleActive(false);
-
-            if (this.selectingUIItem == uiItem) {
-                this.reset();
-                return;
-            }
-        }
-
+        this.selectingUIItem = uiItem;
         super.onUIItemClickFood(uiItem, data);
 
         this.descriptionText.string = data.name;
@@ -256,10 +238,8 @@ export class ShopPetController extends BaseInventoryManager {
         const sprite = this.moneyIconMap[data.purchase_method.toString()];
         if (sprite) {
             this.iconFrame.spriteFrame = sprite;
-            this.iconMoneyFrame.spriteFrame = sprite;
         }
         this.quantity = 1;
-        this.updateQuantityUI();
     }
 
     protected override groupByCategory(items: Food[]): Record<string, Food[]> {
@@ -273,4 +253,8 @@ export class ShopPetController extends BaseInventoryManager {
         }, {} as Record<string, Food[]>);
         return grouped;
     }
+}
+
+export interface InteractShopPetParam {
+    onActionClose?: () => void;
 }

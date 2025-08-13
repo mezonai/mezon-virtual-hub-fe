@@ -1,6 +1,5 @@
 import { _decorator, Node, RichText } from 'cc';
 import { UserMeManager } from '../../core/UserMeManager';
-import { UIManager } from '../../core/UIManager';
 import { WebRequestManager } from '../../network/WebRequestManager';
 import { InventoryType, Item } from '../../Model/Item';
 import { ResourceManager } from '../../core/ResourceManager';
@@ -10,16 +9,18 @@ import { BaseInventoryManager } from '../player/inventory/BaseInventoryManager';
 import { LocalItemDataConfig } from '../../Model/LocalItemConfig';
 import UIPopup from '../../ui/UI_Popup';
 import Utilities from '../../utilities/Utilities';
-import { GameManager } from '../../core/GameManager';
+import { PopupManager } from '../../PopUp/PopupManager';
+import { ConfirmParam, ConfirmPopup } from '../../PopUp/ConfirmPopup';
+import { PopupBuyItem, PopupBuyItemParam } from '../../PopUp/PopupBuyItem';
 const { ccclass, property } = _decorator;
 
 @ccclass('ShopController')
 export class ShopController extends BaseInventoryManager {
-    @property({ type: UIPopup }) noticePopup: UIPopup = null;
     @property({ type: RichText }) itemPrice: RichText = null;
     @property({ type: Node }) itemPriceContainer: Node = null;
     protected override groupedItems: Record<string, Item[]> = null;
     protected override selectingUIItem: ShopUIItem = null;
+    private isOpenPopUp: boolean = false;
 
     protected override async actionButtonClick() {
         try {
@@ -36,23 +37,43 @@ export class ShopController extends BaseInventoryManager {
             }
 
         } catch (error) {
-            UIManager.Instance.showNoticePopup("Chú ý", error.message);
+            const param: ConfirmParam = {
+                message: error.message,
+                title: "Chú ý",
+            };
+            PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
         }
+    }
+
+    protected override closeUIBtnClick() {
+        PopupManager.getInstance().closePopup(this.node.uuid);
+        this._onActionClose?.();
     }
 
     private async showPopupAndReset(): Promise<boolean> {
         let result = await new Promise<boolean>((resolve, reject) => {
-            this.noticePopup.showYesNoPopup(
-                null,
-                Utilities.convertBigNumberToStr(this.selectingUIItem.data.gold),
-                () => {
+             if (this.isOpenPopUp || !this.selectingUIItem?.data?.gold || this.selectingUIItem.data.gold <= 0) 
+            {
+                reject(false);
+                return;
+            }
+            if (this.isOpenPopUp) return;
+            this.isOpenPopUp = true;
+            const param: PopupBuyItemParam = {
+                selectedItemPrice: Utilities.convertBigNumberToStr(this.selectingUIItem.data.gold),
+                textButtonLeft: "Thôi",
+                textButtonRight: "Mua",
+                onActionButtonLeft: () => {
+                    reject(false);
+                },
+                onActionButtonRight: () => {
                     resolve(true);
                 },
-                null, null,
-                () => {
-                    reject(false);
-                }
-            );
+                onActionClose: () => {
+                    this.isOpenPopUp = false;
+                },
+            };
+            PopupManager.getInstance().openAnimPopup("PopupBuyItem", PopupBuyItem, param);
         });
 
         return result;
@@ -60,9 +81,13 @@ export class ShopController extends BaseInventoryManager {
 
     private addItemToInventory(response) {
         UserMeManager.Get.inventories.push(response.data.inventory_data);
-        GameManager.instance.inventoryController.addItemToInventory(response.data.inventory_data);
         UserMeManager.playerCoin = response.data.user_gold;
-        UIManager.Instance.showNoticePopup("Thông báo", "Mua thành công!");
+        const param: ConfirmParam = {
+            message: "Mua thành công!",
+            title: "Thông báo",
+        };
+        PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
+        this.onTabChange(this.currentTabName);
     }
 
     private async buyItem() {
@@ -86,8 +111,13 @@ export class ShopController extends BaseInventoryManager {
         });
     }
 
-    public override init() {
+    public init(param: InteractShopParam) {
+        super.init();
         this.initGroupData();
+        this.onTabChange(this.categories[0]);
+        if (param != null && param.onActionClose != null) {
+            this._onActionClose = param.onActionClose;
+        }
     }
 
     protected override reset() {
@@ -99,7 +129,7 @@ export class ShopController extends BaseInventoryManager {
         this.groupedItems = this.groupByCategory(ResourceManager.instance.ItemData.data);
         this.categories = [];
         for (const category in this.groupedItems) {
-            if(category === InventoryType.FOOD){
+            if (category === InventoryType.FOOD) {
                 continue;
             }
             this.categories.push(category);
@@ -108,7 +138,7 @@ export class ShopController extends BaseInventoryManager {
             });
         }
         this.tabController.initTabData(this.categories);
-        this.tabController.node.on(EVENT_NAME.ON_CHANGE_TAB, (tabName) => {this.onTabChange(tabName); });
+        this.tabController.node.on(EVENT_NAME.ON_CHANGE_TAB, (tabName) => { this.onTabChange(tabName); });
         // this.previewPlayer.init([]);
     }
 
@@ -131,34 +161,14 @@ export class ShopController extends BaseInventoryManager {
         item.mappingLocalData = skinLocalData;
         uiItem.init(item);
         uiItem.toggleActive(false);
-    }
-
-    protected override resetSelectItem() {
-        if (this.selectingUIItem) {
-            this.selectingUIItem.reset();
-            this.selectingUIItem.toggleActive(false);
-            this.selectingUIItem = null;
-        }
-        this.reset();
-        this.actionButton.interactable = false;
-    }
-
-    protected onDisable(): void {
-        this.resetSelectItem();
+        uiItem.reset();
     }
 
     protected override onUIItemClick(uiItem: ShopUIItem, data: Item) {
-        if (this.selectingUIItem) {
-            this.selectingUIItem.toggleActive(false);
-            if (this.selectingUIItem == uiItem) {
-                this.reset();
-                return;
-            }
-        }
+        this.selectingUIItem = uiItem;
         super.onUIItemClick(uiItem, data);
         this.itemPrice.string = Utilities.convertBigNumberToStr(data.gold);
         this.itemPriceContainer.active = true;
-        this.selectingUIItem.toggleActive(true);
     }
 
     protected override groupByCategory(items: Item[]): Record<string, Item[]> {
@@ -170,4 +180,8 @@ export class ShopController extends BaseInventoryManager {
             return acc;
         }, {} as Record<string, Item[]>);
     }
+}
+
+export interface InteractShopParam {
+    onActionClose?: () => void;
 }

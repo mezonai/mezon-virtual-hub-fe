@@ -1,4 +1,4 @@
-import { _decorator, director, Label, randomRange, Vec3 } from 'cc';
+import { _decorator, Button, director, Label, randomRange, Vec3 } from 'cc';
 import { BaseProfileManager } from './BaseProfileManager';
 import { UserMeManager } from '../core/UserMeManager';
 import { EVENT_NAME } from '../network/APIConstant';
@@ -8,7 +8,9 @@ import { UserManager } from '../core/UserManager';
 import { ServerManager } from '../core/ServerManager';
 import { ExchangeCoinController } from '../core/ExchangeCoinController';
 import { RewardType } from '../Model/Item';
-import { MoneyTooltip } from '../ui/MoneyTooltip';
+import { MoneyTooltip } from '../Tooltip/MoneyTooltip';
+import { PopupManager } from '../PopUp/PopupManager';
+import { MyProfileManager } from './MyProfileManager';
 
 const { ccclass, property } = _decorator;
 
@@ -24,7 +26,8 @@ export class MyProfileHUD extends BaseProfileManager {
     tooltip1: MoneyTooltip = null;
     @property(MoneyTooltip)
     tooltip2: MoneyTooltip = null;
-
+    @property(Button) infoButton: Button = null;
+    
     start(): void {
         director.on(EVENT_NAME.UPDATE_INFO_PROFILE, this.updateProfile, this);
         this.loadProfileUI();
@@ -42,6 +45,11 @@ export class MyProfileHUD extends BaseProfileManager {
             });
             this.onCoinChangeDiamond(UserMeManager.playerDiamond, UserMeManager.playerDiamond);
         }
+        this.infoButton.addAsyncListener(async () => {
+            this.infoButton.interactable = false;
+            await PopupManager.getInstance().openAnimPopup('UI_My_Profile', MyProfileManager);
+            this.infoButton.interactable = true;
+        });
     }
 
     protected onCoinChangeGold(value, oldValue) {

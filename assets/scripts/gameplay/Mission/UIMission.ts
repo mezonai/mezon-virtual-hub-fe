@@ -10,6 +10,7 @@ import { UserMeManager } from '../../core/UserMeManager';
 import { MissionDetailPopup } from '../../PopUp/MissionDetailPopup';
 import { AudioType, SoundManager } from '../../core/SoundManager';
 import { EVENT_NAME } from '../../network/APIConstant';
+import { ConfirmParam, ConfirmPopup } from '../../PopUp/ConfirmPopup';
 const { ccclass, property } = _decorator;
 
 @ccclass('UIMission')
@@ -75,13 +76,7 @@ export class UIMission extends Component {
         let contentPopup = MissionEventManager.meIsTargetUser() ?
             `Bạn là mục tiêu truy tìm của mọi người. Hãy tránh xa mọi người. Nếu đứng gần người khác, Họ có thể sẽ bắt được bạn. Nếu ${MissionEventManager.Get.max_completed_users} người tìm thấy bạn, nhiệm vụ thất bại`
             : `${MissionEventManager.Get.target_user.display_name} có thể ở bất cứ văn phòng nào, hãy truy tìm mục tiêu. Click vào người chơi khác và chọn icon "Nấm đấm" để thử bắt mục tiêu`;
-        if (UIManager.Instance) {
-            UIManager.Instance.showBigNoticePopup("Nhiệm Vụ", contentPopup);
-        }
-        else {
-            PopupManager.getInstance().openPopup('MissionDetailPopup', MissionDetailPopup, { message: contentPopup });
-        }
-
+        PopupManager.getInstance().openPopup('MissionDetailPopup', MissionDetailPopup, { message: contentPopup });
     }
 
     async ShowPanel(isShow: boolean) {
@@ -136,21 +131,30 @@ export class UIMission extends Component {
             this.hideMission();
             if (MissionEventManager.isShowCompletedPopup || !this.hasJoinEvent) return;
             MissionEventManager.isShowCompletedPopup = true;
-            UIManager.Instance.showNoticePopup("Thông Báo", isTargetUser
-                ? "Nhiệm vụ đã thất bại cám ơn bạn đã tham gia"
-                : "Nhiệm vụ đã hoàn thành cám ơn bạn đã tham gia");
+            const param: ConfirmParam = {
+                message: isTargetUser ? "Nhiệm vụ đã thất bại cám ơn bạn đã tham gia" : "Nhiệm vụ đã hoàn thành cám ơn bạn đã tham gia",
+                title: "Thông báo",
+            };
+            PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
             return;
         }
         MissionEventManager.startMissionTimer(() => {
-            UIManager.Instance.showNoticePopup("Thông Báo", isTargetUser ? "Nhiệm vụ hoàn tất. Chúc mừng bạn trốn thành công"
-                : `Nhiệm vụ thất bại . Còn ${mission.max_completed_users - mission.completed_users.length} người chưa thể tìm thấy ${mission.target_user.display_name}`);
+            const param: ConfirmParam = {
+                message: isTargetUser ? "Nhiệm vụ hoàn tất. Chúc mừng bạn trốn thành công"
+                    : `Nhiệm vụ thất bại . Còn ${mission.max_completed_users - mission.completed_users.length} người chưa thể tìm thấy ${mission.target_user.display_name}`,
+                title: "Thông báo",
+            };
+            PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
             this.getMissionEventData();
         });
         this.hasJoinEvent = true;
         if (isTargetUser) {
             if (!MissionEventManager.isShowUserTargetJoin) {
-                SoundManager.instance.playSound(AudioType.Notice);
-                UIManager.Instance.showNoticePopup("Chú Ý", "Bạn là mục tiêu mọi người tìm kiếm, chạy thật nhanh và đừng để người khác chạm vào");
+                const param: ConfirmParam = {
+                    message: "Bạn là mục tiêu mọi người tìm kiếm, chạy thật nhanh và đừng để người khác chạm vào",
+                    title: "Chú Ý",
+                };
+                PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
                 MissionEventManager.isShowUserTargetJoin = true;
             }
         }

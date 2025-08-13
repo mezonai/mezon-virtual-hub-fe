@@ -1,6 +1,10 @@
 import { _decorator, Button, CCInteger, Component, EditBox, Node, RichText, Toggle } from 'cc';
 import CustomButton from './CustomButton';
 import { UIIdentify } from './UIIdentify';
+import { BasePopup } from '../PopUp/BasePopup';
+import { PopupManager } from '../PopUp/PopupManager';
+import { Constants } from '../utilities/Constants';
+import { AudioType, SoundManager } from '../core/SoundManager';
 const { ccclass, property } = _decorator;
 
 export enum SendActionType {
@@ -11,7 +15,7 @@ export enum SendActionType {
     ChangeDiamondToCoin = "CHANGEDIAMONDTOCOIN"
 }
 @ccclass('SendTokenPanel')
-export class SendTokenPanel extends Component {
+export class SendTokenPanel extends BasePopup {
     @property({ type: RichText }) title: RichText = null;
     @property({ type: RichText }) sendButtonTitle: RichText = null;
     @property({ type: EditBox }) sendEditBox: EditBox = null;
@@ -24,6 +28,8 @@ export class SendTokenPanel extends Component {
     @property({ type: CCInteger }) maxLength: number = 10;
     @property({ type: Toggle }) noticeToggle: Toggle = null;
 
+    @property({ type: Button }) closeUIBtn: Button = null;
+
     private sendValue: number = 0;
     private cb = null;
     private isBuy: boolean = false;
@@ -35,8 +41,12 @@ export class SendTokenPanel extends Component {
     private cbChange: (amount: number) => void = null;
     private cbWithdraw: (amount: number) => void = null;
 
-    protected start(): void {
-        localStorage.removeItem("dont_show_buy_notice");
+    public init(param: SendTokenParam): void {
+        this.HandleEventButton();
+        this.HandleCallback(param);
+    }
+
+    private HandleEventButton() {
         this.presetButton.forEach(button => {
             button.node.on(Node.EventType.TOUCH_START, () => {
                 this.onPresetButtonClick(button.localData);
@@ -44,24 +54,54 @@ export class SendTokenPanel extends Component {
         });
 
         this.sendButton.on(Node.EventType.TOUCH_START, () => {
+            SoundManager.instance.playSound(AudioType.Button);
             this.send(true, SendActionType.Buy);
         }, this);
 
         this.withdrawButton.on(Node.EventType.TOUCH_START, () => {
+            SoundManager.instance.playSound(AudioType.Button);
             this.send(true, SendActionType.Withdraw);
         }, this);
 
         this.changeButton.on(Node.EventType.TOUCH_START, () => {
+            SoundManager.instance.playSound(AudioType.Button);
             this.send(true, SendActionType.ChangeDiamondToCoin);
         }, this);
 
         this.send2Button.on(Node.EventType.TOUCH_START, () => {
+            SoundManager.instance.playSound(AudioType.Button);
             this.send(false, this.lastType);
         }, this);
 
+        this.closeUIBtn.node.on("click", this.closeUIBtnClick, this);
     }
 
-    public setSendCallback(callback: (amount: number) => void) {
+    private HandleCallback(param: SendTokenParam) {
+        const value = localStorage.getItem(Constants.NOTICE_TRANSFER_DIAMOND);
+        this.noticeToggle.isChecked = (value != null && value == "true");
+        if (param) {
+            const handlerMap = {
+                onActionClose: (cb: any) => this._onActionClose = cb,
+                onActionSendDiamond: (cb: any) => this.setSendDimondCallback(cb),
+                onActionBuyDiamond: (cb: any) => this.setBuyDimondCallback(cb),
+                onActionWithdrawDiamond: (cb: any) => this.setWithdrawDimondCallback(cb),
+                onActionChangeDiamondToCoin: (cb: any) => this.setChangeDiamondToCoinCallback(cb),
+            };
+
+            for (const key in handlerMap) {
+                const cb = (param as any)[key];
+                if (cb) handlerMap[key](cb);
+            }
+        }
+    }
+
+    public closeUIBtnClick() {
+        SoundManager.instance.playSound(AudioType.Button);
+        PopupManager.getInstance().closePopup(this.node.uuid);
+        this._onActionClose?.();
+    }
+
+    public setSendDimondCallback(callback: (amount: number) => void) {
         this.isBuy = false;
         this.isWithdraw = false;
         this.isExchange = false;
@@ -73,7 +113,7 @@ export class SendTokenPanel extends Component {
         this.noticePopup.node.active = false;
     }
 
-    public setBuyCallback(callback: (amount: number) => void) {
+    public setBuyDimondCallback(callback: (amount: number) => void) {
         this.isBuy = true;
         this.isWithdraw = false;
         this.isExchange = false;
@@ -85,7 +125,7 @@ export class SendTokenPanel extends Component {
         this.noticePopup.node.active = false;
     }
 
-    public setWithdrawCallback(callback: (amount: number) => void) {
+    public setWithdrawDimondCallback(callback: (amount: number) => void) {
         this.isBuy = false;
         this.isWithdraw = true;
         this.isExchange = false;
@@ -151,12 +191,12 @@ export class SendTokenPanel extends Component {
             type = this.lastType;
         }
 
-        if (openpopup && (this.isBuy || this.isWithdraw || this.isExchange) && localStorage.getItem("dont_show_buy_notice") != "true") {
+        if (openpopup && (this.isBuy || this.isWithdraw || this.isExchange) && localStorage.getItem(Constants.NOTICE_TRANSFER_DIAMOND) != "true") {
             this.lastType = type;
             this.noticePopup.show();
             return;
         } else if (this.isBuy || this.isWithdraw || this.isExchange) {
-            localStorage.setItem("dont_show_buy_notice", this.noticeToggle.isChecked ? "true" : "false");
+            localStorage.setItem(Constants.NOTICE_TRANSFER_DIAMOND, this.noticeToggle.isChecked ? "true" : "false");
         }
 
         if (isNaN(this.sendValue) || this.sendValue <= 0) {
@@ -180,6 +220,14 @@ export class SendTokenPanel extends Component {
                 break;
         }
         this.sendValue = 0;
-        this.getComponent(UIIdentify).hide();
+        this.closeUIBtnClick();
     }
+}
+
+export interface SendTokenParam {
+    onActionClose?: () => void;
+    onActionSendDiamond?: (value: number) => void;
+    onActionBuyDiamond?: (value: number) => void;
+    onActionWithdrawDiamond?: (value: number) => void;
+    onActionChangeDiamondToCoin?: (value: number) => void;
 }

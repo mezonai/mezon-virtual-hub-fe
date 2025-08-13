@@ -7,6 +7,7 @@ import { _decorator, Component, Enum, view, Node, director, Button, View } from 
 import { PopupManager } from '../PopUp/PopupManager';
 import { PopupOwnedAnimals } from '../PopUp/PopupOwnedAnimals';
 import { ToolSpawnPet } from '../utilities/ToolSpawnPet';
+import { PopupBattlePet } from '../PopUp/PopupBattlePet';
 const { ccclass, property } = _decorator;
 
 @ccclass('UIManager')
@@ -20,6 +21,7 @@ export class UIManager extends Component {
     @property({ type: Button }) outmapButton: Button;
     @property({ type: Button }) showOwnedButton: Button;
     @property({ type: ToolSpawnPet }) toolcreatePet: ToolSpawnPet;
+    @property({ type: PopupBattlePet }) batteScene: PopupBattlePet;
     private _popup: UIPopup = null;
     private _bigPopup: UIPopup = null;
     private _fadePopup: UIPopup = null;
@@ -59,7 +61,12 @@ export class UIManager extends Component {
             UIManager._instance = this;
         }
         view.on('canvas-resize', UIManager.Instance.onResize.bind(UIManager.Instance));
-        this.showOwnedButton.node.on(Button.EventType.CLICK, () => this.showPopupOwenedAnimal(), this);
+        this.showOwnedButton.addAsyncListener(async () => {
+            this.showOwnedButton.interactable = false;
+            await PopupManager.getInstance().openAnimPopup('PopupOwnedAnimals', PopupOwnedAnimals, { message: "" });
+            this.showOwnedButton.interactable = true;
+        });
+        this.batteScene.node.active = false;
     }
 
     onResize() {
@@ -181,10 +188,6 @@ export class UIManager extends Component {
                 panel.hide();
             }
         }
-    }
-
-    showPopupOwenedAnimal() {
-        PopupManager.getInstance().openAnimPopup('PopupOwnedAnimals', PopupOwnedAnimals, { message: "" });
     }
 
     // TweenEasing = "linear" | "smooth" | "fade" | "constant" | "quadIn" | "quadOut" | "quadInOut" |

@@ -1,11 +1,15 @@
-import { _decorator, Component, Slider, Label, Button, SpriteFrame, Sprite } from 'cc';
+import { _decorator, Component, Slider, Label, Button, SpriteFrame, Sprite, Node } from 'cc';
 import { SoundManager } from './SoundManager';
 import { CustomSlider } from '../ui/CustomSlider';
+import { BasePopup } from '../PopUp/BasePopup';
+import { PopupManager } from '../PopUp/PopupManager';
+import { UIHelp } from '../ui/UIHelp';
+import { UIAbout } from '../ui/UIAbout';
 
 const { ccclass, property } = _decorator;
 
 @ccclass('SettingManager')
-export class SettingManager extends Component {
+export class SettingManager extends BasePopup {
     @property(Slider)
     soundSlider: Slider = null;
 
@@ -44,17 +48,17 @@ export class SettingManager extends Component {
 
     private settingsoundmusic: Record<string, SpriteFrame>;
 
-    onLoad() {
+    @property(Button) helpButton: Button = null;
+    @property(Button) aboutButton: Button = null;
+    @property(Button) closeButton: Button = null;
+
+    public init(param: SettingParam) {
         this.settingsoundmusic = {
             soundOn: this.iconValue[0],
             soundOff: this.iconValue[1],
             musicOn: this.iconValue[2],
             musicOff: this.iconValue[3],
         };
-        this.init();
-    }
-
-    public init() {
         this.currentSoundVolume = SoundManager.instance.getSoundVolume();
         this.currentMusicVolume = SoundManager.instance.getMusicVolume();
 
@@ -75,6 +79,20 @@ export class SettingManager extends Component {
 
         this.soundButton.node.on('click', this.onSoundButtonToggle, this);
         this.musicButton.node.on('click', this.onMusicButtonToggle, this);
+
+        this.helpButton.addAsyncListener(async () => {
+            this.helpButton.interactable = false;
+            await PopupManager.getInstance().openPopup('UI_Help', UIHelp);
+            this.helpButton.interactable = true;
+        });
+        this.aboutButton.addAsyncListener(async () => {
+            this.aboutButton.interactable = false;
+            await PopupManager.getInstance().openPopup('UI_AboutUs', UIAbout);
+            this.aboutButton.interactable = true;
+        });
+        this.closeButton.addAsyncListener(async () => {
+            await PopupManager.getInstance().closePopup(this.node.uuid);
+        });
 
         this.updateSoundButtonIcon();
         this.updateMusicButtonIcon();
@@ -124,7 +142,7 @@ export class SettingManager extends Component {
 
         if (this.isMutedMusic) {
             this.currentMusicVolume = 0;
-        } 
+        }
         this.musicSlider.progress = this.currentMusicVolume;
         this.musicCustomSlider.updateSliderHandleAndFill(this.currentMusicVolume);
         SoundManager.instance.setBgmVolume(this.currentMusicVolume);
@@ -147,4 +165,8 @@ export class SettingManager extends Component {
             ? this.settingsoundmusic.musicOff
             : this.settingsoundmusic.musicOn;
     }
+}
+
+export interface SettingParam {
+    onActionClose?: () => void;
 }

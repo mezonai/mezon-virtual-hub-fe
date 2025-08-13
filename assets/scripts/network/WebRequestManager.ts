@@ -6,13 +6,13 @@ import ConvetData from '../core/ConvertData';
 import { UserMeManager } from '../core/UserMeManager';
 import { MapData } from '../Interface/DataMapAPI';
 import { ServerManager } from '../core/ServerManager';
+import { PopupSelectionMini, SelectionMiniParam } from '../PopUp/PopupSelectionMini';
+import { PopupManager } from '../PopUp/PopupManager';
 const { ccclass, property } = _decorator;
 
 @ccclass("WebRequestManager")
 export class WebRequestManager extends Component {
     private static _instance: WebRequestManager = null;
-
-    @property({ type: UIPopup }) noticePanel: UIPopup = null;
     @property({ type: Node }) loadingPanel: Node = null;
 
     public static get instance(): WebRequestManager {
@@ -51,11 +51,11 @@ export class WebRequestManager extends Component {
     }
 
     public getAllPetData(mapCode, successCallback, errorCallback) {
-        APIManager.getData(this.combineWithSlash(APIConstant.ANIMAL, mapCode), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+        APIManager.getData(this.combineWithSlash(APIConstant.PET_PLAYERS, mapCode), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
     public getMyPetData(successCallback, errorCallback) {
-        APIManager.getData(this.combineWithSlash(APIConstant.ANIMAL), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+        APIManager.getData(this.combineWithSlash(APIConstant.PET_PLAYERS), (data) => { UserMeManager.SetMyPets = data.data; this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
     public getRewardsSpin(successCallback, errorCallback) {
@@ -70,7 +70,6 @@ export class WebRequestManager extends Component {
         return new Promise((resolve, reject) => {
             this.toggleLoading(true);
             APIManager.getData("map", (data: any) => {
-                console.log("Map: " + JSON.stringify(data, null, 2))
                 const maps: MapData[] = ConvetData.ConvertMap(data);
                 this.toggleLoading(false);
                 resolve(maps); // Trả về danh sách MapData
@@ -105,11 +104,20 @@ export class WebRequestManager extends Component {
     }
 
     public updateCompletedMission(eventId, data, successCallback, errorCallback) {
-        APIManager.putData(this.combineWithSlash(APIConstant.GAME_EVENT,eventId,APIConstant.COMPLETE), data, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+        APIManager.putData(this.combineWithSlash(APIConstant.GAME_EVENT, eventId, APIConstant.COMPLETE), data, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
     public updateListPetFollowUser(data, successCallback, errorCallback) {
-        APIManager.postData(this.combineWithSlash(APIConstant.ANIMAL, APIConstant.BRING), data, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+        APIManager.postData(this.combineWithSlash(APIConstant.PET_PLAYERS, APIConstant.BRING), data, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    }
+
+    public updateListPetBattleUser(data, successCallback, errorCallback) {
+        APIManager.patchData(this.combineWithSlash(APIConstant.PET_PLAYERS, APIConstant.BATTLE_PET), data, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    }
+
+    public updateSkillsPetBattleUser(petplayerId, data, successCallback, errorCallback) {
+        const url = `${APIConstant.PET_PLAYERS}/${petplayerId}`;
+        APIManager.putData(this.combineWithSlash(url, APIConstant.BATTLE_SKILLS), data, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
     public getAllItemFood(successCallback, errorCallback) {
@@ -121,12 +129,12 @@ export class WebRequestManager extends Component {
         APIManager.postData(url, {}, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
-    public createPet(data,successCallback, errorCallback) {
-        APIManager.postData(APIConstant.ANIMAL, data, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    public createPet(data, successCallback, errorCallback) {
+        APIManager.postData(APIConstant.PET_PLAYERS, data, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
-    public deletePet(foodId,successCallback, errorCallback) {
-         const url = `${APIConstant.ANIMAL}/${foodId}`;
+    public deletePet(foodId, successCallback, errorCallback) {
+        const url = `${APIConstant.PET_PLAYERS}/${foodId}`;
         APIManager.deleteData(url, {}, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
@@ -194,23 +202,32 @@ export class WebRequestManager extends Component {
         }
         try {
             json = JSON.parse(response);
-            if (this.errorMessageMap.has(json.code)) {
-                json.error_message = this.errorMessageMap.get(json.code) || '';
-
+            const errorCode = Number(json.code)
+            if (this.errorMessageMap.has(errorCode)) {
+                json.error_message = this.errorMessageMap.get(errorCode) || '';
             }
+
         }
         catch (e) {
             console.log(e);
         }
 
-        this.noticePanel.showOkPopup(null, json.error_message, () => {
-            APIConfig.token = "";
-            if (ServerManager.instance?.Room) {
-                ServerManager.instance.Room.leave();
-            }
-            director.emit(EVENT_NAME.RELOAD_SCENE);
-            director.loadScene("GameMap");
-        }, "Refresh");
+        const param: SelectionMiniParam = {
+            title: "Thông báo",
+            content: json.error_message,
+            textButtonLeft: "",
+            textButtonRight: "",
+            textButtonCenter: "Refresh",
+            onActionButtonCenter: () => {
+                APIConfig.token = "";
+                if (ServerManager.instance?.Room) {
+                    ServerManager.instance.Room.leave();
+                }
+                director.emit(EVENT_NAME.RELOAD_SCENE);
+                director.loadScene("GameMap");
+            },
+        };
+        PopupManager.getInstance().openAnimPopup("PopupSelectionMini", PopupSelectionMini, param);
         onError(json);
     }
 }

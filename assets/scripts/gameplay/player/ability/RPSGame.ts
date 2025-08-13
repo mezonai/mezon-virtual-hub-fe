@@ -3,9 +3,12 @@ import { ActionType, PlayerInteractAction } from './PlayerInteractAction';
 import { UIManager } from '../../../core/UIManager';
 import { UserMeManager } from '../../../core/UserMeManager';
 import { AudioType, SoundManager } from '../../../core/SoundManager';
+import { ConfirmParam, ConfirmPopup } from '../../../PopUp/ConfirmPopup';
+import { PopupManager } from '../../../PopUp/PopupManager';
+import { TargetButton, SelectionTimeOutParam, PopupSelectionTimeOut } from '../../../PopUp/PopupSelectionTimeOut';
 const { ccclass, property } = _decorator;
 
-interface GameData {
+export interface GameData {
     action: string;
     from: string;
     to: string;
@@ -55,8 +58,12 @@ export class RPSGame extends PlayerInteractAction {
 
     public override invite(): void {
         if (UserMeManager.Get) {
-            if (UserMeManager.playerDiamond < this.fee)  {
-                UIManager.Instance.showNoticePopup(null, `Cần <color=#FF0000>${this.fee} diamond</color> để chơi`)
+            if (UserMeManager.playerDiamond < this.fee) {
+                const param: ConfirmParam = {
+                    message: `Cần <color=#FF0000>${this.fee} diamond</color> để chơi`,
+                    title: "Chú Ý",
+                };
+                PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
                 return;
             }
         }
@@ -69,15 +76,25 @@ export class RPSGame extends PlayerInteractAction {
     }
 
     public override onBeingInvited(data: any): void {
-        SoundManager.instance.playSound(AudioType.Notice);
-        UIManager.Instance.showYesNoPopup(null, `${data.fromName} mời bạn chơi kéo búa bao. Phí <color=#FF0000> ${this.fee} diamond</color>`,
-            () => {
+        const param: SelectionTimeOutParam = {
+            title: "Chú Ý",
+            content: `${data.fromName} mời bạn chơi kéo búa bao. Phí <color=#FF0000> ${this.fee} diamond</color>`,
+            textButtonLeft: "Chơi",
+            textButtonRight: "Thôi",
+            textButtonCenter: "",
+            timeout: {
+                seconds: this.inviteTimeout,
+                targetButton: TargetButton.LEFT,
+            },
+            onActionButtonLeft: () => {
+                PopupManager.getInstance().closeAllPopups();
                 this.startAction(data);
             },
-            () => {
+            onActionButtonRight: () => {
                 this.rejectAction(data);
             },
-            "Chơi", "Thôi", this.inviteTimeout)
+        };
+        PopupManager.getInstance().openAnimPopup("PopupSelectionTimeOut", PopupSelectionTimeOut, param);
     }
 
     protected override startAction(data) {
@@ -118,7 +135,6 @@ export class RPSGame extends PlayerInteractAction {
 
     public override onRejectAction(data) {
         super.onRejectAction(data);
-        console.log(data, "reject")
     }
 
     public override actionResult(data) {

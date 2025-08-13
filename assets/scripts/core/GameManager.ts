@@ -1,10 +1,6 @@
-import { _decorator, Component, Node } from 'cc';
-import { ShopController } from '../gameplay/shop/ShopController';
-import { InventoryManager } from '../gameplay/player/inventory/InventoryManager';
+import { _decorator, Component } from 'cc';
 import { UIChat } from '../gameplay/ChatBox/UIChat';
 import { UIMission } from '../gameplay/Mission/UIMission';
-import { SettingManager } from './SettingManager';
-import { ShopPetController } from '../gameplay/shop/ShopPetController';
 import { WebRequestManager } from '../network/WebRequestManager';
 import ConvetData from './ConvertData';
 import { PopupManager } from '../PopUp/PopupManager';
@@ -20,12 +16,8 @@ export class GameManager extends Component {
     public static get instance() {
         return GameManager._instance;
     }
-    @property({ type: ShopController }) shopController: ShopController = null;
-    @property({ type: ShopPetController }) shopPetController: ShopPetController = null;
-    @property({ type: InventoryManager }) inventoryController: InventoryManager = null;
     @property({ type: UIChat }) uiChat: UIChat = null;
     @property({ type: UIMission }) uiMission: UIMission = null;
-    @property({ type: SettingManager }) settingManager: SettingManager = null;
 
     protected onLoad(): void {
         if (GameManager._instance == null) {
@@ -34,25 +26,30 @@ export class GameManager extends Component {
     }
 
     public init() {
-        this.shopController.init();
-        this.inventoryController.init();
-        this.shopPetController.init();
         this.uiMission.getMissionEventData();
         this.tutorialCacthPet();
+        this.resetNoticeTrandferDiamon();
+    }
+
+    resetNoticeTrandferDiamon(){
+        if (localStorage.getItem(Constants.NOTICE_TRANSFER_DIAMOND) !== null){
+            localStorage.removeItem(Constants.NOTICE_TRANSFER_DIAMOND);
+        }
     }
 
     tutorialCacthPet() {
-        if (localStorage.getItem(Constants.TUTORIAL_CACTH_PET) === null) {
-            const param: PopupTutorialCatchPetParam = {
-                onActionCompleted: () => {
-                    this.getReward();
-                },
-            };
-            PopupManager.getInstance().openPopup("PopupTutorialCatchPet", PopupTutorialCatchPet, param);
-        }
-        else {
-            this.getReward();
-        }
+        // if (localStorage.getItem(Constants.TUTORIAL_CACTH_PET) === null) {
+        //     const param: PopupTutorialCatchPetParam = {
+        //         onActionCompleted: () => {
+        //             this.getReward();
+        //         },
+        //     };
+        //     PopupManager.getInstance().openPopup("PopupTutorialCatchPet", PopupTutorialCatchPet, param);
+        // }
+        // else {
+        //     this.getReward();
+        // }
+        this.getReward();
     }
 
     getReward() {

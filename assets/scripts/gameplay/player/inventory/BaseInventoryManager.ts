@@ -1,4 +1,4 @@
-import { _decorator, Button, Component, Node, Prefab, RichText, SpriteFrame, Vec3 } from 'cc';
+import { _decorator, Button, Component, Node, Prefab, RichText, ScrollView, SpriteFrame, Vec3 } from 'cc';
 import { BaseInventoryDTO, Food, InventoryType, Item, ItemType } from '../../../Model/Item';
 import { TabController } from '../../../ui/TabController';
 import { AnimationEventController } from '../AnimationEventController';
@@ -10,13 +10,16 @@ import { ObjectPoolManager } from '../../../pooling/ObjectPoolManager';
 import { EVENT_NAME } from '../../../network/APIConstant';
 import { LocalItemDataConfig } from '../../../Model/LocalItemConfig';
 import { ResourceManager } from '../../../core/ResourceManager';
+import { BasePopup } from '../../../PopUp/BasePopup';
 const { ccclass, property } = _decorator;
 
 @ccclass('BaseInventoryManager')
-export class BaseInventoryManager extends Component {
+export class BaseInventoryManager extends BasePopup {
     @property({ type: TabController }) tabController: TabController = null;
     @property({ type: Node }) itemContainer: Node = null;
     @property({ type: Node }) foodContainer: Node = null;
+    @property(ScrollView) itemScrollView: ScrollView = null;
+    @property(ScrollView) foodScrollView: ScrollView = null;
     @property({ type: Prefab }) itemPrefab: Prefab = null;
     @property({ type: RichText }) descriptionText: RichText = null;
     @property({ type: RichText }) coinText: RichText = null;
@@ -34,35 +37,41 @@ export class BaseInventoryManager extends Component {
     @property({ type: [SpriteFrame] }) iconMoney: SpriteFrame[] = []; // 0: Gold 1: Diamond
     protected foodIconMap: Record<string, SpriteFrame>;
     protected moneyIconMap: Record<string, SpriteFrame>;
+    protected currentTabName: string = null;
 
-    protected onLoad(): void {
-        this.foodIconMap = {
-            normal: this.iconValue[0],
-            premium: this.iconValue[1],
-            ultrapremium: this.iconValue[2]
-        };
-        this.moneyIconMap = {
-            gold: this.iconMoney[0],
-            diamond: this.iconMoney[1]
-        };
-    }
+    @property({ type: Button }) closeUIBtn: Button = null;
 
-    protected onEnable(): void {
+    public init(param?: any): void {
+        this.initFoodMap();
+        this.initMoneyMap();
         if (this.categories.length > 0) {
             this.reset();
         }
-    }
-
-    protected start(): void {
         this.actionButton.node.on("click", this.actionButtonClick, this);
+        this.closeUIBtn.node.on("click", this.closeUIBtnClick, this);
         UserMeManager.PlayerProperty.onChange("gold", (newCoin, oldValue) => {
             this.onCoinChange(newCoin);
         });
         this.onCoinChange(UserMeManager.playerCoin);
     }
 
-    protected onDestroy(): void {
-        
+    initFoodMap() {
+        if (this.iconValue.length >= 3) {
+            this.foodIconMap = {
+                normal: this.iconValue[0],
+                premium: this.iconValue[1],
+                ultrapremium: this.iconValue[2]
+            };
+        }
+    }
+
+    initMoneyMap(){
+        if (this.iconValue.length >= 3) {
+            this.moneyIconMap = {
+                gold: this.iconMoney[0],
+                diamond: this.iconMoney[1]
+            };
+        }
     }
 
     protected onCoinChange(value) {
@@ -83,7 +92,25 @@ export class BaseInventoryManager extends Component {
         if (isTabFood)
             await this.spawnFoodItems(this.groupedItems[tabName]);
         else
-            await this.spawnClothesItems(this.groupedItems[tabName]);
+        {
+            this.currentTabName = tabName;
+            await this.spawnClothesItems(this.groupedItems[tabName]);  
+
+        }
+        this.ResetPositionScrollBar();
+    }
+
+    ResetPositionScrollBar() {
+        this.scheduleOnce(() => {
+            if (this.itemScrollView) {
+                this.itemScrollView.scrollToTop(0)
+            }
+        }, 0.05);
+        this.scheduleOnce(() => {
+            if (this.foodScrollView) {
+                this.foodScrollView.scrollToTop(0)
+            }
+        }, 0.05);
     }
 
     private async spawnFoodItems(items: any[]) {
@@ -140,6 +167,7 @@ export class BaseInventoryManager extends Component {
     }
 
     protected async actionButtonClick() { }
+    protected closeUIBtnClick() { }
 
     protected resetSelectItem() {
         if (this.selectingUIItem) {
@@ -151,10 +179,6 @@ export class BaseInventoryManager extends Component {
         this.equipingUIItem = this.selectingUIItem;
         this.actionButton.interactable = false;
         this.selectingUIItem = null;
-    }
-
-    public init() {
-
     }
 
     protected initGroupData() {
@@ -207,10 +231,15 @@ export class BaseInventoryManager extends Component {
     }
 
     protected setupFoodReward(uiItem: any, foodType: any) {
-
+        if (!this.foodIconMap) {
+            this.initFoodMap();
+        }
     }
 
     protected setupMoneyReward(uiItem: any, typeMoney: any) {
+        if (!this.moneyIconMap) {
+            this.initMoneyMap();
+        }
         const sprite = this.moneyIconMap[typeMoney.type];
         if (sprite) {
             uiItem.iconFrame.spriteFrame = sprite;

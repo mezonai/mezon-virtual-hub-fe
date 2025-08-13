@@ -8,6 +8,9 @@ import { GameManager } from '../../../core/GameManager';
 import { UserManager } from '../../../core/UserManager';
 import { PlayerController } from '../PlayerController';
 import { AudioType, SoundManager } from '../../../core/SoundManager';
+import { ConfirmParam, ConfirmPopup } from '../../../PopUp/ConfirmPopup';
+import { PopupManager } from '../../../PopUp/PopupManager';
+import { PopupSelectionTimeOut, SelectionTimeOutParam, TargetButton } from '../../../PopUp/PopupSelectionTimeOut';
 const { ccclass, property } = _decorator;
 
 @ccclass('CatchUser')
@@ -26,17 +29,28 @@ export class CatchUser extends PlayerInteractAction {
 
     protected override invite() {
         if (this.IsMissionRunning && MissionEventManager.meIsTargetUser()) {
-            UIManager.Instance.showNoticePopup("Chú Ý", "Bạn đang là đối tượng mọi người đang tìm kiếm, không thể bắt người khác");
+            const param: ConfirmParam = {
+                message: "Bạn đang là đối tượng mọi người đang tìm kiếm, không thể bắt người khác",
+                title: "Chú Ý",
+            };
+            PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
         }
         else {
-            UIManager.Instance.showYesNoPopup(null, this.IsMissionRunning ? `Bạn có muốn bắt người chơi này không?` : `Bạn có muốn khều người chơi này không?`,
-                () => {
+            const param: SelectionTimeOutParam = {
+                title: "Thông báo",
+                content: this.IsMissionRunning ? `Bạn có muốn bắt người chơi này không?` : `Bạn có muốn khều người chơi này không?`,
+                textButtonLeft: "Có",
+                textButtonRight: "Không",
+                textButtonCenter: "",
+                timeout: {
+                    seconds: this.inviteTimeout,
+                    targetButton: TargetButton.LEFT,
+                },
+                onActionButtonLeft: () => {
                     this.catchUser();
                 },
-                () => {
-
-                },
-                "Có", "Không", this.inviteTimeout)
+            };
+            PopupManager.getInstance().openAnimPopup("PopupSelectionTimeOut", PopupSelectionTimeOut, param);
         }
 
         super.invite();

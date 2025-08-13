@@ -1,6 +1,7 @@
+import { AnimalType } from "../animal/AnimalController";
 import { MapData } from "../Interface/DataMapAPI";
 import { Food, Item, RewardItemDTO, RewardType } from "../Model/Item";
-import { PetDTO } from "../Model/PetDTO";
+import { Element, PetBattleInfo, PetDTO, PlayerBattle, SkillBattleInfo, Species, TypeSkill } from "../Model/PetDTO";
 
 export default class ConvetData {
     public static ConvertMap(mapData: any): MapData[] {
@@ -22,11 +23,23 @@ export default class ConvetData {
             const petDTO = new PetDTO();
             petDTO.id = data.id;
             petDTO.name = data.name;
-            petDTO.species = data.species;
-            petDTO.is_caught = data.is_caught;
+            petDTO.level = data.level;
+            petDTO.exp = data.exp;
+            petDTO.stars = data.stars;
+            petDTO.attack = data.attack;
+            petDTO.defense = data.defense;
+            petDTO.speed = data.speed;
             petDTO.is_brought = data.is_brought;
+            petDTO.is_caught = data.is_caught;
+            petDTO.battle_slot = data.is_selected_battle;
+            petDTO.individual_value = data.individual_value;
             petDTO.room_code = data.room_code;
-            petDTO.rarity = data.rarity;
+            petDTO.pet = data.pet;
+            petDTO.skill_slot_1 = data.skill_slot_1;
+            petDTO.skill_slot_2 = data.skill_slot_2;
+            petDTO.skill_slot_3 = data.skill_slot_3 ?? null;
+            petDTO.skill_slot_4 = data.skill_slot_4 ?? null;
+            petDTO.equipped_skill_codes = data.equipped_skill_codes ?? null;
             return petDTO;
         });
     }
@@ -36,11 +49,23 @@ export default class ConvetData {
         const petDTO = new PetDTO();
         petDTO.id = data.id;
         petDTO.name = data.name;
-        petDTO.species = data.species;
-        petDTO.is_caught = data.is_caught;
+        petDTO.level = data.level;
+        petDTO.exp = data.exp;
+        petDTO.stars = data.stars;
+        petDTO.attack = data.attack;
+        petDTO.defense = data.defense;
+        petDTO.speed = data.speed;
         petDTO.is_brought = data.is_brought;
+        petDTO.is_caught = data.is_caught;
+        petDTO.battle_slot = data.is_selected_battle;
+        petDTO.individual_value = data.individual_value;
         petDTO.room_code = data.room_code;
-        petDTO.rarity = data.rarity;
+        petDTO.pet = data.pet;
+        petDTO.skill_slot_1 = data.skill_slot_1;
+        petDTO.skill_slot_2 = data.skill_slot_2;
+        petDTO.skill_slot_3 = data.skill_slot_3 ?? null;
+        petDTO.skill_slot_4 = data.skill_slot_4 ?? null;
+        petDTO.equipped_skill_codes = data.equipped_skill_codes ?? null;
         return petDTO;
     }
 
@@ -76,6 +101,66 @@ export default class ConvetData {
             });
     }
 
+    public static ConvertPlayersBattleData(playersBattleData: string): PlayerBattle[] {
+        const dataArray = JSON.parse(playersBattleData);
+        return dataArray.map((data: any) => {
+            const playerBattle = new PlayerBattle();
+            playerBattle.id = data.id;
+            playerBattle.userId = data.userId;
+            playerBattle.name = data.name;
+            playerBattle.activePetIndex = data.activePetIndex;
+            playerBattle.battlePets = data.battlePets.map((petData: any) => {
+                return this.convertToPetBattleInfo(petData);
+            });
+            return playerBattle;
+        });
+    }
+
+    public static ConvertPlayerBattleData(playerData: any): PlayerBattle {
+        const playerBattle = new PlayerBattle();
+        playerBattle.id = playerData.id;
+        playerBattle.userId = playerData.userId;
+        playerBattle.name = playerData.name;
+        playerBattle.activePetIndex = playerData.activePetIndex;
+        playerBattle.battlePets = playerData.battlePets.map((petData: any) => {
+            return this.convertToPetBattleInfo(petData);
+        });
+        return playerBattle;
+    }
+
+    public static convertToPetBattleInfo(petData: any): PetBattleInfo {
+        const pet = new PetBattleInfo();
+        pet.id = petData.id;
+        pet.name = petData.name;
+        pet.species = Species[petData.species as keyof typeof Species]; // convert string → enum
+        pet.totalHp = petData.totalHp;
+        pet.currentHp = petData.currentHp;
+        pet.level = petData.level;
+        pet.currentExp = petData.currentExp;
+        pet.totalExp = petData.totalExp;
+        pet.attack = petData.attack;
+        pet.defense = petData.defense;
+        pet.speed = petData.speed;
+        pet.isSleeping = petData.isSleeping;
+        pet.skills = petData.skills.map((skillData: any) => {
+            return this.convertToSkillData(skillData);
+        });
+        pet.isDead = petData.isDead;
+        return pet;
+    }
+
+    public static convertToSkillData(skillData: any): SkillBattleInfo {
+        const skill = new SkillBattleInfo();
+        skill.skill_code = skillData.id;
+        skill.attack = skillData.attack;
+        skill.accuracy = skillData.accuracy;
+        skill.type = skillData.type;
+        skill.typeSkill = this.mapServerSkillToClient(skillData.skillType);
+        skill.currentPowerPoint = skillData.currentPowerPoint;
+        skill.totalPowerPoint = skillData.totalPowerPoint;
+        return skill;
+    }
+
     public static parseFood(foodData: any): Food {
         const food = new Food();
         Object.assign(food, foodData);
@@ -88,6 +173,36 @@ export default class ConvetData {
         item.iconSF = [];
         item.mappingLocalData = null;
         return item;
+    }
+
+    public static mapServerSkillToClient(serverSkill: string): TypeSkill | null {
+        switch (serverSkill) {
+            case 'attack':
+                return TypeSkill.ATTACK;
+            case 'defense':
+                return TypeSkill.DEFENSE;
+            case 'increase_attack':
+                return TypeSkill.INCREASE_ATTACK;
+            case 'decrease_attack':
+                return TypeSkill.DECREASE_ATTACK;
+            case 'heal':
+                return TypeSkill.HEAL;
+            default:
+                return null; // hoặc throw new Error("Unknown skill type")
+        }
+    }
+
+    public static mapEnviromentType(enviroment: string): Element {
+        switch (enviroment) {
+            case 'grass':
+                return Element.Grass;
+            case 'ice':
+                return Element.Ice;
+            case 'water':
+                return Element.Water;
+            default:
+                return Element.Grass;
+        }
     }
 }
 

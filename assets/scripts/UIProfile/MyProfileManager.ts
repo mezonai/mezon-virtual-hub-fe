@@ -6,6 +6,8 @@ import { UserMeManager } from '../core/UserMeManager';
 import { EVENT_NAME } from '../network/APIConstant';
 import { UserProfileDTO } from '../Interface/DataMapAPI';
 import { UIManager } from '../core/UIManager';
+import { PopupManager } from '../PopUp/PopupManager';
+import { ConfirmParam, ConfirmPopup } from '../PopUp/ConfirmPopup';
 
 const { ccclass, property } = _decorator;
 
@@ -27,6 +29,7 @@ export class MyProfileManager extends BaseProfileManager {
     @property(Button) private btn_gender_left: Button = null!;
     @property(Button) private btn_gender_right: Button = null!;
     @property(Label) private title_Button: Label = null!;
+    @property(Button) closeButton: Button = null;
 
     private isEditing: boolean = false;
     private genderOptions = ["nam", "nữ"];
@@ -35,19 +38,21 @@ export class MyProfileManager extends BaseProfileManager {
     genderSprites: SpriteFrame[] = [];
     private selectedGenderIndex = 0;
 
-    onLoad() {
+    public init() {
+        super.init();
         if (!UserMeManager.Get) {
             return;
         }
         this.btn_update_info.node.on("click", this.onUpdateButtonClick, this);
         this.btn_gender_left.node.on("click", this.onGenderLeft, this);
         this.btn_gender_right.node.on("click", this.onGenderRight, this);
-    }
-
-    protected onEnable(): void {
+        this.btn_gender_right.node.on("click", this.onGenderRight, this);
         this.clearInputFields();
         this.setEditingState(false);
         this.loadProfileUI();
+        this.closeButton.addAsyncListener(async () => {
+           await PopupManager.getInstance().closePopup(this.node.uuid);
+        });
     }
 
     protected loadProfileUI() {
@@ -94,16 +99,14 @@ export class MyProfileManager extends BaseProfileManager {
     }
 
     protected updateProfile() {
-        if (!this.validateUsernameInput(this.fullName_EBox.string)){
-            UIManager.Instance.showNoticePopup(null, "Tên không hợp lệ. Tên không thể chứa ký tự đặc biệt và khoảng trắng");
+        const name = this.fullName_EBox.string;
+        const validationMessage = this.getValidationMessage(name);
+        if (validationMessage) {
+            this.showConfirmPopup(validationMessage);
+            this.cancelEditingWithResetName();
             return;
         }
-        if (this.fullName_EBox.string.length < 5) {
-            UIManager.Instance.showNoticePopup(null, "Độ dài của tên phải lớn hơn 5");
-            this.setEditingState(false);
-            this.fullName_EBox.string = UserMeManager.Get.user.display_name;
-            return;
-        }
+        
         const data = {
             display_name: this.fullName_EBox.string
             //gender: this.gender_txt_Choose.string.toLowerCase() == "nam" ? "male" : "male"
@@ -117,6 +120,29 @@ export class MyProfileManager extends BaseProfileManager {
 
         this.btn_update_info.interactable = false;
         this.setEditingState(false);
+    }
+
+    private showConfirmPopup(message: string) {
+        const param: ConfirmParam = {
+            message,
+            title: "Chú ý",
+        };
+        PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
+    }
+
+    private getValidationMessage(name: string): string | null {
+        if (!this.validateUsernameInput(name)) {
+            return "Tên không hợp lệ. Tên không thể chứa ký tự đặc biệt và khoảng trắng";
+        }
+        if (name.length < 5) {
+            return "Độ dài của tên phải lớn hơn 5";
+        }
+        return null;
+    }
+
+    private cancelEditingWithResetName() {
+        this.setEditingState(false);
+        this.fullName_EBox.string = UserMeManager.Get.user.display_name;
     }
 
     private UpdateEditingState(state: boolean) {

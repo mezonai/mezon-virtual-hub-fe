@@ -90,13 +90,13 @@ export class PopupTutorialCatchPet extends BasePopup {
         this.animationTutorialPlayer.node.scale = new Vec3(1, 1, 0);
         this.confirmPopup.node.active = false;
         this.selectionNode.active = false;
-        this.itemAnimalSlot.toggle.isChecked = false;
+        //this.itemAnimalSlot.toggle.isChecked = false;
         this.popupOwnedAnimals.node.active = false;
         this.animationEventTutorialPlayer.loadSkin(ResourceManager.instance.LocalSkinConfig.male.defaultSet);
         this.tutorialPlayer.setPosition(this.positionPlayerIntro);
         this.animalTutorial.node.setPosition(this.defaultPosititonPet);
         this.animalTutorial.node.setScale(new Vec3(0.4, 0.4, 0.4));
-        this.popupOwnedAnimals.showDecription();
+        //this.popupOwnedAnimals.showDecription();
         this.buttonSkip.node.on(Button.EventType.CLICK, () => {
             localStorage.setItem(Constants.TUTORIAL_CACTH_PET, 'true');
             this.cancelTutorial();
@@ -183,12 +183,12 @@ export class PopupTutorialCatchPet extends BasePopup {
         this.popupOwnedAnimals.node.active = true;
         this.showTalkAndDelay("Tiếp theo, Hãy chọn Pet mà bạn muốn mang theo và nhấn vào nó.", () => {
             this.animateSelection(this.itemAnimalSlot.node.worldPosition, () => {
-                this.itemAnimalSlot.toggle.isChecked = true;
+                //this.itemAnimalSlot.toggle.isChecked = true;
                 this.showTalkAndDelay("Cuối cùng nhấn Lưu và cùng vui chơi thôi.", () => {
-                    this.animateSelection(this.popupOwnedAnimals.saveButton.node.worldPosition, () => {
-                        this.popupOwnedAnimals.node.active = false;
-                        this.finishTutorial();
-                    }, true);
+                    // this.animateSelection(this.popupOwnedAnimals.saveButton.node.worldPosition, () => {
+                    //     this.popupOwnedAnimals.node.active = false;
+                    //     this.finishTutorial();
+                    // }, true);
                 });
             }, true);
         });
@@ -205,7 +205,7 @@ export class PopupTutorialCatchPet extends BasePopup {
                             textButtonLeft: "",
                             textButtonRight: "",
                             textButtonCenter: "Bắt Đầu",
-                            onActionButtonCenter: () => {
+                            onActionButtonCenter: async () => {
                                 localStorage.setItem(Constants.TUTORIAL_CACTH_PET, 'true');
                                 this.cancelTutorial();
                             },

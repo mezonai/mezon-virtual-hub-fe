@@ -1,14 +1,22 @@
 import { _decorator } from 'cc';
 import { MapItemController } from '../MapItem/MapItemController';
-import { UIManager } from '../../core/UIManager';
-import { UIID } from '../../ui/enum/UIID';
+import { PopupManager } from '../../PopUp/PopupManager';
+import { InteractShopParam, ShopController } from '../shop/ShopController';
 const { ccclass, property } = _decorator;
 
 @ccclass('InteractShop')
 export class InteractShop extends MapItemController {
   
     protected override async interact(playerSessionId: string) {
-        UIManager.Instance.showUI(UIID.Shop);
+        if(this.isOpenPopUp) return;
+        this.isOpenPopUp = true;
+
+        const param: InteractShopParam = {
+             onActionClose:()=>{
+                this.isOpenPopUp = false;
+             }          
+        };
+        PopupManager.getInstance().openAnimPopup("UIShop", ShopController, param);
         this.handleEndContact(null, null, null);
     }
 

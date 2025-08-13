@@ -1,13 +1,24 @@
 import { _decorator, Button, Component, Label, Node, RichText } from 'cc';
 import { ServerManager } from '../core/ServerManager';
 import { UIIdentify } from './UIIdentify';
+import { BasePopup } from '../PopUp/BasePopup';
+import { PopupManager } from '../PopUp/PopupManager';
+import { AudioType, SoundManager } from '../core/SoundManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('MathProblemPopup')
-export class MathProblemPopup extends Component {
+export class MathProblemPopup extends BasePopup {
     @property({type: RichText}) question: RichText = null;
-    @property({type: [Button]}) options: Button[] = [];
+    @property({type: Button}) options: Button[] = [];
+    @property({type: Button}) close: Button = null;
     private id: string = "";
+    
+    public init(param?: MathProblemParam): void {
+        SoundManager.instance.playSound(AudioType.Notice);
+        this.close.node.on(Button.EventType.CLICK, this.closePopup, this);
+        if (!param) return;
+        this.setData(param.id, param.question, param.options);
+    }
 
     public setData(id, question, options) {
         this.id = id;
@@ -28,6 +39,16 @@ export class MathProblemPopup extends Component {
 
     private onChooseOption(answer: string) {
         ServerManager.instance.answerMathQuestion(this.id, answer.trim());
-        this.node.getComponent(UIIdentify).hide();
+        this.closePopup();
     }
+
+    public closePopup(){
+        PopupManager.getInstance().closePopup(this.node?.uuid);
+    }
+}
+
+export interface MathProblemParam {
+    id: string;
+    question: string;
+    options: string[];
 }

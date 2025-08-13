@@ -1,6 +1,7 @@
 import { _decorator, Component, Label, Node, Sprite, SpriteFrame, Toggle, tween, Vec3 } from 'cc';
 import { Food, FoodType, Item } from '../../../Model/Item';
 import { EVENT_NAME } from '../../../network/APIConstant';
+import { AudioType, SoundManager } from '../../../core/SoundManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('BaseInventoryUIITem')
@@ -38,6 +39,7 @@ export class BaseInventoryUIITem extends Component {
     }
 
     protected onItemClick() {
+        SoundManager.instance.playSound(AudioType.Toggle);
         const isFood = this.dataFood != null;
         const isItem = this.data != null;
         if (!isFood && !isItem) {
