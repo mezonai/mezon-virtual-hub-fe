@@ -354,10 +354,13 @@ export class ServerManager extends Component {
             if (data == null) return;
             const { roomId } = data;
             WebRequestManager.instance.toggleLoading(true);
-            UserManager.instance.playerJoinRoomBattle(data, async () => {
-                await this.joinBattleRoom(roomId);
-                WebRequestManager.instance.toggleLoading(false);
-            });
+            UserManager.instance.playerJoinRoomBattle(data,
+                async () => {
+                    await this.joinBattleRoom(roomId);
+                },
+                () => {
+                    WebRequestManager.instance.toggleLoading(false)
+                });
         });
 
         this.room.onMessage(MessageTypes.END_BATTLE_COMPLETED, (data) => {
