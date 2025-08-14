@@ -419,13 +419,22 @@ export class UserManager extends Component {
         }
     }
 
-    public async playerJoinRoomBattle(data, joinRoomBattle: () => Promise<void>) {
-        const { player1Id, player2Id } = data;
-        let p1 = this.setStatusBattle(player1Id, true);
-        let p2 = this.setStatusBattle(player2Id, true);
-        if (joinRoomBattle == null || p1 == null || p2 == null) return;
-        if (p1.myID != UserManager.instance.GetMyClientPlayer.myID && p2.myID != UserManager.instance.GetMyClientPlayer.myID) return;
-        await joinRoomBattle();
+    public async playerJoinRoomBattle(
+        data,
+        joinRoomBattle: () => Promise<void>,
+        onCloseLoading?: () => void
+    ) {
+        try {
+            const { player1Id, player2Id } = data;
+            const p1 = this.setStatusBattle(player1Id, true);
+            const p2 = this.setStatusBattle(player2Id, true);
+            const isValidJoin = joinRoomBattle && p1 && p2 && (p1.myID === UserManager.instance.GetMyClientPlayer.myID || p2.myID === UserManager.instance.GetMyClientPlayer.myID);
+            if (!isValidJoin) return;
+
+            await joinRoomBattle();
+        } finally {
+            onCloseLoading?.();
+        }
     }
 
     public async updatePlayerEndBattle(data) {
