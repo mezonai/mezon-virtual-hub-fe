@@ -4,6 +4,10 @@ import { RoomType } from "../GameMap/RoomType";
 import { MapData } from "../Interface/DataMapAPI";
 
 export class Constants {
+
+    public readonly minFeeBattle: number = 1000;
+    public readonly maxFeeBattle: number = 10000;
+    ///
     public static readonly PLAYER_LAYER: number = 1 << 30;
     public static readonly BORDER_LAYER: number = 1 << 3;
     public static readonly WiSH_FEE: number = 5;
@@ -83,6 +87,16 @@ export class Constants {
                     resolve();
                 }
             }, 50);
+        });
+    }
+
+    public static isNullOrWhiteSpace(input: string | null | undefined): boolean {
+        return !input || input.trim().length === 0;
+    }
+
+    public static async waitForSeconds(seconds: number): Promise<void> {
+        return new Promise(resolve => {
+            setTimeout(() => resolve(), seconds * 1000);
         });
     }
 }
