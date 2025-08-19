@@ -18,6 +18,7 @@ import { UserManager } from '../core/UserManager';
 import { Constants } from '../utilities/Constants';
 import { AnimalType } from '../animal/AnimalController';
 import { PopupPetElementChart } from './PopupPetElementChart';
+import { BGMType, SoundManager } from '../core/SoundManager';
 const { ccclass, property } = _decorator;
 @ccclass('PlayerBattleStats')
 export class PlayerBattleStats {
@@ -78,6 +79,8 @@ export class PopupBattlePet extends Component {
     }
 
     private Init(param?: BatllePetParam) {
+        SoundManager.instance.stopBgmLoop();
+        SoundManager.instance.playBgm(BGMType.Combat);
         this.playerBattleStats.forEach(playerBattleStat => {
             playerBattleStat.landSpawnPet.slide(false, 0);
             playerBattleStat.hudBattlePet.slide.slide(false, 0);
@@ -412,6 +415,8 @@ export class PopupBattlePet extends Component {
         };
         this.closeBattle();
         await PopupManager.getInstance().openAnimPopup('PopupWinLoseBattle', PopupWinLoseBattle, param);
+        SoundManager.instance.stopBgmLoop();
+        SoundManager.instance.playBgm(BGMType.Game);
     }
 
     public WaitingOpponents(data) {
