@@ -120,6 +120,16 @@ export enum TypeSkill {
   HEAL,
 }
 
+export const ElementNameMap: Record<string, string> = {
+  normal: "Thường",
+  fire: "Lửa",
+  water: "Nước",
+  grass: "Cỏ",
+  electric: "Điện",
+  ice: "Băng",
+  dragon: "Rồng",
+};
+
 export const AnimalElementString: Record<Element, string> = {
   [Element.Normal]: 'normal',
   [Element.Fire]: 'fire',

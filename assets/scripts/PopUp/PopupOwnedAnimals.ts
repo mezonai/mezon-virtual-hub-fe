@@ -6,7 +6,7 @@ import { PopupManager } from './PopupManager';
 import { ConfirmParam, ConfirmPopup } from './ConfirmPopup';
 import { ServerManager } from '../core/ServerManager';
 import { WebRequestManager } from '../network/WebRequestManager';
-import { AnimalRarity, PetBattlePayload, PetDTO, PetFollowPayload, SkillCode, SkillBattleInfo, SkillPayload, SkillSlot } from '../Model/PetDTO';
+import { AnimalRarity, PetBattlePayload, PetDTO, PetFollowPayload, SkillCode, SkillBattleInfo, SkillPayload, SkillSlot, ElementNameMap } from '../Model/PetDTO';
 import { AnimalController, AnimalType } from '../animal/AnimalController';
 import { PopupSelection, SelectionParam } from './PopupSelection';
 import { ItemDisplayPetFighting } from '../animal/ItemDisplayPetFighting';
@@ -14,6 +14,7 @@ import { InteractSlot, ItemSlotSkill } from '../animal/ItemSlotSkill';
 import { PopupBattlePlace, PopupBattlePlaceParam } from './PopupBattlePlace';
 import { Sprite } from 'cc';
 import { UserMeManager } from '../core/UserMeManager';
+import { PopupPetElementChart } from './PopupPetElementChart';
 const { ccclass, property } = _decorator;
 
 enum PetActionType {
@@ -53,6 +54,8 @@ export class PopupOwnedAnimals extends BasePopup {
     @property({ type: [ItemSlotSkill] }) itemSlotSkills: ItemSlotSkill[] = [];
     @property({ type: [ItemDisplayPetFighting] }) itemDisplayPetFightings: ItemDisplayPetFighting[] = [];
     @property({ type: Button }) sortPetBattleBtn: Button = null;
+    @property({ type: Button }) petChartButton: Button = null;
+    
     private animalObject: Node = null;
     private animalController: AnimalController = null;
     private defaultLayer = Layers.Enum.NONE;
@@ -234,6 +237,10 @@ export class PopupOwnedAnimals extends BasePopup {
         this.animalController.spriteNode.layer = isReturnPool ? this.defaultLayer : Layers.Enum.UI_2D;
     }
 
+    getElementName(element: string): string {
+        return ElementNameMap[element] ?? "Không rõ";
+    }
+
     setDataDetail(pet: PetDTO) {
         this.namePet.string = `<outline color=#222222 width=1> ${pet.name} (${pet.pet.rarity}) </outline>`;
         this.currentExp.string = `<outline color=#222222 width=1> ${pet.exp} / ${pet.max_exp} </outline>`;
@@ -243,7 +250,7 @@ export class PopupOwnedAnimals extends BasePopup {
         this.denfenseValue.string = `<outline color=#222222 width=1> ${pet.defense} </outline>`;
         this.speedValue.string = `<outline color=#222222 width=1> ${pet.speed} </outline>`;
         this.levelValue.string = `<outline color=#222222 width=1> ${pet.level} </outline>`;
-        this.typeValue.string = `<outline color=#222222 width=1> ${pet.pet.type} </outline>`;
+        this.typeValue.string = `<outline color=#222222 width=1> ${this.getElementName(pet.pet.type)} </outline>`;
         this.setStar(pet.stars)
         this.updatePetActionButtons(pet);
         this.setSkillsPet(pet);
@@ -429,6 +436,11 @@ export class PopupOwnedAnimals extends BasePopup {
             this.sortPetBattleBtn.interactable = false;
             await this.handlePetAction(PetActionType.SORTBATTLE);
             this.sortPetBattleBtn.interactable = true;
+        });
+        this.petChartButton.addAsyncListener(async () => {
+            this.petChartButton.interactable = false;
+            await PopupManager.getInstance().openAnimPopup("PopupPetElementChart", PopupPetElementChart);
+            this.petChartButton.interactable = true;
         });
         this.onGetMyPet(UserMeManager.MyPets());
     }

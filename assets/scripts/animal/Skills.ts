@@ -25,7 +25,7 @@ export const SkillList: SkillDataInfor[] = [
     },
     {
         idSkill: "NOR01",
-        name: "Growl - Gầm Gừ",
+        name: "Gầm Gừ",
         type: Element.Normal,
         typeSkill: TypeSkill.INCREASE_ATTACK,
         attack: 0,
@@ -35,7 +35,7 @@ export const SkillList: SkillDataInfor[] = [
     },
     {
         idSkill: "NOR02",
-        name: "Protect - Bảo Vệ",
+        name: "Bảo Vệ",
         type: Element.Normal,
         typeSkill: TypeSkill.DEFENSE,
         attack: 0,
@@ -45,7 +45,7 @@ export const SkillList: SkillDataInfor[] = [
     },
     {
         idSkill: "NOR03",
-        name: "Rest - Nghỉ Ngơi",
+        name: "Nghỉ Ngơi",
         type: Element.Normal,
         typeSkill: TypeSkill.HEAL,
         attack: 0,
@@ -55,7 +55,7 @@ export const SkillList: SkillDataInfor[] = [
     },
     {
         idSkill: "NOR04",
-        name: "Confusion - Rối Loạn Tâm Trí",
+        name: "Rối Loạn Tâm Trí",
         type: Element.Normal,
         typeSkill: TypeSkill.DECREASE_ATTACK,
         attack: 10,
@@ -65,7 +65,7 @@ export const SkillList: SkillDataInfor[] = [
     },
     {
         idSkill: "NOR05",
-        name: "Cut - Cắt",
+        name: "Cắt",
         type: Element.Normal,
         typeSkill: TypeSkill.ATTACK,
         attack: 0,
@@ -75,7 +75,7 @@ export const SkillList: SkillDataInfor[] = [
     },
     {
         idSkill: "NOR06",
-        name: "Pound - Đánh Thẳng",
+        name: "Đánh Thẳng",
         type: Element.Normal,
         typeSkill: TypeSkill.ATTACK,
         attack: 35,
@@ -85,7 +85,7 @@ export const SkillList: SkillDataInfor[] = [
     },
     {
         idSkill: "NOR07",
-        name: "Double Kick - Song Cước",
+        name: "Song Cước",
         type: Element.Normal,
         typeSkill: TypeSkill.ATTACK,
         attack: 30,
@@ -95,7 +95,7 @@ export const SkillList: SkillDataInfor[] = [
     },
     {
         idSkill: "NOR08",
-        name: "Bite - Cắn",
+        name: "Cắn",
         type: Element.Normal,
         typeSkill: TypeSkill.ATTACK,
         attack: 60,
@@ -105,7 +105,7 @@ export const SkillList: SkillDataInfor[] = [
     },
     {
         idSkill: "NOR09",
-        name: "Crush Claw - Vuốt Nghiền",
+        name: "Vuốt Nghiền",
         type: Element.Normal,
         typeSkill: TypeSkill.ATTACK,
         attack: 75,
@@ -115,7 +115,7 @@ export const SkillList: SkillDataInfor[] = [
     },
     {
         idSkill: "NOR10",
-        name: "Wing Attack – Cánh Tấn Công",
+        name: "Cánh Tấn Công",
         type: Element.Normal,
         typeSkill: TypeSkill.ATTACK,
         attack: 60,
@@ -125,7 +125,7 @@ export const SkillList: SkillDataInfor[] = [
     },
     {
         idSkill: "NOR11",
-        name: "Fly - Bay",
+        name: "Bay",
         type: Element.Normal,
         typeSkill: TypeSkill.ATTACK,
         attack: 75,
@@ -135,7 +135,7 @@ export const SkillList: SkillDataInfor[] = [
     },
     {
         idSkill: "NOR12",
-        name: "Fury Punch - Cú đấm liên hoàn",
+        name: "Cú đấm liên hoàn",
         type: Element.Normal,
         typeSkill: TypeSkill.ATTACK,
         attack: -1,
@@ -145,7 +145,7 @@ export const SkillList: SkillDataInfor[] = [
     },
     {
         idSkill: "NOR13",
-        name: "Earthquake - Động Đất",
+        name: "Động Đất",
         typeSkill: TypeSkill.ATTACK,
         type: Element.Normal,
         attack: 100,
@@ -155,7 +155,7 @@ export const SkillList: SkillDataInfor[] = [
     },
     {
         idSkill: "GRASS01",
-        name: "Razor Leaf - Phi Dao Lá",
+        name: "Phi Dao Lá",
         type: Element.Grass,
         typeSkill: TypeSkill.ATTACK,
         attack: 50,
@@ -165,7 +165,7 @@ export const SkillList: SkillDataInfor[] = [
     },
     {
         idSkill: "GRASS02",
-        name: "Absorb - Hấp Thụ",
+        name: "Hấp Thụ",
         type: Element.Grass,
         typeSkill: TypeSkill.ATTACK,
         attack: 0,
@@ -175,7 +175,7 @@ export const SkillList: SkillDataInfor[] = [
     },
     {
         idSkill: "ELECTRIC01",
-        name: "Thunderbolt - Tia Sét",
+        name: "Tia Sét",
         type: Element.Electric,
         typeSkill: TypeSkill.ATTACK,
         attack: 110,
@@ -185,7 +185,7 @@ export const SkillList: SkillDataInfor[] = [
     },
     {
         idSkill: "ELECTRIC02",
-        name: "Thunder Wave - Sóng Điện",
+        name: "Sóng Điện",
         type: Element.Electric,
         typeSkill: TypeSkill.ATTACK,
         attack: 90,
@@ -195,7 +195,7 @@ export const SkillList: SkillDataInfor[] = [
     },
     {
         idSkill: "ELECTRIC03",
-        name: "Electro Ball -  Quả cầu điện",
+        name: "Quả cầu điện",
         type: Element.Electric,
         typeSkill: TypeSkill.ATTACK,
         attack: 100,
@@ -205,7 +205,7 @@ export const SkillList: SkillDataInfor[] = [
     },
     {
         idSkill: "WATER01",
-        name: "Water Gun - Quăng bóng nước",
+        name: "Quăng bóng nước",
         type: Element.Water,
         typeSkill: TypeSkill.ATTACK,
         attack: 40,
@@ -215,7 +215,7 @@ export const SkillList: SkillDataInfor[] = [
     },
     {
         idSkill: "WATER02",
-        name: "Bubble - Thả bóng nước",
+        name: "Thả bóng nước",
         type: Element.Water,
         typeSkill: TypeSkill.ATTACK,
         attack: 60,
@@ -225,7 +225,7 @@ export const SkillList: SkillDataInfor[] = [
     },
     {
         idSkill: "WATER03",
-        name: "Aqua Cutter - Chém Nước",
+        name: "Chém Nước",
         type: Element.Water,
         typeSkill: TypeSkill.ATTACK,
         attack: 110,
@@ -235,7 +235,7 @@ export const SkillList: SkillDataInfor[] = [
     },
     {
         idSkill: "FIRE01",
-        name: "Ember - Tia Lửa",
+        name: "Tia Lửa",
         type: Element.Fire,
         typeSkill: TypeSkill.ATTACK,
         attack: 40,
@@ -245,7 +245,7 @@ export const SkillList: SkillDataInfor[] = [
     },
     {
         idSkill: "FIRE02",
-        name: "Fire Blast - Đại Hỏa Bạo",
+        name: "Đại Hỏa Bạo",
         type: Element.Fire,
         typeSkill: TypeSkill.ATTACK,
         attack: 120,
@@ -255,7 +255,7 @@ export const SkillList: SkillDataInfor[] = [
     },
     {
         idSkill: "FIRE03",
-        name: "Overheat - Nhiệt Hủy Diệt",
+        name: "Nhiệt Hủy Diệt",
         type: Element.Fire,
         typeSkill: TypeSkill.ATTACK,
         attack: 90,
@@ -265,7 +265,7 @@ export const SkillList: SkillDataInfor[] = [
     },
     {
         idSkill: "ICE01",
-        name: "Ice Ball - Cầu Băng",
+        name: "Cầu Băng",
         type: Element.Ice,
         typeSkill: TypeSkill.ATTACK,
         attack: 30,
@@ -275,7 +275,7 @@ export const SkillList: SkillDataInfor[] = [
     },
     {
         idSkill: "ICE02",
-        name: "Icicle Crash - Băng Rơi",
+        name: "Băng Rơi",
         type: Element.Ice,
         typeSkill: TypeSkill.ATTACK,
         attack: 90,
@@ -285,7 +285,7 @@ export const SkillList: SkillDataInfor[] = [
     },
     {
         idSkill: "ICE03",
-        name: "Ice Fang - Nanh băng",
+        name: "Nanh băng",
         type: Element.Ice,
         typeSkill: TypeSkill.ATTACK,
         attack: 90,
@@ -295,7 +295,7 @@ export const SkillList: SkillDataInfor[] = [
     },
     {
         idSkill: "DRAGON01",
-        name: "Dragon Claw - Vuốt Rồng",
+        name: "Vuốt Rồng",
         type: Element.Dragon,
         typeSkill: TypeSkill.ATTACK,
         attack: 100,
