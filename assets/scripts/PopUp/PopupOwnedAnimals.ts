@@ -6,7 +6,7 @@ import { PopupManager } from './PopupManager';
 import { ConfirmParam, ConfirmPopup } from './ConfirmPopup';
 import { ServerManager } from '../core/ServerManager';
 import { WebRequestManager } from '../network/WebRequestManager';
-import { AnimalRarity, PetBattlePayload, PetDTO, PetFollowPayload, SkillCode, SkillBattleInfo, SkillPayload, SkillSlot } from '../Model/PetDTO';
+import { AnimalRarity, PetBattlePayload, PetDTO, PetFollowPayload, SkillCode, SkillBattleInfo, SkillPayload, SkillSlot, ElementNameMap } from '../Model/PetDTO';
 import { AnimalController, AnimalType } from '../animal/AnimalController';
 import { PopupSelection, SelectionParam } from './PopupSelection';
 import { ItemDisplayPetFighting } from '../animal/ItemDisplayPetFighting';
@@ -237,6 +237,10 @@ export class PopupOwnedAnimals extends BasePopup {
         this.animalController.spriteNode.layer = isReturnPool ? this.defaultLayer : Layers.Enum.UI_2D;
     }
 
+    getElementName(element: string): string {
+        return ElementNameMap[element] ?? "Không rõ";
+    }
+
     setDataDetail(pet: PetDTO) {
         this.namePet.string = `<outline color=#222222 width=1> ${pet.name} (${pet.pet.rarity}) </outline>`;
         this.currentExp.string = `<outline color=#222222 width=1> ${pet.exp} / ${pet.max_exp} </outline>`;
@@ -246,7 +250,7 @@ export class PopupOwnedAnimals extends BasePopup {
         this.denfenseValue.string = `<outline color=#222222 width=1> ${pet.defense} </outline>`;
         this.speedValue.string = `<outline color=#222222 width=1> ${pet.speed} </outline>`;
         this.levelValue.string = `<outline color=#222222 width=1> ${pet.level} </outline>`;
-        this.typeValue.string = `<outline color=#222222 width=1> ${pet.pet.type} </outline>`;
+        this.typeValue.string = `<outline color=#222222 width=1> ${this.getElementName(pet.pet.type)} </outline>`;
         this.setStar(pet.stars)
         this.updatePetActionButtons(pet);
         this.setSkillsPet(pet);
