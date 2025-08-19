@@ -60,7 +60,7 @@ export class PetCombat extends PlayerInteractAction {
                 this.rejectAction(data);
             },
         };
-        PopupManager.getInstance().openAnimPopup("PopupSelectionTimeOut", PopupSelectionTimeOut, param);
+        PopupManager.getInstance().openPopup("PopupSelectionTimeOut", PopupSelectionTimeOut, param);
     }
 
     private validateBattlePets(): PetBattleError {

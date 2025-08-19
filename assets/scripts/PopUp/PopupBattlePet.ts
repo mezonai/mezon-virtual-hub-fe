@@ -17,6 +17,7 @@ import { Component } from 'cc';
 import { UserManager } from '../core/UserManager';
 import { Constants } from '../utilities/Constants';
 import { AnimalType } from '../animal/AnimalController';
+import { PopupPetElementChart } from './PopupPetElementChart';
 const { ccclass, property } = _decorator;
 @ccclass('PlayerBattleStats')
 export class PlayerBattleStats {
@@ -39,6 +40,7 @@ export class PopupBattlePet extends Component {
     //Button
     @property({ type: Button }) hideSkillButton: Button = null;
     @property({ type: Button }) fightButton: Button = null;
+    @property({ type: Button }) petChartButton: Button = null;
     @property({ type: Button }) surrenderButton: Button = null;
     private mySkillsBatte: BattleSkillButton[] = []
     private _onActionCompleted: (() => void) | null = null;
@@ -67,6 +69,11 @@ export class PopupBattlePet extends Component {
             await this.slideSkillButtons.slide(false, 0.3);
             await this.slideChooseButtons.slide(true, 0.3);
             this.hideSkillButton.interactable = true;
+        });
+        this.petChartButton.addAsyncListener(async () => {
+            this.petChartButton.interactable = false;
+            await PopupManager.getInstance().openAnimPopup("PopupPetElementChart", PopupPetElementChart);
+            this.petChartButton.interactable = true;
         });
     }
 

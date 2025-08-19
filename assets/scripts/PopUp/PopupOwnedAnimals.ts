@@ -14,6 +14,7 @@ import { InteractSlot, ItemSlotSkill } from '../animal/ItemSlotSkill';
 import { PopupBattlePlace, PopupBattlePlaceParam } from './PopupBattlePlace';
 import { Sprite } from 'cc';
 import { UserMeManager } from '../core/UserMeManager';
+import { PopupPetElementChart } from './PopupPetElementChart';
 const { ccclass, property } = _decorator;
 
 enum PetActionType {
@@ -53,6 +54,8 @@ export class PopupOwnedAnimals extends BasePopup {
     @property({ type: [ItemSlotSkill] }) itemSlotSkills: ItemSlotSkill[] = [];
     @property({ type: [ItemDisplayPetFighting] }) itemDisplayPetFightings: ItemDisplayPetFighting[] = [];
     @property({ type: Button }) sortPetBattleBtn: Button = null;
+    @property({ type: Button }) petChartButton: Button = null;
+    
     private animalObject: Node = null;
     private animalController: AnimalController = null;
     private defaultLayer = Layers.Enum.NONE;
@@ -429,6 +432,11 @@ export class PopupOwnedAnimals extends BasePopup {
             this.sortPetBattleBtn.interactable = false;
             await this.handlePetAction(PetActionType.SORTBATTLE);
             this.sortPetBattleBtn.interactable = true;
+        });
+        this.petChartButton.addAsyncListener(async () => {
+            this.petChartButton.interactable = false;
+            await PopupManager.getInstance().openAnimPopup("PopupPetElementChart", PopupPetElementChart);
+            this.petChartButton.interactable = true;
         });
         this.onGetMyPet(UserMeManager.MyPets());
     }
