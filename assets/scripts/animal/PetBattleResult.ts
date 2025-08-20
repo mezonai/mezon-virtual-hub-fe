@@ -25,7 +25,7 @@ export class PetBattleResult extends Component {
         this.namePet.string = `<outline color=#222222 width=1> ${petsDataBeforeUpdate.name} </outline>`;
         this.iconPet.setActivePetByName(Species[petsDataBeforeUpdate.species]);
         this.setLevel(petsDataBeforeUpdate, petsDataAfterUpdate);
-        this.bonusExp.string = `+ ${expAdded} Exp`;
+        this.bonusExp.string = `<outline color=#222222 width=1> + ${expAdded} Exp </outline>`;
         this.bonusExp.node.active = false;
         this.petsDataBeforeUpdate = petsDataBeforeUpdate;
         this.petsDataAfterUpdate = petsDataAfterUpdate;
@@ -38,10 +38,16 @@ export class PetBattleResult extends Component {
             this.levelPet.string = `<outline color=#222222 width=1> LV. ${currentLevelAfterUpdate}</outline>`;
         else
             this.levelPet.string = `<outline color=#222222 width=1> LV. ${currentLevel} -> LV. ${currentLevelAfterUpdate}</outline>`;
-        this.currentExp.string = petsDataAfterUpdate == null ? ` 0/0 ` : ` ${petsDataAfterUpdate.exp}/${petsDataAfterUpdate.max_exp} `;
-        this.expFillSprite.fillRange = currentLevel >= this.maxLevel ? 1 : 0;
+        const currentExp = petsDataAfterUpdate == null ? 0 : petsDataBeforeUpdate.currentExp;
+        const totalExp = petsDataAfterUpdate == null ? 0 : petsDataBeforeUpdate.totalExp;
+        this.setCurrentExp(currentExp, totalExp);
+        this.expFillSprite.fillRange = currentLevel >= this.maxLevel ? 1 : Math.min(currentExp / totalExp, 1);
         this.levelPet.node.active = currentLevel >= this.maxLevel ? true : false;
-        this.currentExp.node.active = currentLevel >= this.maxLevel ? true : false;
+        this.currentExp.node.active = true;
+    }
+
+    setCurrentExp(currentExp: number, totalExp: number) {
+        this.currentExp.string = `<outline color=#222222 width=1> ${currentExp}/${totalExp} </outline>`;
     }
 
     async playAnim(): Promise<void> {
@@ -51,9 +57,7 @@ export class PetBattleResult extends Component {
         if (currentLevel >= this.maxLevel) return;
 
         await this.playBounceBonusExp();
-
         const levelUpCount = currentLevelAfterUpdate - currentLevel;
-
         // Nếu có lên level
         if (levelUpCount > 0) {
             const maxExp = this.petsDataBeforeUpdate.totalExp;
@@ -72,12 +76,14 @@ export class PetBattleResult extends Component {
         }
         // Lần cuối cùng: chạy từ 0 -> exp còn dư ở level mới
         await this.animExp(this.petsDataAfterUpdate.exp, this.petsDataAfterUpdate.max_exp);
+        const currentExp = this.petsDataAfterUpdate == null ? 0 : this.petsDataAfterUpdate.exp;
+        const totalExp = this.petsDataAfterUpdate == null ? 0 : this.petsDataAfterUpdate.max_exp;
+        this.setCurrentExp(currentExp, totalExp);
         this.levelPet.node.active = true;
-        this.currentExp.node.active = true;
     }
 
     public async animExp(currentExp: number, maxExp: number): Promise<void> {
-        const newRatio = currentExp / maxExp;
+        const newRatio = Math.min(currentExp / maxExp, 1);
         // Trả về Promise hoàn tất sau khi tween xong
         return new Promise<void>((resolve) => {
             this.currentResolve = resolve;
