@@ -40,26 +40,60 @@ export class PopupReward extends BasePopup {
     }
 
     showReward(param: PopupRewardParam) {
-        this.title.string = param.status == RewardStatus.GAIN ? "Nhận Quà" : "Thông Báo";
-        const indexIcon = param.rewardType == RewardNewType.NORMAL_FOOD ? 0 : param.rewardType == RewardNewType.PREMIUM_FOOD ? 1 :
-            param.rewardType == RewardNewType.ULTRA_PREMIUM_FOOD ? 2 : param.rewardType == RewardNewType.GOLD ? 3 : 4;
+        this.title.string = param.status === RewardStatus.GAIN ? "Nhận Quà" : "Thông Báo";
+
+        // 2. Map rewardType -> indexIcon
+        const rewardIconMap: Record<RewardNewType, number> = {
+            [RewardNewType.NORMAL_FOOD]: 0,
+            [RewardNewType.PREMIUM_FOOD]: 1,
+            [RewardNewType.ULTRA_PREMIUM_FOOD]: 2,
+            [RewardNewType.GOLD]: 3,
+            [RewardNewType.DIAMOND]: 4,
+        };
+        const indexIcon = rewardIconMap[param.rewardType] ?? 0;
         this.icon.spriteFrame = this.iconReward[indexIcon];
+
+        // 3. Content
         this.contentReward.string = param.content;
-        this.quantity.string = param.status == RewardStatus.GAIN ? `+${param.quantity}` : `-${param.quantity}`
-        if (param.rewardType == RewardNewType.GOLD) {
-            UserMeManager.playerCoin += param.quantity;
-        }
-        else if (param.rewardType == RewardNewType.DIAMOND) {
-            UserMeManager.playerDiamond += param.quantity;
-        } else {
-            this.quantity.string = `+${param.quantity}`;
-            const foodType = param.rewardType == RewardNewType.NORMAL_FOOD ? FoodType.NORMAL : param.rewardType == RewardNewType.PREMIUM_FOOD ? FoodType.PREMIUM : FoodType.ULTRA_PREMIUM;
-            let addSucess = UserMeManager.AddQuantityFood(foodType, param.quantity);
-            if (addSucess) return;
-            WebRequestManager.instance.getUserProfile(
-                (response) => { },
-                (error) => { }
-            );
+
+        // 4. Quantity text
+        const prefix = param.status === RewardStatus.GAIN ? "+" : "-";
+        this.quantity.string = `${prefix}${param.quantity}`;
+
+        // 5. Update user data
+        switch (param.rewardType) {
+            case RewardNewType.GOLD:
+                UserMeManager.playerCoin += (param.status === RewardStatus.GAIN ? param.quantity : -param.quantity);
+                break;
+
+            case RewardNewType.DIAMOND:
+                UserMeManager.playerDiamond += (param.status === RewardStatus.GAIN ? param.quantity : -param.quantity);
+                break;
+
+            case RewardNewType.NORMAL_FOOD:
+            case RewardNewType.PREMIUM_FOOD:
+            case RewardNewType.ULTRA_PREMIUM_FOOD: {
+                // food mapping
+                const foodMap: Record<RewardNewType, FoodType> = {
+                    [RewardNewType.NORMAL_FOOD]: FoodType.NORMAL,
+                    [RewardNewType.PREMIUM_FOOD]: FoodType.PREMIUM,
+                    [RewardNewType.ULTRA_PREMIUM_FOOD]: FoodType.ULTRA_PREMIUM,
+                    // fallback values (won't be used here)
+                    [RewardNewType.GOLD]: FoodType.NORMAL,
+                    [RewardNewType.DIAMOND]: FoodType.NORMAL,
+                };
+                const foodType = foodMap[param.rewardType];
+                const delta = (param.status === RewardStatus.GAIN ? param.quantity : -param.quantity);
+
+                const addSuccess = UserMeManager.AddQuantityFood(foodType, delta);
+                if (!addSuccess) {
+                    WebRequestManager.instance.getUserProfile(
+                        () => { },
+                        () => { }
+                    );
+                }
+                break;
+            }
         }
     }
 }

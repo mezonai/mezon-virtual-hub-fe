@@ -39,12 +39,10 @@ export class PopupWinLoseBattle extends BasePopup {
         if (param.statusBattle == StatusBattle.WIN) {
             this.ActionHappy();
             this.title.string = "Chiến Thắng";
-            UserMeManager.playerDiamond += param.dimondChallenge;
         }
         else {
             this.ActionSad();
             this.title.string = "Thất Bại";
-            UserMeManager.playerDiamond -= param.dimondChallenge;
         }
         this.showPopupReward(param);
         this.btnClose.addAsyncListener(async () => {
