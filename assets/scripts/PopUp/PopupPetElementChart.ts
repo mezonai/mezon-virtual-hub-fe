@@ -1,10 +1,12 @@
-import { _decorator, Label, Button, Toggle, Sprite, Color } from 'cc';
+import { _decorator, Label, Button, Toggle, Sprite, Color, Node } from 'cc';
 import { BasePopup } from './BasePopup';
 import { PopupManager } from './PopupManager';
+import { Widget } from 'cc';
 const { ccclass, property } = _decorator;
 
 @ccclass('PopupPetElementChart')
 export class PopupPetElementChart extends BasePopup {
+    @property(Node) dim: Node = null;
     @property([Toggle]) elementButtons: Toggle[] = [];
     @property(Button) closeButton: Button;
     @property([Label]) attackLabels: Label[] = [];
@@ -22,13 +24,31 @@ export class PopupPetElementChart extends BasePopup {
         [1, 1,   1,   1,   1,   1,   2],
     ];
 
+    SetPosition(param?: PopupPetChartParam) {
+        const widget = this.node.getComponent(Widget);
+        if (param.widget.horizontalCenter !== undefined) {
+            widget.isAlignHorizontalCenter = true;
+            widget.horizontalCenter = param.widget.horizontalCenter;
+        }
+        if (param.widget.verticalCenter !== undefined) {
+            widget.isAlignVerticalCenter = true;
+            widget.verticalCenter = param.widget.verticalCenter;
+        }
+
+        widget.updateAlignment();
+    }
+
     private readonly colorMap: Record<number, Color> = {
         2: new Color(201, 0, 0),
         0.5: new Color(140, 219, 110),
         1: Color.WHITE,
     };
 
-    public init(param?: any): void {
+    public init(param?: PopupPetChartParam): void {
+        if(param != null){
+            this.dim.active = true;
+            this.SetPosition(param);
+        }
         this.elementButtons.forEach((toggle, index) => {
             toggle.node.on(Toggle.EventType.TOGGLE, () => {
                 if (toggle.isChecked) this.showDamageFor(index);
@@ -60,4 +80,10 @@ export class PopupPetElementChart extends BasePopup {
     private formatDamage(value: number): string {
         return value === 0.5 ? "1/2" : value.toString();
     }
+}
+export interface PopupPetChartParam {
+    widget?: {
+        horizontalCenter?: number;
+        verticalCenter?: number;
+    };
 }
