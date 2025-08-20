@@ -429,7 +429,16 @@ export class ServerManager extends Component {
                 return;
             }
             if (UserManager.instance == null) return;
-            UserManager.instance.disconnected(data);
+            UserManager.instance.disconnected("Đối Thủ Bị Mất Kết Nôi");
+        });
+
+        this.battleRoom.onMessage(MessageTypes.NOTIFY_BATTLE, (data) => {
+            if (data == null) {
+                this.leaveBattleRoom();
+                return;
+            }
+            if (UserManager.instance == null) return;
+            UserManager.instance.disconnected(data.message);
         });
     }
 

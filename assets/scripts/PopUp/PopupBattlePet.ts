@@ -394,14 +394,14 @@ export class PopupBattlePet extends Component {
     }
 
     public async battleFinished(data) {
-        const { winnerId, loserId } = data;
-        const win = UserManager.instance.GetMyClientPlayer.myClientBattleId == winnerId;
+        const { id, expReceived, dimondChallenge, currentPets, isWinner } = data;
         await Constants.waitUntil(() => this.myClient != null);
-        console.log("this.myClient:", this.myClient)
-        console.log("this.myClient.battlePets: ", this.myClient.battlePets)
         const param: WinLoseBattleParam = {
-            pets: this.myClient.battlePets,
-            statusBattle: win ? StatusBattle.WIN : StatusBattle.LOSE,
+            petsDataBeforeUpdate: this.myClient.battlePets,
+            petsDataAfterUpdate: currentPets,
+            statusBattle: isWinner ? StatusBattle.WIN : StatusBattle.LOSE,
+            dimondChallenge: dimondChallenge,
+            expAddedPerPet: expReceived,
         };
         this.closeBattle();
         await PopupManager.getInstance().openAnimPopup('PopupWinLoseBattle', PopupWinLoseBattle, param);

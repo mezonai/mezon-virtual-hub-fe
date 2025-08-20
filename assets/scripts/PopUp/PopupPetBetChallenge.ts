@@ -46,6 +46,7 @@ export class PopupPetBetChallenge extends BasePopup {
                 return;
             }
             if (param.onActionChallenge) await param.onActionChallenge(diamondChallenge);
+            await this.closePopup();
         })
     }
 
@@ -74,10 +75,6 @@ export class PopupPetBetChallenge extends BasePopup {
             textButtonCenter: "",
             onActionButtonRight: async () => {
                 await this.closePopup();
-            }
-            ,
-            onActionButtonLeft: async () => {
-
             }
         };
         await PopupManager.getInstance().openAnimPopup("PopupSelection", PopupSelection, param);

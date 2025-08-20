@@ -88,7 +88,11 @@ export class WebRequestManager extends Component {
     }
 
     public getUserProfile(successCallback, errorCallback) {
-        APIManager.getData(this.combineWithSlash(APIConstant.USER), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+        APIManager.getData(this.combineWithSlash(APIConstant.USER), (data) => {
+            UserMeManager.Set = data.data;
+            this.onSuccessHandler(data, successCallback, errorCallback);
+        }
+            , (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
     public postBuySkin(data, successCallback, errorCallback) {
@@ -113,6 +117,10 @@ export class WebRequestManager extends Component {
 
     public updateListPetBattleUser(data, successCallback, errorCallback) {
         APIManager.patchData(this.combineWithSlash(APIConstant.PET_PLAYERS, APIConstant.BATTLE_PET), data, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    }
+
+    public getPetBattle(successCallback, errorCallback) {
+        APIManager.getData(this.combineWithSlash(APIConstant.PET_PLAYERS, APIConstant.BATTLE), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
     public updateSkillsPetBattleUser(petplayerId, data, successCallback, errorCallback) {
