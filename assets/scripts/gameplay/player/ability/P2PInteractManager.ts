@@ -88,7 +88,7 @@ export class P2PInteractManager extends Ability {
     }
 
     public onCallbackAction(data) {
-        if (data.action == ActionType.RPS) {
+        if (data.action == ActionType.RPS || data.action == ActionType.Battle) {
             const param: MessageTimeoutParam = {
                 message: `Chờ ${data.toName} phản hồi`,
                 closeAfter: 5,
@@ -149,7 +149,7 @@ export class P2PInteractManager extends Ability {
 
     public showCombatResult(result) {
         for (const action of this.actionButtons) {
-            if (action.actionType.toString() == ActionType.PetCombat.toString()) {
+            if (action.actionType.toString() == ActionType.Battle.toString()) {
                 action.actionResult(result)
                 break;
             }

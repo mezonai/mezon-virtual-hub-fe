@@ -4,9 +4,10 @@ import { UIMission } from '../gameplay/Mission/UIMission';
 import { WebRequestManager } from '../network/WebRequestManager';
 import ConvetData from './ConvertData';
 import { PopupManager } from '../PopUp/PopupManager';
-import { PopupReward } from '../PopUp/PopupReward';
+import { PopupReward, PopupRewardParam, RewardNewType, RewardStatus } from '../PopUp/PopupReward';
 import { PopupTutorialCatchPet, PopupTutorialCatchPetParam } from '../PopUp/PopupTutorialCatchPet';
 import { Constants } from '../utilities/Constants';
+import { FoodType, RewardType } from '../Model/Item';
 
 const { ccclass, property } = _decorator;
 
@@ -31,8 +32,8 @@ export class GameManager extends Component {
         this.resetNoticeTrandferDiamon();
     }
 
-    resetNoticeTrandferDiamon(){
-        if (localStorage.getItem(Constants.NOTICE_TRANSFER_DIAMOND) !== null){
+    resetNoticeTrandferDiamon() {
+        if (localStorage.getItem(Constants.NOTICE_TRANSFER_DIAMOND) !== null) {
             localStorage.removeItem(Constants.NOTICE_TRANSFER_DIAMOND);
         }
     }
@@ -64,11 +65,25 @@ export class GameManager extends Component {
     }
 
 
-    handleGetReward(response: any) {
+    async handleGetReward(response: any) {
         const rewardsData = response?.data?.rewards ?? [];
         const rewardItems = ConvetData.ConvertReward(rewardsData);
         if (rewardItems.length <= 0) return;
-        PopupManager.getInstance().openAnimPopup('PopupReward', PopupReward, { rewards: rewardItems });
+        for (let i = 0; i < rewardItems.length; i++) {
+            const type = Constants.mapRewardType(rewardItems[i]);
+            const name = type == RewardNewType.NORMAL_FOOD ? "Thức ăn sơ cấp" : type == RewardNewType.PREMIUM_FOOD ? "Thức ăn cao cấp"
+                : type == RewardNewType.ULTRA_PREMIUM_FOOD ? "Thức ăn siêu cao cấp" : type == RewardNewType.GOLD ? "Vàng" : "Kim cương";
+            const content = `Chúc mừng bạn nhận thành công ${name}`;
+            const param: PopupRewardParam = {
+                rewardType: type,
+                quantity: rewardItems[i].type == RewardType.GOLD || rewardItems[i].type == RewardType.DIAMOND ? rewardItems[i].quantity : rewardItems[i].amount,
+                status: RewardStatus.GAIN,
+                content: content,
+            };
+            const popup = await PopupManager.getInstance().openPopup('PopupReward', PopupReward, param);
+            await PopupManager.getInstance().waitCloseAsync(popup.node.uuid);
+        }
+
 
     }
 

@@ -296,9 +296,9 @@ export class UserManager extends Component {
         UIManager.Instance.batteScene.WaitingOpponents(data);
     }
 
-    public disconnected(data) {
+    public disconnected(content: string) {
         const param: ConfirmParam = {
-            message: "Đối Thủ Bị Mất Kết Nôi",
+            message: content,
             title: "Thông báo",
         };
         PopupManager.getInstance().openPopup("ConfirmPopup", ConfirmPopup, param);
