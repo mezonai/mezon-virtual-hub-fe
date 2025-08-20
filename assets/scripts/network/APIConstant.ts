@@ -3,15 +3,15 @@ export default class APIConstant {
     static GAME_CONFIG: string = "game-config";
     static USER: string = "user";
     static LOGIN: string = "mezon-login";
-    static AUTH:  string = "auth";
+    static AUTH: string = "auth";
     static MAP: string = "map";
     static INVENTORY: string = "inventory";
     static BUY = "buy";
     static ITEM = "item";
     static SPIN = "spin";
     static GAME = "game";
-    static GAME_EVENT ="game-event";
-    static CURRENT ="current";
+    static GAME_EVENT = "game-event";
+    static CURRENT = "current";
     static COMPLETE = "complete"
     static PET_PLAYERS = "pet-players";
     static BRING = "bring-pets";
@@ -20,11 +20,12 @@ export default class APIConstant {
     static INITIAL_REWARD = "initial-reward";
     static REWARD_PERCENT = "reward-percent";
     static BATTLE_SKILLS = "battle-skills";
+    static BATTLE = "battle";
 }
 
 export class APIConfig {
     static token: string = "";
-    static apiPath: string = ""; 
+    static apiPath: string = "";
     static websocketPath: string = "";
     static mezon_app_id: string = "";
     static recive_token_botid: string = "";

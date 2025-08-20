@@ -55,7 +55,7 @@ export class PopupOwnedAnimals extends BasePopup {
     @property({ type: [ItemDisplayPetFighting] }) itemDisplayPetFightings: ItemDisplayPetFighting[] = [];
     @property({ type: Button }) sortPetBattleBtn: Button = null;
     @property({ type: Button }) petChartButton: Button = null;
-    
+
     private animalObject: Node = null;
     private animalController: AnimalController = null;
     private defaultLayer = Layers.Enum.NONE;
@@ -244,6 +244,8 @@ export class PopupOwnedAnimals extends BasePopup {
     setDataDetail(pet: PetDTO) {
         this.namePet.string = `<outline color=#222222 width=1> ${pet.name} (${pet.pet.rarity}) </outline>`;
         this.currentExp.string = `<outline color=#222222 width=1> ${pet.exp} / ${pet.max_exp} </outline>`;
+        console.log("pet.exp: ", pet.exp);
+        console.log("pet.max_exp: ", pet.max_exp);
         this.progressBarExp.fillRange = Math.min(pet.exp / pet.max_exp, 1);
         this.hpValue.string = `<outline color=#222222 width=1> ${pet.hp} </outline>`;
         this.attackValue.string = `<outline color=#222222 width=1> ${pet.attack} </outline>`;
