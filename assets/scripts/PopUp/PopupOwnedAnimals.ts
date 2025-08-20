@@ -14,7 +14,7 @@ import { InteractSlot, ItemSlotSkill } from '../animal/ItemSlotSkill';
 import { PopupBattlePlace, PopupBattlePlaceParam } from './PopupBattlePlace';
 import { Sprite } from 'cc';
 import { UserMeManager } from '../core/UserMeManager';
-import { PopupPetElementChart } from './PopupPetElementChart';
+import { PopupPetChartParam, PopupPetElementChart } from './PopupPetElementChart';
 const { ccclass, property } = _decorator;
 
 enum PetActionType {
@@ -297,26 +297,12 @@ export class PopupOwnedAnimals extends BasePopup {
         const hasPetBringUpdate = petBring.pets.length > 0;
         const hasBattleUpdate = petDataBattle.pets.length > 0;
         if (hasPetBringUpdate || hasBattleUpdate) {
-            const param: SelectionParam = {
-                content: `Bạn có muốn lưu những thay đổi không?`,
-                textButtonLeft: "Không",
-                textButtonRight: "Có",
-                textButtonCenter: "",
-                onActionButtonRight: async () => {
-                    if (hasBattleUpdate) {
-                        await this.updateListPetBattleUserAsync(petDataBattle);
-                    }
-                    if (hasPetBringUpdate) {
-                        await this.updateListPetFollowUserAsync(petBring);
-                    }
-                }
-                ,
-                onActionButtonLeft: async () => {
-
-                }
-            };
-            const popup = await PopupManager.getInstance().openAnimPopup("PopupSelection", PopupSelection, param);
-            await PopupManager.getInstance()?.waitCloseAsync(popup.node.uuid);
+            if (hasBattleUpdate) {
+                await this.updateListPetBattleUserAsync(petDataBattle);
+            }
+            if (hasPetBringUpdate) {
+                await this.updateListPetFollowUserAsync(petBring);
+            }
             await this.UpdateMyPets();
         }
         this.closePopup();
@@ -441,7 +427,7 @@ export class PopupOwnedAnimals extends BasePopup {
         });
         this.petChartButton.addAsyncListener(async () => {
             this.petChartButton.interactable = false;
-            await PopupManager.getInstance().openAnimPopup("PopupPetElementChart", PopupPetElementChart);
+            await PopupManager.getInstance().openAnimPopup("PopupPetElementChart", PopupPetElementChart,{ widget: { horizontalCenter: 0, verticalCenter: 0 }} as PopupPetChartParam);
             this.petChartButton.interactable = true;
         });
         this.onGetMyPet(UserMeManager.MyPets());
@@ -452,7 +438,6 @@ export class PopupOwnedAnimals extends BasePopup {
         const pet = this.animalController.Pet;
         const actions = {
             [PetActionType.BRING]: {
-                content: `Bạn có muốn mang theo ${pet.name} bên mình?`,
                 handler: async () => await this.onBringPet(true),
                 deny: pet.battle_slot > 0
                     ? "Pet đang được chọn để thi đấu nên không thể mang theo."
@@ -461,7 +446,6 @@ export class PopupOwnedAnimals extends BasePopup {
                         : null
             },
             [PetActionType.FIGHT]: {
-                content: `Bạn có muốn chọn ${pet.name} để thi đấu?`,
                 handler: async () => await this.onSelectPetBattle(true),
                 deny: pet.is_brought
                     ? "Pet đang được mang theo nên không thể chọn để thi đấu."
@@ -470,14 +454,7 @@ export class PopupOwnedAnimals extends BasePopup {
                         : null
             },
             [PetActionType.REMOVE]: {
-                content: pet.is_brought
-                    ? `Bạn có muốn gỡ Pet này khỏi danh sách mang theo không?`
-                    : `Bạn có muốn gỡ Pet này khỏi danh sách chiến đấu không?`,
-                handler: async () =>
-                    pet.is_brought
-                        ? this.onBringPet(false)
-                        : this.onSelectPetBattle(false),
-                deny: null
+                handler: async () => pet.is_brought ? this.onBringPet(false) : this.onSelectPetBattle(false),
             },
             [PetActionType.SORTBATTLE]: {
                 handler: async () => await this.onSortPetBattle(),
@@ -488,8 +465,8 @@ export class PopupOwnedAnimals extends BasePopup {
         if ('deny' in action && action.deny) {
             return await this.showConfirm(action.deny);
         }
-        if ('content' in action && action.content && action.handler) {
-            return await this.showSelection(action.content, action.handler);
+        if ((action as any).content && action.handler) {
+            return await this.showSelection((action as any).content, action.handler);
         }
         await action.handler?.();
     }
