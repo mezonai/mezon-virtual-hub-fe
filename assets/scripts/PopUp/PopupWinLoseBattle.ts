@@ -51,7 +51,13 @@ export class PopupWinLoseBattle extends BasePopup {
             for (const pet of this.petBattleResult) {
                 await pet.cancelAnim();
             }
-            await PopupManager.getInstance().closePopup(this.node.uuid);
+            WebRequestManager.instance.getMyPetData(
+                async (response) => {
+                    await PopupManager.getInstance().closePopup(this.node.uuid);
+                },
+                (error) => { }
+            );
+
         });
     }
     async showPopupReward(param: WinLoseBattleParam) {
