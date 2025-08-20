@@ -15,6 +15,7 @@ export class PetBattleResult extends Component {
     @property({ type: RichText }) namePet: RichText = null;
     @property({ type: RichText }) levelPet: RichText = null;
     @property({ type: RichText }) bonusExp: RichText = null;
+    @property({ type: RichText }) currentExp: RichText = null;
     private timeEffect: number = 1;
     private maxLevel: number = 100;
     petsDataBeforeUpdate: PetBattleInfo;
@@ -37,9 +38,10 @@ export class PetBattleResult extends Component {
             this.levelPet.string = `<outline color=#222222 width=1> LV. ${currentLevelAfterUpdate}</outline>`;
         else
             this.levelPet.string = `<outline color=#222222 width=1> LV. ${currentLevel} -> LV. ${currentLevelAfterUpdate}</outline>`;
-
-        this.expFillSprite.fillRange = currentLevel == this.maxLevel ? 1 : 0;
-        this.levelPet.node.active = currentLevel == this.maxLevel ? true : false;
+        this.currentExp.string = petsDataAfterUpdate == null ? ` 0/0 ` : ` ${petsDataAfterUpdate.exp}/${petsDataAfterUpdate.max_exp} `;
+        this.expFillSprite.fillRange = currentLevel >= this.maxLevel ? 1 : 0;
+        this.levelPet.node.active = currentLevel >= this.maxLevel ? true : false;
+        this.currentExp.node.active = currentLevel >= this.maxLevel ? true : false;
     }
 
     async playAnim(): Promise<void> {
@@ -71,6 +73,7 @@ export class PetBattleResult extends Component {
         // Lần cuối cùng: chạy từ 0 -> exp còn dư ở level mới
         await this.animExp(this.petsDataAfterUpdate.exp, this.petsDataAfterUpdate.max_exp);
         this.levelPet.node.active = true;
+        this.currentExp.node.active = true;
     }
 
     public async animExp(currentExp: number, maxExp: number): Promise<void> {
