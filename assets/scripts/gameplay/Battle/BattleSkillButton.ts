@@ -38,8 +38,8 @@ export class BattleSkillButton extends Component {
         if (skillBattleInfo.skill_code != this.idAttack) this.itemSkill.setSkillBattle(skillBattleInfo);
         this.backgroundType.color = colorbackground;
         this.nameSkil.string = skillDataInfo.name;
-        this.damge.string = skillDataInfo.attack.toString();
-        this.accuracy.string = skillDataInfo.accuracy.toString();
+        this.damge.string = skillBattleInfo.attack.toString();
+        this.accuracy.string = skillBattleInfo.accuracy.toString();
         this.updatePowerPoint(skillBattleInfo)
         this.clickButton.addAsyncListener(async () => {
             if (this.currentPowerPoints <= 0) {
