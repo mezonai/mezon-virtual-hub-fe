@@ -31,7 +31,8 @@ export class LoadingScene extends Component {
     }
 
     setData(OnLoadCompleted: () => void) {
-        this.buttonClickVn.node.on(Button.EventType.CLICK, () => { this.onClickMove(OnLoadCompleted); }, this);
+        this.onClickMove(OnLoadCompleted);
+        //this.buttonClickVn.node.on(Button.EventType.CLICK, () => { this.onClickMove(OnLoadCompleted); }, this);
     }
 
     private async init() {

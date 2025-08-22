@@ -1,6 +1,5 @@
-import { _decorator, Component, Button, Tween, Vec3, Color, Node, Sprite, Label, EventKeyboard, input, Input, KeyCode, Animation, AnimationClip, game, sys } from 'cc';
+import { _decorator, Component, Button, Tween, Vec3, Color, Node, Sprite, Label, sys } from 'cc';
 import { GameMapController } from '../GameMap/GameMapController';
-import { Office } from '../GameMap/Office';
 const { ccclass, property } = _decorator;
 
 @ccclass('Tutorial')
@@ -10,11 +9,8 @@ export class Tutorial extends Component {
     @property(Node) dialogueBox: Node = null;
     @property(Label) dialogueText: Label = null;
     @property([Button]) buttons: Button[] = [];
-
-    private highlightIndexes: number[] = [0, 6];
-
+    private highlightIndexes: number[] = [0,1,2,3,4,5,6];
     public static tutorial_completed:string ="TUTORIAL_COMPLETE";
-
     private static _instance: Tutorial;
     public static get instance() {
         return Tutorial._instance;

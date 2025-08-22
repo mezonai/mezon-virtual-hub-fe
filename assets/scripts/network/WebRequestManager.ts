@@ -88,7 +88,11 @@ export class WebRequestManager extends Component {
     }
 
     public getUserProfile(successCallback, errorCallback) {
-        APIManager.getData(this.combineWithSlash(APIConstant.USER), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+        APIManager.getData(this.combineWithSlash(APIConstant.USER), (data) => {
+            UserMeManager.Set = data.data;
+            this.onSuccessHandler(data, successCallback, errorCallback);
+        }
+            , (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
     public postBuySkin(data, successCallback, errorCallback) {

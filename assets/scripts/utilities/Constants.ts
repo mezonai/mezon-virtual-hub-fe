@@ -2,8 +2,15 @@
 import { OfficePosition } from "../GameMap/OfficePosition";
 import { RoomType } from "../GameMap/RoomType";
 import { MapData } from "../Interface/DataMapAPI";
+import { FoodType, RewardItemDTO, RewardType } from "../Model/Item";
+import { RewardNewType } from "../PopUp/PopupReward";
+import { RewardItem } from "../SlotMachine/RewardItem";
 
 export class Constants {
+
+    public readonly minFeeBattle: number = 1000;
+    public readonly maxFeeBattle: number = 10000;
+    ///
     public static readonly PLAYER_LAYER: number = 1 << 30;
     public static readonly BORDER_LAYER: number = 1 << 3;
     public static readonly WiSH_FEE: number = 5;
@@ -84,6 +91,34 @@ export class Constants {
                 }
             }, 50);
         });
+    }
+
+    public static isNullOrWhiteSpace(input: string | null | undefined): boolean {
+        return !input || input.trim().length === 0;
+    }
+
+    public static async waitForSeconds(seconds: number): Promise<void> {
+        return new Promise(resolve => {
+            setTimeout(() => resolve(), seconds * 1000);
+        });
+    }
+
+    public static mapRewardType(item: RewardItemDTO): RewardNewType {
+        switch (item.type) {
+            case RewardType.GOLD:
+                return RewardNewType.GOLD;
+            case RewardType.DIAMOND:
+                return RewardNewType.DIAMOND;
+            case RewardType.FOOD:
+                switch (item.food.type) {
+                    case FoodType.NORMAL: return RewardNewType.NORMAL_FOOD;
+                    case FoodType.PREMIUM: return RewardNewType.PREMIUM_FOOD;
+                    case FoodType.ULTRA_PREMIUM: return RewardNewType.ULTRA_PREMIUM_FOOD;
+                    default: return RewardNewType.NORMAL_FOOD;
+                }
+            default:
+                return RewardNewType.GOLD; // fallback
+        }
     }
 }
 

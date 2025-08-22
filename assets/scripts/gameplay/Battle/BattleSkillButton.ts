@@ -18,6 +18,8 @@ export class BattleSkillButton extends Component {
     @property({ type: ItemSkill }) itemSkill: ItemSkill = null;
     @property({ type: Sprite }) backgroundType: Sprite = null;
     @property({ type: Label }) nameSkil: Label = null;
+    @property({ type: Label }) damge: Label = null;
+    @property({ type: Label }) accuracy: Label = null;
     @property({ type: Label }) powerPoint: Label = null;
     @property({ type: Button }) clickButton: Button = null;
     @property({ type: [BattleSkillStats] }) battleSkillStats: BattleSkillStats[] = [];
@@ -36,6 +38,8 @@ export class BattleSkillButton extends Component {
         if (skillBattleInfo.skill_code != this.idAttack) this.itemSkill.setSkillBattle(skillBattleInfo);
         this.backgroundType.color = colorbackground;
         this.nameSkil.string = skillDataInfo.name;
+        this.damge.string = skillBattleInfo.attack.toString();
+        this.accuracy.string = skillBattleInfo.accuracy.toString();
         this.updatePowerPoint(skillBattleInfo)
         this.clickButton.addAsyncListener(async () => {
             if (this.currentPowerPoints <= 0) {

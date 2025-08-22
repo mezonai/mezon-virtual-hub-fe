@@ -1,80 +1,107 @@
 import { _decorator, Button, Component, Label, Node, RichText, Sprite, SpriteFrame } from 'cc';
 import { BasePopup } from './BasePopup';
 import { PopupManager } from './PopupManager';
-import { RewardItem } from '../SlotMachine/RewardItem';
-import { Food, FoodType, RewardItemDTO, RewardType } from '../Model/Item';
+import { Food, FoodType, RewardItemDTO } from '../Model/Item';
 import { UserMeManager } from '../core/UserMeManager';
 import { WebRequestManager } from '../network/WebRequestManager';
-import { GameManager } from '../core/GameManager';
 const { ccclass, property } = _decorator;
+
+export enum RewardNewType {
+    GOLD,
+    NORMAL_FOOD,
+    PREMIUM_FOOD,
+    ULTRA_PREMIUM_FOOD,
+    DIAMOND
+}
+
+export enum RewardStatus {
+    GAIN = "GAIN",   // Nhận
+    LOSS = "LOSS",   // Mất
+}
 
 @ccclass('PopupReward')
 export class PopupReward extends BasePopup {
     @property(Button) confirmButton: Button = null;
     @property(RichText) contentReward: RichText = null!;
+    @property({ type: RichText }) title: RichText = null;
     @property(Label) quantity: Label = null!;
     @property(Sprite) icon: Sprite = null!;
     @property({ type: [SpriteFrame] }) iconReward: SpriteFrame[] = [];//0 = normal foood, 1 = super food, 2 = rare food
-    private currentIndex: number = 0;
-    public async init(param?) {
-        if (param == null || param.rewards == null) {
+    public async init(param?: PopupRewardParam) {
+        if (param == null) {
             await PopupManager.getInstance().closePopup(this.node.uuid);
             return;
         }
-        this.confirmButton.node.on(Button.EventType.CLICK, () => {
-            this.currentIndex++;
-            this.showCurrentReward(param.rewards);
-        }, this);
-        this.showCurrentReward(param.rewards);
+        this.confirmButton.addAsyncListener(async () => {
+            this.confirmButton.interactable = false;
+            await PopupManager.getInstance().closePopup(this.node.uuid);
+        })
+        this.showReward(param);
     }
 
-    private async showCurrentReward(rewardItems: any) {
-        if (this.currentIndex >= rewardItems.length) {
-            await PopupManager.getInstance().closePopup(this.node.uuid);
-            return;
-        }
+    showReward(param: PopupRewardParam) {
+        this.title.string = param.status === RewardStatus.GAIN ? "Nhận Quà" : "Thông Báo";
 
-        const currentItem = rewardItems[this.currentIndex];
-        const isGold = currentItem.type === RewardType.GOLD;
-        const isFood = currentItem.type === RewardType.FOOD;
-        const indexIcon = isFood ? currentItem.food.type === FoodType.NORMAL ? 0 : currentItem.food.type === FoodType.PREMIUM ? 1 : 2 : 3;
-
-        if (isGold) {
-            UserMeManager.playerCoin += currentItem.amount;
-            this.quantity.string = `+${currentItem.amount}`;
-        } else if (isFood) {
-            this.quantity.string = `+${currentItem.quantity}`;
-            let addSucess = UserMeManager.AddQuantityFood(currentItem.food.type, currentItem.quantity);
-            if (!addSucess) {
-                WebRequestManager.instance.getUserProfile(
-                    (response) => {
-                        UserMeManager.Set = response.data;
-                    },
-                    (error) => this.onError(error)
-                );
-            }
-        }
+        // 2. Map rewardType -> indexIcon
+        const rewardIconMap: Record<RewardNewType, number> = {
+            [RewardNewType.NORMAL_FOOD]: 0,
+            [RewardNewType.PREMIUM_FOOD]: 1,
+            [RewardNewType.ULTRA_PREMIUM_FOOD]: 2,
+            [RewardNewType.GOLD]: 3,
+            [RewardNewType.DIAMOND]: 4,
+        };
+        const indexIcon = rewardIconMap[param.rewardType] ?? 0;
         this.icon.spriteFrame = this.iconReward[indexIcon];
-        this.contentReward.string = isFood
-            ? this.contentRewardFood(currentItem.food)
-            : this.contentOtherReward();
-    }
 
-    private contentRewardFood(food: Food): string {
-        return `Chúc mừng bạn nhận thành công ${food.name}. Hãy dùng nó để bắt các thú cưng`;
-    }
+        // 3. Content
+        this.contentReward.string = param.content;
 
-    private contentOtherReward(): string {
-        return `Chúc mừng bạn nhận quà thành công`;
-    }
+        // 4. Quantity text
+        const prefix = param.status === RewardStatus.GAIN ? "+" : "-";
+        this.quantity.string = `${prefix}${param.quantity}`;
 
-    private onError(error: any) {
-        console.error("Error occurred:", error);
+        // 5. Update user data
+        switch (param.rewardType) {
+            case RewardNewType.GOLD:
+                UserMeManager.playerCoin += (param.status === RewardStatus.GAIN ? param.quantity : -param.quantity);
+                break;
 
-        if (error?.message) {
-            console.error("Error message:", error.message);
+            case RewardNewType.DIAMOND:
+                UserMeManager.playerDiamond += (param.status === RewardStatus.GAIN ? param.quantity : -param.quantity);
+                break;
+
+            case RewardNewType.NORMAL_FOOD:
+            case RewardNewType.PREMIUM_FOOD:
+            case RewardNewType.ULTRA_PREMIUM_FOOD: {
+                // food mapping
+                const foodMap: Record<RewardNewType, FoodType> = {
+                    [RewardNewType.NORMAL_FOOD]: FoodType.NORMAL,
+                    [RewardNewType.PREMIUM_FOOD]: FoodType.PREMIUM,
+                    [RewardNewType.ULTRA_PREMIUM_FOOD]: FoodType.ULTRA_PREMIUM,
+                    // fallback values (won't be used here)
+                    [RewardNewType.GOLD]: FoodType.NORMAL,
+                    [RewardNewType.DIAMOND]: FoodType.NORMAL,
+                };
+                const foodType = foodMap[param.rewardType];
+                const delta = (param.status === RewardStatus.GAIN ? param.quantity : -param.quantity);
+
+                const addSuccess = UserMeManager.AddQuantityFood(foodType, delta);
+                if (!addSuccess) {
+                    WebRequestManager.instance.getUserProfile(
+                        () => { },
+                        () => { }
+                    );
+                }
+                break;
+            }
         }
     }
 }
 
 
+export interface PopupRewardParam {
+    rewardType: RewardNewType;
+    quantity: number,
+    status: RewardStatus;
+    content: string
+}

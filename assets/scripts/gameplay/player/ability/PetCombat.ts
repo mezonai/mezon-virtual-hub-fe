@@ -7,6 +7,7 @@ import { ConfirmParam, ConfirmPopup } from '../../../PopUp/ConfirmPopup';
 import { UserManager } from '../../../core/UserManager';
 import { UserMeManager } from '../../../core/UserMeManager';
 import { ServerManager } from '../../../core/ServerManager';
+import { PopupPetBetChallenge, PopupPetBetChallengeParam } from '../../../PopUp/PopupPetBetChallenge';
 const { ccclass, property } = _decorator;
 enum PetBattleError {
     NOT_PET,
@@ -16,18 +17,25 @@ enum PetBattleError {
 }
 @ccclass('PetCombat')
 export class PetCombat extends PlayerInteractAction {
-    private fee: number = 5;
     protected onLoad() {
-        this.actionType = ActionType.PetCombat;
+        this.actionType = ActionType.Battle;
     }
 
-    protected override invite() {
+    protected override async invite() {
         if (!this.canBattle(null)) return;
         super.invite();
-        this.room.send("p2pAction", {
-            targetClientId: this.playerController.myID,
-            action: this.actionType.toString()
-        });
+
+        const paramConfirmPopup: PopupPetBetChallengeParam = {
+            onActionChallenge: async (amount) => {
+                this.room.send("p2pAction", {
+                    targetClientId: this.playerController.myID,
+                    action: this.actionType.toString(),
+                    amount: amount
+                });
+            }
+        };
+        await PopupManager.getInstance().openPopup("PopupPetBetChallenge", PopupPetBetChallenge, paramConfirmPopup);
+
     }
 
     private showNotice(message: string) {
@@ -42,10 +50,10 @@ export class PetCombat extends PlayerInteractAction {
 
     public onBeingInvited(data) {
         if (!this.canBattle(data)) return;
+        const { amount } = data;
         const param: SelectionTimeOutParam = {
             title: "Thông báo",
-            // content: `${data.fromName} mời bạn chơi đấu pet. Phí <color=#FF0000> ${this.fee} diamond</color>`,
-            content: `${data.fromName} mời bạn chơi đấu pet.</color>`,
+            content: `${data.fromName} mời bạn chơi đấu pet. Phí <color=#FF0000> ${amount} diamond</color>`,
             textButtonLeft: "Chơi",
             textButtonRight: "Thôi",
             textButtonCenter: "",
@@ -60,7 +68,7 @@ export class PetCombat extends PlayerInteractAction {
                 this.rejectAction(data);
             },
         };
-        PopupManager.getInstance().openAnimPopup("PopupSelectionTimeOut", PopupSelectionTimeOut, param);
+        PopupManager.getInstance().openPopup("PopupSelectionTimeOut", PopupSelectionTimeOut, param);
     }
 
     private validateBattlePets(): PetBattleError {
@@ -114,7 +122,8 @@ export class PetCombat extends PlayerInteractAction {
     protected startAction(data) {
         let sendData = {
             targetClientId: data.from,
-            action: data.action
+            action: data.action,
+            amount: data.amount,
         }
         this.room.send("p2pCombatActionAccept", sendData);
         this.onStartAction(data);

@@ -17,6 +17,8 @@ import { Component } from 'cc';
 import { UserManager } from '../core/UserManager';
 import { Constants } from '../utilities/Constants';
 import { AnimalType } from '../animal/AnimalController';
+import { PopupPetElementChart } from './PopupPetElementChart';
+import { BGMType, SoundManager } from '../core/SoundManager';
 const { ccclass, property } = _decorator;
 @ccclass('PlayerBattleStats')
 export class PlayerBattleStats {
@@ -39,6 +41,7 @@ export class PopupBattlePet extends Component {
     //Button
     @property({ type: Button }) hideSkillButton: Button = null;
     @property({ type: Button }) fightButton: Button = null;
+    @property({ type: Button }) petChartButton: Button = null;
     @property({ type: Button }) surrenderButton: Button = null;
     private mySkillsBatte: BattleSkillButton[] = []
     private _onActionCompleted: (() => void) | null = null;
@@ -68,9 +71,16 @@ export class PopupBattlePet extends Component {
             await this.slideChooseButtons.slide(true, 0.3);
             this.hideSkillButton.interactable = true;
         });
+        this.petChartButton.addAsyncListener(async () => {
+            this.petChartButton.interactable = false;
+            await PopupManager.getInstance().openAnimPopup("PopupPetElementChart", PopupPetElementChart);
+            this.petChartButton.interactable = true;
+        });
     }
 
     private Init(param?: BatllePetParam) {
+        SoundManager.instance.stopBgmLoop();
+        SoundManager.instance.playBgm(BGMType.Combat);
         this.playerBattleStats.forEach(playerBattleStat => {
             playerBattleStat.landSpawnPet.slide(false, 0);
             playerBattleStat.hudBattlePet.slide.slide(false, 0);
@@ -394,17 +404,19 @@ export class PopupBattlePet extends Component {
     }
 
     public async battleFinished(data) {
-        const { winnerId, loserId } = data;
-        const win = UserManager.instance.GetMyClientPlayer.myClientBattleId == winnerId;
+        const { id, expReceived, dimondChallenge, currentPets, isWinner } = data;
         await Constants.waitUntil(() => this.myClient != null);
-        console.log("this.myClient:", this.myClient)
-        console.log("this.myClient.battlePets: ", this.myClient.battlePets)
         const param: WinLoseBattleParam = {
-            pets: this.myClient.battlePets,
-            statusBattle: win ? StatusBattle.WIN : StatusBattle.LOSE,
+            petsDataBeforeUpdate: this.myClient.battlePets,
+            petsDataAfterUpdate: currentPets,
+            statusBattle: isWinner ? StatusBattle.WIN : StatusBattle.LOSE,
+            dimondChallenge: dimondChallenge,
+            expAddedPerPet: expReceived,
         };
         this.closeBattle();
         await PopupManager.getInstance().openAnimPopup('PopupWinLoseBattle', PopupWinLoseBattle, param);
+        SoundManager.instance.stopBgmLoop();
+        SoundManager.instance.playBgm(BGMType.Game);
     }
 
     public WaitingOpponents(data) {
