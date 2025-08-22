@@ -174,6 +174,16 @@ export const SkillList: SkillDataInfor[] = [
         description: "Pet dùng khả năng của hồi phục cho bản thân với 50% lượng máu tối đa",
     },
     {
+        idSkill: "GRASS03",
+        name: "Dây roi",
+        type: Element.Grass,
+        typeSkill: TypeSkill.DECREASE_ATTACK,
+        attack: 0,
+        accuracy: 100,
+        powerPoints: 2,
+        description: "Pet Tấn công đối thủ làm giảm chỉ số tấn công đối thủ đi 50% ",
+    },
+    {
         idSkill: "ELECTRIC01",
         name: "Tia Sét",
         type: Element.Electric,
