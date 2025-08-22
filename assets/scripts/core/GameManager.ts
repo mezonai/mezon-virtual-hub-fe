@@ -76,7 +76,7 @@ export class GameManager extends Component {
             const content = `Chúc mừng bạn nhận thành công ${name}`;
             const param: PopupRewardParam = {
                 rewardType: type,
-                quantity: rewardItems[i].type == RewardType.GOLD || rewardItems[i].type == RewardType.DIAMOND ? rewardItems[i].quantity : rewardItems[i].amount,
+                quantity: rewardItems[i].type == RewardType.GOLD || rewardItems[i].type == RewardType.DIAMOND ? rewardItems[i].amount : rewardItems[i].quantity,
                 status: RewardStatus.GAIN,
                 content: content,
             };
