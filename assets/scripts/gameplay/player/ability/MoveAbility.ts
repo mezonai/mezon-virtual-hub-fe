@@ -28,6 +28,7 @@ export class MoveAbility extends Ability {
     protected onDestroy(): void {
         input.off(Input.EventType.KEY_DOWN, this.onKeyDown, this);
         input.off(Input.EventType.KEY_UP, this.onKeyUp, this);
+        
     }
 
     protected onDisable(): void {
@@ -50,12 +51,36 @@ export class MoveAbility extends Ability {
             input.on(Input.EventType.KEY_DOWN, this.onKeyDown, this);
             input.on(Input.EventType.KEY_UP, this.onKeyUp, this);
             // this.getJoystick();
+            // Joystick
+            instance.on(Input.EventType.TOUCH_MOVE, this.onJoystickMove, this);
+            instance.on(Input.EventType.TOUCH_END, this.onJoystickEnd, this);
         }
 
         this.moveSpeed = this.originMoveSpeed;
         playerController.CanUpdateAnim = true;
     }
 
+    private joystickVec: Vec3 = new Vec3();
+
+    onJoystickMove(event, data: JoystickDataType) {
+        if (!this.isMyClient) return;
+
+        // Nhận vector từ joystick
+        this.joystickVec = data.moveVec.clone();
+
+        // Tùy tốc độ joystick
+        if (data.speedType === SpeedType.FAST) {
+            this.moveSpeed = this.originMoveSpeed * 1.5;
+        } else {
+            this.moveSpeed = this.originMoveSpeed;
+        }
+    }
+
+    onJoystickEnd() {
+        if (!this.isMyClient) return;
+        this.joystickVec.set(0, 0, 0);
+        this.updateAction("idle");
+    }
 
     onKeyDown(event: EventKeyboard) {
         if (!this.isMyClient) return;
@@ -108,6 +133,24 @@ export class MoveAbility extends Ability {
 
     protected update(dt: number): void {
         if (!this.canMove) return;
+
+        // Nếu có joystick input thì ưu tiên joystick
+        if (this.joystickVec.lengthSqr() > 0) {
+            const value = this.joystickVec.clone();
+            const angleDeg = Math.atan2(value.y, value.x) * (180 / Math.PI);
+            this.colliderDetectParent.angle = angleDeg;
+
+            if (this.isCollideWithST()) {
+                this.updateAction("idle");
+                return;
+            }
+
+            value.normalize();
+            this.currentDirection.x = value.x > 0 ? 1 : -1;
+            const move = value.multiplyScalar(this.moveSpeed * dt);
+            this.move(this.node.position.add(move));
+            return;
+        }
 
         for (const input of this.playerInputs) {
             let value = input.getInput();
