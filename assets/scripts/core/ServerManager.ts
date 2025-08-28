@@ -432,6 +432,24 @@ export class ServerManager extends Component {
             UserManager.instance.disconnected("Đối Thủ Bị Mất Kết Nôi");
         });
 
+        this.battleRoom.onMessage(MessageTypes.TIME_REMAINING_USING_SKILL, (data) => {
+            if (data == null) {
+                this.leaveBattleRoom();
+                return;
+            }
+            if (UserManager.instance == null) return;
+            UserManager.instance.remainingUsingSkill(data);
+        });
+
+        this.battleRoom.onMessage(MessageTypes.AUTO_ATTACK, (data) => {
+            if (data == null) {
+                this.leaveBattleRoom();
+                return;
+            }
+            if (UserManager.instance == null) return;
+            UserManager.instance.autoAttack(data);
+        });
+
         this.battleRoom.onMessage(MessageTypes.NOTIFY_BATTLE, (data) => {
             if (data == null) {
                 this.leaveBattleRoom();
@@ -570,6 +588,11 @@ export class ServerManager extends Component {
     public sendSurrenderBattle() {
         if (this.battleRoom == null) return;
         this.battleRoom.send(MessageTypes.SURRENDER_BATTLE, { message: "", });
+    }
+
+    public sendEndTurn() {
+        if (this.battleRoom == null) return;
+        this.battleRoom.send(MessageTypes.CONFIRM_END_TURN, { message: "", });
     }
 
     public async leaveBattleRoom(): Promise<void> {

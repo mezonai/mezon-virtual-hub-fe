@@ -27,35 +27,51 @@ export class BattleSkillButton extends Component {
     private indexSkill: number = 0;
     private currentPowerPoints: number = 0;
     idSkill: string = "";
-    setData(skillBattleInfo: SkillBattleInfo, index: number, onAfterClickSkill?: () => void) {
-        if (skillBattleInfo == null) return;
-        this.idSkill = skillBattleInfo.skill_code;
-        this.indexSkill = index;
-        this.itemSkill.node.active = skillBattleInfo.skill_code != this.idAttack;
-        this.iconAttack.active = skillBattleInfo.skill_code == this.idAttack;
-        let skillDataInfo = this.getSkillById(skillBattleInfo.skill_code);
-        const colorbackground = this.getColorByType(skillDataInfo.type);
-        if (skillBattleInfo.skill_code != this.idAttack) this.itemSkill.setSkillBattle(skillBattleInfo);
-        this.backgroundType.color = colorbackground;
-        this.nameSkil.string = skillDataInfo.name;
-        this.damge.string = skillBattleInfo.attack.toString();
-        this.accuracy.string = skillBattleInfo.accuracy.toString();
-        this.updatePowerPoint(skillBattleInfo)
-        this.clickButton.addAsyncListener(async () => {
-            if (this.currentPowerPoints <= 0) {
-                const param: ConfirmParam = {
-                    message: "Lượt dùng Skill đã hết! ",
-                    title: "Thông Báo",
-                };
-                PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
-                return;
+    _onAfterClickSkill?: () => void = null;
+    setData(skillBattleInfo: SkillBattleInfo, index: number, onAfterClickSkill?: () => void): Promise<void> {
+        return new Promise((resolve) => {
+            if (skillBattleInfo == null) return resolve();
+
+            this.idSkill = skillBattleInfo.skill_code;
+            this.indexSkill = index;
+            this.itemSkill.node.active = skillBattleInfo.skill_code != this.idAttack;
+            this.iconAttack.active = skillBattleInfo.skill_code == this.idAttack;
+
+            let skillDataInfo = this.getSkillById(skillBattleInfo.skill_code);
+            const colorbackground = this.getColorByType(skillDataInfo.type);
+
+            if (skillBattleInfo.skill_code != this.idAttack) {
+                this.itemSkill.setSkillBattle(skillBattleInfo);
             }
-            if (onAfterClickSkill) {
-                onAfterClickSkill();
-            }
-            ServerManager.instance.sendPlayerActionBattle(true, this.indexSkill);
-        })
+
+            this._onAfterClickSkill = onAfterClickSkill;
+            this.backgroundType.color = colorbackground;
+            this.nameSkil.string = skillDataInfo.name;
+            this.damge.string = skillBattleInfo.attack.toString();
+            this.accuracy.string = skillBattleInfo.accuracy.toString();
+            this.updatePowerPoint(skillBattleInfo);
+            this.clickButton.addAsyncListener(async () => {
+                this.clickSkill();
+            })
+            resolve(); // báo hiệu đã xử lý xong
+        });
     }
+
+    clickSkill() {
+        if (this.currentPowerPoints <= 0) {
+            const param: ConfirmParam = {
+                message: "Lượt dùng Skill đã hết! ",
+                title: "Thông Báo",
+            };
+            PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
+            return;
+        }
+        if (this._onAfterClickSkill) {
+            this._onAfterClickSkill();
+        }
+        ServerManager.instance.sendPlayerActionBattle(true, this.indexSkill);
+    }
+
     updatePowerPoint(skillBattleInfo: SkillBattleInfo) {
         this.currentPowerPoints = skillBattleInfo.currentPowerPoint;
         const currentPowerPoints = skillBattleInfo.currentPowerPoint > 1000 ? "-" : skillBattleInfo.currentPowerPoint.toString();

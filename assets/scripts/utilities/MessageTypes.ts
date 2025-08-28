@@ -20,4 +20,7 @@ export enum MessageTypes {
     NOT_ENOUGH_PET_BATTLE = "not_enough_pet_battle",
     NOT_ENOUGH_SKILL_PET_BATTLE = "not_enough_skill_pet_battle",
     NOTIFY_BATTLE = "notify_battle",
+    CONFIRM_END_TURN = "Confirm_end_turn",
+    TIME_REMAINING_USING_SKILL = "Time_remaining_using_skill",
+    AUTO_ATTACK = "Auto_attack",
 }

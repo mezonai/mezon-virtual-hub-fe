@@ -296,6 +296,16 @@ export class UserManager extends Component {
         UIManager.Instance.batteScene.WaitingOpponents(data);
     }
 
+    public remainingUsingSkill(data) {
+        if (UIManager.Instance == null) return;
+        UIManager.Instance.batteScene.setTimeRemaining(data);
+    }
+
+    public autoAttack(data) {
+        if (UIManager.Instance == null) return;
+        UIManager.Instance.batteScene.autoAttack();
+    }
+
     public disconnected(content: string) {
         const param: ConfirmParam = {
             message: content,
