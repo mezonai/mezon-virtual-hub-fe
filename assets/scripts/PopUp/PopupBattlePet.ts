@@ -19,6 +19,7 @@ import { Constants } from '../utilities/Constants';
 import { AnimalType } from '../animal/AnimalController';
 import { PopupPetElementChart } from './PopupPetElementChart';
 import { BGMType, SoundManager } from '../core/SoundManager';
+import { Label } from 'cc';
 const { ccclass, property } = _decorator;
 @ccclass('PlayerBattleStats')
 export class PlayerBattleStats {
@@ -38,6 +39,7 @@ export class PopupBattlePet extends Component {
     @property({ type: SlideObject }) slideSkillButtons: SlideObject = null;
     @property({ type: SlideObject }) slideTalkAnimation: SlideObject = null;
     @property({ type: TalkAnimation }) talkAnimation: TalkAnimation = null;
+    @property({ type: Label }) timeRemaning: Label = null;
     //Button
     @property({ type: Button }) hideSkillButton: Button = null;
     @property({ type: Button }) fightButton: Button = null;
@@ -94,6 +96,7 @@ export class PopupBattlePet extends Component {
         this.clientIdInRoom = "";
         this.mySkillsBatte = [];
         this._onActionCompleted = null;
+        this.setTimeRemaining(0);
         this.centerOpenSplash.playSplash(() => this.SetDataBattle(param));
     }
 
@@ -130,11 +133,10 @@ export class PopupBattlePet extends Component {
             await playerBattleStat.hudBattlePet.slide.slide(true, 0.5);
         }
 
-        this.createPet(myPet, true); // tạo pet của mình (hoặc pet1)
-
-        await this.delay(500); // thay cho setTimeout
-
-        this.createPet(targetPet, false); // tạo pet của đối thủ (hoặc pet2)
+        await this.createPet(myPet, true); // tạo pet của mình (hoặc pet1)
+        await Constants.waitForSeconds(0.5);
+        await this.createPet(targetPet, false); // tạo pet của đối thủ (hoặc pet2)
+        this.setNewTurn();
     }
 
     async handleActionSkill(playerAttackId: string, petAttack: PetBattleInfo, skillUsing: SkillBattleInfo, effectValueSkill: number, damage: number, petDefense: PetBattleInfo): Promise<void> {
@@ -291,28 +293,30 @@ export class PopupBattlePet extends Component {
         playerBattleStat.hudBattlePet.updateHUD(pet, player);
     }
 
-    createPet(pet: PetBattleInfo, isMyClient: boolean) {
+    async createPet(pet: PetBattleInfo, isMyClient: boolean) {
         const index = isMyClient ? 1 : 0;
         const playerBattleStat = this.playerBattleStats[index];
-        playerBattleStat.petBattlePrefab.setDataPet(pet, index);
+        await playerBattleStat.petBattlePrefab.setDataPet(pet, index);
         if (!isMyClient) return;
-        this.createMySkill(pet)
+        await this.createMySkill(pet)
     }
 
-
-    createMySkill(pet: PetBattleInfo) {
+    async createMySkill(pet: PetBattleInfo): Promise<void> {
         this.slideChooseButtons.slide(false, 0);
         this.parentMySkill.removeAllChildren();
         this.mySkillsBatte = [];
-        // Sau đó tạo các nút skill có dữ liệu
-        pet.skills.forEach((skill, index) => {
+
+        // Tạo các nút skill có dữ liệu
+        for (let index = 0; index < pet.skills.length; index++) {
+            const skill = pet.skills[index];
             const newItem = instantiate(this.battleSkillButtonPrefab);
             newItem.setParent(this.parentMySkill);
             const skillButton = newItem.getComponent(BattleSkillButton);
-            skillButton?.setData(skill, index, this.onClickSkill.bind(this));
-            this.mySkillsBatte.push(skillButton);
-        });
-        this.slideChooseButtons.slide(true, 0.3);
+            if (skillButton) {
+                await skillButton.setData(skill, index, this.onClickSkill.bind(this));
+                this.mySkillsBatte.push(skillButton);
+            }
+        }
     }
 
     updateMySkillInBattle(skillUsing: SkillBattleInfo) {
@@ -332,6 +336,11 @@ export class PopupBattlePet extends Component {
         if (!isTurn1PetAlive) return;
         const isTurn2PetAlive = await this.handleBattlePlayer(turn2.playerAttackTurn2, turn2.skillAttackTurn2, turn2.effectValueTurn2, turn2.damageTurn2, turn2.playerDefenseTurn2);
         if (!isTurn2PetAlive) return;
+        this.setNewTurn();
+    }
+
+    setNewTurn() {
+        ServerManager.instance.sendEndTurn();
         this.slideSkillButtons.slide(true, 0.3);
     }
 
@@ -391,16 +400,16 @@ export class PopupBattlePet extends Component {
             console.warn("Không tìm thấy pet với ID:", petChosenId);
             return;
         }
-        await this.delay(1000);
-        this.createPet(switchedPet, isMyClient);
+        await Constants.waitForSeconds(1);
+        await this.createPet(switchedPet, isMyClient);
         this.updateHUDPet(switchedPet, updatedPlayer, isMyClient);
         // Cập nhật thông tin người chơi tương ứng
         if (isMyClient) {
             this.myClient = updatedPlayer;
         } else {
             this.targetClient = updatedPlayer;
-            this.slideSkillButtons.slide(true, 0.3);
         }
+        this.setNewTurn();
     }
 
     public async battleFinished(data) {
@@ -465,8 +474,14 @@ export class PopupBattlePet extends Component {
         this.talkAnimation.cancelDisplayDialog();
         this.slideTalkAnimation.slide(false, 0);
     }
-    private delay(ms: number): Promise<void> {
-        return new Promise(resolve => setTimeout(resolve, ms));
+
+    setTimeRemaining(time: number) {
+        this.timeRemaning.string = time.toString();
+    }
+
+    autoAttack() {
+        if (this.mySkillsBatte == null || this.mySkillsBatte.length <= 0) return;
+        this.mySkillsBatte[0].clickSkill();
     }
 }
 
