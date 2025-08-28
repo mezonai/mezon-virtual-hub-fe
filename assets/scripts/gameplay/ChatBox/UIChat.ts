@@ -2,6 +2,9 @@ import { _decorator, Button, Component, EditBox, game, instantiate, Layout, Pref
 import { UserManager } from '../../core/UserManager';
 import { ObjectPoolManager } from '../../pooling/ObjectPoolManager';
 import { UIManager } from '../../core/UIManager';
+import { PopupGetPet, PopupGetPetParam } from '../../PopUp/PopupGetPet';
+import { PopupManager } from '../../PopUp/PopupManager';
+import { PetDTO, SkillCode } from '../../Model/PetDTO';
 
 const { ccclass, property } = _decorator;
 
@@ -32,6 +35,45 @@ export class UIChat extends Component {
         }), this);
     }
 
+    async test() {
+        const pet: PetDTO = {
+            id: "0000011111111111",
+            name: "PhoenixFire",
+            is_brought: false,
+            is_caught: true,
+            room_code: "roomA",
+            species: "PhoenixFire",
+            type: "Fire",
+            rarity: "legendary",
+            level: 5,
+            exp: 120,
+            max_exp: 200,
+            stars: 2,
+            hp: 150,
+            attack: 50,
+            defense: 30,
+            speed: 40,
+            battle_slot: 1,
+            individual_value: 25,
+            pet: {
+                // BasePetData, bạn thay bằng dữ liệu cụ thể của game
+                species: "PhoenixFire",
+                type: "Fire",
+                rarity: "legendary"
+            },
+            skill_slot_1: null,
+            skill_slot_2: null,
+            skill_slot_3: null,
+            skill_slot_4: null,
+            equipped_skill_codes: [SkillCode.ABSORB, SkillCode.AQUA_CUTTER],
+        };
+        const param: PopupGetPetParam = {
+            pet: pet
+        };
+        const popup = await PopupManager.getInstance().openPopup('PopupGetPet', PopupGetPet, param);
+        await PopupManager.getInstance().waitCloseAsync(popup.node.uuid);
+    }
+
     sendMessage() {
         const message = this.editBox.string.trim();
         if (message == "VituralHub-X92J7K1M") {
@@ -39,7 +81,8 @@ export class UIChat extends Component {
             this.editBox.string = "";
             game.canvas.focus();
             this.isShowUI(false);
-            UIManager.Instance.toolcreatePet.node.active = true
+            // UIManager.Instance.toolcreatePet.node.active = true
+            this.test();
             return;
         }
         if (message != "") UserManager.instance.sendMessageChat(message);
