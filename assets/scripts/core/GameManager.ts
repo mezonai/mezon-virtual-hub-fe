@@ -73,7 +73,7 @@ export class GameManager extends Component {
             const type = Constants.mapRewardType(rewardItems[i]);
             const name = type == RewardNewType.NORMAL_FOOD ? "Thức ăn sơ cấp" : type == RewardNewType.PREMIUM_FOOD ? "Thức ăn cao cấp"
                 : type == RewardNewType.ULTRA_PREMIUM_FOOD ? "Thức ăn siêu cao cấp" : type == RewardNewType.GOLD ? "Vàng" : "Kim cương";
-            const content = `Chúc mừng bạn nhận thành công ${name}`;
+            const content = `Chúc mừng bạn nhận thành công \n ${name}`;
             const param: PopupRewardParam = {
                 rewardType: type,
                 quantity: rewardItems[i].type == RewardType.GOLD || rewardItems[i].type == RewardType.DIAMOND ? rewardItems[i].amount : rewardItems[i].quantity,

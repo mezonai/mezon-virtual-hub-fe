@@ -18,6 +18,7 @@ import { MessageTypes } from '../utilities/MessageTypes';
 import { ConfirmParam, ConfirmPopup } from '../PopUp/ConfirmPopup';
 import { PopupSelectionMini, SelectionMiniParam } from '../PopUp/PopupSelectionMini';
 import { WebRequestManager } from '../network/WebRequestManager';
+import { director } from 'cc';
 
 @ccclass('ServerManager')
 export class ServerManager extends Component {
@@ -371,6 +372,11 @@ export class ServerManager extends Component {
         this.room.onMessage(MessageTypes.NOTIFY_BATTLE, (data) => {
             if (data == null) return;
             UserManager.instance.NotifyBattle(data);
+        });
+        
+        this.room.onMessage(MessageTypes.NOTIFY_MISSION, (data) => {
+            if (data == null || data.sessionId != UserManager.instance.GetMyClientPlayer.myID) return;
+            director.emit(EVENT_NAME.ON_MISSION_NOTICE, true);
         });
     }
 

@@ -21,6 +21,7 @@ export default class APIConstant {
     static REWARD_PERCENT = "reward-percent";
     static BATTLE_SKILLS = "battle-skills";
     static BATTLE = "battle";
+    static QUEST_FREQUENCY = "player-quests/get-quests-frequency";
 }
 
 export class APIConfig {
@@ -53,4 +54,5 @@ export class EVENT_NAME {
     static BACK_TO_NORMAL = "BACK_TO_NORMAL";
     static CANVAS_RESIZE = "CANVAS_RESIZE";
     static ON_TOUCH_PET = "ON_QUIZ_ANSWER";
+    static ON_MISSION_NOTICE = "ON_MISSION_NOTICE";
 }

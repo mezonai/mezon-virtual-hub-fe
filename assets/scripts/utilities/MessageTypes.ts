@@ -23,4 +23,5 @@ export enum MessageTypes {
     CONFIRM_END_TURN = "Confirm_end_turn",
     TIME_REMAINING_USING_SKILL = "Time_remaining_using_skill",
     AUTO_ATTACK = "Auto_attack",
+    NOTIFY_MISSION = "notify_mission",
 }
