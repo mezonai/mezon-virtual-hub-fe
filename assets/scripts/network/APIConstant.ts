@@ -21,7 +21,10 @@ export default class APIConstant {
     static REWARD_PERCENT = "reward-percent";
     static BATTLE_SKILLS = "battle-skills";
     static BATTLE = "battle";
-    static QUEST_FREQUENCY = "player-quests/get-quests-frequency";
+    static QUEST_FREQUENCY = "get-quests-frequency";
+    static PLAYER_QUESTS = "player-quests";
+    static NEWBIE_LOGIN = "newbie-login";
+    static FINISH_QUEST = "finish-quest";
 }
 
 export class APIConfig {

@@ -8,6 +8,7 @@ import { PopupReward, PopupRewardParam, RewardNewType, RewardStatus } from '../P
 import { PopupTutorialCatchPet, PopupTutorialCatchPetParam } from '../PopUp/PopupTutorialCatchPet';
 import { Constants } from '../utilities/Constants';
 import { FoodType, RewardType } from '../Model/Item';
+import { PopupLoginQuest, PopupLoginQuestParam } from '../PopUp/PopupLoginQuest';
 
 const { ccclass, property } = _decorator;
 
@@ -51,12 +52,30 @@ export class GameManager extends Component {
         //     this.getReward();
         // }
         this.getReward();
+        this.getNewbieReward();
     }
 
     getReward() {
         WebRequestManager.instance.postGetReward(
             (response) => this.handleGetReward(response),
             (error) => this.onError(error)
+        );
+    }
+
+    getNewbieReward() {
+        WebRequestManager.instance.getNewbieReward(
+            async (response) => {
+                const data = ConvetData.ConvertRewardNewbieList(response.data);
+                console.log("data", data);
+                if (data != null) {
+                    const param: PopupLoginQuestParam = {
+                        rewardNewbieDTOs: data,
+                    };
+                    const popup = await PopupManager.getInstance().openPopup('PopupLoginQuest', PopupLoginQuest, param);
+                    await PopupManager.getInstance().waitCloseAsync(popup.node.uuid);
+                }
+            },
+            (error) => { }
         );
     }
 
@@ -76,7 +95,7 @@ export class GameManager extends Component {
             const content = `Chúc mừng bạn nhận thành công \n ${name}`;
             const param: PopupRewardParam = {
                 rewardType: type,
-                quantity: rewardItems[i].type == RewardType.GOLD || rewardItems[i].type == RewardType.DIAMOND ? rewardItems[i].amount : rewardItems[i].quantity,
+                quantity: rewardItems[i].quantity,
                 status: RewardStatus.GAIN,
                 content: content,
             };
