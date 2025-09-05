@@ -9,6 +9,7 @@ import { PopupTutorialCatchPet, PopupTutorialCatchPetParam } from '../PopUp/Popu
 import { Constants } from '../utilities/Constants';
 import { FoodType, RewardType } from '../Model/Item';
 import { PopupLoginQuest, PopupLoginQuestParam } from '../PopUp/PopupLoginQuest';
+import { PlayerHubController } from '../ui/PlayerHubController';
 
 const { ccclass, property } = _decorator;
 
@@ -20,6 +21,7 @@ export class GameManager extends Component {
     }
     @property({ type: UIChat }) uiChat: UIChat = null;
     @property({ type: UIMission }) uiMission: UIMission = null;
+    @property({ type: PlayerHubController }) playerHubController: PlayerHubController = null;
 
     protected onLoad(): void {
         if (GameManager._instance == null) {
@@ -92,7 +94,7 @@ export class GameManager extends Component {
             const type = Constants.mapRewardType(rewardItems[i]);
             const name = type == RewardNewType.NORMAL_FOOD ? "Thức ăn sơ cấp" : type == RewardNewType.PREMIUM_FOOD ? "Thức ăn cao cấp"
                 : type == RewardNewType.ULTRA_PREMIUM_FOOD ? "Thức ăn siêu cao cấp" : type == RewardNewType.GOLD ? "Vàng" : "Kim cương";
-            const content = `Chúc mừng bạn nhận thành công ${name}`;
+            const content = `Chúc mừng bạn nhận thành công \n ${name}`;
             const param: PopupRewardParam = {
                 rewardType: type,
                 quantity: rewardItems[i].quantity,

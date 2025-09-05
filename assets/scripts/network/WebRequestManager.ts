@@ -111,6 +111,13 @@ export class WebRequestManager extends Component {
         APIManager.putData(this.combineWithSlash(APIConstant.GAME_EVENT, eventId, APIConstant.COMPLETE), data, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
+    public getMission(params: { page?: number; limit?: number; sort_by?: string; order?: 'ASC' | 'DESC' } = {},successCallback?: (data: any) => void, errorCallback?: (error: any) => void)
+    {
+        const { page = 1, limit = 50, sort_by = 'start_at', order = 'ASC' } = params;
+        const url = `${this.combineWithSlash(APIConstant.PLAYER_QUESTS, APIConstant.QUEST_FREQUENCY)}?page=${page}&limit=${limit}&sort_by=${sort_by}&order=${order}`;
+        APIManager.getData( url, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    }
+
     public updateListPetFollowUser(data, successCallback, errorCallback) {
         APIManager.postData(this.combineWithSlash(APIConstant.PET_PLAYERS, APIConstant.BRING), data, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
