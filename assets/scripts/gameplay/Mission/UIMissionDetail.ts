@@ -14,6 +14,7 @@ import { RewardType } from '../../Model/Item';
 import { director } from 'cc';
 import { PopupReward, PopupRewardParam, RewardNewType, RewardStatus } from '../../PopUp/PopupReward';
 import { Constants } from '../../utilities/Constants';
+import { GameManager } from '../../core/GameManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('UIMissionDetail')
@@ -38,6 +39,7 @@ export class UIMissionDetail extends BasePopup {
 
     private GetMission() {
         WebRequestManager.instance.getMission(
+            {},
             (response) => this.showUIMision(response.data),
             (error) => this.onApiError(error)
         );
@@ -63,7 +65,7 @@ export class UIMissionDetail extends BasePopup {
         const hasUnclaimedWeekly = missionList.weekly.some(m => m.is_completed && !m.isClaimed);
 
         const hasUnclaimed = hasUnclaimedDaily || hasUnclaimedWeekly;
-        director.emit(EVENT_NAME.ON_MISSION_NOTICE, hasUnclaimed);
+        GameManager.instance.playerHubController.onMissionNotice(hasUnclaimed);
     }
 
     private onApiError(error) {
