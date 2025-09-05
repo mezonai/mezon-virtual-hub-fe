@@ -1,7 +1,6 @@
-import { AnimalType } from "../animal/AnimalController";
 import { MapData } from "../Interface/DataMapAPI";
-import { Food, Item, RewardItemDTO, RewardType } from "../Model/Item";
-import { Element, PetBattleInfo, PetDTO, PlayerBattle, SkillBattleInfo, Species, TypeSkill } from "../Model/PetDTO";
+import { Food, Item, PetReward, QuestType, RewardItemDTO, RewardNewbieDTO, RewardType } from "../Model/Item";
+import { AnimalElementString, AnimalRarity, Element, PetBattleInfo, PetDTO, PlayerBattle, SkillBattleInfo, Species, TypeSkill } from "../Model/PetDTO";
 
 export default class ConvetData {
     public static ConvertMap(mapData: any): MapData[] {
@@ -69,6 +68,15 @@ export default class ConvetData {
         return petDTO;
     }
 
+    public static ConvertPetReward(petData: any): PetReward {
+        const pet = new PetReward();
+        pet.id = petData.id;
+        pet.rarity = petData.rarity as AnimalRarity;
+        pet.type = this.getElementByString(petData.type);
+        pet.species = Species[petData.species as keyof typeof Species];
+        return pet;
+    }
+
     public static ConvertReward(data: any): RewardItemDTO[] {
         if (!Array.isArray(data)) return [];
 
@@ -89,11 +97,17 @@ export default class ConvetData {
                         rewardItem.food = this.parseFood(entry.food);
                         rewardItem.quantity = entry.quantity ?? 0;
                         break;
+                    case RewardType.PET:
+                        rewardItem.type = RewardType.PET;
+                        console.log("entry.pet: ", entry.pet);
+                        rewardItem.pet = this.ConvertPetReward(entry.pet);
+                        rewardItem.quantity = entry.quantity ?? 0;
+                        break;
 
                     case RewardType.GOLD:
                     default:
                         rewardItem.type = RewardType.GOLD;
-                        rewardItem.amount = entry.amount ?? 0;
+                        rewardItem.quantity = entry.quantity ?? 0;
                         break;
                 }
 
@@ -161,6 +175,26 @@ export default class ConvetData {
         return skill;
     }
 
+    public static ConvertRewardNewbieList(data: any[]): RewardNewbieDTO[] {
+        if (!data) return [];
+        return data.map(item => this.ConvertRewardNewbie(item));
+    }
+
+    public static ConvertRewardNewbie(data: any): RewardNewbieDTO {
+        if (data == null) return null;
+        const rewardNewbie = new RewardNewbieDTO();
+        rewardNewbie.id = data.id;
+        rewardNewbie.quest_id = data.quest_id;
+        rewardNewbie.end_at = data.end_at;
+        rewardNewbie.name = data.name;
+        rewardNewbie.description = data.description || "";
+        rewardNewbie.is_claimed = data.is_claimed;
+        rewardNewbie.is_available = data.is_available;
+        rewardNewbie.quest_type = this.mapServerQuestTypeToClient(data.quest_type);
+        rewardNewbie.rewards = this.ConvertReward(data.rewards);
+        return rewardNewbie;
+    }
+
     public static parseFood(foodData: any): Food {
         const food = new Food();
         Object.assign(food, foodData);
@@ -204,5 +238,24 @@ export default class ConvetData {
                 return Element.Grass;
         }
     }
-}
 
+    public static mapServerQuestTypeToClient(questType: string): QuestType {
+        switch (questType) {
+            case 'newbie_login':
+                return QuestType.NEWBIE_LOGIN;
+            case 'newbie_login_special':
+                return QuestType.NEWBIE_LOGIN_SPECIAL;
+            default:
+                return QuestType.NEWBIE_LOGIN;
+        }
+    }
+
+    public static getElementByString(value: string): Element {
+        for (const key in AnimalElementString) {
+            if (AnimalElementString[key as unknown as Element] === value) {
+                return Number(key) as Element;
+            }
+        }
+        return Element.Normal;
+    }
+}
