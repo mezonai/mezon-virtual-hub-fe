@@ -4,11 +4,12 @@ import { Label } from 'cc';
 import { Button } from 'cc';
 import { _decorator, Component, Node } from 'cc';
 import { BasePopup } from './BasePopup';
-import { PetDTO, Species } from '../Model/PetDTO';
+import { AnimalRarity, PetDTO, Species } from '../Model/PetDTO';
 import { PopupManager } from './PopupManager';
 import { PetsDesignIcon } from '../animal/PetsDesignIcon';
 import { Vec3 } from 'cc';
 import { tween } from 'cc';
+import { PetReward } from '../Model/Item';
 const { ccclass, property } = _decorator;
 
 @ccclass('PopupGetPet')
@@ -40,27 +41,28 @@ export class PopupGetPet extends BasePopup {
         this.borderRarity.node.active = false;
     }
 
-    async initPopup(pet: PetDTO) {
+    async initPopup(pet: PetReward) {
         await this.scalePet(pet, 1.5, 0.8, 1.4);
-        const indexRarity = pet.rarity == "common" ? 0 : pet.rarity == "rare" ? 1 : pet.rarity == "epic" ? 2 : 3;
+        const indexRarity = pet.rarity == AnimalRarity.COMMON ? 0 : pet.rarity == AnimalRarity.RARE ? 1 : pet.rarity == AnimalRarity.EPIC ? 2 : 3;
         this.borderRarity.color = this.colorBorderRarity[indexRarity];
         this.rarityText.color = this.colorRarityText[indexRarity];
         let rarity = pet.rarity.charAt(0).toUpperCase() + pet.rarity.slice(1);
         this.rarityText.string = rarity;
-        this.namePetText.string = pet.name;
+        this.namePetText.string = Species[pet.species];
         this.borderRarity.node.active = true;
 
     }
 
     public async scalePet(
-        pet: PetDTO,
+        pet: PetReward,
         duration: number,
         minScaleFactor: number = 0.8,
         maxScaleFactor: number = 1.2
     ): Promise<void> {
         const originalScale = this.petsDesignIcon.node.scale.clone();
         this.petsDesignIcon.node.setScale(Vec3.ZERO);
-        this.petsDesignIcon.setActivePetByName(pet.species);
+        const speciesName = Species[pet.species].charAt(0).toLowerCase() + Species[pet.species].slice(1);
+        this.petsDesignIcon.setActivePetByName(speciesName);
 
         const smallScale = originalScale.clone().multiplyScalar(minScaleFactor);
         const bigScale = originalScale.clone().multiplyScalar(maxScaleFactor);
@@ -78,6 +80,6 @@ export class PopupGetPet extends BasePopup {
 }
 
 export interface PopupGetPetParam {
-    pet: PetDTO;
+    pet: PetReward;
 }
 

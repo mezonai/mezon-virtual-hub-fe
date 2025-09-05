@@ -146,6 +146,16 @@ export class WebRequestManager extends Component {
         APIManager.postData(this.combineWithSlash(APIConstant.GAME, APIConstant.INITIAL_REWARD), {}, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
+    public getNewbieReward(successCallback, errorCallback) {
+        APIManager.getData(this.combineWithSlash(APIConstant.PLAYER_QUESTS, APIConstant.NEWBIE_LOGIN), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    }
+
+    public putRecievedReward(questId, successCallback, errorCallback) {
+        console.log("questId", questId);
+        const url = `${APIConstant.PLAYER_QUESTS}/${questId}/${APIConstant.FINISH_QUEST}`;
+        APIManager.putData(url, {}, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    }
+
     private errorMessageMap: Map<number, string> = new Map([
         [400, 'Bad Request'],
         [401, 'Unauthorized'],
