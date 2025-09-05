@@ -39,7 +39,7 @@ export class RewardLoginItem extends Component {
             if (!canReceive || rewardNewbie.is_claimed) return;
             this.clickButton.interactable = false;
             if (onClaimCallback) {
-                const success = await onClaimCallback(rewardNewbie.quest_id);
+                const success = await onClaimCallback(rewardNewbie.id);
                 if (success) {
                     await this.showPopupReward(reward); // chỉ show khi claim ok
                 }

@@ -8,8 +8,10 @@ import { MapData } from '../Interface/DataMapAPI';
 import { ServerManager } from '../core/ServerManager';
 import { PopupSelectionMini, SelectionMiniParam } from '../PopUp/PopupSelectionMini';
 import { PopupManager } from '../PopUp/PopupManager';
-import { RewardNewbieDTO } from '../Model/Item';
+import { RewardItemDTO, RewardNewbieDTO } from '../Model/Item';
 import { GameManager } from '../core/GameManager';
+import { PetDTO } from '../Model/PetDTO';
+import { Constants } from '../utilities/Constants';
 const { ccclass, property } = _decorator;
 
 @ccclass("WebRequestManager")
@@ -57,7 +59,7 @@ export class WebRequestManager extends Component {
         });
     }
 
-    public async getRewardNewbieLogin(): Promise<RewardNewbieDTO[]> {
+    public async getRewardNewbieLoginAsync(): Promise<RewardNewbieDTO[]> {
         return new Promise((resolve, reject) => {
             WebRequestManager.instance.getNewbieReward(
                 (response) => {
@@ -79,7 +81,7 @@ export class WebRequestManager extends Component {
         });
     }
 
-    public async claimReward(questId: string): Promise<boolean> {
+    public async claimRewardAsync(questId: string): Promise<boolean> {
         return new Promise((resolve, reject) => {
             WebRequestManager.instance.putRecievedReward(
                 questId,
@@ -88,6 +90,50 @@ export class WebRequestManager extends Component {
                 },
                 (error) => {
                     resolve(false);
+                }
+            );
+        });
+    }
+
+    public getMyPetAsync(): Promise<PetDTO[]> {
+        return new Promise((resolve, reject) => {
+            WebRequestManager.instance.getMyPetData(
+                (response) => resolve(response.data),
+                (error) => {
+                    resolve([]);
+                }
+            );
+        });
+    }
+
+    public putInitQuestAsync(): Promise<void> {
+        return new Promise((resolve, reject) => {
+            WebRequestManager.instance.putInitQuest(
+                (response) => {
+                    if (response && response.data) {
+                        const { message, has_unclaimed } = response.data;
+                        if (GameManager.instance != null) {
+                            GameManager.instance.playerHubController.onMissionNotice(has_unclaimed);
+                        }
+                    }
+                    resolve();
+                },
+                (error) => {
+                    resolve();
+                }
+            );
+        });
+    }
+
+    public postGetRewardAsync(): Promise<RewardItemDTO[]> {
+        return new Promise((resolve, reject) => {
+            WebRequestManager.instance.putInitQuest(
+                (response) => {
+                    const rewardData = ConvetData.ConvertReward(response.data) ?? [];
+                    resolve(rewardData);
+                },
+                (error) => {
+                    resolve([]);
                 }
             );
         });
@@ -188,6 +234,10 @@ export class WebRequestManager extends Component {
 
     public postGetReward(successCallback, errorCallback) {
         APIManager.postData(this.combineWithSlash(APIConstant.GAME, APIConstant.INITIAL_REWARD), {}, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    }
+
+    public putInitQuest(successCallback, errorCallback) {
+        APIManager.putData(this.combineWithSlash(APIConstant.PLAYER_QUESTS, APIConstant.INIT_QUEST), {}, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
     public getNewbieReward(successCallback, errorCallback) {

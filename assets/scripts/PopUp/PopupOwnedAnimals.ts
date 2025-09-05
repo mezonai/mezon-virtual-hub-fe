@@ -303,7 +303,7 @@ export class PopupOwnedAnimals extends BasePopup {
             if (hasPetBringUpdate) {
                 await this.updateListPetFollowUserAsync(petBring);
             }
-            await this.UpdateMyPets();
+            await WebRequestManager.instance.getMyPetAsync();// gọi để cập nhật Pet
         }
         this.closePopup();
     }
@@ -387,15 +387,6 @@ export class PopupOwnedAnimals extends BasePopup {
                     this.onError(error);
                     resolve();
                 }
-            );
-        });
-    }
-
-    public async UpdateMyPets(): Promise<void> {
-        return await new Promise((resolve, reject) => {
-            WebRequestManager.instance.getMyPetData(
-                (response) => resolve(),
-                (error) => reject(error)
             );
         });
     }

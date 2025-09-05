@@ -36,7 +36,7 @@ export class PlayerHubController extends Component {
         });
         this.btn_UIDailyReward.addAsyncListener(async () => {
             this.btn_UIDailyReward.interactable = false;
-            const rewards = await WebRequestManager.instance.getRewardNewbieLogin()
+            const rewards = await WebRequestManager.instance.getRewardNewbieLoginAsync()
             if (rewards != null && rewards.length > 0) {
                 const param: PopupLoginQuestParam = {
                     rewardNewbieDTOs: rewards,

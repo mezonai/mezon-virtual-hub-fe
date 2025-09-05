@@ -31,8 +31,8 @@ export class GameManager extends Component {
 
     public init() {
         this.uiMission.getMissionEventData();
-        this.tutorialCacthPet();
         this.resetNoticeTrandferDiamon();
+        this.tutorialCacthPet();
     }
 
     resetNoticeTrandferDiamon() {
@@ -41,32 +41,45 @@ export class GameManager extends Component {
         }
     }
 
-    tutorialCacthPet() {
-        // if (localStorage.getItem(Constants.TUTORIAL_CACTH_PET) === null) {
-        //     const param: PopupTutorialCatchPetParam = {
-        //         onActionCompleted: () => {
-        //             this.getReward();
-        //         },
-        //     };
-        //     PopupManager.getInstance().openPopup("PopupTutorialCatchPet", PopupTutorialCatchPet, param);
-        // }
-        // else {
-        //     this.getReward();
-        // }
-        this.getReward();
-
-        this.getNewbieReward();
+    async tutorialCacthPet() {
+        await WebRequestManager.instance.putInitQuestAsync();
+        const runRewards = async () => {
+            await this.getReward();
+            await this.getNewbieReward();
+        };
+        if (localStorage.getItem(Constants.TUTORIAL_CACTH_PET) === null) {
+            const param: PopupTutorialCatchPetParam = {
+                onActionCompleted: async () => {
+                    await runRewards();
+                },
+            };
+            await PopupManager.getInstance().openPopup("PopupTutorialCatchPet", PopupTutorialCatchPet, param);
+            return;
+        }
+        await runRewards();
     }
 
-    getReward() {
-        WebRequestManager.instance.postGetReward(
-            (response) => this.handleGetReward(response),
-            (error) => this.onError(error)
-        );
+    async getReward() {
+        const rewardItems = await WebRequestManager.instance.postGetRewardAsync();
+        if (rewardItems.length <= 0) return;
+        for (let i = 0; i < rewardItems.length; i++) {
+            const type = Constants.mapRewardType(rewardItems[i]);
+            const name = type == RewardNewType.NORMAL_FOOD ? "Thức ăn sơ cấp" : type == RewardNewType.PREMIUM_FOOD ? "Thức ăn cao cấp"
+                : type == RewardNewType.ULTRA_PREMIUM_FOOD ? "Thức ăn siêu cao cấp" : type == RewardNewType.GOLD ? "Vàng" : "Kim cương";
+            const content = `Chúc mừng bạn nhận thành công \n ${name}`;
+            const param: PopupRewardParam = {
+                rewardType: type,
+                quantity: rewardItems[i].quantity,
+                status: RewardStatus.GAIN,
+                content: content,
+            };
+            const popup = await PopupManager.getInstance().openPopup('PopupReward', PopupReward, param);
+            await PopupManager.getInstance().waitCloseAsync(popup.node.uuid);
+        }
     }
 
     async getNewbieReward() {
-        const rewards = await WebRequestManager.instance.getRewardNewbieLogin();
+        const rewards = await WebRequestManager.instance.getRewardNewbieLoginAsync();
         if (!rewards || rewards.length === 0) return;
 
         const today = new Date().toISOString().split('T')[0]; // yyyy-mm-dd
@@ -90,28 +103,6 @@ export class GameManager extends Component {
         GameManager._instance = null;
     }
 
-
-    async handleGetReward(response: any) {
-        const rewardsData = response?.data?.rewards ?? [];
-        const rewardItems = ConvetData.ConvertReward(rewardsData);
-        if (rewardItems.length <= 0) return;
-        for (let i = 0; i < rewardItems.length; i++) {
-            const type = Constants.mapRewardType(rewardItems[i]);
-            const name = type == RewardNewType.NORMAL_FOOD ? "Thức ăn sơ cấp" : type == RewardNewType.PREMIUM_FOOD ? "Thức ăn cao cấp"
-                : type == RewardNewType.ULTRA_PREMIUM_FOOD ? "Thức ăn siêu cao cấp" : type == RewardNewType.GOLD ? "Vàng" : "Kim cương";
-            const content = `Chúc mừng bạn nhận thành công \n ${name}`;
-            const param: PopupRewardParam = {
-                rewardType: type,
-                quantity: rewardItems[i].quantity,
-                status: RewardStatus.GAIN,
-                content: content,
-            };
-            const popup = await PopupManager.getInstance().openPopup('PopupReward', PopupReward, param);
-            await PopupManager.getInstance().waitCloseAsync(popup.node.uuid);
-        }
-
-
-    }
 
     private onError(error: any) {
         console.error("Error occurred:", error);
