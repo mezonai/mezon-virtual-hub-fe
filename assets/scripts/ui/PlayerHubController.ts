@@ -30,15 +30,9 @@ export class PlayerHubController extends Component {
             await PopupManager.getInstance().openAnimPopup("UIMission", UIMissionDetail);
             this.btn_UIMission.interactable = true;
         });
-        director.on(EVENT_NAME.ON_MISSION_NOTICE, this.OnMissionNotice, this);
     }
 
-    onDestroy() {
-        director.off(EVENT_NAME.ON_MISSION_NOTICE, this.OnMissionNotice, this);
-    }
-
-    OnMissionNotice = (isShow: boolean) => {
+    onMissionNotice(isShow: boolean) {
         this.redDotNoticeMission.active = isShow;
-    };
-
+    }
 }

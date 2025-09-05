@@ -9,6 +9,7 @@ import { PopupTutorialCatchPet, PopupTutorialCatchPetParam } from '../PopUp/Popu
 import { Constants } from '../utilities/Constants';
 import { FoodType, RewardType } from '../Model/Item';
 import { PopupLoginQuest, PopupLoginQuestParam } from '../PopUp/PopupLoginQuest';
+import { PlayerHubController } from '../ui/PlayerHubController';
 
 const { ccclass, property } = _decorator;
 
@@ -20,6 +21,7 @@ export class GameManager extends Component {
     }
     @property({ type: UIChat }) uiChat: UIChat = null;
     @property({ type: UIMission }) uiMission: UIMission = null;
+    @property({ type: PlayerHubController }) playerHubController: PlayerHubController = null;
 
     protected onLoad(): void {
         if (GameManager._instance == null) {

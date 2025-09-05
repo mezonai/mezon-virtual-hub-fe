@@ -375,8 +375,8 @@ export class ServerManager extends Component {
         });
         
         this.room.onMessage(MessageTypes.NOTIFY_MISSION, (data) => {
-            if (data == null || data.sessionId != UserManager.instance.GetMyClientPlayer.myID) return;
-            director.emit(EVENT_NAME.ON_MISSION_NOTICE, true);
+            if (data == null || GameManager.instance == null) return;
+            GameManager.instance.playerHubController?.onMissionNotice(true);
         });
     }
 
