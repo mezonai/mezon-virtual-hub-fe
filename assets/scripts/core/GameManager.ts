@@ -7,7 +7,7 @@ import { PopupManager } from '../PopUp/PopupManager';
 import { PopupReward, PopupRewardParam, RewardNewType, RewardStatus } from '../PopUp/PopupReward';
 import { PopupTutorialCatchPet, PopupTutorialCatchPetParam } from '../PopUp/PopupTutorialCatchPet';
 import { Constants } from '../utilities/Constants';
-import { FoodType, RewardType } from '../Model/Item';
+import { FoodType, RewardNewbieDTO, RewardType } from '../Model/Item';
 import { PopupLoginQuest, PopupLoginQuestParam } from '../PopUp/PopupLoginQuest';
 import { PlayerHubController } from '../ui/PlayerHubController';
 
@@ -54,6 +54,7 @@ export class GameManager extends Component {
         //     this.getReward();
         // }
         this.getReward();
+
         this.getNewbieReward();
     }
 
@@ -64,21 +65,25 @@ export class GameManager extends Component {
         );
     }
 
-    getNewbieReward() {
-        WebRequestManager.instance.getNewbieReward(
-            async (response) => {
-                const data = ConvetData.ConvertRewardNewbieList(response.data);
-                console.log("data", data);
-                if (data != null) {
-                    const param: PopupLoginQuestParam = {
-                        rewardNewbieDTOs: data,
-                    };
-                    const popup = await PopupManager.getInstance().openPopup('PopupLoginQuest', PopupLoginQuest, param);
-                    await PopupManager.getInstance().waitCloseAsync(popup.node.uuid);
-                }
-            },
-            (error) => { }
-        );
+    async getNewbieReward() {
+        const rewards = await WebRequestManager.instance.getRewardNewbieLogin();
+        if (!rewards || rewards.length === 0) return;
+
+        const today = new Date().toISOString().split('T')[0]; // yyyy-mm-dd
+        const lastLogged = localStorage.getItem(Constants.SHOW_DAILY_QUEST_FIRST_DAY);
+        if (lastLogged !== today) {
+            const param: PopupLoginQuestParam = {
+                rewardNewbieDTOs: rewards,
+            };
+
+            const popup = await PopupManager.getInstance().openPopup(
+                "PopupLoginQuest",
+                PopupLoginQuest,
+                param
+            );
+            localStorage.setItem(Constants.SHOW_DAILY_QUEST_FIRST_DAY, today);
+            await PopupManager.getInstance().waitCloseAsync(popup.node.uuid);
+        }
     }
 
     protected onDestroy(): void {

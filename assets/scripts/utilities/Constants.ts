@@ -16,6 +16,7 @@ export class Constants {
     public static readonly WiSH_FEE: number = 5;
     public static TUTORIAL_CACTH_PET = "tutorialCatchPet";
     public static NOTICE_TRANSFER_DIAMOND = "dont_show_buy_notice";
+    public static SHOW_DAILY_QUEST_FIRST_DAY = "show_daily_quest_first_day";
 
     public static convertKeyOffice(positionTarget: OfficePosition): string {
         switch (positionTarget) {
