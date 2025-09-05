@@ -10,6 +10,7 @@ import { PetsDesignIcon } from '../animal/PetsDesignIcon';
 import { Vec3 } from 'cc';
 import { tween } from 'cc';
 import { PetReward } from '../Model/Item';
+import { WebRequestManager } from '../network/WebRequestManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('PopupGetPet')
@@ -31,6 +32,7 @@ export class PopupGetPet extends BasePopup {
         this.initPopup(param.pet);
         this.confirmButton.addAsyncListener(async () => {
             this.confirmButton.interactable = false;
+            await WebRequestManager.instance.getMyPetAsync();
             await PopupManager.getInstance().closePopup(this.node.uuid);
         })
     }
@@ -61,7 +63,7 @@ export class PopupGetPet extends BasePopup {
     ): Promise<void> {
         const originalScale = this.petsDesignIcon.node.scale.clone();
         this.petsDesignIcon.node.setScale(Vec3.ZERO);
-        const speciesName = Species[pet.species].charAt(0).toLowerCase() + Species[pet.species].slice(1);
+        const speciesName = Species[pet.species];
         this.petsDesignIcon.setActivePetByName(speciesName);
 
         const smallScale = originalScale.clone().multiplyScalar(minScaleFactor);

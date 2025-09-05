@@ -69,27 +69,28 @@ export class PopupTutorialCatchPet extends BasePopup {
         if (pet1 != null) pets.push(pet1);
         if (pet2 != null) pets.push(pet2);
         if (pet3 != null) pets.push(pet3);
-        this.popupOwnedAnimals.InitPet(pets);
-        this.dragonIceTutorial.spriteNode.scale = new Vec3(-1, 1, 0);
+        if (this.node != null && this.popupOwnedAnimals != null) this.popupOwnedAnimals.InitPet(pets);
+        if (this.node != null && this.dragonIceTutorial != null) this.dragonIceTutorial.spriteNode.scale = new Vec3(-1, 1, 0);
         await this.dragonMove(this.defaultStartDragonIce, this.positionPoint1DragonIce);
-        this.dragonIceTutorial.spriteNode.scale = new Vec3(1, 1, 0);
+        if (this.node != null && this.dragonIceTutorial != null) this.dragonIceTutorial.spriteNode.scale = new Vec3(1, 1, 0);
         await this.dragonMove(this.positionPoint1DragonIce, this.positionPoint2DragonIce);
-        this.tutorialPlayer.active = true;
+        if (this.node != null && this.tutorialPlayer != null) this.tutorialPlayer.active = true;
         await this.showTalkAndDelay("Pet của tôi đó.");
         await this.showTalkAndDelay("Bạn có muốn sở hữu 1 con như tôi không?");
         await this.showTalkAndDelay("Hãy để tôi hướng dẫn bạn cách để sở hữu một con Pet.");
         await this.fadeInByColor(this.blackBackground, this.timeFade);
-        this.tutorialPlayer?.setPosition(this.defaultPosititonPlayer);
-        this.dragonIceTutorial.node.active = false;
+        if (this.node != null && this.tutorialPlayer != null) this.tutorialPlayer?.setPosition(this.defaultPosititonPlayer);
+        if (this.node != null && this.dragonIceTutorial != null) this.dragonIceTutorial.node.active = false;
         await this.fadeOutByColor(this.blackBackground, this.timeFade);
         ///stepMoveToPet
-        this.animalTutorial.node.active = true;
+        if (this.node != null && this.animalTutorial != null) this.animalTutorial.node.active = true;
         await this.showTalkAndDelay("Đằng kia là pet.");
         await this.showTalkAndDelay("Đầu tiên bạn cần đến gần pet hơn.");
         await this.movePlayer(this.defaultPosititonPlayer, this.positionInteractPet);
         await this.showTalkAndDelay("Sau đó bạn hãy chạm vào Pet.");
         //TouchEffect
-        await this.playAnimationSelection(this.animalTutorial.node.position);
+        if (this.node != null && this.animalTutorial != null) await this.playAnimationSelection(this.animalTutorial.node.position);
+        if (this.node == null || this.animalTutorial == null) return;
         const interactPet = this.animalTutorial.getComponentInChildren(AnimalInteractManager);
         if (interactPet) {
             interactPet.showUITutorial(true);
@@ -97,51 +98,36 @@ export class PopupTutorialCatchPet extends BasePopup {
             //SelectFood
             await this.showTalkAndDelay("Lúc này hãy lựa chọn thức ăn bạn muốn dùng.");
             await this.showTalkAndDelay("Sau đó nhấn vào để thả thức ăn bắt Pet.");
-            await this.playAnimationSelection(interactPet.normalFood.node.worldPosition, true);
+            if (this.node != null && interactPet != null) await this.playAnimationSelection(interactPet.normalFood.node.worldPosition, true);
             interactPet.showUITutorial(false);
             const petCatching = this.tutorialPlayer.getComponent(PetCatchingController);
             if (petCatching) {
                 await petCatching.throwFoodToPet(this.animalTutorial.node, FoodType.NORMAL, true);
                 await Constants.waitForSeconds(this.timeout);
-                this.animalTutorial.node.active = false;
-                this.confirmPopup.node.active = true;
+                if (this.node != null && this.animalTutorial != null) this.animalTutorial.node.active = false;
+                if (this.node != null && this.confirmPopup != null) this.confirmPopup.node.active = true;
                 await Constants.waitForSeconds(this.timeout);
-                await this.playAnimationSelection(this.confirmPopup.closeButton.node.worldPosition, true);
-                this.confirmPopup.node.active = false;
+                if (this.node != null && this.confirmPopup != null) await this.playAnimationSelection(this.confirmPopup.closeButton.node.worldPosition, true);
+                if (this.node != null && this.confirmPopup != null) this.confirmPopup.node.active = false;
                 //Show PopupOwnedAnimals
                 await this.showTalkAndDelay("Pet đã được bắt thành công.");
                 await this.showTalkAndDelay("Tiếp theo, Hãy học cách mang Pet theo bên mình nào.");
                 await this.movePlayer(this.tutorialPlayer.position, this.positionChoosePet);
-                this.animationTutorialPlayer.node.scale = new Vec3(-1, 1, 0);
+                if (this.node != null && this.animationTutorialPlayer != null) this.animationTutorialPlayer.node.scale = new Vec3(-1, 1, 0);
                 await this.showTalkAndDelay("Bây giờ hãy nhấn vào túi Pet.");
-                await this.playAnimationSelection(this.buttonBagPet.worldPosition, true);
-                this.popupOwnedAnimals.node.active = true;
+                if (this.node != null && this.buttonBagPet != null) await this.playAnimationSelection(this.buttonBagPet.worldPosition, true);
+                if (this.node != null && this.popupOwnedAnimals != null) this.popupOwnedAnimals.node.active = true;
                 await this.showTalkAndDelay("Tiếp theo, Hãy chọn Pet mà bạn muốn mang theo và nhấn vào nó.");
-                await this.playAnimationSelection(this.popupOwnedAnimals.animalSlots[0].node.worldPosition, true);
+                if (this.node != null && this.popupOwnedAnimals != null) await this.playAnimationSelection(this.popupOwnedAnimals.animalSlots[0].node.worldPosition, true);
                 await this.showTalkAndDelay("Tiếp theo, Hãy Nhấn vào mang theo.");
-                await this.playAnimationSelection(this.popupOwnedAnimals.bringButton.node.worldPosition, true);
-                pets[0].is_brought = true;
-                this.popupOwnedAnimals.animalSlots[0].setBringPet();
-                this.popupOwnedAnimals.updatePetActionButtons(pets[0]);
+                if (this.node != null && this.popupOwnedAnimals != null) await this.playAnimationSelection(this.popupOwnedAnimals.bringButton.node.worldPosition, true);
+                if (this.node != null) pets[0].is_brought = true;
+                if (this.node != null && this.popupOwnedAnimals != null) this.popupOwnedAnimals.animalSlots[0].setBringPet();
+                if (this.node != null && this.popupOwnedAnimals != null) this.popupOwnedAnimals.updatePetActionButtons(pets[0]);
                 await this.showTalkAndDelay("Bây giờ bạn có thể dắt pet đi theo cùng mình.");
                 await this.showTalkAndDelay("Cuối cùng, Bạn hãy đóng popup lại và vui chơi thôi.");
-                this.popupOwnedAnimals.node.active = false;
+                if (this.node != null && this.popupOwnedAnimals != null) this.popupOwnedAnimals.node.active = false;
                 this.finishTutorial();
-                // await this.showTalkAndDelay("Tiếp theo, Hãy học cách chọn pet để chiến đấu nào.");
-                // await this.playAnimationSelection(this.popupOwnedAnimals.animalSlots[2].node.worldPosition, true);
-                // this.popupOwnedAnimals.animalSlots[2].toggle.isChecked = true;
-                // this.popupOwnedAnimals.animalSlots[2].onToggleChanged(this.popupOwnedAnimals.animalSlots[2].toggle);
-                // await this.showTalkAndDelay("Tiếp theo, Hãy Nhấn vào xuất trận.");
-                // await this.playAnimationSelection(this.popupOwnedAnimals.fightingButton.node.worldPosition, true);
-                // this.popupBattlePlace.node.active = true;
-                // await this.showTalkAndDelay("Tiếp theo, Hãy chọn ô cần thứ tự pet xuất trận");
-                // await this.playAnimationSelection(this.popupBattlePlace.itemSlotPets[0].node.worldPosition, true);
-                // this.popupBattlePlace.itemSlotPets[0]
-                // //this.itemAnimalSlot.toggle.isChecked = true;
-                // await this.showTalkAndDelay("Cuối cùng nhấn Lưu và cùng vui chơi thôi.");
-                // await this.playAnimationSelection(this.popupOwnedAnimals.saveButton.node.worldPosition, true);
-                // this.popupOwnedAnimals.node.active = false;
-                // await this.finishTutorial();
             }
         }
     }
@@ -228,8 +214,8 @@ export class PopupTutorialCatchPet extends BasePopup {
 
     private async finishTutorial() {
         await Constants.waitForSeconds(this.timeout);
-        await this.movePlayer(this.tutorialPlayer.position, this.positionFinished);
-        this.animationTutorialPlayer.node.scale = new Vec3(1, 1, 0);
+        if (this.node != null && this.tutorialPlayer != null) await this.movePlayer(this.tutorialPlayer.position, this.positionFinished);
+        if (this.node != null && this.animationTutorialPlayer != null) this.animationTutorialPlayer.node.scale = new Vec3(1, 1, 0);
         await this.showTalkAndDelay("Đơn giản mà phải không?");
         await this.showTalkAndDelay("Còn chờ gì nữa mà không đi kiếm Pet thôi. ");
         const param: SelectionParam = {
@@ -247,13 +233,19 @@ export class PopupTutorialCatchPet extends BasePopup {
 
     private movePlayer(from: Vec3, to: Vec3, duration: number = 1.5): Promise<void> {
         return new Promise((resolve) => {
+            if (this.node == null || this.tutorialPlayer == null || this.animationTutorialPlayer == null) {
+                resolve();
+                return;
+            }
             this.tutorialPlayer.setPosition(from);
             this.animationTutorialPlayer.play("move");
 
             tween(this.tutorialPlayer)
                 .to(duration, { position: to })
                 .call(() => {
-                    this.animationTutorialPlayer.play("idle");
+                    if (this.animationTutorialPlayer) {
+                        this.animationTutorialPlayer.play("idle");
+                    }
                     resolve(); // báo hiệu đã hoàn tất
                 })
                 .start();
@@ -262,11 +254,17 @@ export class PopupTutorialCatchPet extends BasePopup {
 
     private dragonMove(from: Vec3, to: Vec3, duration: number = 1.5): Promise<void> {
         return new Promise((resolve) => {
+            if (this.node == null || this.dragonIceTutorial == null) {
+                resolve();
+                return;
+            }
             this.dragonIceTutorial.node.setPosition(from);
             tween(this.dragonIceTutorial.node)
                 .to(duration, { position: to })
                 .call(() => {
-                    this.animationTutorialPlayer.play("idle");
+                    if (this.animationTutorialPlayer) {
+                        this.animationTutorialPlayer.play("idle");
+                    }
                     resolve(); // báo hiệu đã hoàn tất
                 })
                 .start();
@@ -281,6 +279,10 @@ export class PopupTutorialCatchPet extends BasePopup {
 
     private playAnimationSelection(targetPosition: Vec3, isWorldPosition: boolean = false): Promise<void> {
         return new Promise(async (resolve) => {
+            if (this.node == null || this.selectionNode == null || this.iconSelection == null) {
+                resolve();
+                return;
+            }
             this.selectionNode.position = this.tutorialPlayer.position;
             this.iconSelection.scale = Vec3.ONE;
             this.selectionNode.active = true;
@@ -304,8 +306,10 @@ export class PopupTutorialCatchPet extends BasePopup {
                         // Chờ thêm timeAnimSelection trước khi kết thúc
                         Constants.waitForSeconds(this.timeAnimSelection).then(() => {
                             Tween.stopAllByTarget(this.iconSelection);
-                            this.iconSelection.scale = Vec3.ONE;
-                            this.selectionNode.active = false;
+                            if (this.node != null && this.iconSelection != null && this.selectionNode != null) {
+                                this.iconSelection.scale = Vec3.ONE;
+                                this.selectionNode.active = false;
+                            }
                             resolve(); // báo hiệu hoàn tất
                         });
                     })

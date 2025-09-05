@@ -176,7 +176,7 @@ export class UILoginControll extends Component {
         this.login_Btn.interactable = true;
         APIConfig.token = response.data.accessToken;
         this.getProfileData()
-        this.getMyPetData();
+        await WebRequestManager.instance.getMyPetAsync();
     }
 
     private getProfileData() {
@@ -184,15 +184,6 @@ export class UILoginControll extends Component {
             (response) => this.onGetProfileSuccess(response),
             (error) => this.onError(error)
         );
-    }
-
-    public getMyPetData(): Promise<PetDTO[]> {
-        return new Promise((resolve, reject) => {
-            WebRequestManager.instance.getMyPetData(
-                (response) => resolve(response.data),
-                (error) => reject(error)
-            );
-        });
     }
 
     private onGetProfileSuccess(respone) {

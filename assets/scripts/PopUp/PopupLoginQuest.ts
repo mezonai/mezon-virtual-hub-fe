@@ -35,9 +35,9 @@ export class PopupLoginQuest extends BasePopup {
     }
 
     async getNewbieReward(questId: string): Promise<boolean> {
-        const completed = await WebRequestManager.instance.claimReward(questId);
+        const completed = await WebRequestManager.instance.claimRewardAsync(questId);
         if (!completed) return false;
-        const rewards = await WebRequestManager.instance.getRewardNewbieLogin()
+        const rewards = await WebRequestManager.instance.getRewardNewbieLoginAsync()
         if (rewards != null && rewards.length > 0) {
             this.setDataReward(rewards);
         }
