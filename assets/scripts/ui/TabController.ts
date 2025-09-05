@@ -4,6 +4,7 @@ const { ccclass, property } = _decorator;
 import { ObjectPoolManager } from '../pooling/ObjectPoolManager';
 import { FoodType, InventoryDTO, InventoryType, ItemType } from '../Model/Item';
 import { AudioType, SoundManager } from '../core/SoundManager';
+import { MissionType } from '../Model/MissionDTO';
 
 @ccclass('TabController')
 export class TabController extends Component {
@@ -25,6 +26,11 @@ export class TabController extends Component {
     private tabNameMappingString: Map<string, string> = new Map([
         [InventoryType.FOOD, 'Thức ăn pet'],
         [InventoryType.ITEM, 'Item'],
+    ]);
+
+    private tabMissionMappingString: Map<string, string> = new Map([
+        [MissionType.DAILY, 'Ngày'],
+        [MissionType.WEEKLY, 'Tuần'],
     ]);
 
     protected reset() {
@@ -53,6 +59,9 @@ export class TabController extends Component {
             else if (this.tabNameMappingString.has(tab)) {
                 tabName = this.tabNameMappingString.get(tab);
             }
+            else if (this.tabMissionMappingString.has(tab)) {
+                tabName = this.tabMissionMappingString.get(tab);
+            }
 
             tabItem.name = tab.toString();
             tabItem.getComponentInChildren(RichText).string = tabName;
@@ -62,7 +71,6 @@ export class TabController extends Component {
 
     private onToggleChanged(toggle: Toggle) {
         if (toggle.isChecked) {
-            SoundManager.instance.playSound(AudioType.Toggle);
             this.node.emit(EVENT_NAME.ON_CHANGE_TAB, toggle.node.name);
         }
     }
