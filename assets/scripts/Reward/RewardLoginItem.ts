@@ -18,7 +18,6 @@ export class RewardLoginItem extends Component {
     @property({ type: [SpriteFrame] }) iconRewards: SpriteFrame[] = [];
     @property({ type: [SpriteFrame] }) iconPetRewards: SpriteFrame[] = [];
     @property({ type: [SpriteFrame] }) iconFoodRewards: SpriteFrame[] = [];
-    @property({ type: [Color] }) titleColor: Color[] = [];
     @property({ type: RichText }) title: RichText = null;
     @property({ type: RichText }) quantity: RichText = null;
     @property({ type: Sprite }) icon: Sprite = null;
@@ -87,9 +86,7 @@ export class RewardLoginItem extends Component {
     }
 
     setTitle(rewardNewbie: RewardNewbieDTO) {
-        const codeColorOutLine = rewardNewbie.quest_type == QuestType.NEWBIE_LOGIN_SPECIAL ? "#AC6333" : "#000000";
-        this.title.fontColor = rewardNewbie.quest_type == QuestType.NEWBIE_LOGIN_SPECIAL ? this.titleColor[0] : this.titleColor[1];
-        this.title.string = `<outline color=${codeColorOutLine} width=1> ${rewardNewbie.name} </outline>`;
+        this.title.string = `<outline color=#000000 width=1> ${rewardNewbie.name} </outline>`;
     }
 
     public playAnimBorder() {
