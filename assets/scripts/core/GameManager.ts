@@ -71,8 +71,6 @@ export class GameManager extends Component {
 
         const today = new Date().toISOString().split('T')[0]; // yyyy-mm-dd
         const lastLogged = localStorage.getItem(Constants.SHOW_DAILY_QUEST_FIRST_DAY);
-        console.log("today: ", today);
-        console.log("lastLogged : ", lastLogged);
         if (lastLogged !== today) {
             const param: PopupLoginQuestParam = {
                 rewardNewbieDTOs: rewards,
