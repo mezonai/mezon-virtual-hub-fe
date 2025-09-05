@@ -25,7 +25,7 @@ export class RewardLoginItem extends Component {
     @property({ type: Animation }) animatorBorder: Animation = null;
     @property({ type: Node }) receivedNode: Node = null;
     @property({ type: Button }) clickButton: Button = null;
-    setData(rewardNewbie: RewardNewbieDTO, onClaimCallback?: (questId: string) => Promise<void>) {
+    setData(rewardNewbie: RewardNewbieDTO, onClaimCallback?: (questId: string) => Promise<boolean>) {
         const reward = rewardNewbie?.rewards[0];
         if (rewardNewbie == null || reward == null) return;
         this.setTitle(rewardNewbie);
@@ -39,10 +39,12 @@ export class RewardLoginItem extends Component {
             if (!canReceive || rewardNewbie.is_claimed) return;
             this.clickButton.interactable = false;
             if (onClaimCallback) {
-                await onClaimCallback(rewardNewbie.id);
+                const success = await onClaimCallback(rewardNewbie.quest_id);
+                if (success) {
+                    await this.showPopupReward(reward); // chỉ show khi claim ok
+                }
             }
             this.clickButton.interactable = true;
-            await this.showPopupReward(reward);
         })
     }
 

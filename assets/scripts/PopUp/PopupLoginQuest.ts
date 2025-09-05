@@ -28,39 +28,20 @@ export class PopupLoginQuest extends BasePopup {
     }
 
     setDataReward(rewardNewbieDTOs: RewardNewbieDTO[]) {
-        console.log("rewardNewbieDTOs: ", rewardNewbieDTOs);
         rewardNewbieDTOs.slice(0, 6).forEach((dto, i) => {
             this.rewardLoginItem6Days[i].setData(dto, this.getNewbieReward.bind(this));
         });
         this.rewardLoginItem7Day.setData(rewardNewbieDTOs[rewardNewbieDTOs.length - 1], this.getNewbieReward.bind(this));
     }
 
-    async getNewbieReward(questId: string): Promise<void> {
-        return new Promise((resolve, reject) => {
-            WebRequestManager.instance.putRecievedReward(
-                questId,
-                async (response) => {
-                    await this.reloadData();
-                    resolve();
-                },
-                (error) => reject(error)
-            );
-        });
-    }
-
-    async reloadData(): Promise<void> {
-        return new Promise((resolve, reject) => {
-            WebRequestManager.instance.getNewbieReward(
-                (response) => {
-                    const rewardData = ConvetData.ConvertRewardNewbieList(response.data);
-                    if (rewardData) {
-                        this.setDataReward(rewardData);
-                    }
-                    resolve(); // cũng chỉ báo hoàn thành
-                },
-                (error) => reject(error)
-            );
-        });
+    async getNewbieReward(questId: string): Promise<boolean> {
+        const completed = await WebRequestManager.instance.claimReward(questId);
+        if (!completed) return false;
+        const rewards = await WebRequestManager.instance.getRewardNewbieLogin()
+        if (rewards != null && rewards.length > 0) {
+            this.setDataReward(rewards);
+        }
+        return true
     }
 }
 export interface PopupLoginQuestParam {
