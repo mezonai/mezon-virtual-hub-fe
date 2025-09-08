@@ -91,7 +91,6 @@ export class ItemMissionDetail extends Component {
             : mission.is_completed
                 ? MissionState.CLAIMABLE
                 : MissionState.NOT_AVAILABLE;
-        this.bgClaimed.active = state == MissionState.CLAIMED;
         this.updateButtonState(state);
         this.LoadDataReward(mission.rewards);
     }
@@ -139,6 +138,7 @@ export class ItemMissionDetail extends Component {
         this.btnClaim.interactable = mcf.interactable;
         this.rtClaim.string = mcf.text;
         this.bgClaim.color = mcf.color;
+        this.bgClaimed.active = state == MissionState.CLAIMED;
     }
 
     async LoadDataReward(rewards: RewardItemDTO[]) {
