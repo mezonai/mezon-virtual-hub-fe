@@ -1,3 +1,4 @@
+import { RewardItemDTO } from "./Item";
 
 export interface MissionDTO {
     id: string;
@@ -7,26 +8,9 @@ export interface MissionDTO {
     progress: number;
     total_progress: number;
     is_completed: boolean;
-    isClaimed: boolean;
+    is_claimed: boolean;
     type: MissionType;
-    rewards: RewardDTO[];
-}
-
-export interface RewardDTO {
-  id: string;
-  name: string;
-  description: string;
-  type: string;
-  items: RewardItem[];
-}
-
-export interface RewardItem {
-  id: string;
-  type: string;
-  quantity: number;
-  reward_id: string;
-  item_id?: string | null;
-  food_id?: string | null;
+    rewards: RewardItemDTO[];
 }
 
 export interface MissionListDTO {

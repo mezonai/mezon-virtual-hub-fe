@@ -1,18 +1,27 @@
-import { _decorator, Component, Label, Button, Color, Node } from 'cc';
-import { MissionDTO, RewardDTO } from '../../Model/MissionDTO';
-import { Sprite } from 'cc';
-import { RichText } from 'cc';
-import { Prefab } from 'cc';
-import { ObjectPoolManager } from '../../pooling/ObjectPoolManager';
-import { RewardItemDTO } from '../../Model/Item';
-import { ScrollView } from 'cc';
-import { RewardItemMission } from './RewardItemMission';
+import { _decorator, Component, Label, Button, Color, Node } from "cc";
+import { MissionDTO } from "../../Model/MissionDTO";
+import { Sprite } from "cc";
+import { RichText } from "cc";
+import { Prefab } from "cc";
+import { ObjectPoolManager } from "../../pooling/ObjectPoolManager";
+import { RewardItemDTO, RewardType } from "../../Model/Item";
+import { ScrollView } from "cc";
+import { RewardItemMission } from "./RewardItemMission";
+import { PopupGetPet, PopupGetPetParam } from "../../PopUp/PopupGetPet";
+import { PopupManager } from "../../PopUp/PopupManager";
+import { Constants } from "../../utilities/Constants";
+import {
+    PopupReward,
+    PopupRewardParam,
+    RewardNewType,
+    RewardStatus,
+} from "../../PopUp/PopupReward";
 const { ccclass, property } = _decorator;
 
 enum MissionState {
     NOT_AVAILABLE,
     CLAIMABLE,
-    CLAIMED
+    CLAIMED,
 }
 
 type MissionConfig = {
@@ -22,12 +31,24 @@ type MissionConfig = {
 };
 
 const MissionUIConfig: Record<MissionState, MissionConfig> = {
-    [MissionState.CLAIMABLE]: { text: "Nhận", color: new Color(30, 152, 48), interactable: true },
-    [MissionState.CLAIMED]: { text: "Đã nhận", color: new Color(139, 21, 21), interactable: false },
-    [MissionState.NOT_AVAILABLE]: { text: "Chưa xong", color: new Color(127, 80, 54), interactable: false }
+    [MissionState.CLAIMABLE]: {
+        text: "Nhận",
+        color: new Color(30, 152, 48),
+        interactable: true,
+    },
+    [MissionState.CLAIMED]: {
+        text: "Đã nhận",
+        color: new Color(139, 21, 21),
+        interactable: false,
+    },
+    [MissionState.NOT_AVAILABLE]: {
+        text: "Chưa xong",
+        color: new Color(127, 80, 54),
+        interactable: false,
+    },
 };
 
-@ccclass('ItemMissionDetail')
+@ccclass("ItemMissionDetail")
 export class ItemMissionDetail extends Component {
     @property(RichText) rtDescription: RichText = null!;
     @property(RichText) rtProgress: RichText = null!;
@@ -38,36 +59,78 @@ export class ItemMissionDetail extends Component {
     @property(ScrollView) scrollView: ScrollView = null!;
     @property(Node) content: Node = null!;
     @property(Prefab) itemPrefab: Prefab = null!;
-
-    public onClick: ((item: ItemMissionDetail) => void) | null = null;
     private _missionDetail: MissionDTO;
     public get MissionDetail(): MissionDTO {
         return this._missionDetail;
     }
 
-    start() {
-        if (this.btnClaim) {
-            this.btnClaim.node.on(Button.EventType.CLICK, () => {
-                if (this.onClick) { this.onClick(this); }
-            });
-        }
-    }
-    public setData(data: MissionDTO) {
-       if (!data) return;
-        this._missionDetail = data;
-        this.btnClaim.node.on(Button.EventType.CLICK, () => {
-            if (this.onClick) {
-                this.onClick(this);
+    public setData(
+        mission: MissionDTO,
+        onClaimCallback?: (missionId: string) => Promise<boolean>
+    ) {
+        if (!mission) return;
+        this._missionDetail = mission;
+        this.btnClaim.addAsyncListener(async () => {
+            this.btnClaim.interactable = false;
+            if (onClaimCallback) {
+                const success = await onClaimCallback(mission.id);
+                if (success) {
+                    await this.showPopupReward(mission.rewards[0]); // chỉ show khi claim ok
+                    this._missionDetail.is_claimed = true;
+                    this.updateButtonState(MissionState.CLAIMED);
+                }
             }
+            this.btnClaim.interactable = true;
         });
-        this.rtDescription.string = data.description;
-        const color = data.progress >= data.total_progress ? "#FF5733" : "#6D3723";
-        this.rtProgress.string = `<color=${color}>${data.progress}/${data.total_progress}</color>`;
-        const state = data.isClaimed ? MissionState.CLAIMED : data.is_completed ? MissionState.CLAIMABLE :
-            MissionState.NOT_AVAILABLE;
-        this.bgClaimed.active = state == MissionState.CLAIMED;
+        this.rtDescription.string = mission.description;
+        const color =
+            mission.progress >= mission.total_progress ? "#FF5733" : "#6D3723";
+        this.rtProgress.string = `<color=${color}>${mission.progress}/${mission.total_progress}</color>`;
+        const state = mission.is_claimed
+            ? MissionState.CLAIMED
+            : mission.is_completed
+                ? MissionState.CLAIMABLE
+                : MissionState.NOT_AVAILABLE;
         this.updateButtonState(state);
-        this.LoadDataReward(data.rewards);
+        this.LoadDataReward(mission.rewards);
+    }
+
+    async showPopupReward(reward: RewardItemDTO) {
+        if (reward.type == RewardType.PET) {
+            const petReward = reward.pet;
+            const param: PopupGetPetParam = {
+                pet: petReward,
+            };
+            await PopupManager.getInstance().openPopup(
+                "PopupGetPet",
+                PopupGetPet,
+                param
+            );
+            return;
+        }
+        const type = Constants.mapRewardType(reward);
+        const name =
+            type == RewardNewType.NORMAL_FOOD
+                ? "Thức ăn sơ cấp"
+                : type == RewardNewType.PREMIUM_FOOD
+                    ? "Thức ăn cao cấp"
+                    : type == RewardNewType.ULTRA_PREMIUM_FOOD
+                        ? "Thức ăn siêu cao cấp"
+                        : type == RewardNewType.GOLD
+                            ? "Vàng"
+                            : "Kim cương";
+        const content = `Chúc mừng bạn nhận thành công ${name}`;
+        const paramPopup: PopupRewardParam = {
+            rewardType: type,
+            quantity: reward.quantity,
+            status: RewardStatus.GAIN,
+            content: content,
+        };
+        await PopupManager.getInstance().openPopup(
+            "PopupReward",
+            PopupReward,
+            paramPopup
+        );
     }
 
     private updateButtonState(state: MissionState) {
@@ -75,22 +138,20 @@ export class ItemMissionDetail extends Component {
         this.btnClaim.interactable = mcf.interactable;
         this.rtClaim.string = mcf.text;
         this.bgClaim.color = mcf.color;
+        this.bgClaimed.active = state == MissionState.CLAIMED;
     }
 
-    public updateClaimedState() {
-        this._missionDetail.isClaimed = true;
-        this.updateButtonState(MissionState.CLAIMED);
-    }
-
-    async LoadDataReward(rewards: RewardDTO[]) {
+    async LoadDataReward(rewards: RewardItemDTO[]) {
         ObjectPoolManager.instance.returnArrayToPool(this.content.children);
         await this.spawnReward(rewards);
         this.ResetPositionScrollBar();
     }
 
-    private async spawnReward(rewards: any[]) {
-        rewards.forEach(reward => {
-            let itemNode = ObjectPoolManager.instance.spawnFromPool(this.itemPrefab.name);
+    private async spawnReward(rewards: RewardItemDTO[]) {
+        rewards.forEach((reward) => {
+            let itemNode = ObjectPoolManager.instance.spawnFromPool(
+                this.itemPrefab.name
+            );
             itemNode.active = true;
             itemNode.setParent(this.content);
             const comp = itemNode.getComponent(RewardItemMission);
@@ -103,7 +164,7 @@ export class ItemMissionDetail extends Component {
     ResetPositionScrollBar() {
         this.scheduleOnce(() => {
             if (this.scrollView) {
-                this.scrollView.scrollToTop(0)
+                this.scrollView.scrollToTop(0);
             }
         }, 0.05);
     }
