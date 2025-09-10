@@ -106,14 +106,13 @@ export class WebRequestManager extends Component {
         });
     }
 
-    public putInitQuestAsync(): Promise<void> {
+    public checkUnclaimedQuest(): Promise<void> {
         return new Promise((resolve, reject) => {
-            WebRequestManager.instance.putInitQuest(
+            WebRequestManager.instance.getCheckUnclaimedQuest(
                 (response) => {
                     if (response && response.data) {
-                        const { message, has_unclaimed } = response.data;
                         if (GameManager.instance != null) {
-                            GameManager.instance.playerHubController.onMissionNotice(has_unclaimed);
+                            GameManager.instance.playerHubController.onMissionNotice(response.data.has_unclaimed);
                         }
                     }
                     resolve();
@@ -127,7 +126,7 @@ export class WebRequestManager extends Component {
 
     public postGetRewardAsync(): Promise<RewardItemDTO[]> {
         return new Promise((resolve, reject) => {
-            WebRequestManager.instance.putInitQuest(
+            WebRequestManager.instance.postGetReward(
                 (response) => {
                     const rewardData = ConvetData.ConvertReward(response.data) ?? [];
                     resolve(rewardData);
@@ -236,8 +235,8 @@ export class WebRequestManager extends Component {
         APIManager.postData(this.combineWithSlash(APIConstant.GAME, APIConstant.INITIAL_REWARD), {}, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
-    public putInitQuest(successCallback, errorCallback) {
-        APIManager.putData(this.combineWithSlash(APIConstant.PLAYER_QUESTS, APIConstant.INIT_QUEST), {}, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    public getCheckUnclaimedQuest(successCallback, errorCallback) {
+        APIManager.getData(this.combineWithSlash(APIConstant.PLAYER_QUESTS, APIConstant.CHECK_UNCLAIMED_QUEST), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
     public getNewbieReward(successCallback, errorCallback) {

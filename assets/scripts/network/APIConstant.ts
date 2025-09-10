@@ -25,7 +25,7 @@ export default class APIConstant {
     static PLAYER_QUESTS = "player-quests";
     static NEWBIE_LOGIN = "newbie-login";
     static FINISH_QUEST = "finish-quest";
-    static INIT_QUEST = "init-quest";
+    static CHECK_UNCLAIMED_QUEST = "check-unclaimed-quest";
 }
 
 export class APIConfig {
