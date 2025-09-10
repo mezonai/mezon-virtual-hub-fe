@@ -11,6 +11,7 @@ import { PopupReward, PopupRewardParam, RewardNewType, RewardStatus } from '../P
 import { Constants } from '../utilities/Constants';
 import { PopupManager } from '../PopUp/PopupManager';
 import { PopupGetPet, PopupGetPetParam } from '../PopUp/PopupGetPet';
+import { ConfirmParam, ConfirmPopup } from '../PopUp/ConfirmPopup';
 const { ccclass, property } = _decorator;
 
 @ccclass('RewardLoginItem')
@@ -36,6 +37,15 @@ export class RewardLoginItem extends Component {
         if (canReceive) this.playAnimBorder();
         this.receivedNode.active = rewardNewbie.is_claimed;
         this.clickButton.addAsyncListener(async () => {// them logic neu nhận quà rồi thi ko cho nhấn
+            const endAt = new Date(rewardNewbie.end_at);
+            if (endAt.getTime() <= Date.now()) {
+                const param: ConfirmParam = {
+                    message: "Rất tiếc, phần quà này đã hết hạn.",
+                    title: "Chú ý",
+                };
+                PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
+                return;
+            }
             if (!canReceive || rewardNewbie.is_claimed) return;
             this.clickButton.interactable = false;
             if (onClaimCallback) {

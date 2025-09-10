@@ -342,19 +342,21 @@ export default class Utilities {
     }
 
     static secondsToHMS(seconds: number): string {
-        const hours = Math.floor(seconds / 3600);
+        const days = Math.floor(seconds / (24 * 3600));
+        const hours = Math.floor((seconds % (24 * 3600)) / 3600);
         const minutes = Math.floor((seconds % 3600) / 60);
         const secs = Math.floor(seconds % 60);
 
         const formattedHours = this.addLeadingZeros(hours);
         const formattedMinutes = this.addLeadingZeros(minutes);
         const formattedSeconds = this.addLeadingZeros(secs);
-        if (hours == 0) {
-            return `${formattedMinutes}:${formattedSeconds}`;
+
+        let result = "";
+        if (days > 0) {
+            result += ` 0${days} ngày `;
         }
-        else {
-            return `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
-        }
+        result += `${formattedHours} giờ : ${formattedMinutes} phút : ${formattedSeconds} giây`;
+        return result;
     }
 
     static addLeadingZeros(num: number): string {

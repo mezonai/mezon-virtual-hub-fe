@@ -3,10 +3,9 @@ import { PopupManager } from '../PopUp/PopupManager';
 import { InventoryManager } from '../gameplay/player/inventory/InventoryManager';
 import { SettingManager } from '../core/SettingManager';
 import { UIMissionDetail } from '../gameplay/Mission/UIMissionDetail';
-import { EVENT_NAME } from '../network/APIConstant';
-import { director } from 'cc';
 import { WebRequestManager } from '../network/WebRequestManager';
 import { PopupLoginQuest, PopupLoginQuestParam } from '../PopUp/PopupLoginQuest';
+import { PopupOwnedAnimals } from '../PopUp/PopupOwnedAnimals';
 const { ccclass, property } = _decorator;
 
 @ccclass('PlayerHubController')
@@ -14,6 +13,7 @@ export class PlayerHubController extends Component {
     @property(Button) private btn_UIInventory: Button = null!;
     @property(Button) private btn_UISetting: Button = null!;
     @property(Button) private btn_UIMission: Button = null!;
+    @property(Button) private showOwnedButton: Button;
     @property(Button) private btn_UIDailyReward: Button = null!;
     @property(Node) private redDotNoticeMission: Node = null!;
     @property(Node) private redDotDailyReward: Node = null!;
@@ -34,6 +34,11 @@ export class PlayerHubController extends Component {
             await PopupManager.getInstance().openAnimPopup("UIMission", UIMissionDetail);
             this.btn_UIMission.interactable = true;
         });
+        this.showOwnedButton.addAsyncListener(async () => {
+            this.showOwnedButton.interactable = false;
+            await PopupManager.getInstance().openAnimPopup('PopupOwnedAnimals', PopupOwnedAnimals, { message: "" });
+            this.showOwnedButton.interactable = true;
+        });
         this.btn_UIDailyReward.addAsyncListener(async () => {
             this.btn_UIDailyReward.interactable = false;
             const rewards = await WebRequestManager.instance.getRewardNewbieLoginAsync()
@@ -53,5 +58,9 @@ export class PlayerHubController extends Component {
 
     showNoticeDailyReward(isShow: boolean) {
         this.redDotDailyReward.active = isShow;
+    }
+
+    showUIDailyReward(isShow: boolean){
+        this.btn_UIDailyReward.node.active = isShow;
     }
 }
