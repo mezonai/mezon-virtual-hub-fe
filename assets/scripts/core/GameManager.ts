@@ -42,10 +42,10 @@ export class GameManager extends Component {
     }
 
     async tutorialCacthPet() {
-        await WebRequestManager.instance.putInitQuestAsync();
+        await WebRequestManager.instance.checkUnclaimedQuest();
         const runRewards = async () => {
-            await this.getReward();
             await this.getNewbieReward();
+            await this.getReward();
         };
         if (localStorage.getItem(Constants.TUTORIAL_CACTH_PET) === null) {
             const param: PopupTutorialCatchPetParam = {
