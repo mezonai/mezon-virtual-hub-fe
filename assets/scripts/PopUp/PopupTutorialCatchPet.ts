@@ -35,9 +35,9 @@ export class PopupTutorialCatchPet extends BasePopup {
     @property({ type: PopupOwnedAnimals }) popupOwnedAnimals: PopupOwnedAnimals = null;
     @property({ type: PopupBattlePlace }) popupBattlePlace: PopupBattlePlace = null;
     private timeMoveSelectionIcon: number = 0.75;
-    private timeout: number = 0.5;
+    private timeout: number = 0.1;
     private timeAnimSelection: number = 0.5;
-    private timeTalk: number = 0.25;
+    private timeTalk: number = 0.1;
     private timeFade: number = 1.5;
     private defaultStartDragonIce: Vec3 = new Vec3(406, 0, 0);
     private positionPoint1DragonIce: Vec3 = new Vec3(-80, 40, 0);
