@@ -4,7 +4,7 @@ import APIConstant, { APIConfig, EVENT_NAME } from './APIConstant';
 import UIPopup from '../ui/UI_Popup';
 import ConvetData from '../core/ConvertData';
 import { UserMeManager } from '../core/UserMeManager';
-import { MapData } from '../Interface/DataMapAPI';
+import { MapData, MissionEvent } from '../Interface/DataMapAPI';
 import { ServerManager } from '../core/ServerManager';
 import { PopupSelectionMini, SelectionMiniParam } from '../PopUp/PopupSelectionMini';
 import { PopupManager } from '../PopUp/PopupManager';
@@ -12,6 +12,7 @@ import { RewardItemDTO, RewardNewbieDTO } from '../Model/Item';
 import { GameManager } from '../core/GameManager';
 import { PetDTO } from '../Model/PetDTO';
 import { Constants } from '../utilities/Constants';
+import { MissionEventManager } from '../core/MissionEventManager';
 const { ccclass, property } = _decorator;
 
 @ccclass("WebRequestManager")
@@ -127,13 +128,27 @@ export class WebRequestManager extends Component {
 
     public postGetRewardAsync(): Promise<RewardItemDTO[]> {
         return new Promise((resolve, reject) => {
-            WebRequestManager.instance.putInitQuest(
+            WebRequestManager.instance.postGetReward(
                 (response) => {
                     const rewardData = ConvetData.ConvertReward(response.data) ?? [];
                     resolve(rewardData);
                 },
                 (error) => {
                     resolve([]);
+                }
+            );
+        });
+    }
+
+    public getMissionEventAync(): Promise<MissionEvent> {
+        return new Promise((resolve, reject) => {
+            WebRequestManager.instance.getMissionEvent(
+                (response) => {
+                    MissionEventManager.Set = response.data;
+                    resolve(MissionEventManager.Get);
+                },
+                (error) => {
+                    resolve(null);
                 }
             );
         });

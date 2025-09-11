@@ -176,7 +176,7 @@ export class ServerManager extends Component {
             };
         });
 
-        this.room.onMessage("updateProgresCatchTargetUser", (data) => {
+        this.room.onMessage(MessageTypes.UPDATE_PROGRESS_CATCH_TARGET_USER, (data) => {
             if (GameManager.instance.uiMission) {
                 GameManager.instance.uiMission.getMissionEventData();
             };
@@ -373,7 +373,7 @@ export class ServerManager extends Component {
             if (data == null) return;
             UserManager.instance.NotifyBattle(data);
         });
-        
+
         this.room.onMessage(MessageTypes.NOTIFY_MISSION, (data) => {
             if (data == null || GameManager.instance == null) return;
             GameManager.instance.playerHubController?.onMissionNotice(true);
@@ -630,5 +630,11 @@ export class ServerManager extends Component {
 
     public sendNotEnoughSkillPet(data) {
         this.room.send(MessageTypes.NOT_ENOUGH_SKILL_PET_BATTLE, data);
+    }
+
+    public sendCatchTargetUser(eventId: string) {
+        this.room.send(MessageTypes.CATCH_TARGET_USER, {
+            event_Id: eventId,
+        })
     }
 }

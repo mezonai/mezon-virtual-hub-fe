@@ -11,6 +11,7 @@ import { AudioType, SoundManager } from '../../../core/SoundManager';
 import { ConfirmParam, ConfirmPopup } from '../../../PopUp/ConfirmPopup';
 import { PopupManager } from '../../../PopUp/PopupManager';
 import { PopupSelectionTimeOut, SelectionTimeOutParam, TargetButton } from '../../../PopUp/PopupSelectionTimeOut';
+import { ServerManager } from '../../../core/ServerManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('CatchUser')
@@ -20,20 +21,24 @@ export class CatchUser extends PlayerInteractAction {
     private readonly successTalk = "Yeah! Thành công rồi";
 
     private get IsMissionRunning() {
-        if (MissionEventManager.Get == null || (MissionEventManager.Get != null && MissionEventManager.CompletedMision())) {
+        if (MissionEventManager.Get == null || (MissionEventManager.Get != null && MissionEventManager.isFinishedMission())) {
             return false;
         }
 
         return true;
     }
 
+    async showPopupTargetUser() {
+        const param: ConfirmParam = {
+            message: "Bạn đang là đối tượng mọi người đang tìm kiếm, không thể bắt người khác",
+            title: "Chú Ý",
+        };
+        PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
+    }
+
     protected override invite() {
         if (this.IsMissionRunning && MissionEventManager.meIsTargetUser()) {
-            const param: ConfirmParam = {
-                message: "Bạn đang là đối tượng mọi người đang tìm kiếm, không thể bắt người khác",
-                title: "Chú Ý",
-            };
-            PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
+            this.showPopupTargetUser();
         }
         else {
             const param: SelectionTimeOutParam = {
@@ -47,7 +52,11 @@ export class CatchUser extends PlayerInteractAction {
                     targetButton: TargetButton.LEFT,
                 },
                 onActionButtonLeft: () => {
-                    this.catchUser();
+                    let data = {
+                        targetClientId: this.playerController.myID,
+                        action: this.actionType.toString()
+                    }
+                    this.room.send("p2pAction", data);
                 },
             };
             PopupManager.getInstance().openAnimPopup("PopupSelectionTimeOut", PopupSelectionTimeOut, param);
@@ -89,90 +98,69 @@ export class CatchUser extends PlayerInteractAction {
         super.stop();
     }
 
-    catchUser() {
-        this.sendData();
-    }
+    public handleMissionAction(sender, receiver, isSenderAction: boolean) {
+        const mission = MissionEventManager.Get;
+        if (!sender || !receiver) return;
 
-
-    sendData() {
-        let data = {
-            targetClientId: this.playerController.myID,
-            action: this.actionType.toString()
+        // Cho hiển thị tên tạm
+        if (isSenderAction) {
+            receiver.showNameTemporarily(10);
+        } else {
+            sender.showNameTemporarily(10);
         }
-        this.room.send("p2pAction", data);
-    }
 
-    sendDataCacthUser() {
-        this.room.send("catchTargetUser", {});
+        // Nếu không có mission
+        if (!mission) {
+            this.setAnimNoMission(sender, receiver);
+            return;
+        }
+
+        const targetId = mission.target_user.id;
+        const senderId = sender.userId;
+        const receiverId = receiver.userId;
+
+        // Trường hợp 1: sender là mục tiêu bị truy bắt
+        if (senderId === targetId) {
+            if (MissionEventManager.isFinishedMission()) {// Nhiệm vụ đã kết thúc
+                this.setAnimFinishedMission(receiver, sender);
+            }
+            else {
+                this.showPopupTargetUser();
+            }
+            return;
+        }
+
+        // Trường hợp 2: receiver là mục tiêu bị truy bắt
+        if (receiverId === targetId) {
+            if (MissionEventManager.isFinishedMission()) {// Nhiệm vụ đã kết thúc
+                this.setAnimFinishedMission(sender, receiver);
+                return;
+            }
+            if (MissionEventManager.IsUserCompletedMission(senderId)) {//User là người đã hoàn thành nhiệm vụ rồi
+                this.setAmimFindUserSuccess(sender, receiver);
+                return;
+            }
+            this.setAnimFindUserTargetCompleted(sender, receiver);
+            if (isSenderAction) ServerManager.instance.sendCatchTargetUser(mission.id)
+            return;
+        }
+
+        // Trường hợp 3: Bắt nhầm người
+        this.setAnimFindUserTargetFailed(sender, receiver);
     }
 
     public senderAction(data) {
-        let players = UserManager.instance.Players();
+        const players = UserManager.instance.Players();
         const sender = players.get(data.from);
         const receiver = players.get(data.to);
-        const mission = MissionEventManager.Get;
-        if (!sender || !receiver) return;
-        if (mission) {
-            receiver.showNameTemporarily(10);
-            if (sender.UserId == mission.target_user.id) {
-                if (MissionEventManager.CompletedMision()) {
-                    this.setAnimCompletedMission(receiver, sender);
-                    return;
-                }
-                this.setAnimNoMission(sender, receiver);
-                return;
-            }
-            if (receiver.userId === mission.target_user.id) {
-                if (MissionEventManager.CompletedMision()) {
-                    this.setAnimCompletedMission(sender, receiver);
-                    return;
-                }
-                if (MissionEventManager.IsUserCompletedMission(sender.userId)) {
-                    this.setAmimFindUserSuccess(sender, receiver);
-                    return;
-                }
-                this.setAnimFindUserTargetCompleted(sender, receiver);
-                this.updateUserCompletedData();
-                return;
-            }
-            this.setAnimFindUserTargetFailed(sender, receiver);
-            return;
-        }
-        this.setAnimNoMission(sender, receiver);
+        this.handleMissionAction(sender, receiver, true);
     }
 
     public receiverAction(data) {
-        let players = UserManager.instance.Players();
+        const players = UserManager.instance.Players();
         const sender = players.get(data.from);
         const receiver = players.get(data.to);
-        const mission = MissionEventManager.Get;
-        if (!sender || !receiver) return;
-        if (mission) {
-            sender.showNameTemporarily(10);
-            if (sender.userId === mission.target_user.id) {
-                if (MissionEventManager.CompletedMision()) {
-                    this.setAnimCompletedMission(receiver, sender);
-                    return;
-                }
-                this.setAnimNoMission(sender, receiver);
-                return
-            }
-            if (receiver.userId === mission.target_user.id) {
-                if (MissionEventManager.CompletedMision()) {
-                    this.setAnimCompletedMission(sender, receiver);
-                    return;
-                }
-                if (MissionEventManager.IsUserCompletedMission(sender.userId)) {
-                    this.setAmimFindUserSuccess(sender, receiver);
-                    return;
-                }
-                this.setAnimFindUserTargetCompleted(sender, receiver);
-                return;
-            }
-            this.setAnimFindUserTargetFailed(sender, receiver);
-            return;
-        }
-        this.setAnimNoMission(sender, receiver);
+        this.handleMissionAction(sender, receiver, false);
     }
 
     setAnimNoMission(sender, receiver) {
@@ -203,7 +191,7 @@ export class CatchUser extends PlayerInteractAction {
         sender.zoomBubbleChat(this.sadTalkFailFindPlayer);
     }
 
-    setAnimCompletedMission(sender: PlayerController, receiver: PlayerController) {
+    setAnimFinishedMission(sender: PlayerController, receiver: PlayerController) {
         //receiver.happyAction();
         // sender.happyAction();
         receiver.zoomBubbleChat("Buồn quá thất bại nhiệm vụ rồi");
@@ -224,18 +212,6 @@ export class CatchUser extends PlayerInteractAction {
         if (error?.message) {
             console.error("Error message:", error.message);
         }
-    }
-    private updateUserCompletedData() {
-        WebRequestManager.instance.updateCompletedMission(
-            MissionEventManager.Get.id,
-            {},
-            (response) => this.onGetMissionSuccess(response),
-            (error) => this.onError(error)
-        );
-    }
-
-    private onGetMissionSuccess(respone) {
-        this.sendDataCacthUser();
     }
 }
 

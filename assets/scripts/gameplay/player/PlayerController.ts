@@ -287,7 +287,6 @@ export class PlayerController extends Component {
     }
 
     showName(isShow: boolean) {
-        return;
         if (this.playerNameText) {
             this.playerNameText.node.active = isShow;
         }

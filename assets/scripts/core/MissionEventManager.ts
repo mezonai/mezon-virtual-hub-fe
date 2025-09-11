@@ -29,7 +29,7 @@ export class MissionEventManager {
             return this.missionEvent.completed_users.some(user => user.id === userId);
         }
 
-        public static CompletedMision(): boolean {
+        public static isFinishedMission(): boolean {
             if (this.missionEvent == null || this.missionEvent.completed_users == null) {
                 return true;
             }
