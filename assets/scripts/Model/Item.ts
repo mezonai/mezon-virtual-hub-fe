@@ -142,5 +142,6 @@ export class RewardPecent {
     public normalFood: number;
     public premiumFood: number;
     public ultraFood: number;
+    public spinCost: number;
     public none: number;
 }

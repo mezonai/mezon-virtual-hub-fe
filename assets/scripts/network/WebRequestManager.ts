@@ -8,7 +8,7 @@ import { MapData } from '../Interface/DataMapAPI';
 import { ServerManager } from '../core/ServerManager';
 import { PopupSelectionMini, SelectionMiniParam } from '../PopUp/PopupSelectionMini';
 import { PopupManager } from '../PopUp/PopupManager';
-import { RewardItemDTO, RewardNewbieDTO } from '../Model/Item';
+import { RewardItemDTO, RewardNewbieDTO, RewardPecent } from '../Model/Item';
 import { GameManager } from '../core/GameManager';
 import { PetDTO } from '../Model/PetDTO';
 import { Constants } from '../utilities/Constants';
@@ -133,6 +133,21 @@ export class WebRequestManager extends Component {
                 },
                 (error) => {
                     resolve([]);
+                }
+            );
+        });
+    }
+
+    public getRewardsPercentAsync(): Promise<RewardPecent> {
+        return new Promise((resolve, reject) => {
+            WebRequestManager.instance.getRewardsPercent(
+                (response) => {
+                    const rewardPercent = ConvetData.convertRewardsPercent(response.data);
+                    console.log("rewardPercent ", rewardPercent);
+                    resolve(rewardPercent);
+                },
+                (error) => {
+                    resolve(null);
                 }
             );
         });
