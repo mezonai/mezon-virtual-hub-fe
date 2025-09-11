@@ -153,6 +153,19 @@ export class WebRequestManager extends Component {
         });
     }
 
+    public getUserProfileAsync(): Promise<boolean> {
+        return new Promise((resolve, reject) => {
+            WebRequestManager.instance.getUserProfile(
+                (response) => {
+                    resolve(true);
+                },
+                (error) => {
+                    resolve(false);
+                }
+            );
+        });
+    }
+
     public getGameConfig(successCallback, errorCallback) {
         APIManager.getData(this.combineWithSlash(APIConstant.CONFIG, APIConstant.GAME_CONFIG), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, false);
     }
