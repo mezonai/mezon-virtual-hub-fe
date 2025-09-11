@@ -19,7 +19,6 @@ export class UIManager extends Component {
     @property({ type: Node }) bigPopupNode: Node;
     @property({ type: Node }) fadePopupNode: Node;
     @property({ type: Button }) outmapButton: Button;
-    @property({ type: Button }) showOwnedButton: Button;
     @property({ type: ToolSpawnPet }) toolcreatePet: ToolSpawnPet;
     @property({ type: PopupBattlePet }) batteScene: PopupBattlePet;
     private _popup: UIPopup = null;
@@ -61,11 +60,6 @@ export class UIManager extends Component {
             UIManager._instance = this;
         }
         view.on('canvas-resize', UIManager.Instance.onResize.bind(UIManager.Instance));
-        this.showOwnedButton.addAsyncListener(async () => {
-            this.showOwnedButton.interactable = false;
-            await PopupManager.getInstance().openAnimPopup('PopupOwnedAnimals', PopupOwnedAnimals, { message: "" });
-            this.showOwnedButton.interactable = true;
-        });
         this.batteScene.node.active = false;
     }
 

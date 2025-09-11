@@ -42,10 +42,10 @@ export class GameManager extends Component {
     }
 
     async tutorialCacthPet() {
-        await WebRequestManager.instance.putInitQuestAsync();
+        await WebRequestManager.instance.checkUnclaimedQuest();
         const runRewards = async () => {
-            await this.getReward();
             await this.getNewbieReward();
+            await this.getReward();
         };
         if (localStorage.getItem(Constants.TUTORIAL_CACTH_PET) === null) {
             const param: PopupTutorialCatchPetParam = {
@@ -81,7 +81,7 @@ export class GameManager extends Component {
     async getNewbieReward() {
         const rewards = await WebRequestManager.instance.getRewardNewbieLoginAsync();
         if (!rewards || rewards.length === 0) return;
-
+        GameManager.instance.playerHubController.showUIDailyReward(true);
         const today = new Date().toISOString().split('T')[0]; // yyyy-mm-dd
         const lastLogged = localStorage.getItem(Constants.SHOW_DAILY_QUEST_FIRST_DAY);
         if (lastLogged !== today) {
