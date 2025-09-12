@@ -1,5 +1,5 @@
 import { MapData } from "../Interface/DataMapAPI";
-import { Food, Item, PetReward, QuestType, RewardItemDTO, RewardNewbieDTO, RewardType } from "../Model/Item";
+import { Food, Item, PetReward, QuestType, RewardItemDTO, RewardNewbieDTO, RewardPecent, RewardType } from "../Model/Item";
 import { AnimalElementString, AnimalRarity, Element, PetBattleInfo, PetDTO, PlayerBattle, SkillBattleInfo, Species, TypeSkill } from "../Model/PetDTO";
 
 export default class ConvetData {
@@ -258,4 +258,17 @@ export default class ConvetData {
         }
         return Element.Normal;
     }
+    
+    public static convertRewardsPercent(response: any): RewardPecent {
+        return {
+            item: response.item,
+            gold: response.gold,
+            normalFood: response.normalFood,
+            premiumFood: response.premiumFood,
+            ultraFood: response.ultraFood,
+            spinCost: response.spinCost,
+            none: response.none
+        };
+    }
+
 }
