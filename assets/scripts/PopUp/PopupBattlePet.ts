@@ -20,6 +20,8 @@ import { AnimalType } from '../animal/AnimalController';
 import { PopupPetElementChart } from './PopupPetElementChart';
 import { BGMType, SoundManager } from '../core/SoundManager';
 import { Label } from 'cc';
+import { PopupSelectionMini, SelectionMiniParam } from './PopupSelectionMini';
+import Utilities from '../utilities/Utilities';
 const { ccclass, property } = _decorator;
 @ccclass('PlayerBattleStats')
 export class PlayerBattleStats {
@@ -51,7 +53,6 @@ export class PopupBattlePet extends Component {
     targetClient: PlayerBattle = null;
     clientIdInRoom: string = "";
 
-
     setData(param?: BatllePetParam) {
         this.Init(param);
         this.addListenerButton();
@@ -64,8 +65,20 @@ export class PopupBattlePet extends Component {
             await this.slideSkillButtons.slide(true, 0.3);
         });
         this.surrenderButton.addAsyncListener(async () => {
-            ServerManager.instance.sendSurrenderBattle();
-            await Constants.waitUntil(() => !this.node.activeInHierarchy);
+            const param: SelectionMiniParam = {
+                title: "Chú ý",
+                content: `Bạn có chắc chắn muốn đầu hàng đối thủ!!!`,
+                textButtonLeft: "OK",
+                textButtonRight: "Thôi",
+                textButtonCenter: "",
+                onActionButtonLeft: async () => {
+                    ServerManager.instance.sendSurrenderBattle();
+                },
+                onActionButtonRight: () => {
+
+                },
+            };
+            await PopupManager.getInstance().openAnimPopup("PopupSelectionMini", PopupSelectionMini, param);
         });
         this.hideSkillButton.addAsyncListener(async () => {
             this.hideSkillButton.interactable = false;
@@ -423,6 +436,7 @@ export class PopupBattlePet extends Component {
             expAddedPerPet: expReceived,
         };
         this.closeBattle();
+        await PopupManager.getInstance().closeAllPopups();
         await PopupManager.getInstance().openAnimPopup('PopupWinLoseBattle', PopupWinLoseBattle, param);
         SoundManager.instance.stopBgmLoop();
         SoundManager.instance.playBgm(BGMType.Game);
