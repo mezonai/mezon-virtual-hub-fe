@@ -52,7 +52,7 @@ export class PopupBattlePet extends Component {
     myClient: PlayerBattle = null;
     targetClient: PlayerBattle = null;
     clientIdInRoom: string = "";
-
+    private surrenderPopup: PopupSelectionMini | null = null;
 
     setData(param?: BatllePetParam) {
         this.Init(param);
@@ -80,7 +80,7 @@ export class PopupBattlePet extends Component {
 
                 },
             };
-            PopupManager.getInstance().openAnimPopup("PopupSelectionMini", PopupSelectionMini, param);
+            this.surrenderPopup = await PopupManager.getInstance().openAnimPopup("PopupSelectionMini", PopupSelectionMini, param);
         });
         this.hideSkillButton.addAsyncListener(async () => {
             this.hideSkillButton.interactable = false;
@@ -428,6 +428,11 @@ export class PopupBattlePet extends Component {
     }
 
     public async battleFinished(data) {
+        if (this.surrenderPopup?.node.isValid && this.surrenderPopup.node.activeInHierarchy) {
+            PopupManager.getInstance().closePopup(this.surrenderPopup.node.uuid);
+            this.surrenderPopup = null;
+        }
+
         const { id, expReceived, dimondChallenge, currentPets, isWinner } = data;
         await Constants.waitUntil(() => this.myClient != null);
         const param: WinLoseBattleParam = {
