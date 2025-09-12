@@ -128,7 +128,7 @@ export class WebRequestManager extends Component {
         return new Promise((resolve, reject) => {
             WebRequestManager.instance.postGetReward(
                 (response) => {
-                    const rewardData = ConvetData.ConvertReward(response.data) ?? [];
+                    const rewardData = ConvetData.ConvertReward(response.data.rewards) ?? [];
                     resolve(rewardData);
                 },
                 (error) => {
