@@ -52,7 +52,6 @@ export class PopupBattlePet extends Component {
     myClient: PlayerBattle = null;
     targetClient: PlayerBattle = null;
     clientIdInRoom: string = "";
-    private surrenderPopup: PopupSelectionMini | null = null;
 
     setData(param?: BatllePetParam) {
         this.Init(param);
@@ -74,13 +73,12 @@ export class PopupBattlePet extends Component {
                 textButtonCenter: "",
                 onActionButtonLeft: async () => {
                     ServerManager.instance.sendSurrenderBattle();
-                    await Constants.waitUntil(() => !this.node.activeInHierarchy);
                 },
                 onActionButtonRight: () => {
 
                 },
             };
-            this.surrenderPopup = await PopupManager.getInstance().openAnimPopup("PopupSelectionMini", PopupSelectionMini, param);
+            await PopupManager.getInstance().openAnimPopup("PopupSelectionMini", PopupSelectionMini, param);
         });
         this.hideSkillButton.addAsyncListener(async () => {
             this.hideSkillButton.interactable = false;
@@ -428,11 +426,6 @@ export class PopupBattlePet extends Component {
     }
 
     public async battleFinished(data) {
-        if (this.surrenderPopup?.node.isValid && this.surrenderPopup.node.activeInHierarchy) {
-            PopupManager.getInstance().closePopup(this.surrenderPopup.node.uuid);
-            this.surrenderPopup = null;
-        }
-
         const { id, expReceived, dimondChallenge, currentPets, isWinner } = data;
         await Constants.waitUntil(() => this.myClient != null);
         const param: WinLoseBattleParam = {
@@ -443,6 +436,7 @@ export class PopupBattlePet extends Component {
             expAddedPerPet: expReceived,
         };
         this.closeBattle();
+        await PopupManager.getInstance().closeAllPopups();
         await PopupManager.getInstance().openAnimPopup('PopupWinLoseBattle', PopupWinLoseBattle, param);
         SoundManager.instance.stopBgmLoop();
         SoundManager.instance.playBgm(BGMType.Game);
