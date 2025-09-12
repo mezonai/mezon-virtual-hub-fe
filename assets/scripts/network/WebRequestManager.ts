@@ -42,6 +42,23 @@ export class WebRequestManager extends Component {
         this.loadingPanel.active = show;
     }
 
+    public async loginAsync(appData: string): Promise<string> {
+        return new Promise((resolve, reject) => {
+            let loginData = {
+                "web_app_data": appData,
+            }
+            WebRequestManager.instance.login(
+                loginData,
+                (response) => {
+                    resolve(response.data.accessToken);
+                },
+                (error) => {
+                    resolve("");
+                }
+            );
+        });
+    }
+
     public async GetMapInfo(): Promise<MapData[]> {
         return new Promise((resolve, reject) => {
             this.toggleLoading(true);
