@@ -90,7 +90,7 @@ export class HUDBattlePet extends Component {
 
     public async heal(healNumber: number, currentHp: number, maxHp: number): Promise<void> {
         // Tính toán máu mới
-        currentHp = Math.min(maxHp, currentHp + healNumber);
+        currentHp = Math.min(maxHp, currentHp);
         const newRatio = currentHp / maxHp;
 
         // Trả về Promise hoàn tất sau khi tween xong
