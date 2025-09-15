@@ -28,15 +28,9 @@ export class TabController extends Component {
         [InventoryType.ITEM, 'Item'],
     ]);
 
-    private tabMissionMappingString: Map<string, string> = new Map([
-        [MissionType.DAILY, 'Ngày'],
-        [MissionType.WEEKLY, 'Tuần'],
-    ]);
-
     protected reset() {
         this.scrollView.content.setPosition(new Vec3(0, 0, 0));
     }
-
 
     protected onEnable(): void {
         let toggles = this.toggleContainer.getComponentsInChildren(Toggle);
@@ -58,9 +52,6 @@ export class TabController extends Component {
             }
             else if (this.tabNameMappingString.has(tab)) {
                 tabName = this.tabNameMappingString.get(tab);
-            }
-            else if (this.tabMissionMappingString.has(tab)) {
-                tabName = this.tabMissionMappingString.get(tab);
             }
 
             tabItem.name = tab.toString();
