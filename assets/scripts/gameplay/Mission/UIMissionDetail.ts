@@ -11,6 +11,7 @@ import { ScrollView } from 'cc';
 import { TabController } from '../../ui/TabController';
 import { EVENT_NAME } from '../../network/APIConstant';
 import { GameManager } from '../../core/GameManager';
+import { Constants } from '../../utilities/Constants';
 const { ccclass, property } = _decorator;
 
 @ccclass('UIMissionDetail')
@@ -19,20 +20,41 @@ export class UIMissionDetail extends BasePopup {
   @property(Node) content: Node = null!;
   @property(Prefab) itemPrefab: Prefab = null!;
   @property(Button) btnClose: Button = null!;
-  @property({ type: TabController }) tabController: TabController = null;
+  @property(Toggle) toggleDaily: Toggle = null!;
+  @property(Toggle) toggleWeekly: Toggle = null!;
+  @property(Node) contentDailyParent: Node = null!;
+  @property(Node) contentWeeklyParent: Node = null!;
+  @property(Node) contentDaily: Node = null!;
+  @property(Node) contentWeekly: Node = null!;
+  @property(Node) noticeDaily: Node = null!;
+  @property(Node) noticeWeekly: Node = null!;
+
   private groupedItems: Record<string, MissionDTO[]> = null;
-  private categories: string[] = [];
   private allMissions: MissionListDTO;
 
-  public init(param?: any): void {
-    this.btnClose.addAsyncListener(async () => {
-      this.btnClose.interactable = false;
-      if (this.allMissions) await this.checkMissionNotice(this.allMissions);
-      await PopupManager.getInstance().closeAllPopups();
-    });
+  public init(): void {
+    this.btnClose.addAsyncListener(async () => {this.onCloseClick();});
+    this.toggleDaily.node.on(Toggle.EventType.TOGGLE, this.onDailyTab, this);
+    this.toggleWeekly.node.on(Toggle.EventType.TOGGLE, this.onWeeklyTab, this);
     this.GetMission();
   }
 
+  private async onCloseClick() {
+    this.btnClose.interactable = false;
+    if (this.allMissions) {
+      this.checkMissionNotice(this.allMissions);
+    }
+    await PopupManager.getInstance().closeAllPopups();
+    this.btnClose.interactable = true;
+  }
+
+  private onDailyTab() {
+    this.onTabChange(MissionType.DAILY);
+  }
+
+  private onWeeklyTab() {
+    this.onTabChange(MissionType.WEEKLY);
+  }
   private GetMission() {
     WebRequestManager.instance.getMission(
       {},
@@ -44,28 +66,35 @@ export class UIMissionDetail extends BasePopup {
   private showUIMision(missionListDTO: MissionListDTO) {
     this.allMissions = missionListDTO;
     this.groupedItems = this.groupByCategory(missionListDTO);
-    this.categories = [];
-    for (const category in this.groupedItems) {
-      this.categories.push(category);
-    }
-    this.tabController.initTabData(this.categories);
-    this.tabController.node.on(EVENT_NAME.ON_CHANGE_TAB, (tabName) => {
-      this.onTabChange(tabName);
-    });
-    this.onTabChange(this.categories[0]);
+    this.updateTabNotices(missionListDTO);
+
+    this.toggleDaily.isChecked = true;
+    this.onTabChange(MissionType.DAILY);
+  }
+
+  private getUnclaimedStatus(missionList: MissionListDTO): {
+    daily: boolean;
+    weekly: boolean;
+    any: boolean;
+  } {
+    if (!missionList) return { daily: false, weekly: false, any: false };
+
+    const daily = missionList.daily.some((m) => m.is_completed && !m.is_claimed);
+    const weekly = missionList.weekly.some((m) => m.is_completed && !m.is_claimed);
+
+    return { daily, weekly, any: daily || weekly,};
   }
 
   private checkMissionNotice(missionList: MissionListDTO) {
-    if (!missionList) return;
-    const hasUnclaimedDaily = missionList.daily.some(
-      (m) => m.is_completed && !m.is_claimed
-    );
-    const hasUnclaimedWeekly = missionList.weekly.some(
-      (m) => m.is_completed && !m.is_claimed
-    );
+    const status = this.getUnclaimedStatus(missionList);
+    GameManager.instance.playerHubController.onMissionNotice(status.any);
+  }
 
-    const hasUnclaimed = hasUnclaimedDaily || hasUnclaimedWeekly;
-    GameManager.instance.playerHubController.onMissionNotice(hasUnclaimed);
+  private updateTabNotices(missionList: MissionListDTO) {
+    const status = this.getUnclaimedStatus(missionList);
+
+    if (this.noticeDaily) this.noticeDaily.active = status.daily;
+    if (this.noticeWeekly) this.noticeWeekly.active = status.weekly;
   }
 
   private onApiError(error) {
@@ -76,10 +105,15 @@ export class UIMissionDetail extends BasePopup {
     PopupManager.getInstance().openPopup("ConfirmPopup", ConfirmPopup, param);
   }
 
-  private async onTabChange(tabName) {
-    ObjectPoolManager.instance.returnArrayToPool(this.content.children);
-    await this.spawnMissions(this.groupedItems[tabName]);
-    this.ResetPositionScrollBar();
+  private async onTabChange(missonType: MissionType) {
+    let targetContent = missonType == MissionType.WEEKLY ?  this.contentWeekly : this.contentDaily;
+    let missions = this.groupedItems[missonType] || [];
+    this.contentDailyParent.active = missonType == MissionType.DAILY;
+    this.contentWeeklyParent.active = missonType == MissionType.WEEKLY;
+    if (targetContent.children.length === 0) {
+      await this.spawnMissions(missions, targetContent);
+      this.ResetPositionScrollBar();
+    }    
   }
 
   private ResetPositionScrollBar() {
@@ -90,25 +124,32 @@ export class UIMissionDetail extends BasePopup {
     }, 0.05);
   }
 
-  private async spawnMissions(missions: any[]) {
-    missions.forEach((mission) => {
-      let itemNode = ObjectPoolManager.instance.spawnFromPool(
-        this.itemPrefab.name
-      );
+  private async spawnMissions(missions: MissionDTO[], parent: Node) {
+    for (let i = 0; i < missions.length; i++) {
+      let itemNode = ObjectPoolManager.instance.spawnFromPool(this.itemPrefab.name);
       itemNode.active = true;
-      itemNode.setParent(this.content);
+      itemNode.setParent(parent);
       const comp = itemNode.getComponent(ItemMissionDetail);
       if (comp) {
-        comp.setData(mission, this.claimReward.bind(this));
+        comp.setData(missions[i], this.claimReward.bind(this));
       }
-    });
+    }
+    await Constants.waitUntil(() => this.node == null || parent == null || parent.children.length == missions.length);
   }
 
   private async claimReward(missionId: string) {
-    const completed = await WebRequestManager.instance.claimRewardAsync(
-      missionId
-    );
-    return completed;
+      const completed = await WebRequestManager.instance.claimRewardAsync(missionId);
+      if (completed) {
+        const allMissions = [...this.allMissions.daily, ...this.allMissions.weekly];
+        const mission = allMissions.find(m => m.id === missionId);
+        if (mission) {
+          mission.is_claimed = true;
+        }
+
+        this.updateTabNotices(this.allMissions);
+        this.checkMissionNotice(this.allMissions);
+      }
+  return completed;
   }
 
   private groupByCategory(
