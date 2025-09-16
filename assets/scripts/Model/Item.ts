@@ -1,5 +1,6 @@
 import { _decorator, SpriteFrame } from "cc";
 import { LocalItemDataConfig } from "./LocalItemConfig";
+import { AnimalRarity, PetDTO, Species, Element } from "./PetDTO";
 
 export class BaseInventoryDTO {
 
@@ -46,12 +47,31 @@ export class Food extends BaseInventoryDTO {
     public iconSF: SpriteFrame[] = [];
 }
 
+export class PetReward {
+    public rarity: AnimalRarity;
+    public id: string;
+    public type: Element;
+    public species: Species;
+}
+
 export class RewardItemDTO {
     public type: RewardType;
-    public item?: Item; 
+    public item?: Item;
     public food?: Food;
+    public pet?: PetReward;
     public quantity?: number;
-    public amount?: number;
+}
+
+export class RewardNewbieDTO {
+    public id: string;
+    public quest_id: string;
+    public end_at: string;
+    public name: string;
+    public description?: string;
+    public is_claimed: boolean;
+    public is_available: boolean;
+    public quest_type: QuestType;
+    public rewards: RewardItemDTO[] = [];
 }
 
 export interface RewardResponse {
@@ -64,6 +84,7 @@ export enum RewardType {
     GOLD = 'gold',
     DIAMOND = 'diamond',
     FOOD = 'food',
+    PET = 'pet',
 }
 
 export enum ItemType {
@@ -96,11 +117,16 @@ export enum PurchaseMethod {
     SLOT = 'slot',
 }
 
-export enum ItemGenderFilter{
+export enum ItemGenderFilter {
     ALL = 'ALL',
     FEMALE = 'female',
     MALE = 'male',
     UNISEX = 'unisex'
+}
+
+export enum QuestType {
+    NEWBIE_LOGIN,
+    NEWBIE_LOGIN_SPECIAL,
 }
 
 export interface RewardDisplayData {
@@ -110,7 +136,7 @@ export interface RewardDisplayData {
     isItem?: boolean;
 }
 
-export class RewardPecent{
+export class RewardPecent {
     public item: number;
     public gold: number;
     public normalFood: number;

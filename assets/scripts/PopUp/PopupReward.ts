@@ -22,7 +22,7 @@ export enum RewardStatus {
 @ccclass('PopupReward')
 export class PopupReward extends BasePopup {
     @property(Button) confirmButton: Button = null;
-    @property(RichText) contentReward: RichText = null!;
+    @property(Label) contentReward: Label = null!;
     @property({ type: RichText }) title: RichText = null;
     @property(Label) quantity: Label = null!;
     @property(Sprite) icon: Sprite = null!;

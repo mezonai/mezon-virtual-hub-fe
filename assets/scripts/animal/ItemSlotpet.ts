@@ -64,14 +64,14 @@ export class ItemSlotPet extends Component {
         }
     }
 
-    setDataSlotSkill(skillData: PetDTO, slotSkillFighting: ItemSlotPet[] = []) {
+    setDataSlotSkill(pet: PetDTO, slotPet: ItemSlotPet[] = []) {
         this.resetpet();
         let newitemSkill = ObjectPoolManager.instance.spawnFromPool(this.itemSkillPrefab.name);
         newitemSkill.setParent(this.parentSkill);
         this.itemPlacePet = newitemSkill.getComponent(ItemPlacePet);
         newitemSkill.position = Vec3.ZERO;
         if (this.itemPlacePet != null) {
-            this.itemPlacePet.setData(skillData, this.interactSlot, slotSkillFighting, this.parentSkillCanMove);
+            this.itemPlacePet.setData(pet, this.interactSlot, slotPet, this.parentSkillCanMove);
             if (this.interactSlot === InteractSlot.CLICK && this.onClickCallback) {
                 this.itemPlacePet.node.on(Node.EventType.TOUCH_END, () => {
                     this.onClickCallback?.();

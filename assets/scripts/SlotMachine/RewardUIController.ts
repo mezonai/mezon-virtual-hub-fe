@@ -119,7 +119,7 @@ export class RewardUIController extends BaseInventoryManager {
                         case RewardType.DIAMOND:
                             {
                                 this.setupMoneyReward(uiItem, reward.type)
-                                uiItem.setupGoldOrDiamond(reward.amount);
+                                uiItem.setupGoldOrDiamond(reward.quantity);
                                 break;
                             }
                         case RewardType.FOOD: {
@@ -162,7 +162,7 @@ export class RewardUIController extends BaseInventoryManager {
             let message = '';
             if (reward) {
                 if (reward.type === RewardType.GOLD) {
-                    message = `Bạn nhận được +${reward.amount}`;
+                    message = `Bạn nhận được +${reward.quantity}`;
                     this.isCoin = true;
                 }
                 else if (reward.type === RewardType.ITEM && reward.item) {

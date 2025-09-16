@@ -61,7 +61,7 @@ export class PopupOwnedAnimals extends BasePopup {
     private defaultLayer = Layers.Enum.NONE;
     //Bring Pet
     @property({ type: Button }) summonButton: Button = null;
-    private animalSlots: ItemAnimalSlot[] = [];
+    animalSlots: ItemAnimalSlot[] = [];
     private animalBrings: PetDTO[] = [];
     private animalBattle: PetDTO[] = [];
     private bringPetIdsInit: string[] = [];
@@ -303,7 +303,7 @@ export class PopupOwnedAnimals extends BasePopup {
             if (hasPetBringUpdate) {
                 await this.updateListPetFollowUserAsync(petBring);
             }
-            await this.UpdateMyPets();
+            await WebRequestManager.instance.getMyPetAsync();// gọi để cập nhật Pet
         }
         this.closePopup();
     }
@@ -390,15 +390,6 @@ export class PopupOwnedAnimals extends BasePopup {
             );
         });
     }
-
-    public async UpdateMyPets(): Promise<void> {
-        return await new Promise((resolve, reject) => {
-            WebRequestManager.instance.getMyPetData(
-                (response) => resolve(),
-                (error) => reject(error)
-            );
-        });
-    }
     public init() {
         this.closeButton.addAsyncListener(async () => {
             this.closeButton.interactable = false;
@@ -427,7 +418,7 @@ export class PopupOwnedAnimals extends BasePopup {
         });
         this.petChartButton.addAsyncListener(async () => {
             this.petChartButton.interactable = false;
-            await PopupManager.getInstance().openAnimPopup("PopupPetElementChart", PopupPetElementChart,{ widget: { horizontalCenter: 0, verticalCenter: 0 }} as PopupPetChartParam);
+            await PopupManager.getInstance().openAnimPopup("PopupPetElementChart", PopupPetElementChart, { widget: { horizontalCenter: 0, verticalCenter: 0 } } as PopupPetChartParam);
             this.petChartButton.interactable = true;
         });
         this.onGetMyPet(UserMeManager.MyPets());

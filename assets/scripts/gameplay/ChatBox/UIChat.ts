@@ -2,6 +2,9 @@ import { _decorator, Button, Component, EditBox, game, instantiate, Layout, Pref
 import { UserManager } from '../../core/UserManager';
 import { ObjectPoolManager } from '../../pooling/ObjectPoolManager';
 import { UIManager } from '../../core/UIManager';
+import { PopupGetPet, PopupGetPetParam } from '../../PopUp/PopupGetPet';
+import { PopupManager } from '../../PopUp/PopupManager';
+import { PetDTO, SkillCode } from '../../Model/PetDTO';
 
 const { ccclass, property } = _decorator;
 
@@ -39,7 +42,7 @@ export class UIChat extends Component {
             this.editBox.string = "";
             game.canvas.focus();
             this.isShowUI(false);
-            UIManager.Instance.toolcreatePet.node.active = true
+            // UIManager.Instance.toolcreatePet.node.active = true
             return;
         }
         if (message != "") UserManager.instance.sendMessageChat(message);

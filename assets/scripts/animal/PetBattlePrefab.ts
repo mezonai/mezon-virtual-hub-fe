@@ -15,18 +15,29 @@ export class PetBattlePrefab extends Component {
     @property({ type: [Node] }) skillImagesActive: Node[] = [];
     currentPet: PetBattleInfo = null;
     private peakHeight: number = 35;
-    setDataPet(pet: PetBattleInfo, slot: number) {
-        if (pet == null) return;
-        this.currentPet = pet;
-        const flipX = slot < 1 ? -1 : 1;
-        for (const x of this.speciesMap) {
-            if (x.species === pet.species) {
-                const scale = x.nodeSpritePet.scale;
-                x.nodeSpritePet.setScale(new Vec3(Math.abs(scale.x) * flipX, scale.y, scale.z));
-                x.nodeSpritePet.active = true;
-                break;
+    setDataPet(pet: PetBattleInfo, slot: number): Promise<void> {
+        return new Promise((resolve) => {
+            if (pet == null) {
+                resolve();
+                return;
             }
-        }
+
+            this.currentPet = pet;
+            const flipX = slot < 1 ? -1 : 1;
+
+            for (const x of this.speciesMap) {
+                if (x.species === pet.species) {
+                    const scale = x.nodeSpritePet.scale;
+                    x.nodeSpritePet.setScale(
+                        new Vec3(Math.abs(scale.x) * flipX, scale.y, scale.z)
+                    );
+                    x.nodeSpritePet.active = true;
+                    break;
+                }
+            }
+
+            resolve();
+        });
     }
 
     resetPet() {

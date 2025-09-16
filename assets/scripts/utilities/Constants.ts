@@ -5,6 +5,7 @@ import { MapData } from "../Interface/DataMapAPI";
 import { FoodType, RewardItemDTO, RewardType } from "../Model/Item";
 import { RewardNewType } from "../PopUp/PopupReward";
 import { RewardItem } from "../SlotMachine/RewardItem";
+import Utilities from "./Utilities";
 
 export class Constants {
 
@@ -16,6 +17,7 @@ export class Constants {
     public static readonly WiSH_FEE: number = 5;
     public static TUTORIAL_CACTH_PET = "tutorialCatchPet";
     public static NOTICE_TRANSFER_DIAMOND = "dont_show_buy_notice";
+    public static SHOW_DAILY_QUEST_FIRST_DAY = "show_daily_quest_first_day";
 
     public static convertKeyOffice(positionTarget: OfficePosition): string {
         switch (positionTarget) {
@@ -118,6 +120,28 @@ export class Constants {
                 }
             default:
                 return RewardNewType.GOLD; // fallback
+        }
+    }
+
+    public static registCountDown(time: number, callbackCountDown: (timeText: string) => void, callBackDone?: () => void): number {
+        callbackCountDown(Utilities.secondsToHMS(time));
+
+        const id = setInterval(() => {
+            time--;
+            if (time < 0) {
+                clearInterval(id);
+                if (callBackDone) callBackDone();
+                return;
+            }
+            callbackCountDown(Utilities.secondsToHMS(time));
+        }, 1000);
+
+        return id;
+    }
+
+    public static clearCountDown(id: number) {
+        if (id) {
+            clearInterval(id);
         }
     }
 }

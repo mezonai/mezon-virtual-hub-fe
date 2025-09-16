@@ -18,6 +18,7 @@ import { MessageTypes } from '../utilities/MessageTypes';
 import { ConfirmParam, ConfirmPopup } from '../PopUp/ConfirmPopup';
 import { PopupSelectionMini, SelectionMiniParam } from '../PopUp/PopupSelectionMini';
 import { WebRequestManager } from '../network/WebRequestManager';
+import { director } from 'cc';
 
 @ccclass('ServerManager')
 export class ServerManager extends Component {
@@ -372,6 +373,11 @@ export class ServerManager extends Component {
             if (data == null) return;
             UserManager.instance.NotifyBattle(data);
         });
+        
+        this.room.onMessage(MessageTypes.NOTIFY_MISSION, (data) => {
+            if (data == null || GameManager.instance == null) return;
+            GameManager.instance.playerHubController?.onMissionNotice(true);
+        });
     }
 
     public async joinBattleRoom(roomId: string): Promise<void> {
@@ -430,6 +436,24 @@ export class ServerManager extends Component {
             }
             if (UserManager.instance == null) return;
             UserManager.instance.disconnected("Đối Thủ Bị Mất Kết Nôi");
+        });
+
+        this.battleRoom.onMessage(MessageTypes.TIME_REMAINING_USING_SKILL, (data) => {
+            if (data == null) {
+                this.leaveBattleRoom();
+                return;
+            }
+            if (UserManager.instance == null) return;
+            UserManager.instance.remainingUsingSkill(data);
+        });
+
+        this.battleRoom.onMessage(MessageTypes.AUTO_ATTACK, (data) => {
+            if (data == null) {
+                this.leaveBattleRoom();
+                return;
+            }
+            if (UserManager.instance == null) return;
+            UserManager.instance.autoAttack(data);
         });
 
         this.battleRoom.onMessage(MessageTypes.NOTIFY_BATTLE, (data) => {
@@ -570,6 +594,11 @@ export class ServerManager extends Component {
     public sendSurrenderBattle() {
         if (this.battleRoom == null) return;
         this.battleRoom.send(MessageTypes.SURRENDER_BATTLE, { message: "", });
+    }
+
+    public sendEndTurn() {
+        if (this.battleRoom == null) return;
+        this.battleRoom.send(MessageTypes.CONFIRM_END_TURN, { message: "", });
     }
 
     public async leaveBattleRoom(): Promise<void> {

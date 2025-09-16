@@ -7,7 +7,9 @@ import { PopupManager } from '../PopUp/PopupManager';
 import { PopupReward, PopupRewardParam, RewardNewType, RewardStatus } from '../PopUp/PopupReward';
 import { PopupTutorialCatchPet, PopupTutorialCatchPetParam } from '../PopUp/PopupTutorialCatchPet';
 import { Constants } from '../utilities/Constants';
-import { FoodType, RewardType } from '../Model/Item';
+import { FoodType, RewardNewbieDTO, RewardType } from '../Model/Item';
+import { PopupLoginQuest, PopupLoginQuestParam } from '../PopUp/PopupLoginQuest';
+import { PlayerHubController } from '../ui/PlayerHubController';
 
 const { ccclass, property } = _decorator;
 
@@ -19,6 +21,7 @@ export class GameManager extends Component {
     }
     @property({ type: UIChat }) uiChat: UIChat = null;
     @property({ type: UIMission }) uiMission: UIMission = null;
+    @property({ type: PlayerHubController }) playerHubController: PlayerHubController = null;
 
     protected onLoad(): void {
         if (GameManager._instance == null) {
@@ -28,8 +31,8 @@ export class GameManager extends Component {
 
     public init() {
         this.uiMission.getMissionEventData();
-        this.tutorialCacthPet();
         this.resetNoticeTrandferDiamon();
+        this.tutorialCacthPet();
     }
 
     resetNoticeTrandferDiamon() {
@@ -38,54 +41,68 @@ export class GameManager extends Component {
         }
     }
 
-    tutorialCacthPet() {
-        // if (localStorage.getItem(Constants.TUTORIAL_CACTH_PET) === null) {
-        //     const param: PopupTutorialCatchPetParam = {
-        //         onActionCompleted: () => {
-        //             this.getReward();
-        //         },
-        //     };
-        //     PopupManager.getInstance().openPopup("PopupTutorialCatchPet", PopupTutorialCatchPet, param);
-        // }
-        // else {
-        //     this.getReward();
-        // }
-        this.getReward();
+    async tutorialCacthPet() {
+        await WebRequestManager.instance.checkUnclaimedQuest();
+        const runRewards = async () => {
+            await this.getNewbieReward();
+            await this.getReward();
+        };
+        if (localStorage.getItem(Constants.TUTORIAL_CACTH_PET) === null) {
+            const param: PopupTutorialCatchPetParam = {
+                onActionCompleted: async () => {
+                    await runRewards();
+                },
+            };
+            await PopupManager.getInstance().openPopup("PopupTutorialCatchPet", PopupTutorialCatchPet, param);
+            return;
+        }
+        await runRewards();
     }
 
-    getReward() {
-        WebRequestManager.instance.postGetReward(
-            (response) => this.handleGetReward(response),
-            (error) => this.onError(error)
-        );
-    }
-
-    protected onDestroy(): void {
-        GameManager._instance = null;
-    }
-
-
-    async handleGetReward(response: any) {
-        const rewardsData = response?.data?.rewards ?? [];
-        const rewardItems = ConvetData.ConvertReward(rewardsData);
+    async getReward() {
+        const rewardItems = await WebRequestManager.instance.postGetRewardAsync();
         if (rewardItems.length <= 0) return;
         for (let i = 0; i < rewardItems.length; i++) {
             const type = Constants.mapRewardType(rewardItems[i]);
             const name = type == RewardNewType.NORMAL_FOOD ? "Thức ăn sơ cấp" : type == RewardNewType.PREMIUM_FOOD ? "Thức ăn cao cấp"
                 : type == RewardNewType.ULTRA_PREMIUM_FOOD ? "Thức ăn siêu cao cấp" : type == RewardNewType.GOLD ? "Vàng" : "Kim cương";
-            const content = `Chúc mừng bạn nhận thành công ${name}`;
+            const content = `Chúc mừng bạn nhận thành công \n ${name}`;
             const param: PopupRewardParam = {
                 rewardType: type,
-                quantity: rewardItems[i].type == RewardType.GOLD || rewardItems[i].type == RewardType.DIAMOND ? rewardItems[i].amount : rewardItems[i].quantity,
+                quantity: rewardItems[i].quantity,
                 status: RewardStatus.GAIN,
                 content: content,
             };
             const popup = await PopupManager.getInstance().openPopup('PopupReward', PopupReward, param);
             await PopupManager.getInstance().waitCloseAsync(popup.node.uuid);
         }
-
-
     }
+
+    async getNewbieReward() {
+        const rewards = await WebRequestManager.instance.getRewardNewbieLoginAsync();
+        if (!rewards || rewards.length === 0) return;
+        GameManager.instance.playerHubController.showUIDailyReward(true);
+        const today = new Date().toISOString().split('T')[0]; // yyyy-mm-dd
+        const lastLogged = localStorage.getItem(Constants.SHOW_DAILY_QUEST_FIRST_DAY);
+        if (lastLogged !== today) {
+            const param: PopupLoginQuestParam = {
+                rewardNewbieDTOs: rewards,
+            };
+
+            const popup = await PopupManager.getInstance().openPopup(
+                "PopupLoginQuest",
+                PopupLoginQuest,
+                param
+            );
+            localStorage.setItem(Constants.SHOW_DAILY_QUEST_FIRST_DAY, today);
+            await PopupManager.getInstance().waitCloseAsync(popup.node.uuid);
+        }
+    }
+
+    protected onDestroy(): void {
+        GameManager._instance = null;
+    }
+
 
     private onError(error: any) {
         console.error("Error occurred:", error);

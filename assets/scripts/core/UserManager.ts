@@ -296,6 +296,16 @@ export class UserManager extends Component {
         UIManager.Instance.batteScene.WaitingOpponents(data);
     }
 
+    public remainingUsingSkill(data) {
+        if (UIManager.Instance == null) return;
+        UIManager.Instance.batteScene.setTimeRemaining(data);
+    }
+
+    public autoAttack(data) {
+        if (UIManager.Instance == null) return;
+        UIManager.Instance.batteScene.autoAttack();
+    }
+
     public disconnected(content: string) {
         const param: ConfirmParam = {
             message: content,
@@ -388,18 +398,9 @@ export class UserManager extends Component {
         targetPet.getRandomProvokeLine(playerTarget.userName, randomIndex);
     }
 
-    public getMyPetData(): Promise<PetDTO[]> {
-        return new Promise((resolve, reject) => {
-            WebRequestManager.instance.getMyPetData(
-                (response) => resolve(response.data),
-                (error) => reject(error)
-            );
-        });
-    }
-
     private async UpdateMyPetData(petCaughId: string) {
         try {
-            const petData = await this.getMyPetData();
+            const petData = await WebRequestManager.instance.getMyPetAsync();
             const pet = petData.find(p => p.id === petCaughId);
             if (UserManager.instance.GetMyClientPlayer) {
                 const content = pet != null ? `Bạn đã bắt thành công <color=#FF0000>${pet.name} (${pet.pet.rarity})</color>` : `Bạn đã bắt pet thành công`

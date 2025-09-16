@@ -303,7 +303,7 @@ export class SlotMachineController extends BasePopup {
                     case RewardType.GOLD:
                     default:
                         rewardItem.type = RewardType.GOLD;
-                        rewardItem.amount = entry.amount ?? 0;
+                        rewardItem.quantity = entry.quantity ?? 0;
                         break;
                 }
 
