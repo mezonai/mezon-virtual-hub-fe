@@ -9,10 +9,9 @@ const { ccclass, property } = _decorator;
 
 @ccclass('ItemSlotPet')
 export class ItemSlotPet extends Component {
-    @property({ type: Prefab }) itemSkillPrefab: Prefab = null;
+    @property({ type: Prefab }) itemPetDragPrefab: Prefab = null;
     @property({ type: Node }) parentSkill: Node = null;
     @property({ type: Node }) parentSkillCanMove: Node = null;
-    @property({ type: Node }) lockItem: Node = null;
     itemPlacePet: ItemPlacePet = null;
     interactSlot: InteractSlot = InteractSlot.NONE
     private onClickCallback: () => void = null;
@@ -35,7 +34,7 @@ export class ItemSlotPet extends Component {
             return;
         }
 
-        const emptyItem = ObjectPoolManager.instance.spawnFromPool(this.itemSkillPrefab.name);
+        const emptyItem = ObjectPoolManager.instance.spawnFromPool(this.itemPetDragPrefab.name);
         emptyItem.setParent(this.parentSkill);
         emptyItem.position = Vec3.ZERO;
 
@@ -48,7 +47,7 @@ export class ItemSlotPet extends Component {
     }
 
     private setupPetPrefab(petData: PetDTO, slotPlacePet: ItemSlotPet[]) {
-        let newItemSkill = ObjectPoolManager.instance.spawnFromPool(this.itemSkillPrefab.name);
+        let newItemSkill = ObjectPoolManager.instance.spawnFromPool(this.itemPetDragPrefab.name);
         newItemSkill.setParent(this.parentSkill);
         newItemSkill.position = Vec3.ZERO;
 
@@ -66,7 +65,7 @@ export class ItemSlotPet extends Component {
 
     setDataSlotSkill(pet: PetDTO, slotPet: ItemSlotPet[] = []) {
         this.resetpet();
-        let newitemSkill = ObjectPoolManager.instance.spawnFromPool(this.itemSkillPrefab.name);
+        let newitemSkill = ObjectPoolManager.instance.spawnFromPool(this.itemPetDragPrefab.name);
         newitemSkill.setParent(this.parentSkill);
         this.itemPlacePet = newitemSkill.getComponent(ItemPlacePet);
         newitemSkill.position = Vec3.ZERO;

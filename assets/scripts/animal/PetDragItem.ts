@@ -11,7 +11,7 @@ const { ccclass, property } = _decorator;
 
 @ccclass('PetDragItem')
 export class PetDragItem extends DraggableBase {
-    @property({ type: Prefab }) itemSkillPrefab: Prefab = null;
+    @property({ type: Prefab }) itemPetDragPrefab: Prefab = null;
     slotsPlacePet: ItemSlotPet[] = [];
     interactionMode: InteractSlot = InteractSlot.NONE;
 

@@ -15,6 +15,7 @@ import { PopupBattlePlace, PopupBattlePlaceParam } from './PopupBattlePlace';
 import { Sprite } from 'cc';
 import { UserMeManager } from '../core/UserMeManager';
 import { PopupPetChartParam, PopupPetElementChart } from './PopupPetElementChart';
+import { PopupUpgradeStarPet } from './PopupUpgradeStarPet';
 const { ccclass, property } = _decorator;
 
 enum PetActionType {
@@ -55,6 +56,7 @@ export class PopupOwnedAnimals extends BasePopup {
     @property({ type: [ItemDisplayPetFighting] }) itemDisplayPetFightings: ItemDisplayPetFighting[] = [];
     @property({ type: Button }) sortPetBattleBtn: Button = null;
     @property({ type: Button }) petChartButton: Button = null;
+    @property({ type: Button }) petUpgradeButton: Button = null;
 
     private animalObject: Node = null;
     private animalController: AnimalController = null;
@@ -421,6 +423,12 @@ export class PopupOwnedAnimals extends BasePopup {
             await PopupManager.getInstance().openAnimPopup("PopupPetElementChart", PopupPetElementChart, { widget: { horizontalCenter: 0, verticalCenter: 0 } } as PopupPetChartParam);
             this.petChartButton.interactable = true;
         });
+        this.petUpgradeButton.addAsyncListener(async () => {
+            this.petChartButton.interactable = false;
+            await PopupManager.getInstance().openAnimPopup("PopupUpgradeStarPet", PopupUpgradeStarPet);
+            this.petChartButton.interactable = true;
+        });
+        
         this.onGetMyPet(UserMeManager.MyPets());
     }
 
@@ -534,6 +542,7 @@ export class PopupOwnedAnimals extends BasePopup {
             if (index !== -1) {
                 this.clearSlotByPetId(pet.id);
                 this.animalBattle.splice(index, 1);
+                pet.battle_slot = 0;
                 this.updateAnimalSlotUI(pet, isSelectBattle);
             }
         }
@@ -603,7 +612,6 @@ export class PopupOwnedAnimals extends BasePopup {
         item?.clearPetInfoOnly?.();
         const slotToReset = this.animalSlots.find(s => s.currentPet?.id === petId);
         if (slotToReset) slotToReset.setBattlePet(0);
-        pet.battle_slot = 0;
     }
 
     getFightingSlotItem(slotIndex: number): ItemDisplayPetFighting | null {
