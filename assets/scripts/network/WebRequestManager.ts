@@ -166,6 +166,22 @@ export class WebRequestManager extends Component {
         });
     }
 
+    public postMergePetAsync(data): Promise<PetDTO> {
+        return new Promise((resolve, reject) => {
+            WebRequestManager.instance.postMergePet(
+                data,
+                (response) => {
+                    const petMerge = ConvetData.ConvertPet(response.data);
+                    console.log("petMerge ", petMerge);
+                    resolve(petMerge);
+                },
+                (error) => {
+                    resolve(null);
+                }
+            );
+        });
+    }
+
     public getGameConfig(successCallback, errorCallback) {
         APIManager.getData(this.combineWithSlash(APIConstant.CONFIG, APIConstant.GAME_CONFIG), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, false);
     }
@@ -180,6 +196,10 @@ export class WebRequestManager extends Component {
 
     public getAllPetData(mapCode, successCallback, errorCallback) {
         APIManager.getData(this.combineWithSlash(APIConstant.PET_PLAYERS, mapCode), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    }
+
+    public postMergePet(data, successCallback, errorCallback) {
+        APIManager.postData(this.combineWithSlash(APIConstant.PET_PLAYERS, APIConstant.MERGE_PET), data, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
     public getMyPetData(successCallback, errorCallback) {

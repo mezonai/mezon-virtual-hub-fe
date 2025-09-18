@@ -15,7 +15,7 @@ import { PopupBattlePlace, PopupBattlePlaceParam } from './PopupBattlePlace';
 import { Sprite } from 'cc';
 import { UserMeManager } from '../core/UserMeManager';
 import { PopupPetChartParam, PopupPetElementChart } from './PopupPetElementChart';
-import { PopupUpgradeStarPet } from './PopupUpgradeStarPet';
+import { PopupUpgradePet } from './PopupUpgradePet';
 const { ccclass, property } = _decorator;
 
 enum PetActionType {
@@ -425,7 +425,7 @@ export class PopupOwnedAnimals extends BasePopup {
         });
         this.petUpgradeButton.addAsyncListener(async () => {
             this.petChartButton.interactable = false;
-            await PopupManager.getInstance().openAnimPopup("PopupUpgradeStarPet", PopupUpgradeStarPet);
+            await PopupManager.getInstance().openAnimPopup("PopupUpgradePet", PopupUpgradePet);
             this.petChartButton.interactable = true;
         });
         
