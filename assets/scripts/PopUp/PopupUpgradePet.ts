@@ -19,54 +19,35 @@ const { ccclass, property } = _decorator;
 @ccclass("PopupUpgradePet")
 export class PopupUpgradePet extends BasePopup {
     @property({ type: Button }) closeButton: Button = null;
-
     @property({ type: Node }) tabMerge: Node = null;
     @property({ type: Node }) tabUpgrade: Node = null;
     @property({ type: Node }) noPetPanel: Node = null;
     @property({ type: Prefab }) itemAnimalSlotPrefab: Prefab = null;
+    @property({ type: Node }) parentPetCanMove: Node = null;
+    @property({ type: PopupUpgradeStarPet }) popupStarUpgradePet: PopupUpgradeStarPet = null;
+    @property({ type: ScrollView }) DetailBySpecies: ScrollView = null;
     animalSlots: ItemAnimalSlotDrag[] = [];
     private listAllPetPlayer: PetDTO[] = [];
     private animalObject: Node = null;
     private animalController: AnimalController = null;
     private defaultLayer = Layers.Enum.NONE;
-    @property({ type: Node }) parentPetCanMove: Node = null;
-
-    // nếu bạn có popup merge riêng thì thay bằng PopupMergePet
-    @property({ type: PopupUpgradeStarPet }) popupMergePet: PopupUpgradeStarPet = null;
-    @property({ type: PopupUpgradeStarPet }) popupStarUpgradePet: PopupUpgradeStarPet = null;
-    @property({ type: ScrollView }) DetailBySpecies: ScrollView = null;
-    private currentTab: "merge" | "upgrade" = "merge";
 
     public init(): void {
         this.closeButton.addAsyncListener(async () => {
+            this.closeButton.interactable = false;
             this.closePopup();
         });
-
-        // load danh sách pet 1 lần
         const myPets = UserMeManager.MyPets();
-
-        // init cho cả 2 panel con
-        this.popupMergePet?.init({ pets: myPets });
         this.popupStarUpgradePet?.init({ pets: myPets });
-
-        this.showTab("merge");
         this.onGetMyPet(UserMeManager.MyPets());
+        this.popupStarUpgradePet.updateListPet = (myPets) => {
+            this.onGetMyPet(myPets);
+        };
     }
 
     async closePopup() {
         await this.resePet();
         await PopupManager.getInstance().closePopup(this.node.uuid, true);
-    }
-
-
-    public showTab(tab: "merge" | "upgrade") {
-        this.currentTab = tab;
-        this.tabMerge.active = (tab === "merge");
-        this.tabUpgrade.active = (tab === "upgrade");
-     
-        this.popupStarUpgradePet.updateListPet = (myPets) => {
-            this.onGetMyPet(myPets);
-        };
     }
 
     private onGetMyPet(myPets: PetDTO[]) {
@@ -123,7 +104,6 @@ export class PopupUpgradePet extends BasePopup {
     }
 
     async InitPet(pets: PetDTO[]) {
-        //await this.refreshSlot();
         this.DetailBySpecies.content.removeAllChildren();
         for (let i = 0; i < pets.length; i++) {
             if (pets[i] == null) continue;

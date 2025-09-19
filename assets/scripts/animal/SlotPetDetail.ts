@@ -18,7 +18,7 @@ export class SlotPetDetail extends Component {
     @property({ type: Label }) speedValue: Label = null;
     @property({ type: Label }) levelValue: Label = null;
 
-    public showDetailPanel(pet: PetDTO, slot: number,) {
+    public showDetailPanel(pet: PetDTO) {
         this.namePet.string = `${pet.name}`;
         this.expValue.string = `${pet.exp} / ${pet.max_exp}`;
         this.typeValue.string = `${this.getElementName(pet.pet.type)}`;

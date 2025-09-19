@@ -136,12 +136,44 @@ export interface RewardDisplayData {
     isItem?: boolean;
 }
 
-export class RewardPecent {
-    public item: number;
-    public gold: number;
-    public normalFood: number;
-    public premiumFood: number;
-    public ultraFood: number;
-    public spinCost: number;
-    public none: number;
+export interface SpinRewardsFoodDTO {
+    normal: number;
+    premium: number;
+    ultra: number;
+}
+
+export interface SpinRewardsPercentDTO {
+    item: number;
+    gold: number;
+    food: SpinRewardsFoodDTO;
+    none: number;
+}
+
+export interface SpinCostsDTO {
+    spinGold: number;
+    upgradeStarsDiamond: number;
+}
+
+export interface PercentConfigDTO {
+    upgradeStars: Record<AnimalRarity, number>;
+    upgradeRarity: Partial<Record<AnimalRarity, number>>;
+    spinRewards: SpinRewardsPercentDTO;
+}
+
+export interface UpgradeStarsPercentDTO {
+    common: number;
+    rare: number;
+    epic: number;
+    legendary: number;
+}
+
+export interface UpgradeRarityPercentDTO {
+    rare: number;
+    epic: number;
+    legendary: number;
+}
+
+export interface StatsConfigDTO {
+    costs: SpinCostsDTO;
+    percentConfig: PercentConfigDTO;
 }

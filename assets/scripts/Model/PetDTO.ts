@@ -224,3 +224,9 @@ export interface MergePetRequestPayload {
     pet_ids: string[];
     keep_highest_iv: boolean;
 }
+
+export interface MergePetResponseDTO {
+  pet: PetDTO;
+  user_diamond: number;
+  success: boolean
+}

@@ -18,7 +18,6 @@ export default class APIConstant {
     static BATTLE_PET = "battle-slots";
     static FOOD = "food";
     static INITIAL_REWARD = "initial-reward";
-    static REWARD_PERCENT = "reward-percent";
     static BATTLE_SKILLS = "battle-skills";
     static BATTLE = "battle";
     static QUEST_FREQUENCY = "get-quests-frequency";

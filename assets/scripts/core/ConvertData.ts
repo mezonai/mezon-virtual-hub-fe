@@ -1,5 +1,5 @@
 import { MapData } from "../Interface/DataMapAPI";
-import { Food, Item, PetReward, QuestType, RewardItemDTO, RewardNewbieDTO, RewardPecent, RewardType } from "../Model/Item";
+import { Food, Item, PetReward, QuestType, RewardItemDTO, RewardNewbieDTO, RewardType, StatsConfigDTO } from "../Model/Item";
 import { AnimalElementString, AnimalRarity, Element, PetBattleInfo, PetDTO, PlayerBattle, SkillBattleInfo, Species, TypeSkill } from "../Model/PetDTO";
 
 export default class ConvetData {
@@ -24,6 +24,7 @@ export default class ConvetData {
             petDTO.name = data.name;
             petDTO.level = data.level;
             petDTO.exp = data.exp;
+            petDTO.max_exp = data.max_exp;
             petDTO.stars = data.stars;
             petDTO.hp = data.hp;
             petDTO.attack = data.attack;
@@ -44,30 +45,30 @@ export default class ConvetData {
         });
     }
 
-    public static ConvertPet(petData: string): PetDTO {
-        const data = typeof petData === "string" ? JSON.parse(petData) : petData;
-        const petDTO = new PetDTO();
-        petDTO.id = data.id;
-        petDTO.name = data.name;
-        petDTO.level = data.level;
-        petDTO.exp = data.exp;
-        petDTO.stars = data.stars;
-        petDTO.hp = data.hp;
-        petDTO.attack = data.attack;
-        petDTO.defense = data.defense;
-        petDTO.speed = data.speed;
-        petDTO.is_brought = data.is_brought;
-        petDTO.is_caught = data.is_caught;
-        petDTO.battle_slot = data.battle_slot;
-        petDTO.individual_value = data.individual_value;
-        petDTO.room_code = data.room_code;
-        petDTO.pet = data.pet;
-        petDTO.skill_slot_1 = data.skill_slot_1;
-        petDTO.skill_slot_2 = data.skill_slot_2;
-        petDTO.skill_slot_3 = data.skill_slot_3 ?? null;
-        petDTO.skill_slot_4 = data.skill_slot_4 ?? null;
-        petDTO.equipped_skill_codes = data.equipped_skill_codes ?? null;
-        return petDTO;
+    public static ConvertPet(raw: any): PetDTO {
+        const petData = new PetDTO();
+        petData.id = raw.id;
+        petData.name = raw.name;
+        petData.level = raw.level;
+        petData.exp = raw.exp;
+        petData.max_exp = raw.max_exp;
+        petData.stars = raw.stars;
+        petData.hp = raw.hp;
+        petData.attack = raw.attack;
+        petData.defense = raw.defense;
+        petData.speed = raw.speed;
+        petData.is_brought = raw.is_brought;
+        petData.is_caught = raw.is_caught;
+        petData.battle_slot = raw.battle_slot;
+        petData.individual_value = raw.individual_value;
+        petData.room_code = raw.room_code;
+        petData.pet = raw.pet;
+        petData.skill_slot_1 = raw.skill_slot_1 ?? null;
+        petData.skill_slot_2 = raw.skill_slot_2 ?? null;
+        petData.skill_slot_3 = raw.skill_slot_3 ?? null;
+        petData.skill_slot_4 = raw.skill_slot_4 ?? null;
+        petData.equipped_skill_codes = raw.equipped_skill_codes ?? [];
+        return petData;
     }
 
     public static ConvertPetReward(petData: any): PetReward {
@@ -260,17 +261,27 @@ export default class ConvetData {
         }
         return Element.Normal;
     }
-    
-    public static convertRewardsPercent(response: any): RewardPecent {
-        return {
-            item: response.item,
-            gold: response.gold,
-            normalFood: response.normalFood,
-            premiumFood: response.premiumFood,
-            ultraFood: response.ultraFood,
-            spinCost: response.spinCost,
-            none: response.none
-        };
-    }
 
+    public static parseStatsConfigDTO(data: any): StatsConfigDTO {
+        return {
+            costs: {
+                spinGold: data.costs.spinGold,
+                upgradeStarsDiamond: data.costs.upgradeStarsDiamond,
+            },
+            percentConfig: {
+                upgradeStars: { ...data.percent.upgradeStars },
+                upgradeRarity: { ...data.percent.upgradeRarity },
+                spinRewards: {
+                    item: data.percent.spinRewards?.item ?? 0,
+                    gold: data.percent.spinRewards?.gold ?? 0,
+                    food: {
+                        normal: data.percent.spinRewards?.food?.normal ?? 0,
+                        premium: data.percent.spinRewards?.food?.premium ?? 0,
+                        ultra: data.percent.spinRewards?.food?.ultra ?? 0,
+                    },
+                    none: data.percent.spinRewards?.none ?? 0,
+                }
+            }
+        }
+    }
 }

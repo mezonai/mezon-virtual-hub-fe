@@ -39,18 +39,16 @@ export class PetUpgradeDragItem extends DraggableBase {
     onTouchStart(event: EventTouch): void {
         if (this.interactionMode == InteractSlot.DRAG) {
             const uiPos = event.getUILocation();
-            const localPos = this.node.parent
-                .getComponent(UITransform)
-                .convertToNodeSpaceAR(new Vec3(uiPos.x, uiPos.y, 0));
-
+            const localPos = this.node.parent.getComponent(UITransform).convertToNodeSpaceAR(new Vec3(uiPos.x, uiPos.y, 0));
             this.dragStartPos = localPos.clone();
             this.isDragging = false;
-
             this.originalParent = this.node.parent;
             this.originalPos = this.node.position.clone();
-
             if (this.containerNode) {
+                const worldPos = this.node.worldPosition.clone();
                 this.node.parent = this.containerNode;
+                const newLocalPos = this.containerNode.getComponent(UITransform)!.convertToNodeSpaceAR(worldPos);
+                this.node.setPosition(newLocalPos);
             }
             this.touchStart();
         }

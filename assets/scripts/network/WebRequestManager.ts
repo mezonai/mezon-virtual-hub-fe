@@ -8,9 +8,9 @@ import { MapData } from '../Interface/DataMapAPI';
 import { ServerManager } from '../core/ServerManager';
 import { PopupSelectionMini, SelectionMiniParam } from '../PopUp/PopupSelectionMini';
 import { PopupManager } from '../PopUp/PopupManager';
-import { RewardItemDTO, RewardNewbieDTO, RewardPecent } from '../Model/Item';
+import { RewardItemDTO, RewardNewbieDTO, StatsConfigDTO } from '../Model/Item';
 import { GameManager } from '../core/GameManager';
-import { PetDTO } from '../Model/PetDTO';
+import { MergePetResponseDTO, PetDTO } from '../Model/PetDTO';
 import { Constants } from '../utilities/Constants';
 const { ccclass, property } = _decorator;
 
@@ -138,13 +138,12 @@ export class WebRequestManager extends Component {
         });
     }
 
-    public getRewardsPercentAsync(): Promise<RewardPecent> {
+    public getConfigRateAsync(): Promise<StatsConfigDTO> {
         return new Promise((resolve, reject) => {
-            WebRequestManager.instance.getRewardsPercent(
+            WebRequestManager.instance.getConfigRate(
                 (response) => {
-                    const rewardPercent = ConvetData.convertRewardsPercent(response.data);
-                    console.log("rewardPercent ", rewardPercent);
-                    resolve(rewardPercent);
+                    const statsConfigDTO = ConvetData.parseStatsConfigDTO(response.data);
+                    resolve(statsConfigDTO);
                 },
                 (error) => {
                     resolve(null);
@@ -166,14 +165,18 @@ export class WebRequestManager extends Component {
         });
     }
 
-    public postMergePetAsync(data): Promise<PetDTO> {
+    public postMergePetAsync(data): Promise<MergePetResponseDTO> {
         return new Promise((resolve, reject) => {
             WebRequestManager.instance.postMergePet(
                 data,
                 (response) => {
-                    const petMerge = ConvetData.ConvertPet(response.data);
-                    console.log("petMerge ", petMerge);
-                    resolve(petMerge);
+                    console.log("response.data ", response.data);
+                        const result: MergePetResponseDTO = {
+                        pet: ConvetData.ConvertPet(response.data.pet), // lấy đúng object pet
+                        user_diamond: response.data.user_diamond,
+                        success: response.data.success
+                    };
+                    resolve(result);
                 },
                 (error) => {
                     resolve(null);
@@ -210,8 +213,8 @@ export class WebRequestManager extends Component {
         APIManager.getData(this.combineWithSlash(APIConstant.GAME, APIConstant.SPIN), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
-    public getRewardsPercent(successCallback, errorCallback) {
-        APIManager.getData(this.combineWithSlash(APIConstant.GAME, APIConstant.REWARD_PERCENT), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    public getConfigRate(successCallback, errorCallback) {
+        APIManager.getData(this.combineWithSlash(APIConstant.GAME, APIConstant.CONFIG), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
     public login(data, successCallback, errorCallback) {
@@ -292,7 +295,6 @@ export class WebRequestManager extends Component {
     }
 
     public putRecievedReward(questId, successCallback, errorCallback) {
-        console.log("questId", questId);
         const url = `${APIConstant.PLAYER_QUESTS}/${questId}/${APIConstant.FINISH_QUEST}`;
         APIManager.putData(url, {}, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }

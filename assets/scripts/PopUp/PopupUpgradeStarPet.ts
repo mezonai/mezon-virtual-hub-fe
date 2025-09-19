@@ -1,34 +1,31 @@
-import { _decorator, Node, Vec3, Layers, Prefab, ScrollView } from 'cc';
+import { _decorator, Button, Toggle, RichText } from 'cc';
 import { BasePopup } from './BasePopup';
 import { UserMeManager } from '../core/UserMeManager';
 import { AnimalRarity, MergePetRequestPayload, PetDTO } from '../Model/PetDTO';
-import { ObjectPoolManager } from '../pooling/ObjectPoolManager';
-import { AnimalController } from '../animal/AnimalController';
-import { Button } from 'cc';
 import { PopupManager } from './PopupManager';
-import { InteractSlot } from '../animal/ItemSlotSkill';
-import { ItemSlotPet } from '../animal/ItemSlotpet';
 import { ItemAnimalSlotDrag } from '../animal/ItemAnimalSlotDrag';
-import { ItemPlacePetDrag } from '../animal/ItemPlacePetUpgrade';
 import { ConfirmParam, ConfirmPopup } from './ConfirmPopup';
 import { WebRequestManager } from '../network/WebRequestManager';
-import { Toggle } from 'cc';
 import { SlotPetDetail } from '../animal/SlotPetDetail';
-import { UITransform } from 'cc';
-import { tween } from 'cc';
+import { PopupCombiePet, PopupCombiePetParam } from './PopupCombiePet';
+import { StatsConfigDTO } from '../Model/Item';
 const { ccclass, property } = _decorator;
 
 @ccclass('PopupUpgradeStarPet')
 export class PopupUpgradeStarPet extends BasePopup {
     @property({ type: Button }) mergeButton: Button = null;
     @property({ type: Toggle }) keepPetStatsToggle: Toggle = null;
+    @property({ type: RichText }) mergePetDiamondText: RichText = null;
+    @property({ type: RichText }) rateMergeText: RichText = null;
     private _isKeepPetStats = false;
     private petMerge: PetDTO;
     @property({ type: ItemAnimalSlotDrag }) slotPet: ItemAnimalSlotDrag[] = [];
     @property({ type: SlotPetDetail }) slotPetDetail: SlotPetDetail[] = [];
     updateListPet: ((updatedPets: PetDTO[]) => void) | null = null;
+    getConfigRate: StatsConfigDTO;
+    upgradeStarsDiamond: number;
 
-    protected start(): void {
+    public init(param?: any): void {
         this.mergeButton.addAsyncListener(async () => {
             this.mergeButton.interactable = false;
             this.merge();
@@ -44,45 +41,71 @@ export class PopupUpgradeStarPet extends BasePopup {
                 this.hideDetailPanel(slot);
             };
         });
+        this.getConfigRateAsync()
     }
 
-    private keepPetStats(toggle: Toggle) {
+    async getConfigRateAsync() {
+        this.getConfigRate = await WebRequestManager.instance.getConfigRateAsync();
+        this.getMoneyUpgrade();
+    }
+
+    async getMoneyUpgrade() {
+        this.upgradeStarsDiamond = this.getConfigRate.costs.upgradeStarsDiamond;
+        this.mergePetDiamondText.node.active = this.upgradeStarsDiamond > 0;
+        this.mergePetDiamondText.string = this.upgradeStarsDiamond > 0 ? `-Tốn: ${this.upgradeStarsDiamond}` : "";
+    }
+
+    keepPetStats(toggle: Toggle) {
+        if (!this.checkDiamondUser(this.upgradeStarsDiamond)) {
+            this._isKeepPetStats = false;
+            this.keepPetStatsToggle.isChecked = false;
+            return;
+        }
+
         this._isKeepPetStats = toggle.isChecked;
         this.keepPetStatsToggle.isChecked = this._isKeepPetStats;
     }
 
+    checkDiamondUser(price: number): boolean {
+        if (UserMeManager.playerDiamond < price) {
+            const param: ConfirmParam = {
+                message: "Không đủ kim cương để dùng",
+                title: "Chú ý",
+            };
+            PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
+            return false;
+        }
+        return true;
+    }
+
     async merge() {
         const allPetIds = this.getAllPetIds();
-        console.log("allPetIds: ", allPetIds);
         if (allPetIds.length === 0) return;
         const data: MergePetRequestPayload = {
             pet_ids: allPetIds,
             keep_highest_iv: this._isKeepPetStats,
         };
-        console.log("Payload JSON:",);
-        this.petMerge = await WebRequestManager.instance.postMergePetAsync(data);
+        const dataPetMerge = await WebRequestManager.instance.postMergePetAsync(data);
+        this.petMerge = dataPetMerge.pet;
         if (this.petMerge == null) {
             return;
         }
         else {
-            console.log("merge thanh công ", this.petMerge);
+            const pets = this.slotPet
+                .map(slot => slot.itemPlacePetUpgrade?.currentPet)
+                .filter((pet): pet is PetDTO => !!pet);
             this.clearAllSlots();
-            const myPets = await WebRequestManager.instance.getMyPetAsync();
-            this.updateListPet?.(myPets);
+            PopupManager.getInstance().openPopup('PopupCombiePet', PopupCombiePet, {
+                listPets: pets,
+                petMerge: this.petMerge,
+                isSuccess: dataPetMerge.success,
+                onFinishAnim: async () => {
+                    const myPets = await WebRequestManager.instance.getMyPetAsync();
+                    this.updateListPet?.(myPets);
+                    UserMeManager.playerDiamond = dataPetMerge.user_diamond;
+                }
+            } as PopupCombiePetParam);
         }
-    }
-
-    moveItemToSlot(itemNode: Node, targetSlot: Node, onComplete?: Function) {
-        let worldPos = targetSlot.worldPosition;
-        let localPos = itemNode.parent!.getComponent(UITransform)!.convertToNodeSpaceAR(worldPos);
-
-        // Tween di chuyển
-        tween(itemNode)
-            .to(0.3, { position: new Vec3(localPos.x, localPos.y, 0) }, { easing: 'quadOut' })
-            .call(() => {
-                if (onComplete) onComplete();
-            })
-            .start();
     }
 
     private showConfirm(message: string) {
@@ -94,42 +117,43 @@ export class PopupUpgradeStarPet extends BasePopup {
     }
 
     private getAllPetIds(): string[] {
-        const pets = this.slotPet
-            .map(slot => slot.itemPlacePetUpgrade?.currentPet)
-            .filter((pet): pet is PetDTO => !!pet);
-
-        if (pets.length < 3) {
-            console.log("[getAllPetIds] Không đủ pet, pets:", pets);
+        const pets = this.getPetsForMerge();
+        if (!this.hasEnoughPets(pets)) {
             this.showConfirm("Cần 3 thú cưng để có thể hợp thể!!!");
             return [];
         }
 
-        const species = pets[0].pet.species;
-        const type = pets[0].pet.type;
-        const rarity = pets[0].pet.rarity;
+        if (!this.arePetsCompatible(pets)) {
+            this.showConfirm("Các thú cưng được chọn phải cùng loài, cùng số sao, cùng hệ và độ hiếm!!!");
+            return [];
+        }
+
+        const ids = pets.map(p => p.id);
+        return ids;
+    }
+
+    private getPetsForMerge(): PetDTO[] {
+        return this.slotPet
+            .map(slot => slot.itemPlacePetUpgrade?.currentPet)
+            .filter((pet): pet is PetDTO => !!pet);
+    }
+
+    private hasEnoughPets(pets: PetDTO[]): boolean {
+        return pets.length >= 3;
+    }
+
+    private arePetsCompatible(pets: PetDTO[]): boolean {
+        if (!pets.length) return false;
+
+        const { species, type, rarity } = pets[0].pet;
         const stars = pets[0].stars;
 
-        const isValid = pets.every(p =>
+        return pets.every(p =>
             p.pet.species === species &&
             p.pet.type === type &&
             p.pet.rarity === rarity &&
             p.stars === stars
         );
-
-        if (!isValid) {
-            console.log("[getAllPetIds] Pet không hợp lệ:", pets.map(p => ({
-                id: p.id,
-                species: p.pet.species,
-                stars: p.stars,
-                type: p.pet.type,
-                rarity: p.pet.rarity
-            })));
-            this.showConfirm("Các thú cưng được chọn phải cùng loài, cùng số sao, cùng hệ và độ hiếm!!!");
-            return [];
-        }
-        const ids = pets.map(p => p.id);
-        console.log("[getAllPetIds] Pet hợp lệ, ids:", ids);
-        return ids;
     }
 
     private clearAllSlots() {
@@ -142,18 +166,43 @@ export class PopupUpgradeStarPet extends BasePopup {
         });
     }
 
+    private SetRateMerge(): void {
+        const pets = this.getPetsForMerge();
+        if (pets.length < 3) {
+            this.updateRateUI(0);
+            return;
+        }
+
+        const rarity = pets[0].pet.rarity;
+        const rateMerge = this.getRateByRarity(rarity);
+
+        this.updateRateUI(rateMerge);
+    }
+
+    private getRateByRarity(rarity: string): number {
+        const configs = this.getConfigRate.percentConfig;
+        return configs.upgradeStars[rarity] ?? 0;
+    }
+
+    private updateRateUI(rateMerge: number): void {
+        const isValid = rateMerge > 0;
+        this.rateMergeText.node.active = isValid;
+        this.rateMergeText.string = isValid
+            ? `<outline color=#222222 width=1> Tỷ lệ thành công: ${rateMerge} %</outline>`
+            : "";
+    }
+
     showDetailPanel(slot: ItemAnimalSlotDrag, pet: PetDTO) {
         const index = this.slotPet.findIndex(s => s === slot);
         if (index === -1) {
             return;
         }
-        console.log("Hiển thị detail cho slot index:", index, "slot:", slot, "pet:", pet);
         const detail = this.slotPetDetail[index];
         if (!detail) {
             return;
         }
-
-        detail.showDetailPanel(pet, index);
+        detail.showDetailPanel(pet);
+        this.SetRateMerge();
     }
 
     hideDetailPanel(slot: ItemAnimalSlotDrag) {
@@ -163,5 +212,6 @@ export class PopupUpgradeStarPet extends BasePopup {
         const detail = this.slotPetDetail[index];
         if (!detail) return;
         detail.clearPetDetail();
+        this.SetRateMerge();
     }
 }

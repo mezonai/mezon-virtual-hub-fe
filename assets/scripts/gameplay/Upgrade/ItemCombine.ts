@@ -6,6 +6,9 @@ import { Sprite } from 'cc';
 import { Tween } from 'cc';
 import { tween } from 'cc';
 import { Color } from 'cc';
+import { PetDTO } from '../../Model/PetDTO';
+import { PetSlotUIHelper } from '../../animal/PetSlotUIHelper';
+import { UIOpacity } from 'cc';
 const { ccclass, property } = _decorator;
 
 @ccclass('ItemCombine')
@@ -17,8 +20,17 @@ export class ItemCombine extends Component {
     @property(ParticleSystem2D) impactParticle: ParticleSystem2D = null;
     @property({ type: [Sprite] }) stars: Sprite[] = [];
     @property(Node) circleEffect: Node = null;
+    @property(PetSlotUIHelper) petUIHelper: PetSlotUIHelper = null;
+    @property({ type: UIOpacity }) itemOpacity: UIOpacity = null;
     currentBlink: Tween<Color> | null = null;
     starBlink: Sprite = null;
+
+    setData(petData:PetDTO, isShowStar: boolean){
+        this.iconPet.setActivePetByName(petData.name);
+        this.petUIHelper.setBorder(petData);
+        this.petUIHelper.setStar(isShowStar ? petData.stars : 0);
+    }
+
     playStartFly() {
         if (this.starFlyParticle != null) this.starFlyParticle.node.active = true;
         if (this.starFlyParticle != null) this.starFlyParticle.resetSystem();
@@ -26,7 +38,7 @@ export class ItemCombine extends Component {
 
     async playExplosive() {
         if (this.explosiveParticle != null) this.explosiveParticle.node.active = true;
-        await Constants.waitForSeconds(0.5);
+        await Constants.waitForSeconds(1);
         if (this.explosiveParticle != null) this.explosiveParticle.node.active = false;
         if (this.explosiveParticle != null) this.explosiveParticle.resetSystem();
     }
@@ -95,7 +107,19 @@ export class ItemCombine extends Component {
         sprite.color = new Color(sprite.color.r, sprite.color.g, sprite.color.b, 255);
     }
 
+    async fadeIn(duration: number = 0.2): Promise<void> {
+        if (!this.itemOpacity) return;
 
+        this.node.active = true;
+        this.itemOpacity.opacity = 0;
+
+        return new Promise<void>((resolve) => {
+            tween(this.itemOpacity)
+                .to(duration, { opacity: 255 })
+                .call(() => resolve())
+                .start();
+        });
+    }
 }
 
 

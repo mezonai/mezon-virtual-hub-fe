@@ -1,30 +1,6 @@
-import {
-    _decorator,
-    Button,
-    Component,
-    instantiate,
-    Label,
-    Node,
-    Prefab,
-    SpriteFrame,
-    assetManager,
-    Vec3,
-    UITransform,
-    tween,
-    Toggle,
-} from "cc"; // Thêm assetManager
+import {_decorator,Button, instantiate, Label, Node, Prefab, SpriteFrame, Vec3, Toggle} from "cc"; 
 import { WebRequestManager } from "../network/WebRequestManager";
-import {
-    Food,
-    InventoryDTO,
-    Item,
-    ItemGenderFilter,
-    ItemType,
-    RewardDisplayData,
-    RewardItemDTO,
-    RewardPecent,
-    RewardType,
-} from "../Model/Item";
+import {Food, Item, ItemGenderFilter, RewardDisplayData, RewardItemDTO, RewardType, StatsConfigDTO} from "../Model/Item";
 import { BubbleRotation } from "./BubbleRotation";
 import { UserMeManager } from "../core/UserMeManager";
 import { RewardUIController } from "./RewardUIController";
@@ -39,7 +15,6 @@ import { UIPanelSliderEffect } from "../utilities/UIPanelSliderEffect";
 import { BasePopup } from "../PopUp/BasePopup";
 import { PopupManager } from "../PopUp/PopupManager";
 import { ConfirmParam, ConfirmPopup } from "../PopUp/ConfirmPopup";
-import ConvetData from "../core/ConvertData";
 
 const { ccclass, property } = _decorator;
 
@@ -68,7 +43,7 @@ export class SlotMachineController extends BasePopup {
     protected foodNameMap: Record<string, string>;
     protected foodIconMap: Record<string, SpriteFrame>;
     protected moneyIconMap: Record<string, SpriteFrame>;
-    private rewardRateMap: RewardPecent;
+    private rewardRateMap: StatsConfigDTO;
 
     @property(UIPanelSliderEffect) slotMachineRate: UIPanelSliderEffect = null;
 
@@ -135,14 +110,13 @@ export class SlotMachineController extends BasePopup {
     }
 
     private async getRewardsPercent() {
-        this.rewardRateMap =
-            await WebRequestManager.instance.getRewardsPercentAsync();
+        this.rewardRateMap = await WebRequestManager.instance.getConfigRateAsync();
         if (this.rewardRateMap == null) {
             this.endSpinSlotMachine();
             return;
         }
         await this.showItem();
-        this.minusCoin = this.rewardRateMap.spinCost;
+        this.minusCoin = this.rewardRateMap.costs.spinGold;
         this.showMinusCoinInfo(true);
     }
 
@@ -180,14 +154,15 @@ export class SlotMachineController extends BasePopup {
                     itemNode,
                     spriteFrameToSet,
                     item.name,
-                    this.rewardRateMap.item,
+                    this.rewardRateMap.percentConfig.spinRewards.item,
                     true
                 );
             }
         }
 
         for (const spriteF of this.iconValue) {
-            const rate = this.rewardRateMap[spriteF.name] ?? 0;
+            const key = spriteF.name.toLowerCase().replace("food", "");
+            const rate = this.rewardRateMap.percentConfig.spinRewards.food[key] ?? 0;
             const displayName = this.foodNameMap[spriteF.name];
             if (rate <= 0) continue;
             let itemNode = ObjectPoolManager.instance.spawnFromPool(
@@ -205,7 +180,7 @@ export class SlotMachineController extends BasePopup {
             goldNode,
             this.iconMoney[0],
             "Coin",
-            this.rewardRateMap.gold
+            this.rewardRateMap.percentConfig.spinRewards.gold
         );
     }
 
