@@ -30,6 +30,20 @@ export class PetSlotUIHelper extends Component {
             this.borderSprite.color = this.colorBorder[indexColor];
         }
     }
+
+    public setBorderTemp(rarity: AnimalRarity) {
+        if (rarity == AnimalRarity.LEGENDARY) {
+            if (this.animator) this.animator.node.active = true;
+            this.borderSprite.color = this.colorBorder[0]; // bạn muốn màu LEGENDARY có riêng thì đổi index ở đây
+            this.playAnimBorder(rarity);
+        } else {
+            if (this.animator) this.animator.node.active = false;
+            const indexColor =
+                rarity == AnimalRarity.COMMON ? 0 :
+                    rarity == AnimalRarity.RARE ? 1 : 2;
+            this.borderSprite.color = this.colorBorder[indexColor];
+        }
+    }
     
     public playAnimBorder(animationName: string) {
         if (animationName != "") {

@@ -8,9 +8,9 @@ import { MapData } from '../Interface/DataMapAPI';
 import { ServerManager } from '../core/ServerManager';
 import { PopupSelectionMini, SelectionMiniParam } from '../PopUp/PopupSelectionMini';
 import { PopupManager } from '../PopUp/PopupManager';
-import { RewardItemDTO, RewardNewbieDTO, StatsConfigDTO } from '../Model/Item';
+import { InventoryDTO, Item, RewardItemDTO, RewardNewbieDTO, StatsConfigDTO } from '../Model/Item';
 import { GameManager } from '../core/GameManager';
-import { MergePetResponseDTO, PetDTO } from '../Model/PetDTO';
+import { UpgradePetResponseDTO, PetDTO } from '../Model/PetDTO';
 import { Constants } from '../utilities/Constants';
 const { ccclass, property } = _decorator;
 
@@ -165,15 +165,49 @@ export class WebRequestManager extends Component {
         });
     }
 
-    public postMergePetAsync(data): Promise<MergePetResponseDTO> {
+    public postUpgradeStarPetAsync(data): Promise<UpgradePetResponseDTO> {
         return new Promise((resolve, reject) => {
-            WebRequestManager.instance.postMergePet(
+            WebRequestManager.instance.postUpgradeStarPet(
+                data,
+                (response) => {
+                    const result: UpgradePetResponseDTO = {
+                        pet: ConvetData.ConvertPet(response.data.pet),
+                        user_diamond: response.data.user_diamond,
+                        success: response.data.success
+                    };
+                    resolve(result);
+                },
+                (error) => {
+                    resolve(null);
+                }
+            );
+        });
+    }
+
+    public getItemTypeAsync(data: number): Promise<InventoryDTO[]> {
+        return new Promise((resolve) => {
+            WebRequestManager.instance.getItemType(
                 data,
                 (response) => {
                     console.log("response.data ", response.data);
-                        const result: MergePetResponseDTO = {
-                        pet: ConvetData.ConvertPet(response.data.pet), // lấy đúng object pet
-                        user_diamond: response.data.user_diamond,
+                    const inventoryList = ConvetData.ConvertInventoryDTO(response.data);
+                    resolve(inventoryList);
+                },
+                (error) => {
+                    resolve(null);
+                }
+            );
+        });
+    }
+
+    public postUpgradeRarityPetAsync(pet_player_id): Promise<UpgradePetResponseDTO> {
+        return new Promise((resolve, reject) => {
+            WebRequestManager.instance.postUpgradeRarityPet(
+                pet_player_id,
+                (response) => {
+                    console.log("response.data ", response.data);
+                        const result: UpgradePetResponseDTO = {
+                        pet: ConvetData.ConvertPet(response.data.pet),
                         success: response.data.success
                     };
                     resolve(result);
@@ -201,8 +235,12 @@ export class WebRequestManager extends Component {
         APIManager.getData(this.combineWithSlash(APIConstant.PET_PLAYERS, mapCode), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
-    public postMergePet(data, successCallback, errorCallback) {
-        APIManager.postData(this.combineWithSlash(APIConstant.PET_PLAYERS, APIConstant.MERGE_PET), data, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    public postUpgradeStarPet(data, successCallback, errorCallback) {
+        APIManager.postData(this.combineWithSlash(APIConstant.PET_PLAYERS, APIConstant.UPGRADE_STAR_PET), data, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    }
+
+    public postUpgradeRarityPet(pet_player_id, successCallback, errorCallback) {
+        APIManager.postData(this.combineWithSlash(APIConstant.PET_PLAYERS, pet_player_id, APIConstant.UPGRADE_RARITY_PET), {}, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
     public getMyPetData(successCallback, errorCallback) {
@@ -231,6 +269,10 @@ export class WebRequestManager extends Component {
 
     public postBuySkin(data, successCallback, errorCallback) {
         APIManager.postData(this.combineWithSlash(APIConstant.INVENTORY, APIConstant.BUY, data), {}, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    }
+
+    public getItemType(type, successCallback, errorCallback) {
+        APIManager.getData(this.combineWithSlash(APIConstant.INVENTORY, APIConstant.ITEM_TYPE, type), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
     public updateProfile(data, successCallback, errorCallback) {

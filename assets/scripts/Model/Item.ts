@@ -30,6 +30,7 @@ export class Item extends BaseInventoryDTO {
     public iconSF: SpriteFrame[] = [];
     public mappingLocalData: LocalItemDataConfig = null;
     public is_stackable: boolean = false;
+    public item_code: ItemCode;
 }
 
 export class FoodDTO {
@@ -176,4 +177,10 @@ export interface UpgradeRarityPercentDTO {
 export interface StatsConfigDTO {
     costs: SpinCostsDTO;
     percentConfig: PercentConfigDTO;
+}
+
+export enum ItemCode {
+  RARITY_CARD_RARE = 'rarity_card_rare',
+  RARITY_CARD_EPIC = 'rarity_card_epic',
+  RARITY_CARD_LEGENDARY = 'rarity_card_legendary',
 }

@@ -74,6 +74,13 @@ export class Constants {
         }
     }
 
+    public static rarityUpgradeMap: Record<string, string | null> = {
+        common: "rare",
+        rare: "epic",
+        epic: "legendary",
+        legendary: null,
+    };
+
     public static GetMapData(office: OfficePosition): MapData {
         let mapData = ServerMapManager.Get.find(map => map.map_key == this.convertKeyOffice(office));
         return mapData == null ? ServerMapManager.Get[0] : mapData;

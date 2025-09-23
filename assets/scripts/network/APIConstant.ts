@@ -25,7 +25,11 @@ export default class APIConstant {
     static NEWBIE_LOGIN = "newbie-login";
     static FINISH_QUEST = "finish-quest";
     static CHECK_UNCLAIMED_QUEST = "check-unclaimed-quest";
-    static MERGE_PET = "merge"
+    static UPGRADE_STAR_PET = "merge";
+    static UPGRADE_RARITY_PET = "upgrade-rarity";
+    static ITEM_TYPE = "item-type";
+    static asds = "1";
+    
 }
 
 export class APIConfig {

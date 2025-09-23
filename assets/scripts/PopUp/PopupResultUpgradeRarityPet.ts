@@ -1,29 +1,22 @@
-import { _decorator, Node } from 'cc';
+import { _decorator, Node, tween, Vec3, RichText, Button, UITransform } from 'cc';
 import { BasePopup } from './BasePopup';
 import { PopupManager } from './PopupManager';
 import { ItemCombine } from '../gameplay/Upgrade/ItemCombine';
-import { tween } from 'cc';
-import { Vec3 } from 'cc';
-import { PetDTO } from '../Model/PetDTO';
-import { Label } from 'cc';
-import { RichText } from 'cc';
+import { AnimalRarity, PetDTO } from '../Model/PetDTO';
 import { SlotPetDetail } from '../animal/SlotPetDetail';
-import { Button } from 'cc';
-import { UITransform } from 'cc';
 const { ccclass, property } = _decorator;
 
-@ccclass('PopupCombiePet')
-export class PopupCombiePet extends BasePopup {
-    @property({ type: [ItemCombine] }) itemCombine: ItemCombine[] = [];
+@ccclass('PopupResultUpgradeRarityPet')
+export class PopupResultUpgradeRarityPet extends BasePopup {
     @property({ type: ItemCombine }) itemResult: ItemCombine = null;
     @property({ type: RichText }) titleLabel: RichText = null;
     @property({ type: SlotPetDetail }) petDetail: SlotPetDetail = null;
     @property({ type: Button }) closeButton: Button = null;
     @property({ type: Node }) posNew: Node = null;
     @property({ type: Node }) preCombineNode: Node = null;
-    resultPet: PopupCombiePetParam;
+    resultPet: PopupUpgradeRarityPetParam;
 
-    public async init(param?: PopupCombiePetParam) {
+    public async init(param?: PopupUpgradeRarityPetParam) {
         if (!param) return;
         this.closeButton.addAsyncListener(async () => {
             this.closeButton.interactable = false;
@@ -31,18 +24,46 @@ export class PopupCombiePet extends BasePopup {
             await this.resultPet.onFinishAnim();
         });
         this.resultPet = param;
-        this.setCombinePets(param.listPets);
         this.setResultPet(param.petMerge);
         if (this.preCombineNode) this.preCombineNode.active = true;
         this.playCombineAnimation();
     }
 
-    private setCombinePets(pets: PetDTO[]) {
-        this.itemCombine.forEach((slot, i) => {
-            const pet = pets[i];
-            if (slot && pet) {
-                slot.setData(pet, true);
-            }
+    private async playRarityRandomEffect(resultPet: PetDTO): Promise<void> {
+        const START_DELAY = 0.1;   // thời gian nháy ban đầu (giây)
+        const ACCEL_TIME = 1;    // sau bao lâu thì bắt đầu tăng delay
+        const DELAY_STEP = 0.02;   // tăng delay mỗi lần
+        const MAX_DELAY = 0.2;     // delay tối đa (giây)
+
+        return new Promise((resolve) => {
+            const rarities = [
+                AnimalRarity.COMMON,
+                AnimalRarity.RARE,
+                AnimalRarity.EPIC,
+                AnimalRarity.LEGENDARY,
+            ];
+
+            let step = 0;
+            let delay = START_DELAY;
+            let elapsed = 0;
+
+            const interval = setInterval(() => {
+                const rarity = rarities[step % rarities.length];
+                this.itemResult.petUIHelper.setBorderTemp(rarity);
+
+                step++;
+                elapsed += delay;
+
+                if (elapsed > ACCEL_TIME) {
+                    delay += DELAY_STEP;
+                }
+
+                if (delay > MAX_DELAY) {
+                    clearInterval(interval);
+                    this.itemResult.petUIHelper.setBorder(resultPet);
+                    resolve();
+                }
+            }, START_DELAY * 1000);
         });
     }
 
@@ -50,21 +71,6 @@ export class PopupCombiePet extends BasePopup {
         if (!resultPet || !this.itemResult) return;
         this.itemResult.setData(resultPet, false);
     }
-
-    playCombineTweenStagger(positionMove: Vec3) {
-        this.itemCombine.forEach((item, index) => {
-            tween(item.node)
-                .delay(index * 0.2)
-                .to(0.3, { position: positionMove }, { easing: "quadInOut" })
-                .call(() => {
-                    if (this.itemResult) {
-                        this.itemResult.playImpact();
-                    }
-                })
-                .start();
-        });
-    }
-
 
     onShowPetDetail() {
         this.petDetail.showDetailPanel(this.resultPet.petMerge);
@@ -76,26 +82,20 @@ export class PopupCombiePet extends BasePopup {
     private async playCombineAnimation(): Promise<void> {
         const resultNode = this.itemResult?.node;
         if (!resultNode) return;
-        await this.showCombineItemsSequentially();
-        await this.playCombineItemsImpact(resultNode);
         if (this.preCombineNode) this.preCombineNode.active = false;
+        await this.playRarityRandomEffect(this.resultPet.petMerge);
+
         await this.moveToCenterAndScale(resultNode);
         await this.playBaseEffects();
+
         if (this.resultPet.isSuccess) {
             await this.playSuccessEffects();
         }
+
         this.updateResultTitle();
         await this.moveToWorldPosition(resultNode, this.posNew.worldPosition);
         this.onShowPetDetail();
         this.itemResult?.stopBlinkEffect(this.resultPet.isSuccess);
-    }
-
-    private async playCombineItemsImpact(resultNode: Node): Promise<void> {
-        const positionMove = resultNode.position;
-        for (const item of this.itemCombine) {
-            await this.moveToPosition(item.node, positionMove);
-            await this.itemResult?.playImpact();
-        }
     }
 
     private async playBaseEffects(): Promise<void> {
@@ -121,37 +121,8 @@ export class PopupCombiePet extends BasePopup {
         if (!this.titleLabel) return;
 
         this.titleLabel.string = this.resultPet.isSuccess
-            ? "<outline color=#33190d width=1>Chúc Mừng Pet Đã Thăng Sao</outline>"
-            : "<outline color=#33190d width=1>Tiếc quá!! Pet chưa thể thăng sao lần này</outline>";
-    }
-
-    async showCombineItemsSequentially(delayStep: number = 0.5): Promise<void> {
-        for (let i = 0; i < this.itemCombine.length; i++) {
-            const item = this.itemCombine[i];
-            if (!item) continue;
-            await item.fadeIn();
-            await this.delay(delayStep);
-        }
-        await this.itemResult?.fadeIn();
-    }
-
-
-    private delay(sec: number): Promise<void> {
-        return new Promise((resolve) => this.scheduleOnce(resolve, sec));
-    }
-
-    moveToPosition(node: Node, targetPos: Vec3, duration: number = 0.3): Promise<void> {
-        return new Promise((resolve) => {
-            tween(node)
-                .to(duration, { position: targetPos }, { easing: 'sineInOut' })
-                .call(() => {
-                    if (node != null) {
-                        node.active = false;
-                    }
-                    resolve();
-                })
-                .start();
-        });
+            ? "<outline color=#33190d width=1>Chúc Mừng Pet Đã Thăng độ hiếm</outline>"
+            : "<outline color=#33190d width=1>Tiếc quá!! Pet chưa thể thăng độ hiếm lần này</outline>";
     }
 
     moveToCenterAndScale(node: Node, duration: number = 0.4): Promise<void> {
@@ -172,7 +143,7 @@ export class PopupCombiePet extends BasePopup {
         });
     }
 
-    moveToWorldPosition(node: Node, targetWorldPos: Vec3, duration: number = 0.3): Promise<void> {
+    moveToWorldPosition(node: Node, targetWorldPos: Vec3, duration: number = 0.5): Promise<void> {
         return new Promise((resolve) => {
             const localPos = node.parent!.getComponent(UITransform)!.convertToNodeSpaceAR(targetWorldPos);
             tween(node)
@@ -183,8 +154,7 @@ export class PopupCombiePet extends BasePopup {
     }
 }
 
-export interface PopupCombiePetParam {
-    listPets: PetDTO[];
+export interface PopupUpgradeRarityPetParam {
     petMerge: PetDTO;
     isSuccess: boolean;
     onFinishAnim?: () => Promise<void>;

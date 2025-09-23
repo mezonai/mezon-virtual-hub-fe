@@ -1,5 +1,5 @@
 import { MapData } from "../Interface/DataMapAPI";
-import { Food, Item, PetReward, QuestType, RewardItemDTO, RewardNewbieDTO, RewardType, StatsConfigDTO } from "../Model/Item";
+import { Food, InventoryDTO, Item, PetReward, QuestType, RewardItemDTO, RewardNewbieDTO, RewardType, StatsConfigDTO } from "../Model/Item";
 import { AnimalElementString, AnimalRarity, Element, PetBattleInfo, PetDTO, PlayerBattle, SkillBattleInfo, Species, TypeSkill } from "../Model/PetDTO";
 
 export default class ConvetData {
@@ -283,5 +283,31 @@ export default class ConvetData {
                 }
             }
         }
+    }
+
+    public static ConvertInventoryDTO(apiData: any[]): InventoryDTO[] {
+        if (!apiData || !Array.isArray(apiData)) return [];
+
+        return apiData.map(inv => {
+            const inventory = new InventoryDTO();
+            inventory.id = inv.id;
+            inventory.equipped = inv.equipped ?? false;
+            inventory.quantity = inv.quantity;
+            inventory.inventory_type = inv.inventory_type;
+
+            if (inv.item) {
+                const itemObj = new Item();
+                itemObj.id = inv.item.id;
+                itemObj.name = inv.item.name;
+                itemObj.gender = inv.item.gender;
+                itemObj.gold = inv.item.gold;
+                itemObj.type = inv.item.type;
+                itemObj.item_code = inv.item.item_code;
+                itemObj.is_stackable = inv.item.is_stackable;
+                itemObj.is_equippable = inv.item.is_equippable ?? false;
+                inventory.item = itemObj;
+            }
+            return inventory;
+        });
     }
 }

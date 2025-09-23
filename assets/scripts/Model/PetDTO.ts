@@ -225,8 +225,8 @@ export interface MergePetRequestPayload {
     keep_highest_iv: boolean;
 }
 
-export interface MergePetResponseDTO {
+export interface UpgradePetResponseDTO {
   pet: PetDTO;
-  user_diamond: number;
+  user_diamond?: number;
   success: boolean
 }

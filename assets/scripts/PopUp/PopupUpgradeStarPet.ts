@@ -25,7 +25,10 @@ export class PopupUpgradeStarPet extends BasePopup {
     getConfigRate: StatsConfigDTO;
     upgradeStarsDiamond: number;
 
-    public init(param?: any): void {
+    public init(param?: UpgradeStarPetInitParam): void {
+        if (param?.onUpdate) {
+            this.updateListPet = param.onUpdate;
+        }
         this.mergeButton.addAsyncListener(async () => {
             this.mergeButton.interactable = false;
             this.merge();
@@ -85,7 +88,7 @@ export class PopupUpgradeStarPet extends BasePopup {
             pet_ids: allPetIds,
             keep_highest_iv: this._isKeepPetStats,
         };
-        const dataPetMerge = await WebRequestManager.instance.postMergePetAsync(data);
+        const dataPetMerge = await WebRequestManager.instance.postUpgradeStarPetAsync(data);
         this.petMerge = dataPetMerge.pet;
         if (this.petMerge == null) {
             return;
@@ -118,8 +121,13 @@ export class PopupUpgradeStarPet extends BasePopup {
 
     private getAllPetIds(): string[] {
         const pets = this.getPetsForMerge();
+        if (pets.some(p => p.stars >= 3)) {
+            this.showConfirm("Thú cưng đã đạt sao cao nhất không thể nâng hơn nữa!!!");
+            return [];
+        }
+        
         if (!this.hasEnoughPets(pets)) {
-            this.showConfirm("Cần 3 thú cưng để có thể hợp thể!!!");
+            this.showConfirm("Cần 3 thú cưng để có thể nâng sao!!!");
             return [];
         }
 
@@ -132,7 +140,7 @@ export class PopupUpgradeStarPet extends BasePopup {
         return ids;
     }
 
-    private getPetsForMerge(): PetDTO[] {
+    public getPetsForMerge(): PetDTO[] {
         return this.slotPet
             .map(slot => slot.itemPlacePetUpgrade?.currentPet)
             .filter((pet): pet is PetDTO => !!pet);
@@ -185,11 +193,9 @@ export class PopupUpgradeStarPet extends BasePopup {
     }
 
     private updateRateUI(rateMerge: number): void {
-        const isValid = rateMerge > 0;
-        this.rateMergeText.node.active = isValid;
-        this.rateMergeText.string = isValid
+        this.rateMergeText.string = rateMerge > 0
             ? `<outline color=#222222 width=1> Tỷ lệ thành công: ${rateMerge} %</outline>`
-            : "";
+            : "<outline color=#222222 width=1> Tỷ lệ thành công: --- %</outline>";
     }
 
     showDetailPanel(slot: ItemAnimalSlotDrag, pet: PetDTO) {
@@ -214,4 +220,8 @@ export class PopupUpgradeStarPet extends BasePopup {
         detail.clearPetDetail();
         this.SetRateMerge();
     }
+}
+
+export interface UpgradeStarPetInitParam {
+    onUpdate?: (updatedPets: PetDTO[]) => void;
 }
