@@ -7127,7 +7127,7 @@
     "_string": "Giữ lại chỉ số pet gốc",
     "_horizontalAlign": 0,
     "_verticalAlign": 1,
-    "_actualFontSize": 20,
+    "_actualFontSize": 17,
     "_fontSize": 4,
     "_fontFamily": "Arial",
     "_lineHeight": 5,
@@ -7874,7 +7874,7 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 22.174799876847292,
+      "width": 22.167734230680416,
       "height": 6.3
     },
     "_anchorPoint": {
@@ -7966,7 +7966,7 @@
     "_lpos": {
       "__type__": "cc.Vec3",
       "x": -0.114,
-      "y": -1.735,
+      "y": -3.15,
       "z": 0
     },
     "_lrot": {
@@ -8006,7 +8006,7 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 33.17165050287356,
+      "width": 33.16072631234606,
       "height": 6.3
     },
     "_anchorPoint": {
@@ -8538,12 +8538,12 @@
     "rateMergeText": {
       "__id__": 473
     },
-    "slotPet": [
+    "slotPets": [
       null,
       null,
       null
     ],
-    "slotPetDetail": [
+    "slotPetDetails": [
       null,
       null,
       null
@@ -12791,144 +12791,6 @@
   {
     "__type__": "cc.TargetOverrideInfo",
     "source": {
-      "__id__": 500
-    },
-    "sourceInfo": null,
-    "propertyPath": [
-      "slotPet",
-      "0"
-    ],
-    "target": {
-      "__id__": 166
-    },
-    "targetInfo": {
-      "__id__": 764
-    }
-  },
-  {
-    "__type__": "cc.TargetInfo",
-    "localID": [
-      "cdHsD0e+dKCKGZOpH6OiXo"
-    ]
-  },
-  {
-    "__type__": "cc.TargetOverrideInfo",
-    "source": {
-      "__id__": 500
-    },
-    "sourceInfo": null,
-    "propertyPath": [
-      "slotPet",
-      "1"
-    ],
-    "target": {
-      "__id__": 217
-    },
-    "targetInfo": {
-      "__id__": 766
-    }
-  },
-  {
-    "__type__": "cc.TargetInfo",
-    "localID": [
-      "cdHsD0e+dKCKGZOpH6OiXo"
-    ]
-  },
-  {
-    "__type__": "cc.TargetOverrideInfo",
-    "source": {
-      "__id__": 500
-    },
-    "sourceInfo": null,
-    "propertyPath": [
-      "slotPet",
-      "2"
-    ],
-    "target": {
-      "__id__": 275
-    },
-    "targetInfo": {
-      "__id__": 768
-    }
-  },
-  {
-    "__type__": "cc.TargetInfo",
-    "localID": [
-      "cdHsD0e+dKCKGZOpH6OiXo"
-    ]
-  },
-  {
-    "__type__": "cc.TargetOverrideInfo",
-    "source": {
-      "__id__": 500
-    },
-    "sourceInfo": null,
-    "propertyPath": [
-      "slotPetDetail",
-      "0"
-    ],
-    "target": {
-      "__id__": 340
-    },
-    "targetInfo": {
-      "__id__": 770
-    }
-  },
-  {
-    "__type__": "cc.TargetInfo",
-    "localID": [
-      "45PG5DAEFFub1Bh/bIaut+"
-    ]
-  },
-  {
-    "__type__": "cc.TargetOverrideInfo",
-    "source": {
-      "__id__": 500
-    },
-    "sourceInfo": null,
-    "propertyPath": [
-      "slotPetDetail",
-      "1"
-    ],
-    "target": {
-      "__id__": 363
-    },
-    "targetInfo": {
-      "__id__": 772
-    }
-  },
-  {
-    "__type__": "cc.TargetInfo",
-    "localID": [
-      "45PG5DAEFFub1Bh/bIaut+"
-    ]
-  },
-  {
-    "__type__": "cc.TargetOverrideInfo",
-    "source": {
-      "__id__": 500
-    },
-    "sourceInfo": null,
-    "propertyPath": [
-      "slotPetDetail",
-      "2"
-    ],
-    "target": {
-      "__id__": 384
-    },
-    "targetInfo": {
-      "__id__": 774
-    }
-  },
-  {
-    "__type__": "cc.TargetInfo",
-    "localID": [
-      "45PG5DAEFFub1Bh/bIaut+"
-    ]
-  },
-  {
-    "__type__": "cc.TargetOverrideInfo",
-    "source": {
       "__id__": 697
     },
     "sourceInfo": null,
@@ -12940,7 +12802,7 @@
       "__id__": 506
     },
     "targetInfo": {
-      "__id__": 776
+      "__id__": 764
     }
   },
   {
@@ -12963,7 +12825,7 @@
       "__id__": 563
     },
     "targetInfo": {
-      "__id__": 778
+      "__id__": 766
     }
   },
   {
@@ -12986,7 +12848,7 @@
       "__id__": 596
     },
     "targetInfo": {
-      "__id__": 780
+      "__id__": 768
     }
   },
   {
@@ -13009,7 +12871,7 @@
       "__id__": 611
     },
     "targetInfo": {
-      "__id__": 782
+      "__id__": 770
     }
   },
   {
@@ -13032,13 +12894,151 @@
       "__id__": 633
     },
     "targetInfo": {
-      "__id__": 784
+      "__id__": 772
     }
   },
   {
     "__type__": "cc.TargetInfo",
     "localID": [
       "c9HLcGyDNEzr5AYGiT7W6F"
+    ]
+  },
+  {
+    "__type__": "cc.TargetOverrideInfo",
+    "source": {
+      "__id__": 500
+    },
+    "sourceInfo": null,
+    "propertyPath": [
+      "slotPets",
+      "0"
+    ],
+    "target": {
+      "__id__": 166
+    },
+    "targetInfo": {
+      "__id__": 774
+    }
+  },
+  {
+    "__type__": "cc.TargetInfo",
+    "localID": [
+      "cdHsD0e+dKCKGZOpH6OiXo"
+    ]
+  },
+  {
+    "__type__": "cc.TargetOverrideInfo",
+    "source": {
+      "__id__": 500
+    },
+    "sourceInfo": null,
+    "propertyPath": [
+      "slotPets",
+      "1"
+    ],
+    "target": {
+      "__id__": 217
+    },
+    "targetInfo": {
+      "__id__": 776
+    }
+  },
+  {
+    "__type__": "cc.TargetInfo",
+    "localID": [
+      "cdHsD0e+dKCKGZOpH6OiXo"
+    ]
+  },
+  {
+    "__type__": "cc.TargetOverrideInfo",
+    "source": {
+      "__id__": 500
+    },
+    "sourceInfo": null,
+    "propertyPath": [
+      "slotPets",
+      "2"
+    ],
+    "target": {
+      "__id__": 275
+    },
+    "targetInfo": {
+      "__id__": 778
+    }
+  },
+  {
+    "__type__": "cc.TargetInfo",
+    "localID": [
+      "cdHsD0e+dKCKGZOpH6OiXo"
+    ]
+  },
+  {
+    "__type__": "cc.TargetOverrideInfo",
+    "source": {
+      "__id__": 500
+    },
+    "sourceInfo": null,
+    "propertyPath": [
+      "slotPetDetails",
+      "0"
+    ],
+    "target": {
+      "__id__": 340
+    },
+    "targetInfo": {
+      "__id__": 780
+    }
+  },
+  {
+    "__type__": "cc.TargetInfo",
+    "localID": [
+      "45PG5DAEFFub1Bh/bIaut+"
+    ]
+  },
+  {
+    "__type__": "cc.TargetOverrideInfo",
+    "source": {
+      "__id__": 500
+    },
+    "sourceInfo": null,
+    "propertyPath": [
+      "slotPetDetails",
+      "1"
+    ],
+    "target": {
+      "__id__": 363
+    },
+    "targetInfo": {
+      "__id__": 782
+    }
+  },
+  {
+    "__type__": "cc.TargetInfo",
+    "localID": [
+      "45PG5DAEFFub1Bh/bIaut+"
+    ]
+  },
+  {
+    "__type__": "cc.TargetOverrideInfo",
+    "source": {
+      "__id__": 500
+    },
+    "sourceInfo": null,
+    "propertyPath": [
+      "slotPetDetails",
+      "2"
+    ],
+    "target": {
+      "__id__": 384
+    },
+    "targetInfo": {
+      "__id__": 784
+    }
+  },
+  {
+    "__type__": "cc.TargetInfo",
+    "localID": [
+      "45PG5DAEFFub1Bh/bIaut+"
     ]
   }
 ]

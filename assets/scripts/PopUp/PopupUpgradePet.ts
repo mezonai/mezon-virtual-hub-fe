@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, Button, Prefab, Layers, Vec3, ScrollView } from "cc";
+import { _decorator, Node, Button, Prefab, Layers, Vec3, ScrollView } from "cc";
 import { BasePopup } from "./BasePopup";
 import { PopupManager } from "./PopupManager";
 import { UserMeManager } from "../core/UserMeManager";
@@ -6,7 +6,6 @@ import { AnimalRarity, PetDTO } from "../Model/PetDTO";
 import { PopupUpgradeStarPet } from "./PopupUpgradeStarPet";
 import { PopupUpgradeRarityPet } from "./PopupUpgradeRarityPet";
 import { ItemAnimalSlotDrag } from "../animal/ItemAnimalSlotDrag";
-import { AnimalController } from "../animal/AnimalController";
 import { ObjectPoolManager } from "../pooling/ObjectPoolManager";
 import { InteractSlot } from "../animal/ItemSlotSkill";
 
@@ -30,11 +29,10 @@ export class PopupUpgradePet extends BasePopup {
     @property({ type: ScrollView }) detailStar: ScrollView = null;
     @property({ type: ScrollView }) detailRarity: ScrollView = null;
 
-    private currentTab: UpgradeTab = UpgradeTab.STAR;
     private animalSlotsStar: ItemAnimalSlotDrag[] = [];
     private animalSlotsRarity: ItemAnimalSlotDrag[] = [];
-    private listAllPetPlayer: PetDTO[] = [];
     private animalObject: Node = null;
+    private currentTab: UpgradeTab = null;
 
     public init(): void {
         this.closeButton.addAsyncListener(async () => {
@@ -47,26 +45,24 @@ export class PopupUpgradePet extends BasePopup {
         this.switchTab(UpgradeTab.STAR);
 
         this.popupStarUpgradePet?.init({
-            onUpdate: (pets) => this.onPetUpdate(pets, UpgradeTab.STAR)
+            onUpdate: (pets) => this.onPetUpdate(pets, UpgradeTab.STAR),
+            onSelectedPet: () => this.handleSlotSelected()
         });
 
         this.popupUpgradeRarityPet?.init({
-            onUpdate: (pets) => this.onPetUpdate(pets, UpgradeTab.RARITY)
+            onUpdate: (pets) => this.onPetUpdate(pets, UpgradeTab.RARITY),
+            onSelectedPet: () => this.handleSlotSelected()
         });
     }
 
     private switchTab(tab: UpgradeTab) {
         this.currentTab = tab;
         this.setActiveTabUI(tab);
-
         const myPets = UserMeManager.MyPets();
-        this.listAllPetPlayer = myPets;
-
         this.renderPets(myPets, tab, { forceUpdate: false });
     }
 
     private onPetUpdate(myPets: PetDTO[], fromTab: UpgradeTab) {
-        this.listAllPetPlayer = myPets;
         this.renderPets(myPets, fromTab, { forceUpdate: true });
     }
 
@@ -108,7 +104,7 @@ export class PopupUpgradePet extends BasePopup {
 
 
     async closePopup() {
-        if (this.animalObject) this.animalObject.active = false; // chỉ ẩn thôi
+        if (this.animalObject) this.animalObject.active = false;
         await PopupManager.getInstance().closePopup(this.node.uuid, true);
     }
 
@@ -142,7 +138,7 @@ export class PopupUpgradePet extends BasePopup {
     }
 
     private updateStarPets(pets: PetDTO[]) {
-        this.updatePetsSlot(pets, this.animalSlotsStar, this.detailStar.content, this.popupStarUpgradePet.slotPet);
+        this.updatePetsSlot(pets, this.animalSlotsStar, this.detailStar.content, this.popupStarUpgradePet.slotPets);
     }
 
     private updateRarityPets(pets: PetDTO[]) {
@@ -160,7 +156,11 @@ export class PopupUpgradePet extends BasePopup {
             } else {
                 slot = slots[i];
             }
-            slot.setDataSlot(pets[i], InteractSlot.DRAG, slotPetList, this.parentPetCanMove);
+            slot.setDataSlot(pets[i], InteractSlot.DRAG, slotPetList, this.parentPetCanMove,
+                () => {
+                    this.handleSlotSelected();
+                }
+            );
             slot.node.active = true;
         }
     }
@@ -169,5 +169,25 @@ export class PopupUpgradePet extends BasePopup {
         const tasksStar = this.animalSlotsStar.map(slot => slot.refeshSlot());
         const tasksRarity = this.animalSlotsRarity.map(slot => slot.refeshSlot());
         await Promise.all([Promise.all(tasksStar), Promise.all(tasksRarity)]);
+    }
+    
+    handleSlotSelected() {
+        if (this.currentTab === UpgradeTab.STAR) {
+            const pets = this.popupStarUpgradePet.getPetsForMerge();
+            const petIds = pets.map(p => p.id);
+            this.updateSelectedSlots(this.animalSlotsStar, slotPet => petIds.includes(slotPet.id));
+        }
+
+        if (this.currentTab === UpgradeTab.RARITY) {
+            const upgradePet = this.popupUpgradeRarityPet.getPetsForUpgrade();
+            this.updateSelectedSlots(this.animalSlotsRarity, slotPet => slotPet.id === upgradePet?.id);
+        }
+    }
+
+    private updateSelectedSlots( slots: { currentPet?: any; selectedNode: { active: boolean } }[], isSelected: (pet: any) => boolean) {
+        slots.forEach(slot => {
+            const slotPet = slot.currentPet;
+            slot.selectedNode.active = slotPet ? isSelected(slotPet) : false;
+        });
     }
 }

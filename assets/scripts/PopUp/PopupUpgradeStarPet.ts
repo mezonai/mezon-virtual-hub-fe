@@ -19,15 +19,19 @@ export class PopupUpgradeStarPet extends BasePopup {
     @property({ type: RichText }) rateMergeText: RichText = null;
     private _isKeepPetStats = false;
     private petMerge: PetDTO;
-    @property({ type: ItemAnimalSlotDrag }) slotPet: ItemAnimalSlotDrag[] = [];
-    @property({ type: SlotPetDetail }) slotPetDetail: SlotPetDetail[] = [];
+    @property({ type: ItemAnimalSlotDrag }) slotPets: ItemAnimalSlotDrag[] = [];
+    @property({ type: SlotPetDetail }) slotPetDetails: SlotPetDetail[] = [];
     updateListPet: ((updatedPets: PetDTO[]) => void) | null = null;
+    onSelectedPet: () => void = () => {};
     getConfigRate: StatsConfigDTO;
     upgradeStarsDiamond: number;
 
     public init(param?: UpgradeStarPetInitParam): void {
         if (param?.onUpdate) {
             this.updateListPet = param.onUpdate;
+        }
+        if (param?.onSelectedPet) {
+            this.onSelectedPet = param.onSelectedPet;
         }
         this.mergeButton.addAsyncListener(async () => {
             this.mergeButton.interactable = false;
@@ -36,15 +40,22 @@ export class PopupUpgradeStarPet extends BasePopup {
         });
         this.keepPetStatsToggle.node.on(Toggle.EventType.TOGGLE, this.keepPetStats, this);
 
-        this.slotPet.forEach(element => {
+        this.addCallbackSlotDrop();
+        this.getConfigRateAsync()
+    }
+
+    addCallbackSlotDrop(){
+        this.slotPets.forEach(element => {
             element.onShowDetail = (slot, petData) => {
                 this.showDetailPanel(slot, petData);
             };
             element.onHideDetail = (slot) => {
                 this.hideDetailPanel(slot);
             };
+            element.onSelectedPet = () => {
+                this.onSelectedPet();
+            };
         });
-        this.getConfigRateAsync()
     }
 
     async getConfigRateAsync() {
@@ -94,7 +105,7 @@ export class PopupUpgradeStarPet extends BasePopup {
             return;
         }
         else {
-            const pets = this.slotPet
+            const pets = this.slotPets
                 .map(slot => slot.itemPlacePetUpgrade?.currentPet)
                 .filter((pet): pet is PetDTO => !!pet);
             this.clearAllSlots();
@@ -141,7 +152,7 @@ export class PopupUpgradeStarPet extends BasePopup {
     }
 
     public getPetsForMerge(): PetDTO[] {
-        return this.slotPet
+        return this.slotPets
             .map(slot => slot.itemPlacePetUpgrade?.currentPet)
             .filter((pet): pet is PetDTO => !!pet);
     }
@@ -165,7 +176,7 @@ export class PopupUpgradeStarPet extends BasePopup {
     }
 
     private clearAllSlots() {
-        this.slotPet.forEach(slot => {
+        this.slotPets.forEach(slot => {
             if (slot.itemPlacePetUpgrade) {
                 slot.refeshSlot();
                 slot.itemPlacePetUpgrade = null;
@@ -199,11 +210,11 @@ export class PopupUpgradeStarPet extends BasePopup {
     }
 
     showDetailPanel(slot: ItemAnimalSlotDrag, pet: PetDTO) {
-        const index = this.slotPet.findIndex(s => s === slot);
+        const index = this.slotPets.findIndex(s => s === slot);
         if (index === -1) {
             return;
         }
-        const detail = this.slotPetDetail[index];
+        const detail = this.slotPetDetails[index];
         if (!detail) {
             return;
         }
@@ -212,10 +223,10 @@ export class PopupUpgradeStarPet extends BasePopup {
     }
 
     hideDetailPanel(slot: ItemAnimalSlotDrag) {
-        const index = this.slotPet.findIndex(s => s === slot);
+        const index = this.slotPets.findIndex(s => s === slot);
         if (index === -1) return;
 
-        const detail = this.slotPetDetail[index];
+        const detail = this.slotPetDetails[index];
         if (!detail) return;
         detail.clearPetDetail();
         this.SetRateMerge();
@@ -224,4 +235,5 @@ export class PopupUpgradeStarPet extends BasePopup {
 
 export interface UpgradeStarPetInitParam {
     onUpdate?: (updatedPets: PetDTO[]) => void;
+    onSelectedPet: () => void;
 }

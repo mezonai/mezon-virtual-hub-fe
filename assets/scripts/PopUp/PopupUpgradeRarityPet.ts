@@ -20,6 +20,7 @@ export class PopupUpgradeRarityPet extends BasePopup {
     @property({ type: Button }) upgradeButton: Button = null;
     @property({ type: RichText }) rateMergeText: RichText = null;
     updateListPet: ((updatedPets: PetDTO[]) => void) | null = null;
+    onSelectedPet: () => void = () => {};
     private petUpgrade: PetDTO;
     getConfigRate: StatsConfigDTO;
     upgradeStarsDiamond: number;
@@ -29,11 +30,19 @@ export class PopupUpgradeRarityPet extends BasePopup {
         if (param?.onUpdate) {
             this.updateListPet = param.onUpdate;
         }
+        if (param?.onSelectedPet) {
+            this.onSelectedPet = param.onSelectedPet;
+        }
         this.upgradeButton.addAsyncListener(async () => {
             this.upgradeButton.interactable = false;
             this.UpgradeRarityPet();
             this.upgradeButton.interactable = true;
         });
+        this.addCallbackSlotDrop();
+        this.getConfigRateAsync();
+    }
+
+    addCallbackSlotDrop(){
         this.slotPets.forEach(element => {
             element.onShowDetail = (slot, petData) => {
                 this.showDetailPanel(slot, petData);
@@ -41,9 +50,10 @@ export class PopupUpgradeRarityPet extends BasePopup {
             element.onHideDetail = (slot) => {
                 this.hideDetailPanel(slot);
             };
+            element.onSelectedPet = () => {
+                this.onSelectedPet();
+            };
         });
-        this.getConfigRateAsync();
-
     }
 
     async getConfigRateAsync() {
@@ -84,8 +94,12 @@ export class PopupUpgradeRarityPet extends BasePopup {
         }
     }
 
+    public getPetsForUpgrade(): PetDTO {
+        return this.slotPets[0]?.itemPlacePetUpgrade?.currentPet;
+    }
+
     async UpgradeRarityPet() {
-        const pet = this.slotPets[0]?.itemPlacePetUpgrade?.currentPet;
+        const pet = this.getPetsForUpgrade();
         if (!pet) return;
         if (!this.CheckStarPets(pet)) {
             this.showConfirm("Pet chưa đạt 3 sao, không thể nâng cấp độ hiếm!!!");
@@ -177,4 +191,5 @@ export class PopupUpgradeRarityPet extends BasePopup {
 
 export interface UpgradeRarityPetInitParam {
     onUpdate?: (updatedPets: PetDTO[]) => void;
+    onSelectedPet: () => void;
 }

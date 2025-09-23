@@ -17,11 +17,11 @@ export class ItemPlacePetDrag extends Component {
     @property(PetSlotUIHelper) petUIHelper: PetSlotUIHelper = null;
     currentPet: PetDTO = null;
 
-    setData(petData: PetDTO, interactSlot: InteractSlot, slotPet: ItemAnimalSlotDrag[] = [], parentSkillCanMove: Node = null) {
+    setData(petData: PetDTO, interactSlot: InteractSlot, slotPet: ItemAnimalSlotDrag[] = [], parentSkillCanMove: Node = null, onSelectedPet: () => void = () => {}) {
         this.petImage.setActivePetByName(petData.name);
         this.petUIHelper.setBorder(petData);
         this.currentPet = petData;
         if (interactSlot == InteractSlot.SHOW_UI) return; // chỉ show ui thì không cần set data
-        this.petUpgradeDragItem.intiData(slotPet, interactSlot, parentSkillCanMove);
+        this.petUpgradeDragItem.intiData(slotPet, interactSlot, parentSkillCanMove, onSelectedPet);
     }
 }

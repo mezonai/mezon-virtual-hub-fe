@@ -189,7 +189,6 @@ export class WebRequestManager extends Component {
             WebRequestManager.instance.getItemType(
                 data,
                 (response) => {
-                    console.log("response.data ", response.data);
                     const inventoryList = ConvetData.ConvertInventoryDTO(response.data);
                     resolve(inventoryList);
                 },
@@ -205,7 +204,6 @@ export class WebRequestManager extends Component {
             WebRequestManager.instance.postUpgradeRarityPet(
                 pet_player_id,
                 (response) => {
-                    console.log("response.data ", response.data);
                         const result: UpgradePetResponseDTO = {
                         pet: ConvetData.ConvertPet(response.data.pet),
                         success: response.data.success

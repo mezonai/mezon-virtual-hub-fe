@@ -21,18 +21,21 @@ export class PetUpgradeDragItem extends DraggableBase {
     private dragStartPos: Vec3 = null;
     private clickCount = 0;
     private clickTimeout: number = 300; // thời gian giữa 2 lần click để nhận là double click (ms)
+    onSelectedPet: () => void = () => {};
 
     intiData(
         slotsPetPlace: ItemAnimalSlotDrag[],
         interactSlot: InteractSlot,
-        parentPetCanMove: Node = null
+        parentPetCanMove: Node = null,
+        onSelectedPet: () => void = () => {}
     ) {
         if (!slotsPetPlace || slotsPetPlace.length <= 0) {
             this.interactionMode = InteractSlot.NONE;
             return;
         }
-        this.slotsPlacePet = slotsPetPlace;
         this.interactionMode = interactSlot;
+        this.onSelectedPet = onSelectedPet;
+        this.slotsPlacePet = slotsPetPlace;
         if (parentPetCanMove) this.containerNode = parentPetCanMove;
     }
 
@@ -126,6 +129,7 @@ export class PetUpgradeDragItem extends DraggableBase {
         if (this.originalParent) {
             this.node.parent = this.originalParent;
             this.node.setPosition(this.originalPos);
+            this.onSelectedPet?.();
             this.originalParent = null;
         }
         this.isDragging = false;
@@ -168,7 +172,7 @@ export class PetUpgradeDragItem extends DraggableBase {
         if (!targetSlot.itemPlacePetUpgrade?.currentPet) {
             targetSlot.updateSlotPet(draggedPet, this.slotsPlacePet, InteractSlot.DOUBLE_CLICK);
         } else {
-            targetSlot.UpdateSlotExistedPet(itemPlacePetUpgrade, draggedPet);
+            targetSlot.UpdateSlotExistedPet(draggedPet,InteractSlot.DOUBLE_CLICK);
         }
         targetSlot.onShowDetail?.(targetSlot, draggedPet); 
 
