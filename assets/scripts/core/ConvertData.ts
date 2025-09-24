@@ -285,6 +285,29 @@ export default class ConvetData {
         }
     }
 
+    private static convertItem(data: any): Item {
+        const item = new Item();
+        item.id = data.id;
+        item.name = data.name;
+        item.gender = data.gender ?? "not specified";
+        item.gold = data.gold ?? 0;
+        item.type = data.type;
+        item.item_code = data.item_code ?? null;
+        return item;
+    }
+
+    private static convertFood(data: any): Food {
+        const food = new Food();
+        food.id = data.id;
+        food.name = data.name;
+        food.type = data.type;
+        food.purchase_method = data.purchase_method;
+        food.price = data.price ?? 0;
+        food.description = data.description ?? "";
+        food.catch_rate_bonus = data.catch_rate_bonus ?? 0;
+        return food;
+    }
+
     public static ConvertInventoryDTO(apiData: any[]): InventoryDTO[] {
         if (!apiData || !Array.isArray(apiData)) return [];
 
@@ -294,20 +317,10 @@ export default class ConvetData {
             inventory.equipped = inv.equipped ?? false;
             inventory.quantity = inv.quantity;
             inventory.inventory_type = inv.inventory_type;
-
-            if (inv.item) {
-                const itemObj = new Item();
-                itemObj.id = inv.item.id;
-                itemObj.name = inv.item.name;
-                itemObj.gender = inv.item.gender;
-                itemObj.gold = inv.item.gold;
-                itemObj.type = inv.item.type;
-                itemObj.item_code = inv.item.item_code;
-                itemObj.is_stackable = inv.item.is_stackable;
-                itemObj.is_equippable = inv.item.is_equippable ?? false;
-                inventory.item = itemObj;
-            }
+            if (inv.item) inventory.item = this.convertItem(inv.item);
+            if (inv.food) inventory.food = this.convertFood(inv.food);
             return inventory;
         });
     }
+
 }

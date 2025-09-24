@@ -9,7 +9,6 @@ import Utilities from '../../../utilities/Utilities';
 import { ObjectPoolManager } from '../../../pooling/ObjectPoolManager';
 import { EVENT_NAME } from '../../../network/APIConstant';
 import { LocalItemDataConfig } from '../../../Model/LocalItemConfig';
-import { ResourceManager } from '../../../core/ResourceManager';
 import { BasePopup } from '../../../PopUp/BasePopup';
 const { ccclass, property } = _decorator;
 
@@ -26,7 +25,7 @@ export class BaseInventoryManager extends BasePopup {
     @property({ type: Button }) actionButton: Button = null;
     @property({ type: AnimationEventController }) previewPlayer: AnimationEventController = null;
 
-    protected skinData: Item = null;
+    protected itemData: Item = null;
     protected selectingUIItem: InventoryUIITem = null;
     protected equipingUIItem: InventoryUIITem = null;
     protected isItemGenerated: boolean = false;
@@ -35,7 +34,9 @@ export class BaseInventoryManager extends BasePopup {
 
     @property({ type: [SpriteFrame] }) iconValue: SpriteFrame[] = []; // 0: normal 1:  rare 2:  super
     @property({ type: [SpriteFrame] }) iconMoney: SpriteFrame[] = []; // 0: Gold 1: Diamond
+    @property({ type: [SpriteFrame] }) cardValue: SpriteFrame[] = []; // 0: Gold 1: Diamond
     protected foodIconMap: Record<string, SpriteFrame>;
+    protected cardIconMap: Record<string, SpriteFrame>;
     protected moneyIconMap: Record<string, SpriteFrame>;
     protected currentTabName: string = null;
 
@@ -43,6 +44,7 @@ export class BaseInventoryManager extends BasePopup {
 
     public init(param?: any): void {
         this.initFoodMap();
+        this.initCardMap();
         this.initMoneyMap();
         if (this.categories.length > 0) {
             this.reset();
@@ -61,6 +63,16 @@ export class BaseInventoryManager extends BasePopup {
                 normal: this.iconValue[0],
                 premium: this.iconValue[1],
                 ultrapremium: this.iconValue[2]
+            };
+        }
+    }
+
+    initCardMap() {
+        if (this.cardValue.length >= 3) {
+            this.cardIconMap = {
+                rarity_card_rare: this.cardValue[0],
+                rarity_card_epic: this.cardValue[1],
+                rarity_card_legendary: this.cardValue[2]
             };
         }
     }
@@ -85,8 +97,8 @@ export class BaseInventoryManager extends BasePopup {
 
     protected async onTabChange(tabName) {
         this.isItemGenerated = true;
-        ObjectPoolManager.instance.returnArrayToPool(this.itemContainer.children);
-        ObjectPoolManager.instance.returnArrayToPool(this.foodContainer.children);
+        await ObjectPoolManager.instance.returnArrayToPool(this.itemContainer.children);
+        await ObjectPoolManager.instance.returnArrayToPool(this.foodContainer.children);
         this.reset();
         const isTabFood = (tabName === InventoryType.FOOD);
         if (isTabFood)
@@ -113,7 +125,7 @@ export class BaseInventoryManager extends BasePopup {
         }, 0.05);
     }
 
-    private async spawnFoodItems(items: any[]) {
+    protected async spawnFoodItems(items: any[]) {
         for (const item of items) {
             if (Number(item.quantity) <= 0) continue;
             let itemNode = ObjectPoolManager.instance.spawnFromPool(this.itemPrefab.name);
@@ -125,7 +137,19 @@ export class BaseInventoryManager extends BasePopup {
         }
     }
 
-    private async spawnClothesItems(items: any[]) {
+    protected async spawnCardItems(items: any[]) {
+        for (const item of items) {
+            if (Number(item.quantity) <= 0) continue;
+            let itemNode = ObjectPoolManager.instance.spawnFromPool(this.itemPrefab.name);
+            itemNode.off(EVENT_NAME.ON_ITEM_CLICK);
+            itemNode.off(EVENT_NAME.ON_FOOD_CLICK);
+            itemNode.setParent(this.foodContainer);
+            await this.registUIItemData(itemNode, item, null);
+            this.registItemClickEvent(itemNode);
+        }
+    }
+
+    protected async spawnClothesItems(items: any[]) {
         for (const item of items) {
             let skinLocalData = this.getLocalData(item);
             if (!skinLocalData)
@@ -136,6 +160,17 @@ export class BaseInventoryManager extends BasePopup {
             itemNode.setParent(this.itemContainer);
 
             await this.registUIItemData(itemNode, item, skinLocalData);
+            this.registItemClickEvent(itemNode);
+        }
+    }
+
+    protected async spawCardItems(items: any[]) {
+        for (const item of items) {
+            let itemNode = ObjectPoolManager.instance.spawnFromPool(this.itemPrefab.name);
+            itemNode.off(EVENT_NAME.ON_ITEM_CLICK);
+            itemNode.off(EVENT_NAME.ON_FOOD_CLICK);
+            itemNode.setParent(this.itemContainer);
+            await this.registUIItemData(itemNode, item, null);
             this.registItemClickEvent(itemNode);
         }
     }
@@ -211,8 +246,12 @@ export class BaseInventoryManager extends BasePopup {
 
     protected onUIItemClick(uiItem: InventoryUIITem, data: Item) {
         this.selectingUIItem = uiItem;
-        this.skinData = data;
-        this.previewPlayer.changeSkin(this.skinData, false);
+        this.itemData = data;
+        if(data.type == ItemType.PET_CARD){
+            this.descriptionText.string = `${data.name}`;
+            return;
+        }
+        this.previewPlayer.changeSkin(this.itemData, false);
         this.updateDescriptionAndActionButton(data, uiItem);
     }
 

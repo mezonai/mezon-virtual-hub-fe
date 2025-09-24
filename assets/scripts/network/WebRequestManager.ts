@@ -184,10 +184,10 @@ export class WebRequestManager extends Component {
         });
     }
 
-    public getItemTypeAsync(data: number): Promise<InventoryDTO[]> {
+    public getItemTypeAsync(type: string): Promise<InventoryDTO[]> {
         return new Promise((resolve) => {
             WebRequestManager.instance.getItemType(
-                data,
+                type,
                 (response) => {
                     const inventoryList = ConvetData.ConvertInventoryDTO(response.data);
                     resolve(inventoryList);

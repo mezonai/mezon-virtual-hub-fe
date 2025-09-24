@@ -6,7 +6,7 @@ import { ItemAnimalSlotDrag } from '../animal/ItemAnimalSlotDrag';
 import { ConfirmParam, ConfirmPopup } from './ConfirmPopup';
 import { WebRequestManager } from '../network/WebRequestManager';
 import { SlotPetDetail } from '../animal/SlotPetDetail';
-import { InventoryDTO, ItemCode, StatsConfigDTO } from '../Model/Item';
+import { InventoryDTO, ItemCode, ItemType, StatsConfigDTO } from '../Model/Item';
 import { Constants } from '../utilities/Constants';
 import { PopupResultUpgradeRarityPet, PopupUpgradeRarityPetParam } from './PopupResultUpgradeRarityPet';
 import { ItemCardUpgradePet } from '../animal/ItemCardUpgradePet';
@@ -58,11 +58,10 @@ export class PopupUpgradeRarityPet extends BasePopup {
 
     async getConfigRateAsync() {
         this.getConfigRate = await WebRequestManager.instance.getConfigRateAsync();
-        const inventoryList = await WebRequestManager.instance.getItemTypeAsync(8);
-        const itemCardPet = inventoryList.filter(inv => inv.item?.type === 8);
+        const inventoryList = await WebRequestManager.instance.getItemTypeAsync(ItemType.PET_CARD);
         for (let i = 0; i < this.itemCardUpgradePet.length; i++) {
             const itemCard = this.itemCardUpgradePet[i];
-            const inv = itemCardPet[i];
+            const inv = inventoryList[i];
             if (inv && inv.item) {
                 itemCard.setDataItem(inv)
             } else {

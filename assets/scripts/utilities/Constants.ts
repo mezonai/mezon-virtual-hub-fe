@@ -2,7 +2,7 @@
 import { OfficePosition } from "../GameMap/OfficePosition";
 import { RoomType } from "../GameMap/RoomType";
 import { MapData } from "../Interface/DataMapAPI";
-import { FoodType, RewardItemDTO, RewardType } from "../Model/Item";
+import { FoodType, InventoryType, ItemType, RewardItemDTO, RewardType } from "../Model/Item";
 import { RewardNewType } from "../PopUp/PopupReward";
 import { RewardItem } from "../SlotMachine/RewardItem";
 import Utilities from "./Utilities";
@@ -151,6 +151,28 @@ export class Constants {
             clearInterval(id);
         }
     }
+  
+    private static _tabMap: Map<string, string> = new Map([
+        [ItemType.HAIR, 'Tóc'],
+        [ItemType.FACE, 'Mặt'],
+        [ItemType.EYES, 'Mắt'],
+        [ItemType.UPPER, 'Áo'],
+        [ItemType.LOWER, 'Quần'],
+        [ItemType.PET_FOOD, 'Thức ăn pet'],
+        [ItemType.PET_CARD, "Thẻ pet"]
+    ]);
+
+    public static getTabItemMap(): Map<string, string> {
+        return this._tabMap;
+    }
+
+    public static getTabShop: Map<string, string> = new Map(
+        [...this._tabMap]
+    );
+
+    public static getTabShopPet: Map<string, string> = new Map([
+        [InventoryType.FOOD, 'Thức ăn pet'],
+    ]);
 }
 
 

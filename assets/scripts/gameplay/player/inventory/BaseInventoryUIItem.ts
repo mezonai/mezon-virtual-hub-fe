@@ -69,4 +69,5 @@ export class BaseInventoryUIITem extends Component {
     public initFood(data) {
         this.dataFood = data;
     }
+
 }

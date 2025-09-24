@@ -1,5 +1,5 @@
 import { UserDataResponse } from "../Interface/DataMapAPI";
-import { Food, FoodType, InventoryDTO } from "../Model/Item";
+import { Food, FoodType, InventoryDTO, Item } from "../Model/Item";
 import { PetDTO } from "../Model/PetDTO";
 import { PlayerPropertyWatcher } from "../utilities/PlayerPropertyWatcher";
 
@@ -35,6 +35,13 @@ export class UserMeManager {
             ? null
             : this.me.inventories
                 .filter((inv): inv is InventoryDTO & { food: Food } => inv.food != null)
+    }
+
+    public static get GetItem(): InventoryDTO[] | null {
+        return this.me == null
+            ? null
+            : this.me.inventories
+                .filter((inv): inv is InventoryDTO & { item: Item } => inv.item != null)
     }
 
     public static set SetMyPets(pets: PetDTO[]) {

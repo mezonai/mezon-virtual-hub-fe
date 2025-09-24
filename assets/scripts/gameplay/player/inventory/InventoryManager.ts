@@ -1,21 +1,41 @@
-import { _decorator, Node } from 'cc';
+import { _decorator, Prefab, ScrollView, Node } from 'cc';
+import { WebRequestManager } from '../../../network/WebRequestManager';
+import { BaseTabController } from '../../../ui/BaseTabController';
+import { Constants } from '../../../utilities/Constants';
 import { Food, InventoryDTO, InventoryType, Item, ItemType } from '../../../Model/Item';
-import { EVENT_NAME } from '../../../network/APIConstant';
-import { UserMeManager } from '../../../core/UserMeManager';
-import { ResourceManager } from '../../../core/ResourceManager';
-import { UserManager } from '../../../core/UserManager';
-import { InventoryUIITem } from './InventoryUIItem';
+import { ObjectPoolManager } from '../../../pooling/ObjectPoolManager';
 import { BaseInventoryManager } from './BaseInventoryManager';
+import { ResourceManager } from '../../../core/ResourceManager';
+import { UserMeManager } from '../../../core/UserMeManager';
+import { InventoryUIITem } from './InventoryUIItem';
 import { LocalItemDataConfig } from '../../../Model/LocalItemConfig';
 import { PopupManager } from '../../../PopUp/PopupManager';
+import { UserManager } from '../../../core/UserManager';
+import { Vec3 } from 'cc';
 const { ccclass, property } = _decorator;
 
 @ccclass('InventoryManager')
 export class InventoryManager extends BaseInventoryManager {
-    protected override groupedItems: Record<string, InventoryDTO[]> = null;
+    @property({ type: BaseTabController }) baseTab: BaseTabController = null!;
+    @property({ type: Node }) noItemContainer: Node = null;
+    @property(ScrollView) itemScrollView: ScrollView = null;
+    @property({ type: Prefab }) itemPrefab: Prefab = null;
     @property({ type: Node }) goBg: Node = null;
     @property({ type: Node }) goListItem: Node = null;
     @property({ type: Node }) goListFood: Node = null;
+    private defaultTab: ItemType = ItemType.HAIR;
+    private tabTypeInventory: string[] = ["hair", "face", "eyes", "upper", "lower", "pet_food", "pet_card"];
+
+    public init(param?: any): void {
+        super.init();
+        this.getTabType();
+        this.goBg.active = false;
+        this.isItemGenerated = false;
+        if (param != null && param.onActionClose != null) {
+            this._onActionClose = param.onActionClose;
+        }
+        this.onTabChange(this.defaultTab);
+    }
 
     protected async actionButtonClick() {
         this.equipSkin();
@@ -27,111 +47,134 @@ export class InventoryManager extends BaseInventoryManager {
         this._onActionClose?.();
     }
 
-
     private equipSkin() {
-        UserManager.instance.updatePlayerSkin(this.skinData, true);
+        UserManager.instance.updatePlayerSkin(this.itemData, true);
     }
 
-    public init(param: InventoryParam) {
-        super.init();
-        this.goBg.active = false;
-        this.addLocalData();
-        this.initGroupData();
-        this.onTabChange(this.categories[0]);
-        this.isItemGenerated = false;
-        if(param != null && param.onActionClose != null){
-            this._onActionClose = param.onActionClose;
-        }
+    private async getTabType() {
+        
+        this.baseTab.initTabs(
+            this.tabTypeInventory,
+            Constants.getTabItemMap(),
+            (tabName: string) => this.onTabChange(tabName)
+        );
     }
 
-    private addLocalData() {
-        if (UserMeManager.Get.inited) {
-            return;
-        }
-
-        UserMeManager.Get.inited = true;
-        let maleItems: InventoryDTO[] = [
+    private setClothesItemsDefault(): InventoryDTO[] {
+        const userGender = UserMeManager.Get.user.gender;
+        const allDefaults: InventoryDTO[] = [
+            // Male
             {
                 id: null,
                 equipped: false,
                 item: {
-                    id: "1", name: "Tóc đỏ SonGoKu", gold: 0, iconSF: null, type: 1, mappingLocalData: null, gender: "male", is_equippable: true, is_static: false, is_stackable: false
+                    id: "1", name: "Tóc đỏ SonGoKu", gold: 0, iconSF: [], type: ItemType.HAIR, mappingLocalData: null, gender: "male"
                 },
                 inventory_type: InventoryType.ITEM,
             },
             {
                 id: null,
                 equipped: false,
-                item: { id: "3", name: "Áo đỏ rực rỡ", gold: 0, iconSF: null, type: 5, mappingLocalData: null, gender: "male", is_equippable: true, is_static: false, is_stackable: false },
+                item: {
+                    id: "3", name: "Áo đỏ rực rỡ", gold: 0, iconSF: [], type: ItemType.UPPER, mappingLocalData: null, gender: "male"
+                },
                 inventory_type: InventoryType.ITEM,
             },
             {
                 id: null,
                 equipped: false,
-                item: { id: "4", name: "Quần đỏ ngắn", gold: 0, iconSF: null, type: 6, mappingLocalData: null, gender: "male", is_equippable: true, is_static: false, is_stackable: false },
+                item: {
+                    id: "4", name: "Quần đỏ ngắn", gold: 0, iconSF: [], type: ItemType.LOWER, mappingLocalData: null, gender: "male"
+                },
+                inventory_type: InventoryType.ITEM,
+            },
+
+            // Female
+            {
+                id: null,
+                equipped: false,
+                item: {
+                    id: "8", name: "Tóc hồng Cherry", gold: 0, iconSF: [], type: ItemType.HAIR, mappingLocalData: null, gender: "female"
+                },
+                inventory_type: InventoryType.ITEM,
+            },
+            {
+                id: null,
+                equipped: false,
+                item: {
+                    id: "9", name: "Áo trắng viền đỏ", gold: 0, iconSF: [], type: ItemType.UPPER, mappingLocalData: null, gender: "female"
+                },
+                inventory_type: InventoryType.ITEM,
+            },
+            {
+                id: null,
+                equipped: false,
+                item: {
+                    id: "10", name: "Quần trắng viền đỏ", gold: 0, iconSF: [], type: ItemType.LOWER, mappingLocalData: null, gender: "female"
+                },
+                inventory_type: InventoryType.ITEM,
+            },
+
+            // Unisex
+            {
+                id: null,
+                equipped: false,
+                item: {
+                    id: "-1", name: "", gold: 0, iconSF: [], type: ItemType.EYES, mappingLocalData: null, gender: "not specified",
+                },
+                inventory_type: InventoryType.ITEM,
+            },
+            {
+                id: null,
+                equipped: false,
+                item: {
+                    id: "0", name: "", gold: 0, iconSF: [], type: ItemType.FACE, mappingLocalData: null, gender: "not specified"
+                },
                 inventory_type: InventoryType.ITEM,
             }
         ];
 
-        let femaleItems: InventoryDTO[] = [
-            {
-                id: null,
-                equipped: false,
-                item: { id: "8", name: "Tóc hồng Cherry", gold: 0, iconSF: null, type: 1, mappingLocalData: null, gender: "female", is_equippable: true, is_static: false, is_stackable: false },
-                inventory_type: InventoryType.ITEM,
-            },
-            {
-                id: null,
-                equipped: false,
-                item: { id: "9", name: "Áo trắng viền đỏ", gold: 0, iconSF: null, type: 5, mappingLocalData: null, gender: "female", is_equippable: true, is_static: false, is_stackable: false },
-                inventory_type: InventoryType.ITEM,
-            },
-            {
-                id: null,
-                equipped: false,
-                item: { id: "10", name: "Quần trắng viền đỏ", gold: 0, iconSF: null, type: 6, mappingLocalData: null, gender: "female", is_equippable: true, is_static: false, is_stackable: false },
-                inventory_type: InventoryType.ITEM,
-            }
-        ];
+        return allDefaults.filter(d =>
+            d.item.gender === userGender || d.item.gender === "not specified"
+        );
+    }
 
-        let unisexItems: InventoryDTO[] = [
-            {
-                id: null,
-                equipped: false,
-                item: { id: "-1", name: "", gold: 0, iconSF: null, type: 4, mappingLocalData: null, gender: "not specified", is_equippable: true, is_static: false, is_stackable: false },
-                inventory_type: InventoryType.ITEM,
-            },
-            {
-                id: null,
-                equipped: false,
-                item: { id: "0", name: "", gold: 0, iconSF: null, type: 3, mappingLocalData: null, gender: "not specified", is_equippable: true, is_static: false, is_stackable: false },
-                inventory_type: InventoryType.ITEM,
+    protected async onTabChange(tabName: string) {
+        this.noItemContainer.active = false;
+        this.isItemGenerated = true;
+
+        let inventoryList = await WebRequestManager.instance.getItemTypeAsync(tabName);
+        await ObjectPoolManager.instance.returnArrayToPool(this.itemContainer.children);
+        await ObjectPoolManager.instance.returnArrayToPool(this.foodContainer.children);
+        this.reset();
+
+         if (tabName === ItemType.PET_CARD) {
+            this.checEmptyItem(inventoryList);
+            await this.spawnCardItems(inventoryList);
+        } 
+        else if (tabName === ItemType.PET_FOOD) {
+            this.checEmptyItem(inventoryList);
+            await this.spawnFoodItems(inventoryList);
+        } else {
+            this.currentTabName = tabName;
+            const defaultForTab = this.setClothesItemsDefault().filter(
+                item => item.item?.type?.toLowerCase() === tabName.toLowerCase()
+            );
+
+            if (defaultForTab.length > 0) {
+                inventoryList = [...defaultForTab, ...inventoryList];
             }
-        ];
-        UserMeManager.Get.inventories.unshift(...unisexItems);
-        if (UserMeManager.Get.user.gender == "male") {
-            UserMeManager.Get.inventories.unshift(...maleItems);
-        }
-        else {
-            UserMeManager.Get.inventories.unshift(...femaleItems);
+            console.log("inventoryList: ", inventoryList);
+            this.checEmptyItem(inventoryList);
+            await this.spawnClothesItems(inventoryList);
         }
     }
 
-    protected override initGroupData() {
-        this.groupedItems = this.groupByCategory(UserMeManager.Get.inventories);
-        this.categories = [];
-        for (const category in this.groupedItems) {
-            this.categories.push(category);
-            this.groupedItems[category].forEach(item => {
-                if (item.item) {
-                    item.item.iconSF = [];
-                }
-            });
+    checEmptyItem(inventoryList: InventoryDTO[]){
+         if (!inventoryList || inventoryList.length <= 0) {
+            this.noItemContainer.active = true;
+            return;
         }
-        this.tabController.initTabData(this.categories);
-        this.tabController.node.on(EVENT_NAME.ON_CHANGE_TAB, (tabName) => {
-            this.onTabChange(tabName);
-        });
     }
 
     protected override getLocalData(item) {
@@ -148,8 +191,12 @@ export class InventoryManager extends BaseInventoryManager {
             return;
         }
 
-        this.setUIState(false, true, false);
+        if (item.item.type == ItemType.PET_CARD) {
+            this.handleCardItem(uiItem, item.item);
+            return;
+        }
 
+        this.setUIState(false, true, false);
         if (item.item.iconSF.length === 0) {
             await this.loadIcons(item, skinLocalData);
         }
@@ -173,6 +220,20 @@ export class InventoryManager extends BaseInventoryManager {
         this.setUIState(true, false, true);
         if (this.descriptionText.string.trim() === "") {
             this.descriptionText.string = `${food.name}: ${food.description || ""}`;
+        }
+    }
+
+    private handleCardItem(uiItem: InventoryUIITem, item: Item) {
+       const sprite = this.cardIconMap[item.item_code];
+        if (sprite) {
+            uiItem.avatar.spriteFrame = sprite;
+            uiItem.avatar.node.scale = new Vec3(0.06, 0.06, 0);
+        }
+        uiItem.init(item);
+        uiItem.toggleActive(false);
+        this.setUIState(true, false, true);
+        if (this.descriptionText.string.trim() === "") {
+            this.descriptionText.string = `${item.name}`;
         }
     }
 
@@ -202,7 +263,6 @@ export class InventoryManager extends BaseInventoryManager {
 
     protected override onUIItemClick(uiItem: InventoryUIITem, data: Item) {
         super.onUIItemClick(uiItem, data);
-
         if (this.equipingUIItem) {
             this.actionButton.interactable = this.selectingUIItem.data.id != this.equipingUIItem.data.id;
         }
@@ -218,33 +278,4 @@ export class InventoryManager extends BaseInventoryManager {
         this.descriptionText.string = `${data.name}: ${data.description}`;
         this.setupMoneyReward(uiItem, data.purchase_method.toString())
     }
-
-    protected override groupByCategory(items: InventoryDTO[]): Record<string, InventoryDTO[]> {
-        const result = items.reduce((acc, item) => {
-            if (item.item) {
-                const type = item.item.type;
-                if (!acc[type]) {
-                    acc[type] = [];
-                }
-                acc[type].push(item);
-            }
-            else if (item.food) {
-                const type = InventoryType.FOOD;
-                if (!acc[type]) {
-                    acc[type] = [];
-                }
-                acc[type].push(item);
-            }
-            return acc;
-        }, {} as Record<string, InventoryDTO[]>);
-
-        if (!result[InventoryType.FOOD]) {
-            result[InventoryType.FOOD] = [];
-        }
-        return result;
-    }
-}
-
-export interface InventoryParam {
-    onActionClose?: () => void;
 }
