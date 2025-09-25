@@ -166,9 +166,9 @@ export class Constants {
         return this._tabMap;
     }
 
-    public static getTabShop: Map<string, string> = new Map(
-        [...this._tabMap]
-    );
+    public static get getTabShop(): Map<string, string> {
+        return this._tabMap;
+    }
 
     public static getTabShopPet: Map<string, string> = new Map([
         [InventoryType.FOOD, 'Thức ăn pet'],

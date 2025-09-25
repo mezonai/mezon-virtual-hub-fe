@@ -8,7 +8,7 @@ import { MapData } from '../Interface/DataMapAPI';
 import { ServerManager } from '../core/ServerManager';
 import { PopupSelectionMini, SelectionMiniParam } from '../PopUp/PopupSelectionMini';
 import { PopupManager } from '../PopUp/PopupManager';
-import { InventoryDTO, Item, RewardItemDTO, RewardNewbieDTO, StatsConfigDTO } from '../Model/Item';
+import { BuyItemPayload, InventoryDTO, Item, RewardItemDTO, RewardNewbieDTO, StatsConfigDTO } from '../Model/Item';
 import { GameManager } from '../core/GameManager';
 import { UpgradePetResponseDTO, PetDTO } from '../Model/PetDTO';
 import { Constants } from '../utilities/Constants';
@@ -265,10 +265,6 @@ export class WebRequestManager extends Component {
             , (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
-    public postBuySkin(data, successCallback, errorCallback) {
-        APIManager.postData(this.combineWithSlash(APIConstant.INVENTORY, APIConstant.BUY, data), {}, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
-    }
-
     public getItemType(type, successCallback, errorCallback) {
         APIManager.getData(this.combineWithSlash(APIConstant.INVENTORY, APIConstant.ITEM_TYPE, type), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
@@ -308,8 +304,9 @@ export class WebRequestManager extends Component {
         APIManager.getData(this.combineWithSlash(APIConstant.FOOD), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
-    public postBuyFood(foodId, quantity, type, successCallback, errorCallback) {
-        const url = `${APIConstant.INVENTORY}/${APIConstant.BUY}/${foodId}?quantity=${quantity}&type=${type}`;
+    public postBuyItem(params: BuyItemPayload, successCallback, errorCallback) {
+        const { itemId: itemId, quantity, type} = params;
+        const url = `${APIConstant.INVENTORY}/${APIConstant.BUY}/${itemId}?quantity=${quantity}&type=${type}`;
         APIManager.postData(url, {}, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 

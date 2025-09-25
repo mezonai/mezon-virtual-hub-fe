@@ -1,7 +1,7 @@
 import { _decorator, Node, RichText } from 'cc';
 import { UserMeManager } from '../../core/UserMeManager';
 import { WebRequestManager } from '../../network/WebRequestManager';
-import { InventoryType, Item } from '../../Model/Item';
+import { BuyItemPayload, InventoryType, Item, ItemType } from '../../Model/Item';
 import { ResourceManager } from '../../core/ResourceManager';
 import { EVENT_NAME } from '../../network/APIConstant';
 import { ShopUIItem } from './ShopUIItem';
@@ -12,15 +12,19 @@ import Utilities from '../../utilities/Utilities';
 import { PopupManager } from '../../PopUp/PopupManager';
 import { ConfirmParam, ConfirmPopup } from '../../PopUp/ConfirmPopup';
 import { PopupBuyItem, PopupBuyItemParam } from '../../PopUp/PopupBuyItem';
+import { Vec3 } from 'cc';
+import { TabController } from '../../ui/TabController';
 const { ccclass, property } = _decorator;
 
 @ccclass('ShopController')
 export class ShopController extends BaseInventoryManager {
+    @property({ type: TabController }) tabController: TabController = null;
     @property({ type: RichText }) itemPrice: RichText = null;
     @property({ type: Node }) itemPriceContainer: Node = null;
     protected override groupedItems: Record<string, Item[]> = null;
     protected override selectingUIItem: ShopUIItem = null;
     private isOpenPopUp: boolean = false;
+    private quantityBuy: number = 1;
 
     protected override async actionButtonClick() {
         try {
@@ -97,17 +101,22 @@ export class ShopController extends BaseInventoryManager {
         }
 
         try {
-            const result = await this.postBuySkinAsync(this.selectingUIItem.data.id);
-
+            const payload: BuyItemPayload = {
+                itemId: this.selectingUIItem.data.id,
+                quantity: this.quantityBuy,
+                type: InventoryType.ITEM
+            };
+            console.log("payload: ",payload);
+            const result = await this.postBuySkinAsync(payload);
             return result;
         } catch (error) {
             throw error;
         }
     }
 
-    private postBuySkinAsync(data: any): Promise<any> {
+    private postBuySkinAsync(payload: BuyItemPayload): Promise<any> {
         return new Promise((resolve, reject) => {
-            WebRequestManager.instance.postBuySkin(data, resolve, reject);
+            WebRequestManager.instance.postBuyItem(payload, resolve, reject);
         });
     }
 
@@ -137,6 +146,8 @@ export class ShopController extends BaseInventoryManager {
                 item.iconSF = [];
             });
         }
+        console.log("this.categories: ", this.categories);
+        console.log("ResourceManager.instance.ItemData.data: ",ResourceManager.instance.ItemData.data);
         this.tabController.initTabData(this.categories);
         this.tabController.node.on(EVENT_NAME.ON_CHANGE_TAB, (tabName) => { this.onTabChange(tabName); });
         // this.previewPlayer.init([]);
@@ -150,6 +161,12 @@ export class ShopController extends BaseInventoryManager {
     protected override async registUIItemData(itemNode: Node, item: Item, skinLocalData: LocalItemDataConfig) {
         let uiItem = itemNode.getComponent(ShopUIItem);
         uiItem.resetData();
+
+        if (item.type == ItemType.PET_CARD) {
+            this.handleCardItem(uiItem, item);
+            return;
+        }
+        
         if (item.iconSF.length == 0) {
             for (const icon of skinLocalData.icons) {
                 let spriteFrame = await this.setItemImage(skinLocalData.bundleName, icon);
@@ -162,6 +179,19 @@ export class ShopController extends BaseInventoryManager {
         uiItem.init(item);
         uiItem.toggleActive(false);
         uiItem.reset();
+    }
+
+    private handleCardItem(uiItem: ShopUIItem, item: Item) {
+        const sprite = this.cardIconMap[item.item_code];
+        if (sprite) {
+            uiItem.avatar.spriteFrame = sprite;
+            uiItem.avatar.node.scale = new Vec3(0.06, 0.06, 0);
+        }
+        uiItem.init(item);
+        uiItem.toggleActive(false);
+        if (this.descriptionText.string.trim() === "") {
+            this.descriptionText.string = `${item.name}`;
+        }
     }
 
     protected override onUIItemClick(uiItem: ShopUIItem, data: Item) {

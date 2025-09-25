@@ -10,15 +10,16 @@ import { ObjectPoolManager } from '../../../pooling/ObjectPoolManager';
 import { EVENT_NAME } from '../../../network/APIConstant';
 import { LocalItemDataConfig } from '../../../Model/LocalItemConfig';
 import { BasePopup } from '../../../PopUp/BasePopup';
+import { instantiate } from 'cc';
 const { ccclass, property } = _decorator;
 
 @ccclass('BaseInventoryManager')
 export class BaseInventoryManager extends BasePopup {
-    @property({ type: TabController }) tabController: TabController = null;
     @property({ type: Node }) itemContainer: Node = null;
-    @property({ type: Node }) foodContainer: Node = null;
+    @property({ type: Node }) otherContainer: Node = null;
+    @property({ type: Node }) noItemContainer: Node = null;
     @property(ScrollView) itemScrollView: ScrollView = null;
-    @property(ScrollView) foodScrollView: ScrollView = null;
+    @property(ScrollView) otherScrollView: ScrollView = null;
     @property({ type: Prefab }) itemPrefab: Prefab = null;
     @property({ type: RichText }) descriptionText: RichText = null;
     @property({ type: RichText }) coinText: RichText = null;
@@ -97,17 +98,29 @@ export class BaseInventoryManager extends BasePopup {
 
     protected async onTabChange(tabName) {
         this.isItemGenerated = true;
-        await ObjectPoolManager.instance.returnArrayToPool(this.itemContainer.children);
-        await ObjectPoolManager.instance.returnArrayToPool(this.foodContainer.children);
+        this.itemContainer.removeAllChildren();
+        this.otherContainer.removeAllChildren();
         this.reset();
-        const isTabFood = (tabName === InventoryType.FOOD);
-        if (isTabFood)
+        const items = this.groupedItems[tabName] ?? [];
+        const isEmpty = !items || items.length === 0;
+       
+        if (isEmpty) {
+            this.noItemContainer.active = true;
+            return;
+        }
+        this.noItemContainer.active = false;
+        if (tabName === InventoryType.FOOD){
+            this.currentTabName = tabName;
             await this.spawnFoodItems(this.groupedItems[tabName]);
+        }
+         if (tabName === ItemType.PET_CARD){
+            this.currentTabName = tabName;
+            await this.spawnCardItems(this.groupedItems[tabName]);
+        }
         else
         {
             this.currentTabName = tabName;
             await this.spawnClothesItems(this.groupedItems[tabName]);  
-
         }
         this.ResetPositionScrollBar();
     }
@@ -119,8 +132,8 @@ export class BaseInventoryManager extends BasePopup {
             }
         }, 0.05);
         this.scheduleOnce(() => {
-            if (this.foodScrollView) {
-                this.foodScrollView.scrollToTop(0)
+            if (this.otherScrollView) {
+                this.otherScrollView.scrollToTop(0)
             }
         }, 0.05);
     }
@@ -131,7 +144,7 @@ export class BaseInventoryManager extends BasePopup {
             let itemNode = ObjectPoolManager.instance.spawnFromPool(this.itemPrefab.name);
             itemNode.off(EVENT_NAME.ON_ITEM_CLICK);
             itemNode.off(EVENT_NAME.ON_FOOD_CLICK);
-            itemNode.setParent(this.foodContainer);
+            itemNode.setParent(this.otherContainer);
             await this.registUIItemData(itemNode, item, null);
             this.registItemFoodClickEvent(itemNode);
         }
@@ -140,10 +153,10 @@ export class BaseInventoryManager extends BasePopup {
     protected async spawnCardItems(items: any[]) {
         for (const item of items) {
             if (Number(item.quantity) <= 0) continue;
-            let itemNode = ObjectPoolManager.instance.spawnFromPool(this.itemPrefab.name);
+            let itemNode = instantiate(this.itemPrefab);
             itemNode.off(EVENT_NAME.ON_ITEM_CLICK);
             itemNode.off(EVENT_NAME.ON_FOOD_CLICK);
-            itemNode.setParent(this.foodContainer);
+            itemNode.setParent(this.itemContainer);
             await this.registUIItemData(itemNode, item, null);
             this.registItemClickEvent(itemNode);
         }
@@ -154,23 +167,12 @@ export class BaseInventoryManager extends BasePopup {
             let skinLocalData = this.getLocalData(item);
             if (!skinLocalData)
                 continue;
-            let itemNode = ObjectPoolManager.instance.spawnFromPool(this.itemPrefab.name);
+            let itemNode = instantiate(this.itemPrefab);
             itemNode.off(EVENT_NAME.ON_ITEM_CLICK);
             itemNode.off(EVENT_NAME.ON_FOOD_CLICK);
             itemNode.setParent(this.itemContainer);
 
             await this.registUIItemData(itemNode, item, skinLocalData);
-            this.registItemClickEvent(itemNode);
-        }
-    }
-
-    protected async spawCardItems(items: any[]) {
-        for (const item of items) {
-            let itemNode = ObjectPoolManager.instance.spawnFromPool(this.itemPrefab.name);
-            itemNode.off(EVENT_NAME.ON_ITEM_CLICK);
-            itemNode.off(EVENT_NAME.ON_FOOD_CLICK);
-            itemNode.setParent(this.itemContainer);
-            await this.registUIItemData(itemNode, item, null);
             this.registItemClickEvent(itemNode);
         }
     }
@@ -244,18 +246,19 @@ export class BaseInventoryManager extends BasePopup {
         return await LoadBundleController.instance.spriteBundleLoader.getBundleData(bundleData);
     }
 
-    protected onUIItemClick(uiItem: InventoryUIITem, data: Item) {
+    protected onUIItemClick(uiItem: any, data: Item) {
         this.selectingUIItem = uiItem;
         this.itemData = data;
         if(data.type == ItemType.PET_CARD){
             this.descriptionText.string = `${data.name}`;
+            this.actionButton.interactable = uiItem != null;
             return;
         }
         this.previewPlayer.changeSkin(this.itemData, false);
         this.updateDescriptionAndActionButton(data, uiItem);
     }
 
-    protected updateDescriptionAndActionButton(skinData: Item, uiItem: InventoryUIITem | null) {
+    protected updateDescriptionAndActionButton(skinData: Item, uiItem: any | null) {
         const description = skinData.mappingLocalData?.description || "";
         const isFaceOrEye = skinData.type === ItemType.EYES || skinData.type === ItemType.FACE;
 
@@ -266,7 +269,7 @@ export class BaseInventoryManager extends BasePopup {
     protected onUIItemClickFood(uiItem: InventoryUIITem, dataFood: Food) {
         if (!dataFood) return;
         this.selectingUIItem = uiItem;
-        this.actionButton.interactable = this.selectingUIItem != null;
+        this.actionButton.interactable = uiItem != null;
     }
 
     protected setupFoodReward(uiItem: any, foodType: any) {

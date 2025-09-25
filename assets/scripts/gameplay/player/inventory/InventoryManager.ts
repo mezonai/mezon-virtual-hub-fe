@@ -25,6 +25,7 @@ export class InventoryManager extends BaseInventoryManager {
     @property({ type: Node }) goListFood: Node = null;
     private defaultTab: ItemType = ItemType.HAIR;
     private tabTypeInventory: string[] = ["hair", "face", "eyes", "upper", "lower", "pet_food", "pet_card"];
+    private cachedInventory: Record<string, InventoryDTO[]> = {};
 
     public init(param?: any): void {
         super.init();
@@ -139,36 +140,51 @@ export class InventoryManager extends BaseInventoryManager {
         );
     }
 
-    protected async onTabChange(tabName: string) {
+    protected override async onTabChange(tabName: string) {
         this.noItemContainer.active = false;
         this.isItemGenerated = true;
 
-        let inventoryList = await WebRequestManager.instance.getItemTypeAsync(tabName);
-        await ObjectPoolManager.instance.returnArrayToPool(this.itemContainer.children);
-        await ObjectPoolManager.instance.returnArrayToPool(this.foodContainer.children);
+        // Lấy dữ liệu từ cache nếu có, nếu không fetch
+        const inventoryList: InventoryDTO[] = this.cachedInventory[tabName]
+            ?? await this.fetchAndCacheInventory(tabName);
+        this.itemContainer.removeAllChildren();
+        this.otherContainer.removeAllChildren();
         this.reset();
 
-         if (tabName === ItemType.PET_CARD) {
-            this.checEmptyItem(inventoryList);
-            await this.spawnCardItems(inventoryList);
-        } 
-        else if (tabName === ItemType.PET_FOOD) {
-            this.checEmptyItem(inventoryList);
-            await this.spawnFoodItems(inventoryList);
-        } else {
-            this.currentTabName = tabName;
-            const defaultForTab = this.setClothesItemsDefault().filter(
-                item => item.item?.type?.toLowerCase() === tabName.toLowerCase()
-            );
+        // Xử lý spawn theo loại tab
+        switch (tabName) {
+            case ItemType.PET_CARD:
+                this.checEmptyItem(inventoryList);
+                await this.spawnCardItems(inventoryList);
+                break;
+            case ItemType.PET_FOOD:
+                this.checEmptyItem(inventoryList);
+                await this.spawnFoodItems(inventoryList);
+                break;
+            default:
+                this.currentTabName = tabName;
 
-            if (defaultForTab.length > 0) {
-                inventoryList = [...defaultForTab, ...inventoryList];
-            }
-            console.log("inventoryList: ", inventoryList);
-            this.checEmptyItem(inventoryList);
-            await this.spawnClothesItems(inventoryList);
+                // Thêm default items theo tab
+                const defaultForTab = this.setClothesItemsDefault()
+                    .filter(item => item.item?.type?.toLowerCase() === tabName.toLowerCase());
+
+                const combinedList = defaultForTab.length > 0
+                    ? [...defaultForTab, ...inventoryList]
+                    : inventoryList;
+
+                this.checEmptyItem(combinedList);
+                await this.spawnClothesItems(combinedList);
+                break;
         }
     }
+
+    // Hàm fetch và cache giúp code gọn hơn
+    private async fetchAndCacheInventory(tabName: string): Promise<InventoryDTO[]> {
+        const list = await WebRequestManager.instance.getItemTypeAsync(tabName);
+        this.cachedInventory[tabName] = list;
+        return list;
+    }
+
 
     checEmptyItem(inventoryList: InventoryDTO[]){
          if (!inventoryList || inventoryList.length <= 0) {
@@ -186,30 +202,32 @@ export class InventoryManager extends BaseInventoryManager {
         const uiItem = itemNode.getComponent(InventoryUIITem);
         uiItem.resetData();
 
+        console.log("item: ", item);
+        
         if (item.food) {
             this.handleFoodItem(uiItem, item.food);
-            return;
-        }
+        }else
+        {
+            if (item.item.type == ItemType.PET_CARD) {
+                this.handleCardItem(uiItem, item.item);
+                return;
+            }
 
-        if (item.item.type == ItemType.PET_CARD) {
-            this.handleCardItem(uiItem, item.item);
-            return;
-        }
+            this.setUIState(false, true, false);
+            if (item.item.iconSF.length === 0) {
+                await this.loadIcons(item, skinLocalData);
+            }
+            uiItem.avatar.node.scale = this.SetItemScaleValue(item.item.type);
+            uiItem.avatar.spriteFrame = item.item.iconSF[0];
+            item.item.mappingLocalData = skinLocalData;
+            uiItem.init(item.item);
 
-        this.setUIState(false, true, false);
-        if (item.item.iconSF.length === 0) {
-            await this.loadIcons(item, skinLocalData);
-        }
-        uiItem.avatar.node.scale = this.SetItemScaleValue(item.item.type);
-        uiItem.avatar.spriteFrame = item.item.iconSF[0];
-        item.item.mappingLocalData = skinLocalData;
-        uiItem.init(item.item);
-
-        const isEquipped = UserMeManager.Get.user.skin_set.includes(item.item.id);
-        uiItem.toggleActive(isEquipped);
-        if (isEquipped) {
-            this.equipingUIItem = uiItem;
-            this.updateDescriptionAndActionButton(item.item, this.selectingUIItem);
+            const isEquipped = UserMeManager.Get.user.skin_set.includes(item.item.id);
+            uiItem.toggleActive(isEquipped);
+            if (isEquipped) {
+                this.equipingUIItem = uiItem;
+                this.updateDescriptionAndActionButton(item.item, this.selectingUIItem);
+            }
         }
     }
 
@@ -230,8 +248,9 @@ export class InventoryManager extends BaseInventoryManager {
             uiItem.avatar.node.scale = new Vec3(0.06, 0.06, 0);
         }
         uiItem.init(item);
+        uiItem.updateAmountCardItem(item);
         uiItem.toggleActive(false);
-        this.setUIState(true, false, true);
+        this.setUIState(true, true, false);
         if (this.descriptionText.string.trim() === "") {
             this.descriptionText.string = `${item.name}`;
         }
@@ -263,6 +282,10 @@ export class InventoryManager extends BaseInventoryManager {
 
     protected override onUIItemClick(uiItem: InventoryUIITem, data: Item) {
         super.onUIItemClick(uiItem, data);
+        if(data.type == ItemType.PET_CARD){
+               this.actionButton.interactable = false;
+               return;
+        }
         if (this.equipingUIItem) {
             this.actionButton.interactable = this.selectingUIItem.data.id != this.equipingUIItem.data.id;
         }

@@ -1,7 +1,9 @@
 import { _decorator, Component, Label, Node, Sprite, SpriteFrame, Toggle, tween, Vec3 } from 'cc';
-import { Food, FoodType, Item } from '../../../Model/Item';
+import { Food, FoodType, Item, ItemType } from '../../../Model/Item';
 import { EVENT_NAME } from '../../../network/APIConstant';
 import { AudioType, SoundManager } from '../../../core/SoundManager';
+import { WebRequestManager } from '../../../network/WebRequestManager';
+import Utilities from '../../../utilities/Utilities';
 const { ccclass, property } = _decorator;
 
 @ccclass('BaseInventoryUIITem')
@@ -68,6 +70,10 @@ export class BaseInventoryUIITem extends Component {
 
     public initFood(data) {
         this.dataFood = data;
+    }
+   
+    public async updateAmountCardItem(data: Item): Promise<void> {
+
     }
 
 }

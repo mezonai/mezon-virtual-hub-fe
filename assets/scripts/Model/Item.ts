@@ -181,3 +181,9 @@ export enum ItemCode {
   RARITY_CARD_EPIC = 'rarity_card_epic',
   RARITY_CARD_LEGENDARY = 'rarity_card_legendary',
 }
+
+export interface BuyItemPayload {
+    itemId: string | number;
+    quantity: number;
+    type: string;
+}

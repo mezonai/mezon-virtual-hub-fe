@@ -549,6 +549,7 @@ export class PopupOwnedAnimals extends BasePopup {
     async onSortPetBattle() {
         if (this.animalBattle.length < 1) {
             await this.showConfirm("Không có pet để sắp xếp !!!");
+            return;
         }
         const clonedPets = this.animalBattle.map(p => ({ ...p }));
         await this.showPopupSortBattlePlace(clonedPets);

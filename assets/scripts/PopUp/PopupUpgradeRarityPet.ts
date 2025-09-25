@@ -59,16 +59,19 @@ export class PopupUpgradeRarityPet extends BasePopup {
     async getConfigRateAsync() {
         this.getConfigRate = await WebRequestManager.instance.getConfigRateAsync();
         const inventoryList = await WebRequestManager.instance.getItemTypeAsync(ItemType.PET_CARD);
-        for (let i = 0; i < this.itemCardUpgradePet.length; i++) {
-            const itemCard = this.itemCardUpgradePet[i];
-            const inv = inventoryList[i];
-            if (inv && inv.item) {
-                itemCard.setDataItem(inv)
-            } else {
-                itemCard.node.active = false;
-            }
-        }
+
+        const slotMap: Record<string, number> = {
+            [ItemCode.RARITY_CARD_RARE]: 0,
+            [ItemCode.RARITY_CARD_EPIC]: 1,
+            [ItemCode.RARITY_CARD_LEGENDARY]: 2,
+        };
+
+        this.itemCardUpgradePet.forEach((card, i) => {
+            const inv = inventoryList.find(item => slotMap[item.item.item_code] === i);
+            card.setDataItem(inv ?? null);
+        });
     }
+
 
     private hasTicketForPet(pet: any): boolean {
         const ticketType = this.getRequiredTicketType(pet.pet.rarity);

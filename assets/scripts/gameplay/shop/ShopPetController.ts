@@ -1,7 +1,7 @@
 import { _decorator, Button, EditBox, Label, Node, RichText, Sprite } from 'cc';
 import { UserMeManager } from '../../core/UserMeManager';
 import { WebRequestManager } from '../../network/WebRequestManager';
-import { Food, InventoryType, Item, PurchaseMethod } from '../../Model/Item';
+import { BuyItemPayload, Food, InventoryType, Item, PurchaseMethod } from '../../Model/Item';
 import { ResourceManager } from '../../core/ResourceManager';
 import { EVENT_NAME } from '../../network/APIConstant';
 import { ShopUIItem } from './ShopUIItem';
@@ -13,10 +13,12 @@ import { PopupManager } from '../../PopUp/PopupManager';
 import { ConfirmParam, ConfirmPopup } from '../../PopUp/ConfirmPopup';
 import { PopupBuyItem, PopupBuyItemParam } from '../../PopUp/PopupBuyItem';
 import { PopupBuyQuantityItem, PopupBuyQuantityItemParam } from '../../PopUp/PopupBuyQuantityItem';
+import { TabController } from '../../ui/TabController';
 const { ccclass, property } = _decorator;
 
 @ccclass('ShopPetController')
 export class ShopPetController extends BaseInventoryManager {
+    @property({ type: TabController }) tabController: TabController = null;
     //@property({ type: UIPopup }) noticePopup: UIPopup = null;
     @property({ type: RichText }) itemPrice: RichText = null;
     @property({ type: RichText }) descriptionFood: RichText = null;
@@ -26,7 +28,7 @@ export class ShopPetController extends BaseInventoryManager {
     protected override selectingUIItem: ShopUIItem = null;
     @property({ type: Sprite }) iconFrame: Sprite = null;
 
-    private quantity: number = 1;
+    private quantityBuy: number = 1;
     private isOpenPopUp: boolean = false;
 
     protected override async actionButtonClick() {
@@ -77,7 +79,7 @@ export class ShopPetController extends BaseInventoryManager {
                     reject(false);
                 },
                 onActionButtonRight: (quantity: number) => {
-                    this.quantity = quantity;
+                    this.quantityBuy = quantity;
                     resolve(true);
                 },
                 onActionClose: () => {
@@ -103,7 +105,7 @@ export class ShopPetController extends BaseInventoryManager {
     private async buyItem() {
         const food = this.selectingUIItem?.dataFood;
         if (!food) return;
-        const totalPrice = food.price * this.quantity;
+        const totalPrice = food.price * this.quantityBuy;
         if (food.purchase_method.toString() === PurchaseMethod.GOLD.toString()) {
             this.checkGoldUser(totalPrice);
         } else {
@@ -111,16 +113,22 @@ export class ShopPetController extends BaseInventoryManager {
         }
 
         try {
-            const result = await this.postBuyFoodAsync(this.selectingUIItem.dataFood.id, this.quantity, InventoryType.FOOD);
+            const payload: BuyItemPayload = {
+                itemId: this.selectingUIItem.dataFood.id,
+                quantity: this.quantityBuy,
+                type: InventoryType.FOOD
+            };
+            const result = await this.postBuyFoodAsync(payload);
             return result;
         } catch (error) {
             throw error;
         }
     }
 
-    private postBuyFoodAsync(data: any, quantity: any, type: any): Promise<any> {
+    private postBuyFoodAsync(payload: BuyItemPayload): Promise<any> {
         return new Promise((resolve, reject) => {
-            WebRequestManager.instance.postBuyFood(data, quantity, type, resolve, reject);
+
+            WebRequestManager.instance.postBuyItem(payload, resolve, reject);
         });
     }
 
@@ -219,7 +227,7 @@ export class ShopPetController extends BaseInventoryManager {
     }
 
     private ResetQuantity() {
-        this.quantity = 1;
+        this.quantityBuy = 1;
     }
 
     protected onDisable(): void {
@@ -239,7 +247,7 @@ export class ShopPetController extends BaseInventoryManager {
         if (sprite) {
             this.iconFrame.spriteFrame = sprite;
         }
-        this.quantity = 1;
+        this.quantityBuy = 1;
     }
 
     protected override groupByCategory(items: Food[]): Record<string, Food[]> {
