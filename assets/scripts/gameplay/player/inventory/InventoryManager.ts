@@ -201,9 +201,6 @@ export class InventoryManager extends BaseInventoryManager {
     protected override async registUIItemData(itemNode: Node, item: InventoryDTO, skinLocalData: LocalItemDataConfig) {
         const uiItem = itemNode.getComponent(InventoryUIITem);
         uiItem.resetData();
-
-        console.log("item: ", item);
-        
         if (item.food) {
             this.handleFoodItem(uiItem, item.food);
         }else

@@ -33,7 +33,6 @@ export class TabController extends Component {
             else if (Constants.getTabShopPet.has(tab)) {
                 tabName = Constants.getTabShopPet.get(tab);
             }
-            console.log("tabName", tabName);
             tabItem.name = tab.toString();
             tabItem.getComponentInChildren(RichText).string = tabName;
             tabItem.on("toggle", this.onToggleChanged, this);

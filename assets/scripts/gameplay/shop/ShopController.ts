@@ -106,7 +106,6 @@ export class ShopController extends BaseInventoryManager {
                 quantity: this.quantityBuy,
                 type: InventoryType.ITEM
             };
-            console.log("payload: ",payload);
             const result = await this.postBuySkinAsync(payload);
             return result;
         } catch (error) {
@@ -146,8 +145,6 @@ export class ShopController extends BaseInventoryManager {
                 item.iconSF = [];
             });
         }
-        console.log("this.categories: ", this.categories);
-        console.log("ResourceManager.instance.ItemData.data: ",ResourceManager.instance.ItemData.data);
         this.tabController.initTabData(this.categories);
         this.tabController.node.on(EVENT_NAME.ON_CHANGE_TAB, (tabName) => { this.onTabChange(tabName); });
         // this.previewPlayer.init([]);
