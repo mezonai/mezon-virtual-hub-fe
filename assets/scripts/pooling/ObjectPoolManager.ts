@@ -127,18 +127,19 @@ export class ObjectPoolManager extends Component {
         return obj;
     }
 
-    returnArrayToPool(objs: Node[]): void {
-        let temp = [...objs]
-        temp.forEach(obj => {
+    async returnArrayToPool(objs: Node[]): Promise<void> {
+        const temp = [...objs];
+        for (const obj of temp) {
             const tag = obj.name;
-        if (!this.poolDictionary[tag]){
-            obj.destroy();
+            if (!this.poolDictionary[tag]) {
+                obj.destroy();
+            } else {
+                obj.active = false;
+                obj.setParent(this.poolParentDictionary[tag]);
+                this.poolDictionary[tag].push(obj);
+            }
         }
-        else {
-            obj.active = false;
-            obj.setParent(this.poolParentDictionary[tag]);
-            this.poolDictionary[tag].push(obj); 
-        }
-        });
+        await new Promise(resolve => setTimeout(resolve, 0));
     }
+
 }

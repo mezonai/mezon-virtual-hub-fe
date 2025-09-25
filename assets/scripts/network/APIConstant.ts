@@ -18,7 +18,6 @@ export default class APIConstant {
     static BATTLE_PET = "battle-slots";
     static FOOD = "food";
     static INITIAL_REWARD = "initial-reward";
-    static REWARD_PERCENT = "reward-percent";
     static BATTLE_SKILLS = "battle-skills";
     static BATTLE = "battle";
     static QUEST_FREQUENCY = "get-quests-frequency";
@@ -26,6 +25,9 @@ export default class APIConstant {
     static NEWBIE_LOGIN = "newbie-login";
     static FINISH_QUEST = "finish-quest";
     static CHECK_UNCLAIMED_QUEST = "check-unclaimed-quest";
+    static UPGRADE_STAR_PET = "merge";
+    static UPGRADE_RARITY_PET = "upgrade-rarity";
+    static ITEM_TYPE = "item-type";    
 }
 
 export class APIConfig {
@@ -41,7 +43,7 @@ export class EVENT_NAME {
     static ON_RESUME_GAME = "ON_RESUME_GAME";
     static ON_CHANGE_TAB = "ON_CHANGE_TAB";
     static ON_ITEM_CLICK = "ON_ITEM_CLICK";
-    static ON_FOOD_CLICK = "ON_ITEM_CLICK";
+    static ON_FOOD_CLICK = "ON_FOOD_CLICK";
     static RESET = "RESET";
     static UPDATE_INFO_PROFILE = "UPDATE_INFO_PROFILE";
     static ON_BUY_TOKEN = "ON_BUY_TOKEN";

@@ -2,7 +2,7 @@
 import { OfficePosition } from "../GameMap/OfficePosition";
 import { RoomType } from "../GameMap/RoomType";
 import { MapData } from "../Interface/DataMapAPI";
-import { FoodType, RewardItemDTO, RewardType } from "../Model/Item";
+import { FoodType, InventoryType, ItemType, RewardItemDTO, RewardType } from "../Model/Item";
 import { RewardNewType } from "../PopUp/PopupReward";
 import { RewardItem } from "../SlotMachine/RewardItem";
 import Utilities from "./Utilities";
@@ -74,6 +74,13 @@ export class Constants {
         }
     }
 
+    public static rarityUpgradeMap: Record<string, string | null> = {
+        common: "rare",
+        rare: "epic",
+        epic: "legendary",
+        legendary: null,
+    };
+
     public static GetMapData(office: OfficePosition): MapData {
         let mapData = ServerMapManager.Get.find(map => map.map_key == this.convertKeyOffice(office));
         return mapData == null ? ServerMapManager.Get[0] : mapData;
@@ -144,6 +151,28 @@ export class Constants {
             clearInterval(id);
         }
     }
+  
+    private static _tabMap: Map<string, string> = new Map([
+        [ItemType.HAIR, 'Tóc'],
+        [ItemType.FACE, 'Mặt'],
+        [ItemType.EYES, 'Mắt'],
+        [ItemType.UPPER, 'Áo'],
+        [ItemType.LOWER, 'Quần'],
+        [ItemType.PET_FOOD, 'Thức ăn pet'],
+        [ItemType.PET_CARD, "Thẻ pet"]
+    ]);
+
+    public static getTabItemMap(): Map<string, string> {
+        return this._tabMap;
+    }
+
+    public static get getTabShop(): Map<string, string> {
+        return this._tabMap;
+    }
+    public static tabTypeInventory: string[] = Array.from(this._tabMap.keys());
+    public static getTabShopPet: Map<string, string> = new Map([
+        [InventoryType.FOOD, 'Thức ăn pet'],
+    ]);
 }
 
 

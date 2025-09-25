@@ -8,9 +8,9 @@ import { MapData } from '../Interface/DataMapAPI';
 import { ServerManager } from '../core/ServerManager';
 import { PopupSelectionMini, SelectionMiniParam } from '../PopUp/PopupSelectionMini';
 import { PopupManager } from '../PopUp/PopupManager';
-import { RewardItemDTO, RewardNewbieDTO, RewardPecent } from '../Model/Item';
+import { BuyItemPayload, InventoryDTO, Item, RewardItemDTO, RewardNewbieDTO, StatsConfigDTO } from '../Model/Item';
 import { GameManager } from '../core/GameManager';
-import { PetDTO } from '../Model/PetDTO';
+import { UpgradePetResponseDTO, PetDTO } from '../Model/PetDTO';
 import { Constants } from '../utilities/Constants';
 const { ccclass, property } = _decorator;
 
@@ -138,13 +138,12 @@ export class WebRequestManager extends Component {
         });
     }
 
-    public getRewardsPercentAsync(): Promise<RewardPecent> {
+    public getConfigRateAsync(): Promise<StatsConfigDTO> {
         return new Promise((resolve, reject) => {
-            WebRequestManager.instance.getRewardsPercent(
+            WebRequestManager.instance.getConfigRate(
                 (response) => {
-                    const rewardPercent = ConvetData.convertRewardsPercent(response.data);
-                    console.log("rewardPercent ", rewardPercent);
-                    resolve(rewardPercent);
+                    const statsConfigDTO = ConvetData.parseStatsConfigDTO(response.data);
+                    resolve(statsConfigDTO);
                 },
                 (error) => {
                     resolve(null);
@@ -166,6 +165,58 @@ export class WebRequestManager extends Component {
         });
     }
 
+    public postUpgradeStarPetAsync(data): Promise<UpgradePetResponseDTO> {
+        return new Promise((resolve, reject) => {
+            WebRequestManager.instance.postUpgradeStarPet(
+                data,
+                (response) => {
+                    const result: UpgradePetResponseDTO = {
+                        pet: ConvetData.ConvertPet(response.data.pet),
+                        user_diamond: response.data.user_diamond,
+                        success: response.data.success
+                    };
+                    resolve(result);
+                },
+                (error) => {
+                    resolve(null);
+                }
+            );
+        });
+    }
+
+    public getItemTypeAsync(type: string): Promise<InventoryDTO[]> {
+        return new Promise((resolve) => {
+            WebRequestManager.instance.getItemType(
+                type,
+                (response) => {
+                    const inventoryList = ConvetData.ConvertInventoryDTO(response.data);
+                    resolve(inventoryList);
+                },
+                (error) => {
+                    resolve(null);
+                }
+            );
+        });
+    }
+
+    public postUpgradeRarityPetAsync(pet_player_id): Promise<UpgradePetResponseDTO> {
+        return new Promise((resolve, reject) => {
+            WebRequestManager.instance.postUpgradeRarityPet(
+                pet_player_id,
+                (response) => {
+                        const result: UpgradePetResponseDTO = {
+                        pet: ConvetData.ConvertPet(response.data.pet),
+                        success: response.data.success
+                    };
+                    resolve(result);
+                },
+                (error) => {
+                    resolve(null);
+                }
+            );
+        });
+    }
+
     public getGameConfig(successCallback, errorCallback) {
         APIManager.getData(this.combineWithSlash(APIConstant.CONFIG, APIConstant.GAME_CONFIG), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, false);
     }
@@ -182,6 +233,14 @@ export class WebRequestManager extends Component {
         APIManager.getData(this.combineWithSlash(APIConstant.PET_PLAYERS, mapCode), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
+    public postUpgradeStarPet(data, successCallback, errorCallback) {
+        APIManager.postData(this.combineWithSlash(APIConstant.PET_PLAYERS, APIConstant.UPGRADE_STAR_PET), data, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    }
+
+    public postUpgradeRarityPet(pet_player_id, successCallback, errorCallback) {
+        APIManager.postData(this.combineWithSlash(APIConstant.PET_PLAYERS, pet_player_id, APIConstant.UPGRADE_RARITY_PET), {}, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    }
+
     public getMyPetData(successCallback, errorCallback) {
         APIManager.getData(this.combineWithSlash(APIConstant.PET_PLAYERS), (data) => { UserMeManager.SetMyPets = data.data; this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
@@ -190,8 +249,8 @@ export class WebRequestManager extends Component {
         APIManager.getData(this.combineWithSlash(APIConstant.GAME, APIConstant.SPIN), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
-    public getRewardsPercent(successCallback, errorCallback) {
-        APIManager.getData(this.combineWithSlash(APIConstant.GAME, APIConstant.REWARD_PERCENT), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    public getConfigRate(successCallback, errorCallback) {
+        APIManager.getData(this.combineWithSlash(APIConstant.GAME, APIConstant.CONFIG), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
     public login(data, successCallback, errorCallback) {
@@ -206,8 +265,8 @@ export class WebRequestManager extends Component {
             , (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
-    public postBuySkin(data, successCallback, errorCallback) {
-        APIManager.postData(this.combineWithSlash(APIConstant.INVENTORY, APIConstant.BUY, data), {}, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    public getItemType(type, successCallback, errorCallback) {
+        APIManager.getData(this.combineWithSlash(APIConstant.INVENTORY, APIConstant.ITEM_TYPE, type), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
     public updateProfile(data, successCallback, errorCallback) {
@@ -245,8 +304,9 @@ export class WebRequestManager extends Component {
         APIManager.getData(this.combineWithSlash(APIConstant.FOOD), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
-    public postBuyFood(foodId, quantity, type, successCallback, errorCallback) {
-        const url = `${APIConstant.INVENTORY}/${APIConstant.BUY}/${foodId}?quantity=${quantity}&type=${type}`;
+    public postBuyItem(params: BuyItemPayload, successCallback, errorCallback) {
+        const { itemId: itemId, quantity, type} = params;
+        const url = `${APIConstant.INVENTORY}/${APIConstant.BUY}/${itemId}?quantity=${quantity}&type=${type}`;
         APIManager.postData(url, {}, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
@@ -272,7 +332,6 @@ export class WebRequestManager extends Component {
     }
 
     public putRecievedReward(questId, successCallback, errorCallback) {
-        console.log("questId", questId);
         const url = `${APIConstant.PLAYER_QUESTS}/${questId}/${APIConstant.FINISH_QUEST}`;
         APIManager.putData(url, {}, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }

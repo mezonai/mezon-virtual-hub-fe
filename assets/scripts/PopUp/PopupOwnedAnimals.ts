@@ -15,6 +15,7 @@ import { PopupBattlePlace, PopupBattlePlaceParam } from './PopupBattlePlace';
 import { Sprite } from 'cc';
 import { UserMeManager } from '../core/UserMeManager';
 import { PopupPetChartParam, PopupPetElementChart } from './PopupPetElementChart';
+import { PopupUpgradePet } from './PopupUpgradePet';
 const { ccclass, property } = _decorator;
 
 enum PetActionType {
@@ -55,6 +56,7 @@ export class PopupOwnedAnimals extends BasePopup {
     @property({ type: [ItemDisplayPetFighting] }) itemDisplayPetFightings: ItemDisplayPetFighting[] = [];
     @property({ type: Button }) sortPetBattleBtn: Button = null;
     @property({ type: Button }) petChartButton: Button = null;
+    @property({ type: Button }) petUpgradeButton: Button = null;
 
     private animalObject: Node = null;
     private animalController: AnimalController = null;
@@ -244,8 +246,6 @@ export class PopupOwnedAnimals extends BasePopup {
     setDataDetail(pet: PetDTO) {
         this.namePet.string = `<outline color=#222222 width=1> ${pet.name} (${pet.pet.rarity}) </outline>`;
         this.currentExp.string = `<outline color=#222222 width=1> ${pet.exp} / ${pet.max_exp} </outline>`;
-        console.log("pet.exp: ", pet.exp);
-        console.log("pet.max_exp: ", pet.max_exp);
         this.progressBarExp.fillRange = Math.min(pet.exp / pet.max_exp, 1);
         this.hpValue.string = `<outline color=#222222 width=1> ${pet.hp} </outline>`;
         this.attackValue.string = `<outline color=#222222 width=1> ${pet.attack} </outline>`;
@@ -421,6 +421,12 @@ export class PopupOwnedAnimals extends BasePopup {
             await PopupManager.getInstance().openAnimPopup("PopupPetElementChart", PopupPetElementChart, { widget: { horizontalCenter: 0, verticalCenter: 0 } } as PopupPetChartParam);
             this.petChartButton.interactable = true;
         });
+        this.petUpgradeButton.addAsyncListener(async () => {
+            this.petChartButton.interactable = false;
+            await PopupManager.getInstance().openAnimPopup("PopupUpgradePet", PopupUpgradePet);
+            this.petChartButton.interactable = true;
+        });
+        
         this.onGetMyPet(UserMeManager.MyPets());
     }
 
@@ -534,6 +540,7 @@ export class PopupOwnedAnimals extends BasePopup {
             if (index !== -1) {
                 this.clearSlotByPetId(pet.id);
                 this.animalBattle.splice(index, 1);
+                pet.battle_slot = 0;
                 this.updateAnimalSlotUI(pet, isSelectBattle);
             }
         }
@@ -542,6 +549,7 @@ export class PopupOwnedAnimals extends BasePopup {
     async onSortPetBattle() {
         if (this.animalBattle.length < 1) {
             await this.showConfirm("Không có pet để sắp xếp !!!");
+            return;
         }
         const clonedPets = this.animalBattle.map(p => ({ ...p }));
         await this.showPopupSortBattlePlace(clonedPets);
@@ -603,7 +611,6 @@ export class PopupOwnedAnimals extends BasePopup {
         item?.clearPetInfoOnly?.();
         const slotToReset = this.animalSlots.find(s => s.currentPet?.id === petId);
         if (slotToReset) slotToReset.setBattlePet(0);
-        pet.battle_slot = 0;
     }
 
     getFightingSlotItem(slotIndex: number): ItemDisplayPetFighting | null {

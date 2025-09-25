@@ -1,7 +1,7 @@
 import { _decorator, Node, RichText } from 'cc';
 import { UserMeManager } from '../../core/UserMeManager';
 import { WebRequestManager } from '../../network/WebRequestManager';
-import { InventoryType, Item } from '../../Model/Item';
+import { BuyItemPayload, InventoryType, Item, ItemType } from '../../Model/Item';
 import { ResourceManager } from '../../core/ResourceManager';
 import { EVENT_NAME } from '../../network/APIConstant';
 import { ShopUIItem } from './ShopUIItem';
@@ -12,15 +12,19 @@ import Utilities from '../../utilities/Utilities';
 import { PopupManager } from '../../PopUp/PopupManager';
 import { ConfirmParam, ConfirmPopup } from '../../PopUp/ConfirmPopup';
 import { PopupBuyItem, PopupBuyItemParam } from '../../PopUp/PopupBuyItem';
+import { Vec3 } from 'cc';
+import { TabController } from '../../ui/TabController';
 const { ccclass, property } = _decorator;
 
 @ccclass('ShopController')
 export class ShopController extends BaseInventoryManager {
+    @property({ type: TabController }) tabController: TabController = null;
     @property({ type: RichText }) itemPrice: RichText = null;
     @property({ type: Node }) itemPriceContainer: Node = null;
     protected override groupedItems: Record<string, Item[]> = null;
     protected override selectingUIItem: ShopUIItem = null;
     private isOpenPopUp: boolean = false;
+    private quantityBuy: number = 1;
 
     protected override async actionButtonClick() {
         try {
@@ -97,17 +101,21 @@ export class ShopController extends BaseInventoryManager {
         }
 
         try {
-            const result = await this.postBuySkinAsync(this.selectingUIItem.data.id);
-
+            const payload: BuyItemPayload = {
+                itemId: this.selectingUIItem.data.id,
+                quantity: this.quantityBuy,
+                type: InventoryType.ITEM
+            };
+            const result = await this.postBuySkinAsync(payload);
             return result;
         } catch (error) {
             throw error;
         }
     }
 
-    private postBuySkinAsync(data: any): Promise<any> {
+    private postBuySkinAsync(payload: BuyItemPayload): Promise<any> {
         return new Promise((resolve, reject) => {
-            WebRequestManager.instance.postBuySkin(data, resolve, reject);
+            WebRequestManager.instance.postBuyItem(payload, resolve, reject);
         });
     }
 
@@ -147,21 +155,48 @@ export class ShopController extends BaseInventoryManager {
         return ResourceManager.instance.getLocalSkinById(item.id, item.type);
     }
 
-    protected override async registUIItemData(itemNode: Node, item: Item, skinLocalData: LocalItemDataConfig) {
-        let uiItem = itemNode.getComponent(ShopUIItem);
+    protected override async registUIItemData(itemNode: Node, item: Item, skinLocalData: LocalItemDataConfig | null,
+        onClick?: (uiItem: ShopUIItem, data: any) => void
+    ) {
+        const uiItem = itemNode.getComponent(ShopUIItem)!;
         uiItem.resetData();
-        if (item.iconSF.length == 0) {
-            for (const icon of skinLocalData.icons) {
-                let spriteFrame = await this.setItemImage(skinLocalData.bundleName, icon);
-                item.iconSF.push(spriteFrame);
-            }
+        if (onClick) {
+            uiItem.onClick = onClick;
         }
-        uiItem.avatar.node.scale = this.SetItemScaleValue(item.type);
-        uiItem.avatar.spriteFrame = item.iconSF[0];
-        item.mappingLocalData = skinLocalData;
+        if (item.type === ItemType.PET_CARD) {
+            this.setupCardItem(uiItem, item);
+        } else {
+            await this.setupSkinItem(uiItem, item, skinLocalData!);
+        }
+
         uiItem.init(item);
         uiItem.toggleActive(false);
         uiItem.reset();
+    }
+
+    private setupCardItem(uiItem: ShopUIItem, item: Item) {
+        const sprite = this.cardIconMap[item.item_code];
+        if (sprite) {
+            uiItem.avatar.spriteFrame = sprite;
+            uiItem.avatar.node.setScale(0.06, 0.06, 1);
+        }
+    }
+
+    private async setupSkinItem(
+        uiItem: ShopUIItem,
+        item: Item,
+        skinLocalData: LocalItemDataConfig
+    ) {
+        if (item.iconSF.length === 0) {
+            for (const icon of skinLocalData.icons) {
+                const spriteFrame = await this.setItemImage(skinLocalData.bundleName, icon);
+                item.iconSF.push(spriteFrame);
+            }
+        }
+
+        uiItem.avatar.node.scale = this.SetItemScaleValue(item.type);
+        uiItem.avatar.spriteFrame = item.iconSF[0];
+        item.mappingLocalData = skinLocalData;
     }
 
     protected override onUIItemClick(uiItem: ShopUIItem, data: Item) {

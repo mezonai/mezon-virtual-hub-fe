@@ -219,3 +219,14 @@ export interface PetBattleData {
 export interface SkillPayload {
   equipped_skill_codes: SkillCode[];
 };
+
+export interface MergePetRequestPayload {
+    pet_ids: string[];
+    keep_highest_iv: boolean;
+}
+
+export interface UpgradePetResponseDTO {
+  pet: PetDTO;
+  user_diamond?: number;
+  success: boolean
+}
