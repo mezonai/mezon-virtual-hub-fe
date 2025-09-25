@@ -198,8 +198,12 @@ export class ShopPetController extends BaseInventoryManager {
         return ResourceManager.instance.getLocalSkinById(item.id, item.type);
     }
 
-    protected override async registUIItemData(itemNode: Node, item: Food, skinLocalData: LocalItemDataConfig) {
+    protected override async registUIItemData(itemNode: Node, item: Food, skinLocalData: LocalItemDataConfig,
+        onClick?: (uiItem: ShopUIItem, data: any) => void) {
         let uiItem = itemNode.getComponent(ShopUIItem);
+        if (onClick) {
+            uiItem.onClick = onClick;
+        }
         uiItem.resetData();
         this.setupFoodReward(uiItem, item.type);
         uiItem.initFood(item);
@@ -234,10 +238,9 @@ export class ShopPetController extends BaseInventoryManager {
         this.resetSelectItem();
     }
 
-    protected override onUIItemClickFood(uiItem: ShopUIItem, data: Food) {
+    protected override onUIItemClick(uiItem: ShopUIItem, data: Food) {
         this.selectingUIItem = uiItem;
-        super.onUIItemClickFood(uiItem, data);
-
+        this.actionButton.interactable = uiItem != null;
         this.descriptionText.string = data.name;
         this.descriptionFood.string = data.description;
         this.itemPrice.string = Utilities.convertBigNumberToStr(data.price);

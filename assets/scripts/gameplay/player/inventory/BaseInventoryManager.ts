@@ -79,7 +79,7 @@ export class BaseInventoryManager extends BasePopup {
     }
 
     initMoneyMap(){
-        if (this.iconValue.length >= 3) {
+        if (this.iconMoney.length >= 2) {
             this.moneyIconMap = {
                 gold: this.iconMoney[0],
                 diamond: this.iconMoney[1]
@@ -98,8 +98,6 @@ export class BaseInventoryManager extends BasePopup {
 
     protected async onTabChange(tabName) {
         this.isItemGenerated = true;
-        this.itemContainer.removeAllChildren();
-        this.otherContainer.removeAllChildren();
         this.reset();
         const items = this.groupedItems[tabName] ?? [];
         const isEmpty = !items || items.length === 0;
@@ -141,12 +139,12 @@ export class BaseInventoryManager extends BasePopup {
     protected async spawnFoodItems(items: any[]) {
         for (const item of items) {
             if (Number(item.quantity) <= 0) continue;
-            let itemNode = ObjectPoolManager.instance.spawnFromPool(this.itemPrefab.name);
-            itemNode.off(EVENT_NAME.ON_ITEM_CLICK);
-            itemNode.off(EVENT_NAME.ON_FOOD_CLICK);
+            let itemNode = instantiate(this.itemPrefab);
             itemNode.setParent(this.otherContainer);
-            await this.registUIItemData(itemNode, item, null);
-            this.registItemFoodClickEvent(itemNode);
+            await this.registUIItemData(itemNode, item, null,
+                (uiItem, dataFood) => {
+                    this.onUIItemClick(uiItem, dataFood as Food);
+                });
         }
     }
 
@@ -154,11 +152,11 @@ export class BaseInventoryManager extends BasePopup {
         for (const item of items) {
             if (Number(item.quantity) <= 0) continue;
             let itemNode = instantiate(this.itemPrefab);
-            itemNode.off(EVENT_NAME.ON_ITEM_CLICK);
-            itemNode.off(EVENT_NAME.ON_FOOD_CLICK);
             itemNode.setParent(this.itemContainer);
-            await this.registUIItemData(itemNode, item, null);
-            this.registItemClickEvent(itemNode);
+            await this.registUIItemData(itemNode, item, null,
+                (uiItem, data) => {
+                    this.onUIItemClick(uiItem, data as Item);
+                });
         }
     }
 
@@ -168,12 +166,12 @@ export class BaseInventoryManager extends BasePopup {
             if (!skinLocalData)
                 continue;
             let itemNode = instantiate(this.itemPrefab);
-            itemNode.off(EVENT_NAME.ON_ITEM_CLICK);
-            itemNode.off(EVENT_NAME.ON_FOOD_CLICK);
             itemNode.setParent(this.itemContainer);
 
-            await this.registUIItemData(itemNode, item, skinLocalData);
-            this.registItemClickEvent(itemNode);
+            await this.registUIItemData(itemNode, item, skinLocalData,
+                (uiItem, data) => {
+                    this.onUIItemClick(uiItem, data as Item);
+                });
         }
     }
 
@@ -181,7 +179,7 @@ export class BaseInventoryManager extends BasePopup {
         return null;
     }
 
-    protected async registUIItemData(itemNode: Node, item: BaseInventoryDTO, skinLocalData: LocalItemDataConfig) {
+    protected async registUIItemData(itemNode: Node, item: BaseInventoryDTO, skinLocalData: LocalItemDataConfig, onClick?: (uiItem: InventoryUIITem, data: any) => void) {
 
     }
 
@@ -189,18 +187,6 @@ export class BaseInventoryManager extends BasePopup {
         const isSpecial = itemType === ItemType.HAIR || itemType === ItemType.FACE;
         const value = isSpecial ? sizeSpecial : sizeClothes;
         return new Vec3(value, value, 0);
-    }
-
-    protected registItemClickEvent(itemNode: Node) {
-        itemNode.on(EVENT_NAME.ON_ITEM_CLICK, (uiItem, data) => {
-            this.onUIItemClick(uiItem, data);
-        })
-    }
-
-    protected registItemFoodClickEvent(itemNode: Node) {
-        itemNode.on(EVENT_NAME.ON_FOOD_CLICK, (uiItem, dataFood) => {
-            this.onUIItemClickFood(uiItem, dataFood);
-        })
     }
 
     protected async actionButtonClick() { }
@@ -223,6 +209,8 @@ export class BaseInventoryManager extends BasePopup {
     }
 
     protected reset() {
+        this.itemContainer.removeAllChildren();
+        this.otherContainer.removeAllChildren();
         this.actionButton.interactable = false;
         this.descriptionText.string = "";
         if (this.equipingUIItem) {
@@ -246,30 +234,30 @@ export class BaseInventoryManager extends BasePopup {
         return await LoadBundleController.instance.spriteBundleLoader.getBundleData(bundleData);
     }
 
-    protected onUIItemClick(uiItem: any, data: Item) {
+    protected onUIItemClick(uiItem: any, data: Item | Food) {
+        if (!data) return;
         this.selectingUIItem = uiItem;
-        this.itemData = data;
-        if(data.type == ItemType.PET_CARD){
-            this.descriptionText.string = `${data.name}`;
-            this.actionButton.interactable = uiItem != null;
+        this.actionButton.interactable = uiItem != null;
+
+        if (data instanceof Food) {
             return;
         }
+
+        if ((data as Item).type === ItemType.PET_CARD) {
+            this.itemData = data as Item;
+            this.descriptionText.string = `${this.itemData.name}`;
+            return;
+        }
+
+        this.itemData = data as Item;
         this.previewPlayer.changeSkin(this.itemData, false);
-        this.updateDescriptionAndActionButton(data, uiItem);
+        this.updateDescriptionAndActionButton(this.itemData, uiItem);
     }
 
     protected updateDescriptionAndActionButton(skinData: Item, uiItem: any | null) {
         const description = skinData.mappingLocalData?.description || "";
         const isFaceOrEye = skinData.type === ItemType.EYES || skinData.type === ItemType.FACE;
-
         this.descriptionText.string = isFaceOrEye ? description : `${skinData.name} : ${description}`;
-        this.actionButton.interactable = uiItem != null;
-    }
-
-    protected onUIItemClickFood(uiItem: InventoryUIITem, dataFood: Food) {
-        if (!dataFood) return;
-        this.selectingUIItem = uiItem;
-        this.actionButton.interactable = uiItem != null;
     }
 
     protected setupFoodReward(uiItem: any, foodType: any) {

@@ -14,13 +14,13 @@ export class BaseInventoryUIITem extends Component {
     @property({ type: [SpriteFrame] }) stasFrame: SpriteFrame[] = [];
     @property({ type: Toggle }) toggle: Toggle = null;
     @property({ type: Label }) amountLabel: Label;
-
+    public onClick?: (uiItem: this, data: Item | Food) => void;
     protected lastTriggerTime = 0;
     public data: Item = null;
     public dataFood: Food = null;
 
     protected start(): void {
-        this.node.on("click", this.onItemClick, this);
+        this.node.on(Node.EventType.TOUCH_END, this.onItemClick, this);
         this.toggle.node.on("toggle", this.onToggle, this);
     }
 
@@ -51,10 +51,8 @@ export class BaseInventoryUIITem extends Component {
         if (now - this.lastTriggerTime < 500) return;
         this.lastTriggerTime = now;
 
-        if (isFood) {
-            this.node.emit(EVENT_NAME.ON_FOOD_CLICK, this, this.dataFood);
-        } else {
-            this.node.emit(EVENT_NAME.ON_ITEM_CLICK, this, this.data);
+        if (this.onClick) {
+            this.onClick(this, isFood ? this.dataFood : this.data);
         }
     }
 
@@ -75,5 +73,6 @@ export class BaseInventoryUIITem extends Component {
     public async updateAmountCardItem(data: Item): Promise<void> {
 
     }
+    
 
 }

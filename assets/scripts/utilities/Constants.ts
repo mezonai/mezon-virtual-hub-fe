@@ -169,7 +169,7 @@ export class Constants {
     public static get getTabShop(): Map<string, string> {
         return this._tabMap;
     }
-
+    public static tabTypeInventory: string[] = Array.from(this._tabMap.keys());
     public static getTabShopPet: Map<string, string> = new Map([
         [InventoryType.FOOD, 'Thức ăn pet'],
     ]);

@@ -10,6 +10,10 @@ const { ccclass, property } = _decorator;
 export class InventoryUIITem extends BaseInventoryUIITem {
     public override init(data: Item) {
         super.init(data);
+        const itemDTO = UserMeManager.GetItem?.find(inv => inv.item?.id === data.id);
+        const quantity = itemDTO?.quantity ?? 0;
+        this.amountLabel.string = Utilities.convertBigNumberToStr(quantity);
+        this.amountLabel.node.active = data.type == ItemType.PET_CARD;
     }
 
     public override initFood(data: Food) {
@@ -20,13 +24,4 @@ export class InventoryUIITem extends BaseInventoryUIITem {
         this.amountLabel.string = Utilities.convertBigNumberToStr(quantity);
     }
 
-      
-    public async updateAmountCardItem(data: Item) {
-        if (!this.amountLabel) return;
-        const inventoryList = await WebRequestManager.instance.getItemTypeAsync(ItemType.PET_CARD);
-        const itemDTO = inventoryList.find(inv => inv.item?.id === data.id)
-        const quantity = itemDTO?.quantity ?? 0;
-        this.amountLabel.string = Utilities.convertBigNumberToStr(quantity);
-        this.amountLabel.node.active = data.type == ItemType.PET_CARD;
-    }
 }

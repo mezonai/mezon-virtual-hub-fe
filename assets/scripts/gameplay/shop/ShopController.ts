@@ -155,40 +155,48 @@ export class ShopController extends BaseInventoryManager {
         return ResourceManager.instance.getLocalSkinById(item.id, item.type);
     }
 
-    protected override async registUIItemData(itemNode: Node, item: Item, skinLocalData: LocalItemDataConfig) {
-        let uiItem = itemNode.getComponent(ShopUIItem);
+    protected override async registUIItemData(itemNode: Node, item: Item, skinLocalData: LocalItemDataConfig | null,
+        onClick?: (uiItem: ShopUIItem, data: any) => void
+    ) {
+        const uiItem = itemNode.getComponent(ShopUIItem)!;
         uiItem.resetData();
+        if (onClick) {
+            uiItem.onClick = onClick;
+        }
+        if (item.type === ItemType.PET_CARD) {
+            this.setupCardItem(uiItem, item);
+        } else {
+            await this.setupSkinItem(uiItem, item, skinLocalData!);
+        }
 
-        if (item.type == ItemType.PET_CARD) {
-            this.handleCardItem(uiItem, item);
-            return;
-        }
-        
-        if (item.iconSF.length == 0) {
-            for (const icon of skinLocalData.icons) {
-                let spriteFrame = await this.setItemImage(skinLocalData.bundleName, icon);
-                item.iconSF.push(spriteFrame);
-            }
-        }
-        uiItem.avatar.node.scale = this.SetItemScaleValue(item.type);
-        uiItem.avatar.spriteFrame = item.iconSF[0];
-        item.mappingLocalData = skinLocalData;
         uiItem.init(item);
         uiItem.toggleActive(false);
         uiItem.reset();
     }
 
-    private handleCardItem(uiItem: ShopUIItem, item: Item) {
+    private setupCardItem(uiItem: ShopUIItem, item: Item) {
         const sprite = this.cardIconMap[item.item_code];
         if (sprite) {
             uiItem.avatar.spriteFrame = sprite;
-            uiItem.avatar.node.scale = new Vec3(0.06, 0.06, 0);
+            uiItem.avatar.node.setScale(0.06, 0.06, 1);
         }
-        uiItem.init(item);
-        uiItem.toggleActive(false);
-        if (this.descriptionText.string.trim() === "") {
-            this.descriptionText.string = `${item.name}`;
+    }
+
+    private async setupSkinItem(
+        uiItem: ShopUIItem,
+        item: Item,
+        skinLocalData: LocalItemDataConfig
+    ) {
+        if (item.iconSF.length === 0) {
+            for (const icon of skinLocalData.icons) {
+                const spriteFrame = await this.setItemImage(skinLocalData.bundleName, icon);
+                item.iconSF.push(spriteFrame);
+            }
         }
+
+        uiItem.avatar.node.scale = this.SetItemScaleValue(item.type);
+        uiItem.avatar.spriteFrame = item.iconSF[0];
+        item.mappingLocalData = skinLocalData;
     }
 
     protected override onUIItemClick(uiItem: ShopUIItem, data: Item) {

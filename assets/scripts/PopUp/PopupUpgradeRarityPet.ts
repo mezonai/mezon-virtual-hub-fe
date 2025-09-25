@@ -102,14 +102,17 @@ export class PopupUpgradeRarityPet extends BasePopup {
 
     async UpgradeRarityPet() {
         const pet = this.getPetsForUpgrade();
-        if (!pet) return;
+        if (!pet) {
+            this.showConfirm("Cần 1 thú cưng để có thể nâng độ hiếm!!!.");
+            return;
+        }   
         if (!this.CheckStarPets(pet)) {
             this.showConfirm("Pet chưa đạt 3 sao, không thể nâng cấp độ hiếm!!!");
             return;
         }
         const hasTicket = await this.hasTicketForPet(pet);
         if (!hasTicket) {
-            this.showConfirm("Bạn cần thẻ nâng bậc để tiến hóa Pet!");
+            this.showConfirm("Bạn cần thẻ nâng bậc để nâng độ hiếm!");
             return;
         }
         const dataPetMerge = await WebRequestManager.instance.postUpgradeRarityPetAsync(pet.id);
@@ -124,6 +127,7 @@ export class PopupUpgradeRarityPet extends BasePopup {
                 onFinishAnim: async () => {
                     const myPets = await WebRequestManager.instance.getMyPetAsync();
                     this.updateListPet?.(myPets);
+                    WebRequestManager.instance.getUserProfileAsync();
                     await this.getConfigRateAsync();
                 }
             } as PopupUpgradeRarityPetParam);
