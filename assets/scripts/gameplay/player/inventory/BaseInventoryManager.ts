@@ -6,11 +6,9 @@ import { InventoryUIITem } from './InventoryUIItem';
 import { LoadBundleController } from '../../../bundle/LoadBundleController';
 import { UserMeManager } from '../../../core/UserMeManager';
 import Utilities from '../../../utilities/Utilities';
-import { ObjectPoolManager } from '../../../pooling/ObjectPoolManager';
-import { EVENT_NAME } from '../../../network/APIConstant';
-import { LocalItemDataConfig } from '../../../Model/LocalItemConfig';
 import { BasePopup } from '../../../PopUp/BasePopup';
 import { instantiate } from 'cc';
+import { LocalItemDataConfig } from '../../../Model/LocalItemConfig';
 const { ccclass, property } = _decorator;
 
 @ccclass('BaseInventoryManager')
@@ -32,21 +30,11 @@ export class BaseInventoryManager extends BasePopup {
     protected isItemGenerated: boolean = false;
     protected categories: string[] = [];
     protected groupedItems: Record<string, BaseInventoryDTO[]> = null;
-
-    @property({ type: [SpriteFrame] }) iconValue: SpriteFrame[] = []; // 0: normal 1:  rare 2:  super
-    @property({ type: [SpriteFrame] }) iconMoney: SpriteFrame[] = []; // 0: Gold 1: Diamond
-    @property({ type: [SpriteFrame] }) cardValue: SpriteFrame[] = []; // 0: Gold 1: Diamond
-    protected foodIconMap: Record<string, SpriteFrame>;
-    protected cardIconMap: Record<string, SpriteFrame>;
-    protected moneyIconMap: Record<string, SpriteFrame>;
     protected currentTabName: string = null;
 
     @property({ type: Button }) closeUIBtn: Button = null;
 
     public init(param?: any): void {
-        this.initFoodMap();
-        this.initCardMap();
-        this.initMoneyMap();
         if (this.categories.length > 0) {
             this.reset();
         }
@@ -56,35 +44,6 @@ export class BaseInventoryManager extends BasePopup {
             this.onCoinChange(newCoin);
         });
         this.onCoinChange(UserMeManager.playerCoin);
-    }
-
-    initFoodMap() {
-        if (this.iconValue.length >= 3) {
-            this.foodIconMap = {
-                normal: this.iconValue[0],
-                premium: this.iconValue[1],
-                ultrapremium: this.iconValue[2]
-            };
-        }
-    }
-
-    initCardMap() {
-        if (this.cardValue.length >= 3) {
-            this.cardIconMap = {
-                rarity_card_rare: this.cardValue[0],
-                rarity_card_epic: this.cardValue[1],
-                rarity_card_legendary: this.cardValue[2]
-            };
-        }
-    }
-
-    initMoneyMap(){
-        if (this.iconMoney.length >= 2) {
-            this.moneyIconMap = {
-                gold: this.iconMoney[0],
-                diamond: this.iconMoney[1]
-            };
-        }
     }
 
     protected onCoinChange(value) {
@@ -141,7 +100,7 @@ export class BaseInventoryManager extends BasePopup {
             if (Number(item.quantity) <= 0) continue;
             let itemNode = instantiate(this.itemPrefab);
             itemNode.setParent(this.otherContainer);
-            await this.registUIItemData(itemNode, item, null,
+            await this.registUIItemData(itemNode, item,
                 (uiItem, dataFood) => {
                     this.onUIItemClick(uiItem, dataFood as Food);
                 });
@@ -153,7 +112,7 @@ export class BaseInventoryManager extends BasePopup {
             if (Number(item.quantity) <= 0) continue;
             let itemNode = instantiate(this.itemPrefab);
             itemNode.setParent(this.itemContainer);
-            await this.registUIItemData(itemNode, item, null,
+            await this.registUIItemData(itemNode, item,
                 (uiItem, data) => {
                     this.onUIItemClick(uiItem, data as Item);
                 });
@@ -168,7 +127,7 @@ export class BaseInventoryManager extends BasePopup {
             let itemNode = instantiate(this.itemPrefab);
             itemNode.setParent(this.itemContainer);
 
-            await this.registUIItemData(itemNode, item, skinLocalData,
+            await this.registUIItemData(itemNode, item,
                 (uiItem, data) => {
                     this.onUIItemClick(uiItem, data as Item);
                 });
@@ -179,14 +138,8 @@ export class BaseInventoryManager extends BasePopup {
         return null;
     }
 
-    protected async registUIItemData(itemNode: Node, item: BaseInventoryDTO, skinLocalData: LocalItemDataConfig, onClick?: (uiItem: InventoryUIITem, data: any) => void) {
+    protected async registUIItemData(itemNode: Node, item: BaseInventoryDTO, onClick?: (uiItem: InventoryUIITem, data: any) => void) {
 
-    }
-
-    protected SetItemScaleValue(itemType: ItemType, sizeSpecial: number = 0.16, sizeClothes: number = 0.3): Vec3 {
-        const isSpecial = itemType === ItemType.HAIR || itemType === ItemType.FACE;
-        const value = isSpecial ? sizeSpecial : sizeClothes;
-        return new Vec3(value, value, 0);
     }
 
     protected async actionButtonClick() { }
@@ -254,26 +207,9 @@ export class BaseInventoryManager extends BasePopup {
         this.updateDescriptionAndActionButton(this.itemData, uiItem);
     }
 
-    protected updateDescriptionAndActionButton(skinData: Item, uiItem: any | null) {
-        const description = skinData.mappingLocalData?.description || "";
-        const isFaceOrEye = skinData.type === ItemType.EYES || skinData.type === ItemType.FACE;
-        this.descriptionText.string = isFaceOrEye ? description : `${skinData.name} : ${description}`;
+    protected updateDescriptionAndActionButton(itemData: Item, uiItem: any | null) {
+        const description = itemData.mappingLocalData?.description || "";
+        const isFaceOrEye = itemData.type === ItemType.EYES || itemData.type === ItemType.FACE;
+        this.descriptionText.string = isFaceOrEye ? description : `${itemData.name} : ${description}`;
     }
-
-    protected setupFoodReward(uiItem: any, foodType: any) {
-        if (!this.foodIconMap) {
-            this.initFoodMap();
-        }
-    }
-
-    protected setupMoneyReward(uiItem: any, typeMoney: any) {
-        if (!this.moneyIconMap) {
-            this.initMoneyMap();
-        }
-        const sprite = this.moneyIconMap[typeMoney.type];
-        if (sprite) {
-            uiItem.iconFrame.spriteFrame = sprite;
-        }
-    }
-
 }

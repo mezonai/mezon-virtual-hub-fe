@@ -1,14 +1,12 @@
 import { _decorator, Component, Label, Node, Sprite, SpriteFrame, Toggle, tween, Vec3 } from 'cc';
-import { Food, FoodType, Item, ItemType } from '../../../Model/Item';
-import { EVENT_NAME } from '../../../network/APIConstant';
+import { Food, InventoryDTO, InventoryType, Item, ItemType, PurchaseMethod, RewardItemDTO } from '../../../Model/Item';
 import { AudioType, SoundManager } from '../../../core/SoundManager';
-import { WebRequestManager } from '../../../network/WebRequestManager';
-import Utilities from '../../../utilities/Utilities';
+import { IconItemUIHelper } from '../../../Reward/IconItemUIHelper';
 const { ccclass, property } = _decorator;
 
 @ccclass('BaseInventoryUIITem')
 export class BaseInventoryUIITem extends Component {
-    @property({ type: Sprite }) avatar: Sprite = null;
+    @property({ type: IconItemUIHelper }) iconItemUIHelper: IconItemUIHelper = null;
     @property({ type: Node }) selectedMark: Node = null;
     @property({ type: Sprite }) stasSprite: Sprite = null;
     @property({ type: [SpriteFrame] }) stasFrame: SpriteFrame[] = [];
@@ -73,6 +71,33 @@ export class BaseInventoryUIITem extends Component {
     public async updateAmountCardItem(data: Item): Promise<void> {
 
     }
-    
+
+    public setIconByReward (rewardItem: RewardItemDTO){
+        this.iconItemUIHelper.setIconByReward(rewardItem);
+    }
+
+    public setIconByInventory (inventoryDTO: InventoryDTO){
+        this.iconItemUIHelper.setIconByInventory(inventoryDTO);
+    }
+
+    public setIconByItem (item: Item){
+        this.iconItemUIHelper.setIconByItem(item);
+    }
+
+    public setIconByFood (food: Food){
+        this.iconItemUIHelper.setIconByFood(food);
+    }
+
+    public setIconByPurchaseMethod (purchaseMethod: PurchaseMethod){
+        this.iconItemUIHelper.setIconByPurchaseMethod(purchaseMethod);
+    }
+
+    public setScaleByItemType (itemType: ItemType, sizeSpecial = 0.16, sizeDefault = 0.3){
+        this.iconItemUIHelper.setSizeIconByItemType(itemType, sizeSpecial, sizeDefault);
+    }
+
+    public setScaleByInventoryType (inventoryType: InventoryType, sizeSpecial = 0.3, sizeDefault = 0.3){
+        this.iconItemUIHelper.setSizeIconByInventoryType(inventoryType, sizeSpecial, sizeDefault);
+    }
 
 }

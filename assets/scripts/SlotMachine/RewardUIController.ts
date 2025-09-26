@@ -2,15 +2,13 @@ import { _decorator, instantiate, Node, Prefab, tween, Vec3 } from 'cc';
 import { RewardItemDTO, RewardType } from '../Model/Item';
 import { BubbleRotation } from './BubbleRotation';
 import { RewardItem } from './RewardItem';
-import { BaseInventoryManager } from '../gameplay/player/inventory/BaseInventoryManager';
-import { ResourceManager } from '../core/ResourceManager';
 import { RewardFloatingText } from './RewardFloatingText';
 import { AudioType, SoundManager } from '../core/SoundManager';
-import { LocalItemDataConfig } from '../Model/LocalItemConfig';
+import { BasePopup } from '../PopUp/BasePopup';
 const { ccclass, property } = _decorator;
 
 @ccclass('RewardUIController')
-export class RewardUIController extends BaseInventoryManager {
+export class RewardUIController extends BasePopup {
     @property({ type: Prefab }) itemPrefab: Prefab = null;
     @property({ type: Node }) hasNoPrize_node: Node = null;
     @property({ type: BubbleRotation }) bubbleRotation: BubbleRotation = null;
@@ -46,30 +44,6 @@ export class RewardUIController extends BaseInventoryManager {
                 this.onAllRewardsShownCallback();
             }
         }
-    }
-
-    protected override getLocalData(reward: RewardItemDTO) {
-        const item = reward.item;
-        if (!item) {
-            return null;
-        }
-        return ResourceManager.instance.getLocalSkinById(item.id, item.type);
-    }
-
-    protected override async registUIItemData(itemNode: Node, item: RewardItemDTO, skinLocalData: LocalItemDataConfig) {
-        let uiItem = itemNode.getComponent(RewardItem);
-        uiItem.resetData();
-        if (item.item.iconSF.length == 0) {
-            for (const icon of skinLocalData.icons) {
-                let spriteFrame = await this.setItemImage(skinLocalData.bundleName, icon);
-                item.item.iconSF.push(spriteFrame);
-            }
-        }
-        uiItem.avatar.spriteFrame = item.item.iconSF[0];
-        item.item.mappingLocalData = skinLocalData;
-        uiItem.init(item.item);
-        uiItem.avatar.node.scale = this.SetItemScaleValue(item.item.type, 0.25, 0.4);
-        uiItem.setupAvatar();
     }
 
     public spawnItem(listItem: RewardItemDTO[]) {
@@ -111,20 +85,22 @@ export class RewardUIController extends BaseInventoryManager {
 
                     switch (reward.type) {
                         case RewardType.ITEM: {
-                            const skinLocalData = this.getLocalData(reward);
-                            this.registUIItemData(itemNode, reward, skinLocalData);
+                                let uiItem = itemNode.getComponent(RewardItem);
+                                uiItem.resetData();
+                                uiItem.setIconByReward(reward);
+                                uiItem.setScaleByItemType(reward.item.type);
+                                uiItem.init(reward.item);
+                                uiItem.setupAvatar();
                             break;
                         }
                         case RewardType.GOLD:
                         case RewardType.DIAMOND:
                             {
-                                this.setupMoneyReward(uiItem, reward.type)
-                                uiItem.setupGoldOrDiamond(reward.quantity);
+                                uiItem.setIconReward(reward);
                                 break;
                             }
                         case RewardType.FOOD: {
-                            this.setupFoodReward(uiItem, reward.food.type);
-                            uiItem.setupFood(reward.quantity);
+                            uiItem.setIconReward(reward);
                             break;
                         }
                         default: {
@@ -178,15 +154,6 @@ export class RewardUIController extends BaseInventoryManager {
             }
 
             floatingText.showReward(message, this.isCoin, RewardType.GOLD);
-        }
-    }
-
-    public override setupFoodReward(uiItem: any, foodType: string) {
-        super.setupFoodReward(uiItem, foodType);
-        const normalizedType = foodType.replace(/-/g, "");
-        const sprite = this.foodIconMap[normalizedType];
-        if (sprite) {
-            uiItem.iconFood.spriteFrame = sprite;
         }
     }
 
