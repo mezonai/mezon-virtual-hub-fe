@@ -14,6 +14,7 @@ import { ConfirmParam, ConfirmPopup } from '../../PopUp/ConfirmPopup';
 import { PopupBuyItem, PopupBuyItemParam } from '../../PopUp/PopupBuyItem';
 import { PopupBuyQuantityItem, PopupBuyQuantityItemParam } from '../../PopUp/PopupBuyQuantityItem';
 import { TabController } from '../../ui/TabController';
+import { IconItemUIHelper } from '../../Reward/IconItemUIHelper';
 const { ccclass, property } = _decorator;
 
 @ccclass('ShopPetController')
@@ -26,7 +27,7 @@ export class ShopPetController extends BaseInventoryManager {
     @property({ type: Node }) catchRateBonusPriceContainer: Node = null;
     protected override groupedItems: Record<string, Food[]> = null;
     protected override selectingUIItem: ShopUIItem = null;
-    @property({ type: Sprite }) iconFrame: Sprite = null;
+    @property({ type: IconItemUIHelper }) iconItemUIHelper: IconItemUIHelper = null;
 
     private quantityBuy: number = 1;
     private isOpenPopUp: boolean = false;
@@ -72,7 +73,7 @@ export class ShopPetController extends BaseInventoryManager {
             this.isOpenPopUp = true;
             const param: PopupBuyQuantityItemParam = {
                 selectedItemPrice: this.selectingUIItem.dataFood.price,
-                spriteMoneyValue:  this.iconFrame.spriteFrame,
+                spriteMoneyValue:  this.iconItemUIHelper.GetIcon(),
                 textButtonLeft: "Thôi",
                 textButtonRight: "Mua",
                 onActionButtonLeft: () => {
@@ -192,32 +193,18 @@ export class ShopPetController extends BaseInventoryManager {
         this.tabController.node.on(EVENT_NAME.ON_CHANGE_TAB, (tabName) => { this.onTabChange(tabName); });
     }
 
-
-    protected override getLocalData(item: Item) {
-        if (item.gender != "not specified" && item.gender != UserMeManager.Get.user.gender) return null;
-        return ResourceManager.instance.getLocalSkinById(item.id, item.type);
-    }
-
-    protected override async registUIItemData(itemNode: Node, item: Food, skinLocalData: LocalItemDataConfig,
+    protected override async registUIItemData(itemNode: Node, food: Food,
         onClick?: (uiItem: ShopUIItem, data: any) => void) {
         let uiItem = itemNode.getComponent(ShopUIItem);
         if (onClick) {
             uiItem.onClick = onClick;
         }
         uiItem.resetData();
-        this.setupFoodReward(uiItem, item.type);
-        uiItem.initFood(item);
+        uiItem.setIconByFood(food);
+        uiItem.setScaleByItemType();
+        uiItem.initFood(food);
         uiItem.toggleActive(false);
         uiItem.reset();
-    }
-
-    public override setupFoodReward(uiItem: any, foodType: string) {
-        super.setupFoodReward(uiItem, foodType);
-        const normalizedType = foodType.replace(/-/g, "");
-        const sprite = this.foodIconMap[normalizedType];
-        if (sprite) {
-            uiItem.avatar.spriteFrame = sprite;
-        }
     }
 
     protected override resetSelectItem() {
@@ -246,10 +233,7 @@ export class ShopPetController extends BaseInventoryManager {
         this.itemPrice.string = Utilities.convertBigNumberToStr(data.price);
         this.itemPriceContainer.active = true;
         this.catchRateBonusPriceContainer.active = true;
-        const sprite = this.moneyIconMap[data.purchase_method.toString()];
-        if (sprite) {
-            this.iconFrame.spriteFrame = sprite;
-        }
+        this.iconItemUIHelper.setIconByPurchaseMethod(data.purchase_method);
         this.quantityBuy = 1;
     }
 
