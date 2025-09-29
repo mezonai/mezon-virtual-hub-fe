@@ -76,10 +76,6 @@ export class BaseInventoryUIITem extends Component {
         this.iconItemUIHelper.setIconByReward(rewardItem);
     }
 
-    public setIconByInventory (inventoryDTO: InventoryDTO){
-        this.iconItemUIHelper.setIconByInventory(inventoryDTO);
-    }
-
     public setIconByItem (item: Item){
         this.iconItemUIHelper.setIconByItem(item);
     }
@@ -92,12 +88,11 @@ export class BaseInventoryUIITem extends Component {
         this.iconItemUIHelper.setIconByPurchaseMethod(purchaseMethod);
     }
 
-    public setScaleByItemType (itemType: ItemType, sizeSpecial = 0.16, sizeDefault = 0.3){
+    public setScaleByItemType (itemType?: ItemType, sizeSpecial = 0.16, sizeDefault = 0.3){
         this.iconItemUIHelper.setSizeIconByItemType(itemType, sizeSpecial, sizeDefault);
     }
 
-    public setScaleByInventoryType (inventoryType: InventoryType, sizeSpecial = 0.3, sizeDefault = 0.3){
-        this.iconItemUIHelper.setSizeIconByInventoryType(inventoryType, sizeSpecial, sizeDefault);
+    public setScaleByRewardType (rewardItemDTO: RewardItemDTO, sizeSpecial = 0.16, sizeDefault = 0.3){
+        this.iconItemUIHelper.setSizeIconByRewardType(rewardItemDTO, sizeSpecial, sizeDefault);
     }
-
 }

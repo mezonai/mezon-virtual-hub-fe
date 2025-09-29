@@ -7,38 +7,23 @@ const { ccclass, property } = _decorator;
 
 @ccclass('RewardItem')
 export class RewardItem extends BaseInventoryUIITem {
-    @property({ type: Node }) go_Avartar: Node = null;
-    @property({ type: Node }) go_ItemOtherReceive: Node = null;
-    @property({ type: Node }) go_Particle: Node = null;
-    @property({ type: IconItemUIHelper }) iconItemOther: IconItemUIHelper = null;
 
-    setIconReward(itemReward: RewardItemDTO){
-        this.iconItemOther.setIconByReward(itemReward);
-        this.amountLabel.string = "+" + itemReward.quantity.toString()
-        this.go_Avartar.active = false;
-        this.go_ItemOtherReceive.active = true;
-        this.go_Particle.active = true;
-    }
-
-    setupAvatar() {
-        this.go_ItemOtherReceive.active = false;
-        this.go_Avartar.active = true;
-        this.go_Particle.active = true;
+    setRewardItem(itemReward: RewardItemDTO){
+        this.iconItemUIHelper.node.active = true;
+        this.setIconByReward(itemReward);
+        this.amountLabel.string = "+" + itemReward.quantity.toString();
     }
 
     public setupEmpty() {
-        this.go_Avartar.active = false;
-        this.go_ItemOtherReceive.active = false;
-        this.go_Particle.active = false;
-    }
-
-    public getItem(): Item {
-        return this.data;
+        this.reset();
     }
 
     protected onDisable(): void {
-        this.go_Avartar.active = false;
-        this.go_ItemOtherReceive.active = false;
+        this.reset();
     }
 
+    private reset(){
+        this.iconItemUIHelper.node.active = false;
+        this.amountLabel.string = "";
+    }
 }

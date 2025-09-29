@@ -201,7 +201,7 @@ export class ShopPetController extends BaseInventoryManager {
         }
         uiItem.resetData();
         uiItem.setIconByFood(food);
-        uiItem.setScaleByInventoryType(InventoryType.FOOD);
+        uiItem.setScaleByItemType();
         uiItem.initFood(food);
         uiItem.toggleActive(false);
         uiItem.reset();

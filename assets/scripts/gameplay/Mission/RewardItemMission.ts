@@ -13,7 +13,7 @@ export class RewardItemMission extends Component {
 
   public setupReward(reward: RewardItemDTO) {
     this.iconItemUIHelper.setIconByReward(reward);
-    this.iconItemUIHelper.setSizeIconByItemType(reward.item?.type);
+    this.iconItemUIHelper.setSizeIconByRewardType(reward);
     this.quantity.string = `+${reward.quantity}`;
   }
 }

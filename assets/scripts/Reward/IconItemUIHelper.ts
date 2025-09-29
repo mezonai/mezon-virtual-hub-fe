@@ -4,7 +4,6 @@ import { LoadBundleController } from '../bundle/LoadBundleController';
 import { LocalItemDataConfig } from '../Model/LocalItemConfig';
 import { ResourceManager } from '../core/ResourceManager';
 import { Vec3 } from 'cc';
-import { UserMeManager } from '../core/UserMeManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('IconItemUIHelper')
@@ -12,10 +11,12 @@ export class IconItemUIHelper extends Component {
     @property([SpriteFrame]) foodIcons: SpriteFrame[] = [];
     @property([SpriteFrame]) cardIcons: SpriteFrame[] = [];
     @property([SpriteFrame]) moneyIcons: SpriteFrame[] = [];
+    @property([SpriteFrame]) petIcons: SpriteFrame[] = [];
 
     private foodIconMap: Record<string, SpriteFrame> = {};
     private cardIconMap: Record<string, SpriteFrame> = {};
     private moneyIconMap: Record<string, SpriteFrame> = {};
+    private petIconMap: Record<string, SpriteFrame> = {};
 
     @property(Sprite) icon: Sprite;
 
@@ -44,6 +45,13 @@ export class IconItemUIHelper extends Component {
                 diamond: this.moneyIcons[1]
             };
         }
+        if (this.petIcons.length > 0) {
+        for (const sf of this.petIcons) {
+            if (sf && sf.name) {
+                this.petIconMap[sf.name.toLowerCase()] = sf;
+            }
+        }
+    }
     }
 
     private ensureMaps() {
@@ -58,12 +66,17 @@ export class IconItemUIHelper extends Component {
         }
     }
 
-    private async applyIcon(food?: Food, item?: Item, rewardType?: RewardType) {
+    private async applyIcon(food?: Food, item?: Item, rewardType?: RewardType, species?: string) {
         this.ensureMaps();
         if (!this.icon) return;
 
         if (rewardType === RewardType.GOLD || rewardType === RewardType.DIAMOND) {
             this.icon.spriteFrame = this.moneyIconMap[rewardType] ?? null;
+            return;
+        }
+        
+        if (rewardType === RewardType.PET && species) {
+            this.icon.spriteFrame = this.getPetIcon(species);
             return;
         }
 
@@ -85,11 +98,7 @@ export class IconItemUIHelper extends Component {
     }
 
     public async setIconByReward(reward: RewardItemDTO) {
-        await this.applyIcon(reward.food, reward.item, reward.type);
-    }
-
-    public async setIconByInventory(inventory: InventoryDTO) {
-        await this.applyIcon(inventory.food, inventory.item, inventory.inventory_type as any);
+        await this.applyIcon(reward.food, reward.item, reward.type, reward.pet?.species ? reward.pet.species.toString() : undefined);
     }
 
     public async setIconByItem(item: Item) {
@@ -98,6 +107,11 @@ export class IconItemUIHelper extends Component {
 
     public async setIconByFood(food: Food) {
         await this.applyIcon(food, null, null);
+    }
+
+    public getPetIcon(species: string): SpriteFrame {
+        const speciesName = species.toLowerCase();
+        return this.petIconMap[speciesName] || null;
     }
 
     public async setIconByPurchaseMethod(method: PurchaseMethod) {
@@ -140,25 +154,34 @@ export class IconItemUIHelper extends Component {
         return await LoadBundleController.instance.spriteBundleLoader.getBundleData(bundleData);
     }
 
-    public setSizeIconByItemType(itemType: ItemType, sizeSpecial = 0.16, sizeDefault = 0.3) {
-        let value: number;
-
-        if (itemType === ItemType.PET_CARD) {
-            value = 0.06;
-        } else if (itemType === ItemType.HAIR || itemType === ItemType.FACE) {
-            value = sizeSpecial; 
-        } else {
-            value = sizeDefault;
+    public setSizeIconByItemType(itemType?: ItemType, sizeSpecial = 0.16, sizeDefault = 0.3) {
+        let value: number = sizeDefault;
+        if (itemType) {
+            if (itemType === ItemType.PET_CARD) {
+                value = 0.06;
+            } else if (itemType === ItemType.HAIR || itemType === ItemType.FACE) {
+                value = sizeSpecial;
+            }
         }
-
-        this.node.scale = new Vec3(value, value, 1);
+        this.node.scale = new Vec3(value, value, value);
     }
 
+    public setSizeIconByRewardType(reward: RewardItemDTO, sizeSpecial = 0.16, sizeDefault = 0.3) {
+        let value: number = sizeDefault;
 
-    public setSizeIconByInventoryType(inventoryType: InventoryType, sizeSpecial = 0.3, sizeDefault = 0.3) {
-        const isSpecial = inventoryType === InventoryType.FOOD;
-        const value = isSpecial ? sizeSpecial : sizeDefault;
-        this.node.scale = new Vec3(value, value, 1);
+        if (reward.type === RewardType.ITEM && reward.item) {
+            if (reward.item.type === ItemType.PET_CARD) {
+                value = 0.06;
+            } else if (reward.item.type === ItemType.HAIR || reward.item.type === ItemType.FACE) {
+                value = sizeSpecial;
+            } else {
+                value = sizeDefault;
+            }
+        } else if (reward.type === RewardType.PET) {
+            value = 0.06;
+        }
+
+        this.node.scale = new Vec3(value, value, value);
     }
 
     public GetIcon():SpriteFrame{

@@ -204,7 +204,7 @@ export class InventoryManager extends BaseInventoryManager {
     private setupFoodItem(uiItem: InventoryUIITem, food: Food) {
         uiItem.initFood(food);
         uiItem.setIconByFood(food);
-        uiItem.setScaleByInventoryType(InventoryType.FOOD);
+        uiItem.setScaleByItemType();
         uiItem.toggleActive(false);
         this.setUIState(ItemType.PET_FOOD);
         this.descriptionText.string = `${food.name}: ${food.description || ""}`;
@@ -213,6 +213,7 @@ export class InventoryManager extends BaseInventoryManager {
     private setupPetCardItem(uiItem: InventoryUIITem, itemData: Item) {
         uiItem.init(itemData);
         uiItem.setIconByItem(itemData);
+        uiItem.setScaleByItemType(itemData.type);
         this.setUIState(ItemType.PET_CARD);
         uiItem.toggleActive(false);
          this.descriptionText.string =  `${itemData.name}`;

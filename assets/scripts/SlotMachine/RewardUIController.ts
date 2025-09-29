@@ -1,5 +1,5 @@
 import { _decorator, instantiate, Node, Prefab, tween, Vec3 } from 'cc';
-import { RewardItemDTO, RewardType } from '../Model/Item';
+import { ItemType, RewardItemDTO, RewardType } from '../Model/Item';
 import { BubbleRotation } from './BubbleRotation';
 import { RewardItem } from './RewardItem';
 import { RewardFloatingText } from './RewardFloatingText';
@@ -87,20 +87,18 @@ export class RewardUIController extends BasePopup {
                         case RewardType.ITEM: {
                                 let uiItem = itemNode.getComponent(RewardItem);
                                 uiItem.resetData();
-                                uiItem.setIconByReward(reward);
-                                uiItem.setScaleByItemType(reward.item.type);
                                 uiItem.init(reward.item);
-                                uiItem.setupAvatar();
+                                uiItem.setRewardItem(reward);
                             break;
                         }
                         case RewardType.GOLD:
                         case RewardType.DIAMOND:
                             {
-                                uiItem.setIconReward(reward);
+                                uiItem.setRewardItem(reward);
                                 break;
                             }
                         case RewardType.FOOD: {
-                            uiItem.setIconReward(reward);
+                            uiItem.setRewardItem(reward);
                             break;
                         }
                         default: {
