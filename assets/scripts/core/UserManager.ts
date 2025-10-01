@@ -388,7 +388,7 @@ export class UserManager extends Component {
             const petData = await WebRequestManager.instance.getMyPetAsync();
             const pet = petData.find(p => p.id === petCaughId);
             if (UserManager.instance.GetMyClientPlayer) {
-                const content = pet != null ? `Bạn đã bắt thành công <color=#FF0000>${pet.name} (${pet.pet.rarity})</color>` : `Bạn đã bắt pet thành công`
+                const content = pet != null ? `Bạn đã bắt thành công <color=#FF0000>${pet.name} (${pet.current_rarity})</color>` : `Bạn đã bắt pet thành công`
                 Constants.showConfirm(content, "Thông báo");
             }
         } catch (error) {

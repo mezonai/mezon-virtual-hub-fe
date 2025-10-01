@@ -133,7 +133,7 @@ export class PopupUpgradePet extends BasePopup {
         return pets.slice().sort((a, b) => {
             if (a.pet.species < b.pet.species) return -1;
             if (a.pet.species > b.pet.species) return 1;
-            return rarityOrder[a.pet.rarity] - rarityOrder[b.pet.rarity];
+            return rarityOrder[a.current_rarity] - rarityOrder[b.current_rarity];
         });
     }
 

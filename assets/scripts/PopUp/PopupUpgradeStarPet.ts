@@ -154,11 +154,12 @@ export class PopupUpgradeStarPet extends BasePopup {
 
         const { species, type, rarity } = pets[0].pet;
         const stars = pets[0].stars;
+        const current_rarity =  pets[0].current_rarity;
 
         return pets.every(p =>
             p.pet.species === species &&
             p.pet.type === type &&
-            p.pet.rarity === rarity &&
+            p.current_rarity === current_rarity &&
             p.stars === stars
         );
     }
@@ -180,7 +181,7 @@ export class PopupUpgradeStarPet extends BasePopup {
             return;
         }
 
-        const rarity = pets[0].pet.rarity;
+        const rarity = pets[0].current_rarity;
         const rateMerge = this.getRateByRarity(rarity);
 
         this.updateRateUI(rateMerge);

@@ -29,14 +29,14 @@ export class ItemAnimalSlot extends Component {
             }
         };
         this.toggle.node.on('toggle', this.onToggleChanged, this);
-        if (pet.pet.rarity == AnimalRarity.LEGENDARY) {
+        if (pet.current_rarity == AnimalRarity.LEGENDARY) {
             this.animator.node.active = true;
             this.borderSprite.color = this.colorBorder[0];
-            this.playAnimBorder(pet.pet.rarity);
+            this.playAnimBorder(pet.current_rarity);
         }
         else {
             this.animator.node.active = false;
-            const indexColor = pet.pet.rarity == AnimalRarity.COMMON ? 0 : pet.pet.rarity == AnimalRarity.RARE ? 1 : 2;
+            const indexColor = pet.current_rarity == AnimalRarity.COMMON ? 0 : pet.current_rarity == AnimalRarity.RARE ? 1 : 2;
             this.borderSprite.color = this.colorBorder[indexColor];
         }
         this.petImage.setActivePetByName(pet.name);
