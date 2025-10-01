@@ -3,10 +3,9 @@ import { DraggableBase } from "../utilities/DraggableBase";
 import { Prefab } from "cc";
 import { InteractSlot } from "./ItemSlotSkill";
 import { ItemPlacePetDrag } from "./ItemPlacePetUpgrade";
-import { ConfirmParam, ConfirmPopup } from "../PopUp/ConfirmPopup";
-import { PopupManager } from "../PopUp/PopupManager";
 import { PetDTO } from "../Model/PetDTO";
 import { ItemAnimalSlotDrag } from "./ItemAnimalSlotDrag";
+import { Constants } from "../utilities/Constants";
 const { ccclass, property } = _decorator;
 
 @ccclass("PetUpgradeDragItem")
@@ -154,11 +153,7 @@ export class PetUpgradeDragItem extends DraggableBase {
 
         if (existingSlot) {
             const slotIndex = this.slotsPlacePet.indexOf(existingSlot)+1;
-            const param: ConfirmParam = {
-                message: `Pet ${draggedPet.name} này đã tồn tại ở slot ${slotIndex}!`,
-                title: "Chú ý",
-            };
-            PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
+            Constants.showConfirm( `Pet ${draggedPet.name} này đã tồn tại ở slot ${slotIndex}!`, "Chú ý");
             return true;
         }
 

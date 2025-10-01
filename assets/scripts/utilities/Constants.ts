@@ -3,8 +3,9 @@ import { OfficePosition } from "../GameMap/OfficePosition";
 import { RoomType } from "../GameMap/RoomType";
 import { MapData } from "../Interface/DataMapAPI";
 import { FoodType, InventoryType, ItemType, RewardItemDTO, RewardType } from "../Model/Item";
+import { ConfirmParam, ConfirmPopup } from "../PopUp/ConfirmPopup";
+import { PopupManager } from "../PopUp/PopupManager";
 import { RewardNewType } from "../PopUp/PopupReward";
-import { RewardItem } from "../SlotMachine/RewardItem";
 import Utilities from "./Utilities";
 
 export class Constants {
@@ -173,6 +174,15 @@ export class Constants {
     public static getTabShopPet: Map<string, string> = new Map([
         [InventoryType.FOOD, 'Thức ăn pet'],
     ]);
+
+    public static async showConfirm(message: string, title: string = "Thông báo") {
+        const param: ConfirmParam = {
+            message,
+            title: title,
+        };
+        PopupManager.getInstance().openPopup("ConfirmPopup", ConfirmPopup, param);
+    }
+    
 }
 
 

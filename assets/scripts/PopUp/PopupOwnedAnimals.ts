@@ -3,7 +3,6 @@ import { ObjectPoolManager } from '../pooling/ObjectPoolManager';
 import { ItemAnimalSlot } from '../animal/ItemAnimalSlot';
 import { BasePopup } from './BasePopup';
 import { PopupManager } from './PopupManager';
-import { ConfirmParam, ConfirmPopup } from './ConfirmPopup';
 import { ServerManager } from '../core/ServerManager';
 import { WebRequestManager } from '../network/WebRequestManager';
 import { AnimalRarity, PetBattlePayload, PetDTO, PetFollowPayload, SkillCode, SkillBattleInfo, SkillPayload, SkillSlot, ElementNameMap } from '../Model/PetDTO';
@@ -16,6 +15,7 @@ import { Sprite } from 'cc';
 import { UserMeManager } from '../core/UserMeManager';
 import { PopupPetChartParam, PopupPetElementChart } from './PopupPetElementChart';
 import { PopupUpgradePet } from './PopupUpgradePet';
+import { Constants } from '../utilities/Constants';
 const { ccclass, property } = _decorator;
 
 enum PetActionType {
@@ -460,20 +460,12 @@ export class PopupOwnedAnimals extends BasePopup {
 
         const action = actions[actionType];
         if ('deny' in action && action.deny) {
-            return await this.showConfirm(action.deny);
+            return await Constants.showConfirm(action.deny, "Thông báo");
         }
         if ((action as any).content && action.handler) {
             return await this.showSelection((action as any).content, action.handler);
         }
         await action.handler?.();
-    }
-
-    private async showConfirm(message: string) {
-        const param: ConfirmParam = {
-            message,
-            title: "Thông báo",
-        };
-        await PopupManager.getInstance().openPopup("ConfirmPopup", ConfirmPopup, param);
     }
 
     private async showSelection(content: string, onConfirm: () => void) {
@@ -548,7 +540,7 @@ export class PopupOwnedAnimals extends BasePopup {
 
     async onSortPetBattle() {
         if (this.animalBattle.length < 1) {
-            await this.showConfirm("Không có pet để sắp xếp !!!");
+            await Constants.showConfirm("Không có pet để sắp xếp !!!", "Thông báo");
             return;
         }
         const clonedPets = this.animalBattle.map(p => ({ ...p }));

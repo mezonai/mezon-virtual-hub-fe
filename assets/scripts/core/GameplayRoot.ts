@@ -8,8 +8,7 @@ import { WebRequestManager } from '../network/WebRequestManager';
 import { OfficeSceneController } from '../GameMap/OfficeScene/OfficeSceneController';
 import { EVENT_NAME } from '../network/APIConstant';
 import { UserMeManager } from './UserMeManager';
-import { PopupManager } from '../PopUp/PopupManager';
-import { ConfirmParam, ConfirmPopup } from '../PopUp/ConfirmPopup';
+import { Constants } from '../utilities/Constants';
 
 @ccclass('GameplayRoot')
 export class GameplayRoot extends Component {
@@ -84,11 +83,7 @@ export class GameplayRoot extends Component {
     }
 
     private onApiError(error) {
-        const param: ConfirmParam = {
-            message: error.error_message,
-            title: "Waning",
-        };
-        PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
+        Constants.showConfirm(error.error_message, "Waning");
     }
 
     async loadMapUntilSuccess(delay = 1000) {

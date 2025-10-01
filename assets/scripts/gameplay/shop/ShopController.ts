@@ -8,10 +8,9 @@ import { ShopUIItem } from './ShopUIItem';
 import { BaseInventoryManager } from '../player/inventory/BaseInventoryManager';
 import Utilities from '../../utilities/Utilities';
 import { PopupManager } from '../../PopUp/PopupManager';
-import { ConfirmParam, ConfirmPopup } from '../../PopUp/ConfirmPopup';
 import { PopupBuyItem, PopupBuyItemParam } from '../../PopUp/PopupBuyItem';
-import { Vec3 } from 'cc';
 import { TabController } from '../../ui/TabController';
+import { Constants } from '../../utilities/Constants';
 const { ccclass, property } = _decorator;
 
 @ccclass('ShopController')
@@ -39,11 +38,7 @@ export class ShopController extends BaseInventoryManager {
             }
 
         } catch (error) {
-            const param: ConfirmParam = {
-                message: error.message,
-                title: "Chú ý",
-            };
-            PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
+            Constants.showConfirm(error.message, "Chú Ý");
         }
     }
 
@@ -85,11 +80,7 @@ export class ShopController extends BaseInventoryManager {
         UserMeManager.Get.inventories.push(response.data.inventory_data);
         WebRequestManager.instance.getUserProfileAsync();
         UserMeManager.playerCoin = response.data.user_gold;
-        const param: ConfirmParam = {
-            message: "Mua thành công!",
-            title: "Thông báo",
-        };
-        PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
+        Constants.showConfirm("Mua thành công!", "Thông báo");
         this.onTabChange(this.currentTabName);
     }
 

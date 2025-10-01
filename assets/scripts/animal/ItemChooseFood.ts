@@ -2,13 +2,12 @@ import { _decorator, Button, Component, director, Label, Node, Sprite, SpriteFra
 import { Food, FoodType, InventoryDTO } from '../Model/Item';
 import { UserMeManager } from '../core/UserMeManager';
 import { AnimalController, AnimalType } from './AnimalController';
-import { UIManager } from '../core/UIManager';
 import { PopupManager } from '../PopUp/PopupManager';
 import { ServerManager } from '../core/ServerManager';
 import { UserManager } from '../core/UserManager';
 import { PopupChooseFoodPet } from '../PopUp/PopupChooseFoodPet';
 import Utilities from '../utilities/Utilities';
-import { ConfirmParam, ConfirmPopup } from '../PopUp/ConfirmPopup';
+import { Constants } from '../utilities/Constants';
 const { ccclass, property } = _decorator;
 
 @ccclass('ItemChooseFood')
@@ -49,11 +48,7 @@ export class ItemChooseFood extends Component {
         (async () => {
             if (!this.canCacthPet(animalController)) return;
             if (animalController.animalType == AnimalType.Caught) {
-                const param: ConfirmParam = {
-                    message: "Thú cưng đã bị bắt. Chúc bạn may mắn lần sau",
-                    title: "Thông báo",
-                };
-                PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
+                Constants.showConfirm("Thú cưng đã bị bắt. Chúc bạn may mắn lần sau", "Thông báo");
                 return;
             }
             if (animalController.animalType == AnimalType.Disappeared) {
@@ -89,22 +84,14 @@ export class ItemChooseFood extends Component {
     }
 
     showUiPetDisappeared() {
-        const param: ConfirmParam = {
-            message: "Thú cưng đã đi rồi. Lần sau nhanh tay lên nhé",
-            title: "Thông báo",
-        };
-        PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
+        Constants.showConfirm( "Thú cưng đã đi rồi. Lần sau nhanh tay lên nhé", "Thông báo");
     }
 
     canCacthPet(target: AnimalController): boolean {
         const playePos = UserManager.instance?.GetMyClientPlayer?.node.getWorldPosition();
         if (!playePos || !target) return;
         if (target.animalType == AnimalType.Disappeared) {
-            const param: ConfirmParam = {
-                message: "Thú cưng đã đi rồi. Lần sau nhanh tay lên nhé",
-                title: "Thông báo",
-            };
-            PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
+           this.showUiPetDisappeared();
             return false;
         }
         const targetPos = target.node?.getWorldPosition();
@@ -114,11 +101,7 @@ export class ItemChooseFood extends Component {
         if (distance < this.stopDistance) {
             return true;
         }
-        const param: ConfirmParam = {
-            message: "Thú cưng xa quá rồi dí theo nào",
-            title: "Thông báo",
-        };
-        PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
+        Constants.showConfirm("Thú cưng xa quá rồi dí theo nào", "Thông báo");
         return false;
     }
 
