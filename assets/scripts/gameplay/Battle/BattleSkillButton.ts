@@ -1,11 +1,9 @@
 import { _decorator, Button, Color, Component, Enum, Label, Node, Sprite } from 'cc';
 import { ItemSkill } from '../../animal/ItemSkill';
 import { Element, SkillBattleInfo } from '../../Model/PetDTO';
-import { InteractSlot } from '../../animal/ItemSlotSkill';
 import { SkillDataInfor, SkillList } from '../../animal/Skills';
 import { ServerManager } from '../../core/ServerManager';
-import { ConfirmParam, ConfirmPopup } from '../../PopUp/ConfirmPopup';
-import { PopupManager } from '../../PopUp/PopupManager';
+import { Constants } from '../../utilities/Constants';
 const { ccclass, property } = _decorator;
 @ccclass('BattleSkillStats')
 export class BattleSkillStats {
@@ -59,11 +57,7 @@ export class BattleSkillButton extends Component {
 
     clickSkill() {
         if (this.currentPowerPoints <= 0) {
-            const param: ConfirmParam = {
-                message: "Lượt dùng Skill đã hết! ",
-                title: "Thông Báo",
-            };
-            PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
+            Constants.showConfirm("Lượt dùng Skill đã hết! ", "Thông Báo");
             return;
         }
         if (this._onAfterClickSkill) {

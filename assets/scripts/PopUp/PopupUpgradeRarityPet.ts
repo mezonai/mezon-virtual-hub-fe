@@ -3,7 +3,6 @@ import { BasePopup } from './BasePopup';
 import { AnimalRarity, PetDTO } from '../Model/PetDTO';
 import { PopupManager } from './PopupManager';
 import { ItemAnimalSlotDrag } from '../animal/ItemAnimalSlotDrag';
-import { ConfirmParam, ConfirmPopup } from './ConfirmPopup';
 import { WebRequestManager } from '../network/WebRequestManager';
 import { SlotPetDetail } from '../animal/SlotPetDetail';
 import { InventoryDTO, ItemCode, ItemType, StatsConfigDTO } from '../Model/Item';
@@ -103,16 +102,16 @@ export class PopupUpgradeRarityPet extends BasePopup {
     async UpgradeRarityPet() {
         const pet = this.getPetsForUpgrade();
         if (!pet) {
-            this.showConfirm("Cần 1 thú cưng để có thể nâng độ hiếm!!!.");
+            Constants.showConfirm("Cần 1 thú cưng để có thể nâng độ hiếm!!!.", "Chú ý");
             return;
         }   
         if (!this.CheckStarPets(pet)) {
-            this.showConfirm("Pet chưa đạt 3 sao, không thể nâng cấp độ hiếm!!!");
+            Constants.showConfirm("Pet chưa đạt 3 sao, không thể nâng cấp độ hiếm!!!", "Chú ý");
             return;
         }
         const hasTicket = await this.hasTicketForPet(pet);
         if (!hasTicket) {
-            this.showConfirm("Bạn cần thẻ nâng bậc để nâng độ hiếm!");
+            Constants.showConfirm("Bạn cần thẻ nâng bậc để nâng độ hiếm!", "Chú ý");
             return;
         }
         const dataPetMerge = await WebRequestManager.instance.postUpgradeRarityPetAsync(pet.id);
@@ -136,14 +135,6 @@ export class PopupUpgradeRarityPet extends BasePopup {
 
     private CheckStarPets(pets: PetDTO): boolean {
         return pets.stars == 3;
-    }
-
-    private showConfirm(message: string) {
-        const param: ConfirmParam = {
-            message,
-            title: "Chú ý",
-        };
-        PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
     }
 
     private clearAllSlots() {

@@ -1,15 +1,14 @@
-import { _decorator, Component, Node, PhysicsSystem2D, Prefab, randomRange, randomRangeInt, Vec3 } from 'cc';
+import { _decorator, Component, Node, PhysicsSystem2D, Prefab, randomRangeInt, Vec3 } from 'cc';
 import { PlayerController } from '../gameplay/player/PlayerController';
 import { UserMeManager } from './UserMeManager';
 import { ObjectPoolManager } from '../pooling/ObjectPoolManager';
-import { Item, RewardType } from '../Model/Item';
+import { Item } from '../Model/Item';
 import { ServerManager } from './ServerManager';
 import { LoadBundleController } from '../bundle/LoadBundleController';
 import { PlayerColysesusObjectData } from '../Model/Player';
 import { EVENT_NAME } from '../network/APIConstant';
 import { ActionType } from '../gameplay/player/ability/PlayerInteractAction';
 import { UIManager } from './UIManager';
-import { EffectManager } from './EffectManager';
 import { AudioType, SoundManager } from './SoundManager';
 import { AnimalController, AnimalType } from '../animal/AnimalController';
 import { Constants } from '../utilities/Constants';
@@ -19,8 +18,6 @@ import ConvetData from './ConvertData';
 import { WebRequestManager } from '../network/WebRequestManager';
 import { PopupManager } from '../PopUp/PopupManager';
 import { BatllePetParam } from '../PopUp/PopupBattlePet';
-import { BasePopup } from '../PopUp/BasePopup';
-import { ConfirmParam, ConfirmPopup } from '../PopUp/ConfirmPopup';
 const { ccclass, property } = _decorator;
 
 @ccclass('UserManager')
@@ -246,11 +243,7 @@ export class UserManager extends Component {
     public onP2PGameError(data) {
         if (data.from == this.GetMyClientPlayer.myID || data.to == this.GetMyClientPlayer.myID) {
             SoundManager.instance.playSound(AudioType.Lose);
-            const param: ConfirmParam = {
-                message: data.message,
-                title: "Chú Ý",
-            };
-            PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
+            Constants.showConfirm(data.message, "Chú Ý");
         }
         this.players.forEach(player => {
             player.p2PInteractManager.stopP2pAction(data);
@@ -307,11 +300,7 @@ export class UserManager extends Component {
     }
 
     public disconnected(content: string) {
-        const param: ConfirmParam = {
-            message: content,
-            title: "Thông báo",
-        };
-        PopupManager.getInstance().openPopup("ConfirmPopup", ConfirmPopup, param);
+        Constants.showConfirm(content, "Thông báo");
         if (UIManager.Instance == null) return;
         UIManager.Instance.batteScene.closeBattle();
     }
@@ -362,11 +351,7 @@ export class UserManager extends Component {
         if (data.playerCatchId === UserManager.instance.GetMyClientPlayer.myID) this.UpdateMyPetData(data.petId);
     }
     public onPetAlreadyCaught(data) {
-        const param: ConfirmParam = {
-            message: `Thú cưng đã bị bắt. Chúc bạn may mắn lần sau`,
-            title: "Thông báo",
-        };
-        PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
+        Constants.showConfirm(`Thú cưng đã bị bắt. Chúc bạn may mắn lần sau`, "Thông báo");
     }
     public onCatchPetFail(data) {
         let animal = OfficeSceneController.instance.currentMap.AnimalSpawner.getAnimalById(data.petId);
@@ -404,19 +389,11 @@ export class UserManager extends Component {
             const pet = petData.find(p => p.id === petCaughId);
             if (UserManager.instance.GetMyClientPlayer) {
                 const content = pet != null ? `Bạn đã bắt thành công <color=#FF0000>${pet.name} (${pet.pet.rarity})</color>` : `Bạn đã bắt pet thành công`
-                const param: ConfirmParam = {
-                    message: content,
-                    title: "Thông báo",
-                };
-                PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
+                Constants.showConfirm(content, "Thông báo");
             }
         } catch (error) {
             this.onError(error);
-            const param: ConfirmParam = {
-                message: "Đã có lỗi khi lấy thông tin thú cưng!",
-                title: "Lỗi",
-            };
-            PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
+            Constants.showConfirm("Đã có lỗi khi lấy thông tin thú cưng!", "Lỗi");
         }
     }
 
@@ -445,11 +422,7 @@ export class UserManager extends Component {
 
     public async NotifyBattle(data) {
         const { message } = data;
-        const param: ConfirmParam = {
-            message: message,
-            title: "Chú Ý",
-        };
-        PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
+        Constants.showConfirm(message, "Chú Ý");
     }
 
     public setStatusBattle(playerId, isInBattle: boolean): PlayerController {

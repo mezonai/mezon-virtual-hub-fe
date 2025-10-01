@@ -4,11 +4,11 @@ import { UserMeManager } from '../core/UserMeManager';
 import { AnimalRarity, MergePetRequestPayload, PetDTO } from '../Model/PetDTO';
 import { PopupManager } from './PopupManager';
 import { ItemAnimalSlotDrag } from '../animal/ItemAnimalSlotDrag';
-import { ConfirmParam, ConfirmPopup } from './ConfirmPopup';
 import { WebRequestManager } from '../network/WebRequestManager';
 import { SlotPetDetail } from '../animal/SlotPetDetail';
 import { PopupCombiePet, PopupCombiePetParam } from './PopupCombiePet';
 import { StatsConfigDTO } from '../Model/Item';
+import { Constants } from '../utilities/Constants';
 const { ccclass, property } = _decorator;
 
 @ccclass('PopupUpgradeStarPet')
@@ -82,11 +82,7 @@ export class PopupUpgradeStarPet extends BasePopup {
 
     checkDiamondUser(price: number): boolean {
         if (UserMeManager.playerDiamond < price) {
-            const param: ConfirmParam = {
-                message: "Không đủ kim cương để dùng",
-                title: "Chú ý",
-            };
-            PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
+            Constants.showConfirm("Không đủ kim cương để dùng", "Chú ý");
             return false;
         }
         return true;
@@ -122,28 +118,20 @@ export class PopupUpgradeStarPet extends BasePopup {
         }
     }
 
-    private showConfirm(message: string) {
-        const param: ConfirmParam = {
-            message,
-            title: "Chú ý",
-        };
-        PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
-    }
-
     private getAllPetIds(): string[] {
         const pets = this.getPetsForMerge();
         if (pets.some(p => p.stars >= 3)) {
-            this.showConfirm("Thú cưng đã đạt sao cao nhất không thể nâng hơn nữa!!!");
+            Constants.showConfirm("Thú cưng đã đạt sao cao nhất không thể nâng hơn nữa!!!", "Chú ý");
             return [];
         }
         
         if (!this.hasEnoughPets(pets)) {
-            this.showConfirm("Cần 3 thú cưng để có thể nâng sao!!!");
+            Constants.showConfirm("Cần 3 thú cưng để có thể nâng sao!!!", "Chú ý");
             return [];
         }
 
         if (!this.arePetsCompatible(pets)) {
-            this.showConfirm("Các thú cưng được chọn phải cùng loài, cùng số sao, cùng hệ và độ hiếm!!!");
+            Constants.showConfirm("Các thú cưng được chọn phải cùng loài, cùng số sao, cùng hệ và độ hiếm!!!", "Chú ý");
             return [];
         }
 

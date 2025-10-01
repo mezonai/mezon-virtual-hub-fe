@@ -3,8 +3,7 @@ import { BundleData } from './LoadBundleController';
 import { DBController } from './DBController';
 import { UIManager } from '../core/UIManager';
 import { WebRequestManager } from '../network/WebRequestManager';
-import { ConfirmParam, ConfirmPopup } from '../PopUp/ConfirmPopup';
-import { PopupManager } from '../PopUp/PopupManager';
+import { Constants } from '../utilities/Constants';
 const { ccclass, property } = _decorator;
 
 @ccclass('BundleLoader')
@@ -161,11 +160,7 @@ export abstract class BundleLoader extends Component {
         this.checkLoadAsset(bundle);
         console.error(e);
         if (UIManager.Instance) {
-            const param: ConfirmParam = {
-                message: "Error when load bundle",
-                title: "Warning",
-            };
-            PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
+            Constants.showConfirm("Error when load bundle", "Warning");
         }
         // window?.cocosIns?.loadBundleFail();
     }

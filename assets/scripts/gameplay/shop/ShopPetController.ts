@@ -1,4 +1,4 @@
-import { _decorator, Button, EditBox, Label, Node, RichText, Sprite } from 'cc';
+import { _decorator, Node, RichText } from 'cc';
 import { UserMeManager } from '../../core/UserMeManager';
 import { WebRequestManager } from '../../network/WebRequestManager';
 import { BuyItemPayload, Food, InventoryType, Item, PurchaseMethod } from '../../Model/Item';
@@ -6,15 +6,12 @@ import { ResourceManager } from '../../core/ResourceManager';
 import { EVENT_NAME } from '../../network/APIConstant';
 import { ShopUIItem } from './ShopUIItem';
 import { BaseInventoryManager } from '../player/inventory/BaseInventoryManager';
-import { LocalItemDataConfig } from '../../Model/LocalItemConfig';
-import UIPopup from '../../ui/UI_Popup';
 import Utilities from '../../utilities/Utilities';
 import { PopupManager } from '../../PopUp/PopupManager';
-import { ConfirmParam, ConfirmPopup } from '../../PopUp/ConfirmPopup';
-import { PopupBuyItem, PopupBuyItemParam } from '../../PopUp/PopupBuyItem';
 import { PopupBuyQuantityItem, PopupBuyQuantityItemParam } from '../../PopUp/PopupBuyQuantityItem';
 import { TabController } from '../../ui/TabController';
 import { IconItemUIHelper } from '../../Reward/IconItemUIHelper';
+import { Constants } from '../../utilities/Constants';
 const { ccclass, property } = _decorator;
 
 @ccclass('ShopPetController')
@@ -48,11 +45,7 @@ export class ShopPetController extends BaseInventoryManager {
             }
 
         } catch (error) {
-            const param: ConfirmParam = {
-                message: error.message,
-                title: "Chú ý",
-            };
-            PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
+            Constants.showConfirm(error.message, "Chú ý");
         }
     }
 
@@ -96,11 +89,7 @@ export class ShopPetController extends BaseInventoryManager {
     private addItemToInventory(response) {
         UserMeManager.playerCoin = response.data.user_balance.gold;
         UserMeManager.playerDiamond = response.data.user_balance.diamond;
-        const param: ConfirmParam = {
-            message: "Mua thành công!",
-            title: "Thông báo",
-        };
-        PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
+        Constants.showConfirm("Mua thành công!", "Thông báo");
     }
 
     private async buyItem() {
@@ -143,11 +132,7 @@ export class ShopPetController extends BaseInventoryManager {
     }
 
     private onApiError(error) {
-        const param: ConfirmParam = {
-            message: error.error_message,
-            title: "Chú ý",
-        };
-        PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
+        Constants.showConfirm(error.error_message, "Chú ý");
     }
 
     private checkGoldUser(price: number) {

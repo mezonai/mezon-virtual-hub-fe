@@ -14,7 +14,7 @@ import { LoadBundleController } from "../bundle/LoadBundleController";
 import { UIPanelSliderEffect } from "../utilities/UIPanelSliderEffect";
 import { BasePopup } from "../PopUp/BasePopup";
 import { PopupManager } from "../PopUp/PopupManager";
-import { ConfirmParam, ConfirmPopup } from "../PopUp/ConfirmPopup";
+import { Constants } from "../utilities/Constants";
 
 const { ccclass, property } = _decorator;
 
@@ -235,11 +235,7 @@ export class SlotMachineController extends BasePopup {
 
     private async spinMachine() {
         if (UserMeManager.playerCoin < this.minusCoin) {
-            const param: ConfirmParam = {
-                message: `Bạn cần ${this.minusCoin} coin để quay vòng quay may mắn`,
-                title: "Chú ý",
-            };
-            PopupManager.getInstance().openPopup("ConfirmPopup", ConfirmPopup, param);
+            Constants.showConfirm(`Bạn cần ${this.minusCoin} coin để quay vòng quay may mắn`, "Chú ý" );
             return;
         }
 
@@ -362,17 +358,9 @@ export class SlotMachineController extends BasePopup {
     private onError(error: any) {
         this.bubbleRotation.stopRotation();
         if (error?.message) {
-            const param: ConfirmParam = {
-                message: error.message,
-                title: "Lỗi",
-            };
-            PopupManager.getInstance().openPopup("ConfirmPopup", ConfirmPopup, param);
+            Constants.showConfirm(error.message, "Lỗi");
         } else {
-            const param: ConfirmParam = {
-                message: "Có lỗi xảy ra, vui lòng thử lại.",
-                title: "Lỗi",
-            };
-            PopupManager.getInstance().openPopup("ConfirmPopup", ConfirmPopup, param);
+            Constants.showConfirm("Có lỗi xảy ra, vui lòng thử lại.", "Lỗi");
         }
     }
 

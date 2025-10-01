@@ -6,10 +6,7 @@ import { MissionDTO, MissionListDTO, MissionType } from '../../Model/MissionDTO'
 import { Button } from 'cc';
 import { PopupManager } from '../../PopUp/PopupManager';
 import { WebRequestManager } from '../../network/WebRequestManager';
-import { ConfirmParam, ConfirmPopup } from '../../PopUp/ConfirmPopup';
 import { ScrollView } from 'cc';
-import { TabController } from '../../ui/TabController';
-import { EVENT_NAME } from '../../network/APIConstant';
 import { GameManager } from '../../core/GameManager';
 import { Constants } from '../../utilities/Constants';
 const { ccclass, property } = _decorator;
@@ -98,11 +95,7 @@ export class UIMissionDetail extends BasePopup {
   }
 
   private onApiError(error) {
-    const param: ConfirmParam = {
-      message: error.error_message,
-      title: "Chú ý",
-    };
-    PopupManager.getInstance().openPopup("ConfirmPopup", ConfirmPopup, param);
+    Constants.showConfirm(error.error_message, "Chú Ý");
   }
 
   private async onTabChange(missonType: MissionType) {

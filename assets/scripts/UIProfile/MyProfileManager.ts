@@ -1,13 +1,11 @@
 import { _decorator, Button, Component, director, EditBox, Label, Sprite, SpriteFrame } from 'cc';
 import { BaseProfileManager } from './BaseProfileManager';
 import { WebRequestManager } from '../network/WebRequestManager';
-import { ResourceManager } from '../core/ResourceManager';
 import { UserMeManager } from '../core/UserMeManager';
 import { EVENT_NAME } from '../network/APIConstant';
 import { UserProfileDTO } from '../Interface/DataMapAPI';
-import { UIManager } from '../core/UIManager';
 import { PopupManager } from '../PopUp/PopupManager';
-import { ConfirmParam, ConfirmPopup } from '../PopUp/ConfirmPopup';
+import { Constants } from '../utilities/Constants';
 
 const { ccclass, property } = _decorator;
 
@@ -102,7 +100,7 @@ export class MyProfileManager extends BaseProfileManager {
         const name = this.fullName_EBox.string;
         const validationMessage = this.getValidationMessage(name);
         if (validationMessage) {
-            this.showConfirmPopup(validationMessage);
+            Constants.showConfirm(validationMessage,  "Chú ý");
             this.cancelEditingWithResetName();
             return;
         }
@@ -120,14 +118,6 @@ export class MyProfileManager extends BaseProfileManager {
 
         this.btn_update_info.interactable = false;
         this.setEditingState(false);
-    }
-
-    private showConfirmPopup(message: string) {
-        const param: ConfirmParam = {
-            message,
-            title: "Chú ý",
-        };
-        PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
     }
 
     private getValidationMessage(name: string): string | null {

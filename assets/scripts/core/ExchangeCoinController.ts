@@ -8,9 +8,9 @@ import { UserMeManager } from './UserMeManager';
 import Utilities from '../utilities/Utilities';
 import { AudioType, SoundManager } from './SoundManager';
 import { UserManager } from './UserManager';
-import { ConfirmParam, ConfirmPopup } from '../PopUp/ConfirmPopup';
 import { PopupManager } from '../PopUp/PopupManager';
 import { PopupSelectionMini, SelectionMiniParam } from '../PopUp/PopupSelectionMini';
+import { Constants } from '../utilities/Constants';
 const { ccclass, property } = _decorator;
 
 @ccclass('ExchangeCoinController')
@@ -90,11 +90,7 @@ export class ExchangeCoinController extends Component {
 
     private onSendTokenFail(data) {
         this.amount = -1;
-        const param: ConfirmParam = {
-            message: "Không thể nạp Diamond",
-            title: "Chú Ý",
-        };
-        PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
+        Constants.showConfirm("Không thể nạp Diamond", "Chú Ý");
         SoundManager.instance.playSound(AudioType.NoReward);
     }
 
@@ -128,10 +124,6 @@ export class ExchangeCoinController extends Component {
     }
 
     private showNoticeIfUsingMezon() {
-        const param: ConfirmParam = {
-            message: "Chỉ khả dụng trên Mezon",
-            title: "Chú Ý",
-        };
-        PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
+        Constants.showConfirm("Chỉ khả dụng trên Mezon", "Chú Ý");
     }
 }
