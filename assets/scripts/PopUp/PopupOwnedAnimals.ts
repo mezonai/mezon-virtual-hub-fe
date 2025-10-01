@@ -89,7 +89,7 @@ export class PopupOwnedAnimals extends BasePopup {
         return pets.slice().sort((a, b) => {
             if (a.pet.species < b.pet.species) return -1;
             if (a.pet.species > b.pet.species) return 1;
-            return rarityOrder[a.pet.rarity] - rarityOrder[b.pet.rarity];
+            return rarityOrder[a.current_rarity] - rarityOrder[b.current_rarity];
         });
     }
 
@@ -244,7 +244,7 @@ export class PopupOwnedAnimals extends BasePopup {
     }
 
     setDataDetail(pet: PetDTO) {
-        this.namePet.string = `<outline color=#222222 width=1> ${pet.name} (${pet.pet.rarity}) </outline>`;
+        this.namePet.string = `<outline color=#222222 width=1> ${pet.name} (${pet.current_rarity}) </outline>`;
         this.currentExp.string = `<outline color=#222222 width=1> ${pet.exp} / ${pet.max_exp} </outline>`;
         this.progressBarExp.fillRange = Math.min(pet.exp / pet.max_exp, 1);
         this.hpValue.string = `<outline color=#222222 width=1> ${pet.hp} </outline>`;
@@ -324,7 +324,7 @@ export class PopupOwnedAnimals extends BasePopup {
                 name: pet?.name ?? null,
                 species: pet.pet?.species ?? null,
                 type: pet.pet?.type ?? null,
-                rarity: pet.pet?.rarity ?? null
+                rarity: pet.current_rarity ?? null
             }))
         };
     }

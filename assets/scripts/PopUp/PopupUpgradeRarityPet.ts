@@ -109,6 +109,11 @@ export class PopupUpgradeRarityPet extends BasePopup {
             Constants.showConfirm("Pet chưa đạt 3 sao, không thể nâng cấp độ hiếm!!!", "Chú ý");
             return;
         }
+        if (this.isMaxRarity(pet)) {
+            Constants.showConfirm("Pet đã đạt độ hiếm tối đa, không thể nâng cấp nữa!", "Chú ý");
+            return;
+        }
+
         const hasTicket = await this.hasTicketForPet(pet);
         if (!hasTicket) {
             Constants.showConfirm("Bạn cần thẻ nâng bậc để nâng độ hiếm!", "Chú ý");
@@ -134,7 +139,11 @@ export class PopupUpgradeRarityPet extends BasePopup {
     }
 
     private CheckStarPets(pets: PetDTO): boolean {
-        return pets.stars == 3;
+        return pets.stars === 3;
+    }
+
+    private isMaxRarity(pet: PetDTO): boolean {
+        return pet.current_rarity === pet.pet.max_rarity;
     }
 
     private clearAllSlots() {
@@ -153,11 +162,11 @@ export class PopupUpgradeRarityPet extends BasePopup {
             return;
         }
 
-        if (firstPet.pet.rarity === AnimalRarity.LEGENDARY) {
+        if (firstPet.current_rarity === AnimalRarity.LEGENDARY) {
             this.updateRateUI(0);
             return;
         }
-        const rateMerge = this.getRateByRarity(firstPet.pet.rarity);
+        const rateMerge = this.getRateByRarity(firstPet.current_rarity);
         this.updateRateUI(rateMerge);
     }
 

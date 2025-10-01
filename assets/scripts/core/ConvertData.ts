@@ -26,6 +26,7 @@ export default class ConvetData {
             petDTO.exp = data.exp;
             petDTO.max_exp = data.max_exp;
             petDTO.stars = data.stars;
+            petDTO.current_rarity = data.current_rarity;
             petDTO.hp = data.hp;
             petDTO.attack = data.attack;
             petDTO.defense = data.defense;
@@ -53,6 +54,7 @@ export default class ConvetData {
         petData.exp = raw.exp;
         petData.max_exp = raw.max_exp;
         petData.stars = raw.stars;
+        petData.current_rarity = raw.current_rarity;
         petData.hp = raw.hp;
         petData.attack = raw.attack;
         petData.defense = raw.defense;
