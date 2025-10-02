@@ -3,7 +3,6 @@ import { ObjectPoolManager } from '../pooling/ObjectPoolManager';
 import { ItemAnimalSlot } from '../animal/ItemAnimalSlot';
 import { BasePopup } from './BasePopup';
 import { PopupManager } from './PopupManager';
-import { ConfirmParam, ConfirmPopup } from './ConfirmPopup';
 import { ServerManager } from '../core/ServerManager';
 import { WebRequestManager } from '../network/WebRequestManager';
 import { AnimalRarity, PetBattlePayload, PetDTO, PetFollowPayload, SkillCode, SkillBattleInfo, SkillPayload, SkillSlot, ElementNameMap } from '../Model/PetDTO';
@@ -15,6 +14,8 @@ import { PopupBattlePlace, PopupBattlePlaceParam } from './PopupBattlePlace';
 import { Sprite } from 'cc';
 import { UserMeManager } from '../core/UserMeManager';
 import { PopupPetChartParam, PopupPetElementChart } from './PopupPetElementChart';
+import { PopupUpgradePet } from './PopupUpgradePet';
+import { Constants } from '../utilities/Constants';
 const { ccclass, property } = _decorator;
 
 enum PetActionType {
@@ -55,6 +56,7 @@ export class PopupOwnedAnimals extends BasePopup {
     @property({ type: [ItemDisplayPetFighting] }) itemDisplayPetFightings: ItemDisplayPetFighting[] = [];
     @property({ type: Button }) sortPetBattleBtn: Button = null;
     @property({ type: Button }) petChartButton: Button = null;
+    @property({ type: Button }) petUpgradeButton: Button = null;
 
     private animalObject: Node = null;
     private animalController: AnimalController = null;
@@ -87,7 +89,7 @@ export class PopupOwnedAnimals extends BasePopup {
         return pets.slice().sort((a, b) => {
             if (a.pet.species < b.pet.species) return -1;
             if (a.pet.species > b.pet.species) return 1;
-            return rarityOrder[a.pet.rarity] - rarityOrder[b.pet.rarity];
+            return rarityOrder[a.current_rarity] - rarityOrder[b.current_rarity];
         });
     }
 
@@ -242,10 +244,8 @@ export class PopupOwnedAnimals extends BasePopup {
     }
 
     setDataDetail(pet: PetDTO) {
-        this.namePet.string = `<outline color=#222222 width=1> ${pet.name} (${pet.pet.rarity}) </outline>`;
+        this.namePet.string = `<outline color=#222222 width=1> ${pet.name} (${pet.current_rarity}) </outline>`;
         this.currentExp.string = `<outline color=#222222 width=1> ${pet.exp} / ${pet.max_exp} </outline>`;
-        console.log("pet.exp: ", pet.exp);
-        console.log("pet.max_exp: ", pet.max_exp);
         this.progressBarExp.fillRange = Math.min(pet.exp / pet.max_exp, 1);
         this.hpValue.string = `<outline color=#222222 width=1> ${pet.hp} </outline>`;
         this.attackValue.string = `<outline color=#222222 width=1> ${pet.attack} </outline>`;
@@ -324,7 +324,7 @@ export class PopupOwnedAnimals extends BasePopup {
                 name: pet?.name ?? null,
                 species: pet.pet?.species ?? null,
                 type: pet.pet?.type ?? null,
-                rarity: pet.pet?.rarity ?? null
+                rarity: pet.current_rarity ?? null
             }))
         };
     }
@@ -421,6 +421,12 @@ export class PopupOwnedAnimals extends BasePopup {
             await PopupManager.getInstance().openAnimPopup("PopupPetElementChart", PopupPetElementChart, { widget: { horizontalCenter: 0, verticalCenter: 0 } } as PopupPetChartParam);
             this.petChartButton.interactable = true;
         });
+        this.petUpgradeButton.addAsyncListener(async () => {
+            this.petChartButton.interactable = false;
+            await PopupManager.getInstance().openAnimPopup("PopupUpgradePet", PopupUpgradePet);
+            this.petChartButton.interactable = true;
+        });
+        
         this.onGetMyPet(UserMeManager.MyPets());
     }
 
@@ -454,20 +460,12 @@ export class PopupOwnedAnimals extends BasePopup {
 
         const action = actions[actionType];
         if ('deny' in action && action.deny) {
-            return await this.showConfirm(action.deny);
+            return await Constants.showConfirm(action.deny, "Thông báo");
         }
         if ((action as any).content && action.handler) {
             return await this.showSelection((action as any).content, action.handler);
         }
         await action.handler?.();
-    }
-
-    private async showConfirm(message: string) {
-        const param: ConfirmParam = {
-            message,
-            title: "Thông báo",
-        };
-        await PopupManager.getInstance().openPopup("ConfirmPopup", ConfirmPopup, param);
     }
 
     private async showSelection(content: string, onConfirm: () => void) {
@@ -534,6 +532,7 @@ export class PopupOwnedAnimals extends BasePopup {
             if (index !== -1) {
                 this.clearSlotByPetId(pet.id);
                 this.animalBattle.splice(index, 1);
+                pet.battle_slot = 0;
                 this.updateAnimalSlotUI(pet, isSelectBattle);
             }
         }
@@ -541,7 +540,8 @@ export class PopupOwnedAnimals extends BasePopup {
 
     async onSortPetBattle() {
         if (this.animalBattle.length < 1) {
-            await this.showConfirm("Không có pet để sắp xếp !!!");
+            await Constants.showConfirm("Không có pet để sắp xếp !!!", "Thông báo");
+            return;
         }
         const clonedPets = this.animalBattle.map(p => ({ ...p }));
         await this.showPopupSortBattlePlace(clonedPets);
@@ -603,7 +603,6 @@ export class PopupOwnedAnimals extends BasePopup {
         item?.clearPetInfoOnly?.();
         const slotToReset = this.animalSlots.find(s => s.currentPet?.id === petId);
         if (slotToReset) slotToReset.setBattlePet(0);
-        pet.battle_slot = 0;
     }
 
     getFightingSlotItem(slotIndex: number): ItemDisplayPetFighting | null {

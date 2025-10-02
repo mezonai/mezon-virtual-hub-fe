@@ -7,6 +7,7 @@ export class PetDTO {
   public species: string;
   public type: string;
   public rarity: string;
+  public current_rarity: string;
   public level: number;
   public exp: number;
   public max_exp: number;
@@ -29,6 +30,7 @@ export interface BasePetData {
   species: string;
   type: string;
   rarity: string;
+  max_rarity: string;
 }
 
 export interface SkillSlot {
@@ -219,3 +221,14 @@ export interface PetBattleData {
 export interface SkillPayload {
   equipped_skill_codes: SkillCode[];
 };
+
+export interface MergePetRequestPayload {
+    pet_ids: string[];
+    keep_highest_iv: boolean;
+}
+
+export interface UpgradePetResponseDTO {
+  pet: PetDTO;
+  user_diamond?: number;
+  success: boolean
+}

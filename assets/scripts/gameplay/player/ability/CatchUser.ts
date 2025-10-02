@@ -1,16 +1,13 @@
 import { _decorator, Component, Node } from 'cc';
 import { PlayerInteractAction } from './PlayerInteractAction';
-import { UIManager } from '../../../core/UIManager';
-import { UserMeManager } from '../../../core/UserMeManager';
 import { MissionEventManager } from '../../../core/MissionEventManager';
 import { WebRequestManager } from '../../../network/WebRequestManager';
-import { GameManager } from '../../../core/GameManager';
 import { UserManager } from '../../../core/UserManager';
 import { PlayerController } from '../PlayerController';
 import { AudioType, SoundManager } from '../../../core/SoundManager';
-import { ConfirmParam, ConfirmPopup } from '../../../PopUp/ConfirmPopup';
 import { PopupManager } from '../../../PopUp/PopupManager';
 import { PopupSelectionTimeOut, SelectionTimeOutParam, TargetButton } from '../../../PopUp/PopupSelectionTimeOut';
+import { Constants } from '../../../utilities/Constants';
 const { ccclass, property } = _decorator;
 
 @ccclass('CatchUser')
@@ -29,11 +26,7 @@ export class CatchUser extends PlayerInteractAction {
 
     protected override invite() {
         if (this.IsMissionRunning && MissionEventManager.meIsTargetUser()) {
-            const param: ConfirmParam = {
-                message: "Bạn đang là đối tượng mọi người đang tìm kiếm, không thể bắt người khác",
-                title: "Chú Ý",
-            };
-            PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
+            Constants.showConfirm("Bạn đang là đối tượng mọi người đang tìm kiếm, không thể bắt người khác", "Chú Ý");
         }
         else {
             const param: SelectionTimeOutParam = {

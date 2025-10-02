@@ -142,7 +142,6 @@ export class PopupManager extends Component {
 
     public getPopupById<T extends Node>(uuid: string): T | null {
         const popupNode = this.popupDict.get(uuid);
-        console.log("popupNode ", popupNode);
         return popupNode as T ?? null;
     }
 

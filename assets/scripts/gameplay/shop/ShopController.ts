@@ -1,26 +1,27 @@
 import { _decorator, Node, RichText } from 'cc';
 import { UserMeManager } from '../../core/UserMeManager';
 import { WebRequestManager } from '../../network/WebRequestManager';
-import { InventoryType, Item } from '../../Model/Item';
+import { BuyItemPayload, InventoryType, Item, ItemType } from '../../Model/Item';
 import { ResourceManager } from '../../core/ResourceManager';
 import { EVENT_NAME } from '../../network/APIConstant';
 import { ShopUIItem } from './ShopUIItem';
 import { BaseInventoryManager } from '../player/inventory/BaseInventoryManager';
-import { LocalItemDataConfig } from '../../Model/LocalItemConfig';
-import UIPopup from '../../ui/UI_Popup';
 import Utilities from '../../utilities/Utilities';
 import { PopupManager } from '../../PopUp/PopupManager';
-import { ConfirmParam, ConfirmPopup } from '../../PopUp/ConfirmPopup';
 import { PopupBuyItem, PopupBuyItemParam } from '../../PopUp/PopupBuyItem';
+import { TabController } from '../../ui/TabController';
+import { Constants } from '../../utilities/Constants';
 const { ccclass, property } = _decorator;
 
 @ccclass('ShopController')
 export class ShopController extends BaseInventoryManager {
+    @property({ type: TabController }) tabController: TabController = null;
     @property({ type: RichText }) itemPrice: RichText = null;
     @property({ type: Node }) itemPriceContainer: Node = null;
     protected override groupedItems: Record<string, Item[]> = null;
     protected override selectingUIItem: ShopUIItem = null;
     private isOpenPopUp: boolean = false;
+    private quantityBuy: number = 1;
 
     protected override async actionButtonClick() {
         try {
@@ -37,11 +38,7 @@ export class ShopController extends BaseInventoryManager {
             }
 
         } catch (error) {
-            const param: ConfirmParam = {
-                message: error.message,
-                title: "Chú ý",
-            };
-            PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
+            Constants.showConfirm(error.message, "Chú Ý");
         }
     }
 
@@ -81,12 +78,9 @@ export class ShopController extends BaseInventoryManager {
 
     private addItemToInventory(response) {
         UserMeManager.Get.inventories.push(response.data.inventory_data);
+        WebRequestManager.instance.getUserProfileAsync();
         UserMeManager.playerCoin = response.data.user_gold;
-        const param: ConfirmParam = {
-            message: "Mua thành công!",
-            title: "Thông báo",
-        };
-        PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
+        Constants.showConfirm("Mua thành công!", "Thông báo");
         this.onTabChange(this.currentTabName);
     }
 
@@ -97,17 +91,21 @@ export class ShopController extends BaseInventoryManager {
         }
 
         try {
-            const result = await this.postBuySkinAsync(this.selectingUIItem.data.id);
-
+            const payload: BuyItemPayload = {
+                itemId: this.selectingUIItem.data.id,
+                quantity: this.quantityBuy,
+                type: InventoryType.ITEM
+            };
+            const result = await this.postBuySkinAsync(payload);
             return result;
         } catch (error) {
             throw error;
         }
     }
 
-    private postBuySkinAsync(data: any): Promise<any> {
+    private postBuySkinAsync(payload: BuyItemPayload): Promise<any> {
         return new Promise((resolve, reject) => {
-            WebRequestManager.instance.postBuySkin(data, resolve, reject);
+            WebRequestManager.instance.postBuyItem(payload, resolve, reject);
         });
     }
 
@@ -147,18 +145,16 @@ export class ShopController extends BaseInventoryManager {
         return ResourceManager.instance.getLocalSkinById(item.id, item.type);
     }
 
-    protected override async registUIItemData(itemNode: Node, item: Item, skinLocalData: LocalItemDataConfig) {
-        let uiItem = itemNode.getComponent(ShopUIItem);
+    protected override async registUIItemData(itemNode: Node, item: Item,
+        onClick?: (uiItem: ShopUIItem, data: any) => void
+    ) {
+        const uiItem = itemNode.getComponent(ShopUIItem)!;
         uiItem.resetData();
-        if (item.iconSF.length == 0) {
-            for (const icon of skinLocalData.icons) {
-                let spriteFrame = await this.setItemImage(skinLocalData.bundleName, icon);
-                item.iconSF.push(spriteFrame);
-            }
+        if (onClick) {
+            uiItem.onClick = onClick;
         }
-        uiItem.avatar.node.scale = this.SetItemScaleValue(item.type);
-        uiItem.avatar.spriteFrame = item.iconSF[0];
-        item.mappingLocalData = skinLocalData;
+        uiItem.setScaleByItemType(item.type);
+        uiItem.setIconByItem(item);
         uiItem.init(item);
         uiItem.toggleActive(false);
         uiItem.reset();

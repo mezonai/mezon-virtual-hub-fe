@@ -1,10 +1,7 @@
-import { _decorator, CCString, Component, Event, instantiate, Label, Node, Prefab, RichText, ScrollView, Toggle, ToggleContainer, Vec2, Vec3 } from 'cc';
+import { _decorator, Component, instantiate, Prefab, RichText, ScrollView, Toggle, ToggleContainer, Vec3 } from 'cc';
 import { EVENT_NAME } from '../network/APIConstant';
 const { ccclass, property } = _decorator;
-import { ObjectPoolManager } from '../pooling/ObjectPoolManager';
-import { FoodType, InventoryDTO, InventoryType, ItemType } from '../Model/Item';
-import { AudioType, SoundManager } from '../core/SoundManager';
-import { MissionType } from '../Model/MissionDTO';
+import { Constants } from '../utilities/Constants';
 
 @ccclass('TabController')
 export class TabController extends Component {
@@ -12,31 +9,9 @@ export class TabController extends Component {
     @property({ type: Prefab }) tabPrefab: Prefab = null;
     @property(ScrollView) protected scrollView: ScrollView = null!;
 
-    private tabNameMapping: Map<number, string> = new Map([
-        [ItemType.EYES, 'Mắt'],
-        [ItemType.FACE, 'Mặt'],
-        [ItemType.GLASSES, 'Kính'],
-        [ItemType.HAIR, 'Tóc'],
-        [ItemType.HAT, 'Mũ'],
-        [ItemType.LOWER, 'Quần'],
-        [ItemType.UPPER, 'Áo'],
-        [ItemType.PET_BAIT, "Mồi"]
-    ]);
-
-    private tabNameMappingString: Map<string, string> = new Map([
-        [InventoryType.FOOD, 'Thức ăn pet'],
-        [InventoryType.ITEM, 'Item'],
-    ]);
-
-    private tabMissionMappingString: Map<string, string> = new Map([
-        [MissionType.DAILY, 'Ngày'],
-        [MissionType.WEEKLY, 'Tuần'],
-    ]);
-
     protected reset() {
         this.scrollView.content.setPosition(new Vec3(0, 0, 0));
     }
-
 
     protected onEnable(): void {
         let toggles = this.toggleContainer.getComponentsInChildren(Toggle);
@@ -47,22 +22,17 @@ export class TabController extends Component {
     }
 
     public initTabData(tabs: string[]) {
-        ObjectPoolManager.instance.returnArrayToPool(this.toggleContainer.node.children);
         tabs.forEach(tab => {
             let tabItem = instantiate(this.tabPrefab);
             tabItem.off("toggle", this.onToggleChanged, this);
             tabItem.setParent(this.toggleContainer.node);
             let tabName = tab;
-            if (this.tabNameMapping.has(parseInt(tab))) {
-                tabName = this.tabNameMapping.get(parseInt(tab));
+            if (Constants.getTabShop.has(tab)) {
+                tabName = Constants.getTabShop.get(tab);
             }
-            else if (this.tabNameMappingString.has(tab)) {
-                tabName = this.tabNameMappingString.get(tab);
+            else if (Constants.getTabShopPet.has(tab)) {
+                tabName = Constants.getTabShopPet.get(tab);
             }
-            else if (this.tabMissionMappingString.has(tab)) {
-                tabName = this.tabMissionMappingString.get(tab);
-            }
-
             tabItem.name = tab.toString();
             tabItem.getComponentInChildren(RichText).string = tabName;
             tabItem.on("toggle", this.onToggleChanged, this);

@@ -1,11 +1,10 @@
 import { _decorator, Button, Component, Node, Sprite, SpriteFrame, tween, Vec3 } from 'cc';
 import { ActionType, PlayerInteractAction } from './PlayerInteractAction';
-import { UIManager } from '../../../core/UIManager';
 import { UserMeManager } from '../../../core/UserMeManager';
 import { AudioType, SoundManager } from '../../../core/SoundManager';
-import { ConfirmParam, ConfirmPopup } from '../../../PopUp/ConfirmPopup';
 import { PopupManager } from '../../../PopUp/PopupManager';
 import { TargetButton, SelectionTimeOutParam, PopupSelectionTimeOut } from '../../../PopUp/PopupSelectionTimeOut';
+import { Constants } from '../../../utilities/Constants';
 const { ccclass, property } = _decorator;
 
 export interface GameData {
@@ -59,11 +58,7 @@ export class RPSGame extends PlayerInteractAction {
     public override invite(): void {
         if (UserMeManager.Get) {
             if (UserMeManager.playerDiamond < this.fee) {
-                const param: ConfirmParam = {
-                    message: `Cần <color=#FF0000>${this.fee} diamond</color> để chơi`,
-                    title: "Chú Ý",
-                };
-                PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
+                Constants.showConfirm( `Cần <color=#FF0000>${this.fee} diamond</color> để chơi`, "Chú Ý");
                 return;
             }
         }

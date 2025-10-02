@@ -1,7 +1,7 @@
 import { _decorator, Component, Node, Sprite, SpriteFrame, Toggle, tween, Vec3 } from 'cc';
 import { BaseInventoryUIITem } from '../player/inventory/BaseInventoryUIItem';
 import { UserMeManager } from '../../core/UserMeManager';
-import { Food, FoodType, InventoryType, Item } from '../../Model/Item';
+import { Food, FoodType, InventoryType, Item, ItemType } from '../../Model/Item';
 const { ccclass, property } = _decorator;
 
 @ccclass('ShopUIItem')
@@ -44,9 +44,12 @@ export class ShopUIItem extends BaseInventoryUIITem {
     }
 
     public isOwn(data: Item): boolean {
-        if (data?.is_stackable) return false;
+        if (data.type === ItemType.PET_CARD) {
+            return false;
+        }
         return UserMeManager.Get.inventories.some(x => x.item?.id === data.id);
     }
+
 
     public isOwnFood(data: Food): boolean {
         return UserMeManager.Get.inventories.some(x => x.food?.id === data.id);

@@ -15,10 +15,9 @@ import Utilities from '../utilities/Utilities';
 import { OfficeSceneController } from '../GameMap/OfficeScene/OfficeSceneController';
 import { UserMeManager } from './UserMeManager';
 import { MessageTypes } from '../utilities/MessageTypes';
-import { ConfirmParam, ConfirmPopup } from '../PopUp/ConfirmPopup';
 import { PopupSelectionMini, SelectionMiniParam } from '../PopUp/PopupSelectionMini';
 import { WebRequestManager } from '../network/WebRequestManager';
-import { director } from 'cc';
+import { Constants } from '../utilities/Constants';
 
 @ccclass('ServerManager')
 export class ServerManager extends Component {
@@ -109,11 +108,7 @@ export class ServerManager extends Component {
         });
 
         this.room.onMessage("noticeMessage", (data) => {
-            const param: ConfirmParam = {
-                message: data.message,
-                title: "Chú Ý",
-            };
-            PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
+            Constants.showConfirm(data.message, "Chú Ý");
             UserManager.instance.GetMyClientPlayer.p2PInteractManager.onRejectedActionFromOther(data);
         });
 
@@ -130,11 +125,7 @@ export class ServerManager extends Component {
         });
 
         this.room.onMessage("serverBroadcast", (data) => {
-            const param: ConfirmParam = {
-                message: data.message,
-                title: "Chú Ý",
-            };
-            PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
+            Constants.showConfirm(data.message, "Chú Ý");
         });
 
         this.room.onMessage("onP2pActionResult", (data) => {
@@ -241,11 +232,7 @@ export class ServerManager extends Component {
         });
 
         this.room.onMessage("onWithdrawFailed", (data) => {
-            const param: ConfirmParam = {
-                message: data.reason,
-                title: "Chú Ý",
-            };
-            PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
+            Constants.showConfirm(data.reason, "Chú Ý");
             SoundManager.instance.playSound(AudioType.NoReward);
         });
 
@@ -269,11 +256,7 @@ export class ServerManager extends Component {
         });
 
         this.room.onMessage("onExchangeFailed", (data) => {
-            const param: ConfirmParam = {
-                message: data.reason,
-                title: "Chú Ý",
-            };
-            PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
+            Constants.showConfirm(data.reason, "Chú Ý");
             SoundManager.instance.playSound(AudioType.NoReward);
         });
 

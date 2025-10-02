@@ -3,11 +3,10 @@ import { ActionType, PlayerInteractAction } from './PlayerInteractAction';
 import { AudioType, SoundManager } from '../../../core/SoundManager';
 import { PopupManager } from '../../../PopUp/PopupManager';
 import { PopupSelectionTimeOut, SelectionTimeOutParam, TargetButton } from '../../../PopUp/PopupSelectionTimeOut';
-import { ConfirmParam, ConfirmPopup } from '../../../PopUp/ConfirmPopup';
-import { UserManager } from '../../../core/UserManager';
 import { UserMeManager } from '../../../core/UserMeManager';
 import { ServerManager } from '../../../core/ServerManager';
 import { PopupPetBetChallenge, PopupPetBetChallengeParam } from '../../../PopUp/PopupPetBetChallenge';
+import { Constants } from '../../../utilities/Constants';
 const { ccclass, property } = _decorator;
 enum PetBattleError {
     NOT_PET,
@@ -37,16 +36,6 @@ export class PetCombat extends PlayerInteractAction {
         await PopupManager.getInstance().openPopup("PopupPetBetChallenge", PopupPetBetChallenge, paramConfirmPopup);
 
     }
-
-    private showNotice(message: string) {
-        const param: ConfirmParam = {
-            title: "Thông báo",
-            message
-        };
-        PopupManager.getInstance().openAnimPopup("ConfirmPopup", ConfirmPopup, param);
-    }
-
-
 
     public onBeingInvited(data) {
         if (!this.canBattle(data)) return;
@@ -108,11 +97,11 @@ export class PetCombat extends PlayerInteractAction {
             }
         } else {
             if (error === PetBattleError.NOT_PET) {
-                this.showNotice("Bạn chưa có Pet để đấu. Vui lòng hãy bắt pet");
+                Constants.showConfirm("Bạn chưa có Pet để đấu. Vui lòng hãy bắt pet", "Thông báo");
             } else if (error === PetBattleError.NOT_ENOUGH_BATTLE_PETS) {
-                this.showNotice("Bạn cần có đủ 3 Pet chiến đấu để thách đấu");
+                Constants.showConfirm("Bạn cần có đủ 3 Pet chiến đấu để thách đấu", "Thông báo");
             } else {
-                this.showNotice("Bạn cần cài đặt đủ kỹ năng chiến đấu cho Pet");
+                Constants.showConfirm("Bạn cần cài đặt đủ kỹ năng chiến đấu cho Pet", "Thông báo");
             }
         }
 
@@ -132,8 +121,6 @@ export class PetCombat extends PlayerInteractAction {
     public onStartAction(data) {
         super.onStartAction(data);
     }
-
-
 
     public rejectAction(data) {
         SoundManager.instance.playSound(AudioType.NoReward);

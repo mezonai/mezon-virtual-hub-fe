@@ -1,24 +1,24 @@
-import { _decorator, Button, Component, instantiate, Label, Node, Prefab, SpriteFrame, assetManager, Vec3, UITransform, tween, Toggle } from 'cc'; // Thêm assetManager
-import { WebRequestManager } from '../network/WebRequestManager';
-import { Food, InventoryDTO, Item, ItemGenderFilter, ItemType, RewardDisplayData, RewardItemDTO, RewardPecent, RewardType } from '../Model/Item';
-import { BubbleRotation } from './BubbleRotation';
-import { UserMeManager } from '../core/UserMeManager';
-import { RewardUIController } from './RewardUIController';
-import { RewardFloatingText } from './RewardFloatingText';
-import { UserManager } from '../core/UserManager';
-import { AudioType, SoundManager } from '../core/SoundManager';
-import { ResourceManager } from '../core/ResourceManager';
-import { ObjectPoolManager } from '../pooling/ObjectPoolManager';
-import { SlotItem } from './SlotItem';
-import { LoadBundleController } from '../bundle/LoadBundleController';
-import { UIPanelSliderEffect } from '../utilities/UIPanelSliderEffect';
-import { BasePopup} from '../PopUp/BasePopup';
-import { PopupManager } from '../PopUp/PopupManager';
-import { ConfirmParam, ConfirmPopup } from '../PopUp/ConfirmPopup';
+import {_decorator,Button, instantiate, Label, Node, Prefab, SpriteFrame, Vec3, Toggle} from "cc"; 
+import { WebRequestManager } from "../network/WebRequestManager";
+import {Food, Item, ItemGenderFilter, RewardDisplayData, RewardItemDTO, RewardType, StatsConfigDTO} from "../Model/Item";
+import { BubbleRotation } from "./BubbleRotation";
+import { UserMeManager } from "../core/UserMeManager";
+import { RewardUIController } from "./RewardUIController";
+import { RewardFloatingText } from "./RewardFloatingText";
+import { UserManager } from "../core/UserManager";
+import { AudioType, SoundManager } from "../core/SoundManager";
+import { ResourceManager } from "../core/ResourceManager";
+import { ObjectPoolManager } from "../pooling/ObjectPoolManager";
+import { SlotItem } from "./SlotItem";
+import { LoadBundleController } from "../bundle/LoadBundleController";
+import { UIPanelSliderEffect } from "../utilities/UIPanelSliderEffect";
+import { BasePopup } from "../PopUp/BasePopup";
+import { PopupManager } from "../PopUp/PopupManager";
+import { Constants } from "../utilities/Constants";
 
 const { ccclass, property } = _decorator;
 
-@ccclass('SlotMachineController')
+@ccclass("SlotMachineController")
 export class SlotMachineController extends BasePopup {
     @property(Node) slotMachinePopUp: Node = null;
     @property(Node) noticeSpin: Node = null;
@@ -35,7 +35,7 @@ export class SlotMachineController extends BasePopup {
     @property({ type: Node }) itemContainer: Node = null;
     @property({ type: Prefab }) itemPrefab: Prefab = null;
     @property(Node) parentHover: Node = null;
-    private minusCoin: number = 10;
+    private minusCoin: number = 0;
     private hasSpin: boolean = false;
 
     @property({ type: [SpriteFrame] }) iconValue: SpriteFrame[] = []; // 0: normal 1: rare 2: super
@@ -43,153 +43,186 @@ export class SlotMachineController extends BasePopup {
     protected foodNameMap: Record<string, string>;
     protected foodIconMap: Record<string, SpriteFrame>;
     protected moneyIconMap: Record<string, SpriteFrame>;
-    private rewardRateMap: RewardPecent;
+    private rewardRateMap: StatsConfigDTO;
 
     @property(UIPanelSliderEffect) slotMachineRate: UIPanelSliderEffect = null;
 
     public init(param: SlotmachineParam): void {
+        if (param == null) {
+            PopupManager.getInstance().closePopup(this.node.uuid);
+            return;
+        }
         this.foodIconMap = {
             normal: this.iconValue[0],
             premium: this.iconValue[1],
-            ultrapremium: this.iconValue[2]
+            ultrapremium: this.iconValue[2],
         };
         this.foodNameMap = {
-            "normalFood": "Thức ăn sơ cấp",
-            "premiumFood": "Thức ăn cao cấp",
-            "ultraFood": "Thức ăn siêu cao cấp",
+            normalFood: "Thức ăn sơ cấp",
+            premiumFood: "Thức ăn cao cấp",
+            ultraFood: "Thức ăn siêu cao cấp",
         };
         this.moneyIconMap = {
             gold: this.iconMoney[0],
-            diamond: this.iconMoney[1]
+            diamond: this.iconMoney[1],
         };
-
-        this.initUI();
-        this.registerEventListeners();
-        if(param != null && param.onActionClose != null){
-            this._onActionClose = param.onActionClose;
-        }
+        this.initUI(param);
     }
 
-    private initUI() {
+    private async initUI(param: SlotmachineParam) {
         this.slotMachinePopUp.active = false;
+        await this.showNoticeSpin();
+        if (param.onActionClose != null) {
+            this._onActionClose = param.onActionClose;
+        }
+        this.registerEventListeners();
     }
 
     private registerEventListeners() {
-        this.spinButton.node.on('click', this.spinMachine, this);
-        this.closeButton.node.on('click', this.endSpinSlotMachine, this);
+        this.spinButton.addAsyncListener(async () => {
+            this.spinButton.interactable = false;
+            this.spinMachine();
+        });
+        this.closeButton.addAsyncListener(async () => {
+            this.closeButton.interactable = false;
+            this.endSpinSlotMachine();
+        });
     }
 
-    private endSpinSlotMachine() {
+    private async endSpinSlotMachine() {
+        const updateCompletetd = await WebRequestManager.instance.getUserProfileAsync();
+        if (!updateCompletetd) return;
         UserManager.instance.GetMyClientPlayer.get_MoveAbility.startMove();
-        this.slotMachineRate.hide();
-        this.rateButton.isChecked = false;
-        this.rewardPopUp.show(false, null);
-        this.slotMachinePopUp.active = false;
-        this.refreshUserData();
-        PopupManager.getInstance().closePopup(this.node.uuid);
         this._onActionClose?.();
+        await PopupManager.getInstance().closePopup(this.node.uuid);
     }
 
-    public showNoticeSpin(isShow: boolean) {
-        this.slotMachinePopUp.active = isShow;
-        this.rewardPopUp.node.active = !isShow;
-        this.spinButton.interactable = isShow;
-        this.spinButtonLabel.string = 'Quay';
+    public showNoticeSpin() {
+        this.slotMachinePopUp.active = true;
+        this.rewardPopUp.node.active = false;
+        this.spinButton.interactable = true;
+        this.spinButtonLabel.string = "Quay";
         this.hasSpin = false;
         this.closeButton.node.active = true;
         this.rewardPopUp.HideNode();
-        this.showMinusCoinInfo(true);
-
-        if (isShow) {
-            UserManager.instance.GetMyClientPlayer.get_MoveAbility.StopMove();
-        }
-
         this.getRewardsPercent();
-    }
-
-    private parseRewardsPercent(response: any): RewardPecent {
-        return {
-            item: response.item,
-            gold: response.gold,
-            normalFood: response.normalFood,
-            premiumFood: response.premiumFood,
-            ultraFood: response.ultraFood,
-            none: response.none
-        };
+        UserManager.instance.GetMyClientPlayer.get_MoveAbility.StopMove();
     }
 
     private async getRewardsPercent() {
-        WebRequestManager.instance.getRewardsPercent(
-            async (response) => {
-                try {
-                    this.rewardRateMap = this.parseRewardsPercent(response.data);
-                    await this.showItem();
-                } catch (error) {
-                    this.onError(error);
-                }
-            },
-            this.onError.bind(this)
-        );
+        this.rewardRateMap = await WebRequestManager.instance.getConfigRateAsync();
+        if (this.rewardRateMap == null) {
+            this.endSpinSlotMachine();
+            return;
+        }
+        await this.showItem();
+        this.minusCoin = this.rewardRateMap.costs.spinGold;
+        this.showMinusCoinInfo(true);
     }
 
     private async showItem() {
         ObjectPoolManager.instance.returnArrayToPool(this.itemContainer.children);
         var userGender = UserMeManager.Get.user.gender as ItemGenderFilter;
-        var skinLocalData = ResourceManager.instance.getFilteredSkins([userGender, ItemGenderFilter.UNISEX]);
+        var skinLocalData = ResourceManager.instance.getFilteredSkins([
+            userGender,
+            ItemGenderFilter.UNISEX,
+        ]);
         if (skinLocalData && skinLocalData.length > 0) {
             for (const item of skinLocalData) {
-                let itemNode = ObjectPoolManager.instance.spawnFromPool(this.itemPrefab.name);
+                let itemNode = ObjectPoolManager.instance.spawnFromPool(
+                    this.itemPrefab.name
+                );
                 itemNode.setParent(this.itemContainer);
 
                 let spriteFrameToSet: SpriteFrame | null = null;
 
                 if (item instanceof SpriteFrame) {
                     spriteFrameToSet = item;
-                } else if (item && typeof item === 'object' && 'icons' in item && Array.isArray(item.icons) && item.icons.length > 0) {
-                    spriteFrameToSet = await this.setItemImage(item.bundleName, item.icons[0]);
+                } else if (
+                    item &&
+                    typeof item === "object" &&
+                    "icons" in item &&
+                    Array.isArray(item.icons) &&
+                    item.icons.length > 0
+                ) {
+                    spriteFrameToSet = await this.setItemImage(
+                        item.bundleName,
+                        item.icons[0]
+                    );
                 }
-                await this.registUIItemData(itemNode, spriteFrameToSet, item.name, this.rewardRateMap.item, true);
+                await this.registUIItemData(
+                    itemNode,
+                    spriteFrameToSet,
+                    item.name,
+                    this.rewardRateMap.percentConfig.spinRewards.item,
+                    true
+                );
             }
         }
 
         for (const spriteF of this.iconValue) {
-            const rate = this.rewardRateMap[spriteF.name] ?? 0;
-            const displayName = this.foodNameMap[spriteF.name]
+            const key = spriteF.name.toLowerCase().replace("food", "");
+            const rate = this.rewardRateMap.percentConfig.spinRewards.food[key] ?? 0;
+            const displayName = this.foodNameMap[spriteF.name];
             if (rate <= 0) continue;
-            let itemNode = ObjectPoolManager.instance.spawnFromPool(this.itemPrefab.name);
+            let itemNode = ObjectPoolManager.instance.spawnFromPool(
+                this.itemPrefab.name
+            );
             itemNode.setParent(this.itemContainer);
             await this.registUIItemData(itemNode, spriteF, displayName, rate);
         }
 
-        let goldNode = ObjectPoolManager.instance.spawnFromPool(this.itemPrefab.name);
+        let goldNode = ObjectPoolManager.instance.spawnFromPool(
+            this.itemPrefab.name
+        );
         goldNode.setParent(this.itemContainer);
-        await this.registUIItemData(goldNode, this.iconMoney[0], "Coin", this.rewardRateMap.gold);
+        await this.registUIItemData(
+            goldNode,
+            this.iconMoney[0],
+            "Coin",
+            this.rewardRateMap.percentConfig.spinRewards.gold
+        );
     }
 
-    protected async registUIItemData(itemNode: Node, spriteFrameToSet: SpriteFrame | null, name: string | null, rate: number | null, isItem: boolean = false) {
+    protected async registUIItemData(
+        itemNode: Node,
+        spriteFrameToSet: SpriteFrame | null,
+        name: string | null,
+        rate: number | null,
+        isItem: boolean = false
+    ) {
         let slotItem = itemNode.getComponent(SlotItem);
         let displayData: RewardDisplayData = {
             spriteFrame: spriteFrameToSet,
-            name: name ?? '',
+            name: name ?? "",
             rate: rate ?? 0,
-            isItem
+            isItem,
         };
         slotItem.setupIcon(displayData, this.parentHover);
         slotItem.iconFrame.node.scale = this.SetItemScaleValue(name);
     }
 
-    protected SetItemScaleValue(itemType: string, sizeSpecial: number = 0.16, sizeClothes: number = 0.3): Vec3 {
+    protected SetItemScaleValue(
+        itemType: string,
+        sizeSpecial: number = 0.16,
+        sizeClothes: number = 0.3
+    ): Vec3 {
         const isSpecial = itemType.includes("Tóc") || itemType.includes("Mặt");
         const value = isSpecial ? sizeSpecial : sizeClothes;
         return new Vec3(value, value, 0);
     }
 
-    protected async setItemImage(bundleName: string, bundlePath: string): Promise<SpriteFrame | null> {
+    protected async setItemImage(
+        bundleName: string,
+        bundlePath: string
+    ): Promise<SpriteFrame | null> {
         let bundleData = {
             bundleName: bundleName,
-            bundlePath: bundlePath
+            bundlePath: bundlePath,
         };
-        return await LoadBundleController.instance.spriteBundleLoader.getBundleData(bundleData);
+        return await LoadBundleController.instance.spriteBundleLoader.getBundleData(
+            bundleData
+        );
     }
 
     private showMinusCoinInfo(show: boolean) {
@@ -202,11 +235,7 @@ export class SlotMachineController extends BasePopup {
 
     private async spinMachine() {
         if (UserMeManager.playerCoin < this.minusCoin) {
-            const param: ConfirmParam = {
-                message: "Bạn cần 10 coin để quay vòng quay may mắn",
-                title: "Chú ý",
-            };
-            PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
+            Constants.showConfirm(`Bạn cần ${this.minusCoin} coin để quay vòng quay may mắn`, "Chú ý" );
             return;
         }
 
@@ -216,20 +245,17 @@ export class SlotMachineController extends BasePopup {
             this.restoreSpinUI();
         });
 
-        WebRequestManager.instance.getRewardsSpin(
-            async (response) => {
-                try {
-                    UserMeManager.playerCoin -= this.minusCoin;
-                    this.bubbleRotation.startRotation();
-                    SoundManager.instance.playSound(AudioType.SlotMachine);
-                    await this.delay(2000);
-                    this.handleRewardResponse(response);
-                } catch (error) {
-                    this.onError(error);
-                }
-            },
-            this.onError.bind(this)
-        );
+        WebRequestManager.instance.getRewardsSpin(async (response) => {
+            try {
+                UserMeManager.playerCoin -= this.minusCoin;
+                this.bubbleRotation.startRotation();
+                SoundManager.instance.playSound(AudioType.SlotMachine);
+                await this.delay(2000);
+                this.handleRewardResponse(response);
+            } catch (error) {
+                this.onError(error);
+            }
+        }, this.onError.bind(this));
     }
 
     private prepareSpinUI() {
@@ -239,7 +265,7 @@ export class SlotMachineController extends BasePopup {
         this.rewardPopUp.HideNode();
         this.closeButton.node.active = false;
         this.spinButton.interactable = false;
-        this.spinButtonLabel.string = 'Xin chờ...';
+        this.spinButtonLabel.string = "Xin chờ...";
         this.showMinusCoinInfo(false);
         this.hasSpin = true;
     }
@@ -247,7 +273,7 @@ export class SlotMachineController extends BasePopup {
     private restoreSpinUI() {
         this.spinButton.node.active = true;
         this.spinButton.interactable = true;
-        this.spinButtonLabel.string = this.hasSpin ? 'Quay tiếp' : 'Quay';
+        this.spinButtonLabel.string = this.hasSpin ? "Quay tiếp" : "Quay";
         this.rateButton.node.active = true;
         this.rateButton.isChecked = false;
         this.closeButton.node.active = true;
@@ -275,7 +301,11 @@ export class SlotMachineController extends BasePopup {
 
         const floatingText = rewardTextNode.getComponent(RewardFloatingText);
         if (floatingText) {
-            floatingText.showReward(`Mỗi lần quay bạn bị trừ -${coin}`, true, RewardType.GOLD);
+            floatingText.showReward(
+                `Mỗi lần quay bạn bị trừ -${coin}`,
+                true,
+                RewardType.GOLD
+            );
         }
     }
 
@@ -283,7 +313,7 @@ export class SlotMachineController extends BasePopup {
         if (!Array.isArray(data)) return [];
 
         return data
-            .filter((d: any) => d && typeof d === 'object')
+            .filter((d: any) => d && typeof d === "object")
             .map((entry: any) => {
                 const rewardItem = new RewardItemDTO();
 
@@ -325,42 +355,17 @@ export class SlotMachineController extends BasePopup {
         return item;
     }
 
-    private refreshUserData() {
-        WebRequestManager.instance.getUserProfile(
-            (response) => {
-                UserMeManager.Set = response.data;
-            },
-            this.onApiError.bind(this)
-        );
-    }
-
-    private onApiError(error: any) {
-        const param: ConfirmParam = {
-            message: error.error_message,
-            title: "Lỗi",
-        };
-        PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
-    }
-
     private onError(error: any) {
         this.bubbleRotation.stopRotation();
         if (error?.message) {
-            const param: ConfirmParam = {
-                message: error.message,
-                title: "Lỗi",
-            };
-            PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
+            Constants.showConfirm(error.message, "Lỗi");
         } else {
-            const param: ConfirmParam = {
-                message: "Có lỗi xảy ra, vui lòng thử lại.",
-                title: "Lỗi",
-            };
-            PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
+            Constants.showConfirm("Có lỗi xảy ra, vui lòng thử lại.", "Lỗi");
         }
     }
 
     private delay(ms: number): Promise<void> {
-        return new Promise(resolve => setTimeout(resolve, ms));
+        return new Promise((resolve) => setTimeout(resolve, ms));
     }
 }
 

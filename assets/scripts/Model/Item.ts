@@ -25,11 +25,9 @@ export class Item extends BaseInventoryDTO {
     public gender: string = "";
     public gold: number = 0;
     public type: ItemType = ItemType.HAIR;
-    public is_equippable: boolean = false;
-    public is_static: boolean = false;
     public iconSF: SpriteFrame[] = [];
     public mappingLocalData: LocalItemDataConfig = null;
-    public is_stackable: boolean = false;
+    public item_code?: ItemCode;
 }
 
 export class FoodDTO {
@@ -88,16 +86,16 @@ export enum RewardType {
 }
 
 export enum ItemType {
-    NULL = 0,
-    HAIR = 1,
-    HAT = 2,
-    FACE = 3,
-    EYES = 4,
-    UPPER = 5,
-    LOWER = 6,
-    GLASSES = 7,
-    PET_BAIT = 8,
-    PET_FOOD = 9
+    NULL = 'null',
+    HAIR = 'hair',
+    HAT = 'hat',
+    FACE = 'face',
+    EYES = 'eyes',
+    UPPER = 'upper',
+    LOWER = 'lower',
+    GLASSES = 'glasses',
+    PET_CARD = 'pet_card',
+    PET_FOOD = 'pet_food',
 }
 
 export enum InventoryType {
@@ -136,11 +134,56 @@ export interface RewardDisplayData {
     isItem?: boolean;
 }
 
-export class RewardPecent {
-    public item: number;
-    public gold: number;
-    public normalFood: number;
-    public premiumFood: number;
-    public ultraFood: number;
-    public none: number;
+export interface SpinRewardsFoodDTO {
+    normal: number;
+    premium: number;
+    ultra: number;
+}
+
+export interface SpinRewardsPercentDTO {
+    item: number;
+    gold: number;
+    food: SpinRewardsFoodDTO;
+    none: number;
+}
+
+export interface SpinCostsDTO {
+    spinGold: number;
+    upgradeStarsDiamond: number;
+}
+
+export interface PercentConfigDTO {
+    upgradeStars: Record<AnimalRarity, number>;
+    upgradeRarity: Partial<Record<AnimalRarity, number>>;
+    spinRewards: SpinRewardsPercentDTO;
+}
+
+export interface UpgradeStarsPercentDTO {
+    common: number;
+    rare: number;
+    epic: number;
+    legendary: number;
+}
+
+export interface UpgradeRarityPercentDTO {
+    rare: number;
+    epic: number;
+    legendary: number;
+}
+
+export interface StatsConfigDTO {
+    costs: SpinCostsDTO;
+    percentConfig: PercentConfigDTO;
+}
+
+export enum ItemCode {
+  RARITY_CARD_RARE = 'rarity_card_rare',
+  RARITY_CARD_EPIC = 'rarity_card_epic',
+  RARITY_CARD_LEGENDARY = 'rarity_card_legendary',
+}
+
+export interface BuyItemPayload {
+    itemId: string | number;
+    quantity: number;
+    type: string;
 }

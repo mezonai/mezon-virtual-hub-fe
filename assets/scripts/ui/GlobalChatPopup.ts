@@ -1,12 +1,10 @@
-import { _decorator, Component, EditBox, Node } from 'cc';
+import { _decorator, EditBox, Node } from 'cc';
 import { ServerManager } from '../core/ServerManager';
 import { UserManager } from '../core/UserManager';
-import { UIManager } from '../core/UIManager';
-import { UIIdentify } from './UIIdentify';
 import { PopupManager } from '../PopUp/PopupManager';
 import { BasePopup } from '../PopUp/BasePopup';
 import { SelectionMiniParam } from '../PopUp/PopupSelectionMini';
-import { ConfirmParam, ConfirmPopup } from '../PopUp/ConfirmPopup';
+import { Constants } from '../utilities/Constants';
 const { ccclass, property } = _decorator;
 
 @ccclass('GlobalChatPopup')
@@ -32,11 +30,7 @@ export class GlobalChatPopup extends BasePopup {
     public onSend() {
         let contentString = this.content.string.trim().replace(/\x00/g, '');
         if (contentString == "") {
-            const param: ConfirmParam = {
-                message: "Nội dung rỗng",
-                title: "Chú ý",
-            };
-            PopupManager.getInstance().openPopup('ConfirmPopup', ConfirmPopup, param);
+            Constants.showConfirm("Nội dung rỗng", "Chú ý");
             return;
         }
 
