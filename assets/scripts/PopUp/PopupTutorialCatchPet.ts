@@ -160,6 +160,7 @@ export class PopupTutorialCatchPet extends BasePopup {
             species: index == 0 ? "Dog" : index == 1 ? "Bird" : index == 2 ? "Cat" : "Rabit",
             type: "Normal",
             rarity: "common",
+            current_rarity: "common",
             level: 1,
             exp: 1,
             max_exp: 7,
@@ -173,7 +174,8 @@ export class PopupTutorialCatchPet extends BasePopup {
             pet: {
                 species: index == 0 ? "Dog" : index == 1 ? "Bird" : index == 2 ? "Cat" : "Rabit",
                 type: "Normal",
-                rarity: "common"
+                rarity: "common",
+                max_rarity: "rare"
             },
             skill_slot_1: skillSlot1,
             skill_slot_2: skillSlot2,
