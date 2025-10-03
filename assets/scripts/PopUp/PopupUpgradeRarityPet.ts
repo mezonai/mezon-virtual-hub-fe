@@ -73,7 +73,7 @@ export class PopupUpgradeRarityPet extends BasePopup {
 
 
     private hasTicketForPet(pet: any): boolean {
-        const ticketType = this.getRequiredTicketType(pet.pet.rarity);
+        const ticketType = this.getRequiredTicketType(pet.current_rarity);
         if (!ticketType) return false;
         const ticket = this.itemCardUpgradePet.find(
             item => item._item?.item?.item_code === ticketType
