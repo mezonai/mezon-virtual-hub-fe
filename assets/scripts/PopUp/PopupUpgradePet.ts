@@ -8,6 +8,7 @@ import { PopupUpgradeRarityPet } from "./PopupUpgradeRarityPet";
 import { ItemAnimalSlotDrag } from "../animal/ItemAnimalSlotDrag";
 import { ObjectPoolManager } from "../pooling/ObjectPoolManager";
 import { InteractSlot } from "../animal/ItemSlotSkill";
+import { WebRequestManager } from "../network/WebRequestManager";
 
 const { ccclass, property } = _decorator;
 
@@ -28,15 +29,21 @@ export class PopupUpgradePet extends BasePopup {
     @property({ type: PopupUpgradeRarityPet }) popupUpgradeRarityPet: PopupUpgradeRarityPet = null;
     @property({ type: ScrollView }) detailStar: ScrollView = null;
     @property({ type: ScrollView }) detailRarity: ScrollView = null;
+    updateListPet: ((updatedPets: PetDTO[]) => void) | null = null;
 
     private animalSlotsStar: ItemAnimalSlotDrag[] = [];
     private animalSlotsRarity: ItemAnimalSlotDrag[] = [];
     private animalObject: Node = null;
     private currentTab: UpgradeTab = null;
 
-    public init(): void {
+    public init(param?: PopupUpgradePetParam): void {
+        if (param?.onUpdate) {
+            this.updateListPet = param.onUpdate;
+        }
         this.closeButton.addAsyncListener(async () => {
             this.closeButton.interactable = false;
+            const myPets = await WebRequestManager.instance.getMyPetAsync();
+            this.updateListPet?.(myPets);
             this.closePopup();
         });
 
@@ -190,4 +197,8 @@ export class PopupUpgradePet extends BasePopup {
             slot.selectedNode.active = slotPet ? isSelected(slotPet) : false;
         });
     }
+}
+
+export interface PopupUpgradePetParam {
+    onUpdate?: (updatedPets: PetDTO[]) => void;
 }

@@ -14,7 +14,7 @@ import { PopupBattlePlace, PopupBattlePlaceParam } from './PopupBattlePlace';
 import { Sprite } from 'cc';
 import { UserMeManager } from '../core/UserMeManager';
 import { PopupPetChartParam, PopupPetElementChart } from './PopupPetElementChart';
-import { PopupUpgradePet } from './PopupUpgradePet';
+import { PopupUpgradePet, PopupUpgradePetParam } from './PopupUpgradePet';
 import { Constants } from '../utilities/Constants';
 const { ccclass, property } = _decorator;
 
@@ -423,11 +423,22 @@ export class PopupOwnedAnimals extends BasePopup {
         });
         this.petUpgradeButton.addAsyncListener(async () => {
             this.petChartButton.interactable = false;
-            await PopupManager.getInstance().openAnimPopup("PopupUpgradePet", PopupUpgradePet);
+            const param: PopupUpgradePetParam =
+            {
+                onUpdate: (pets) => this.GetPetAfterUpgrade(pets),
+            }
+            await PopupManager.getInstance().openAnimPopup("PopupUpgradePet", PopupUpgradePet, param);
             this.petChartButton.interactable = true;
         });
-        
+
         this.onGetMyPet(UserMeManager.MyPets());
+    }
+
+    GetPetAfterUpgrade(pets: PetDTO[]) {
+        this.listAllPetPlayer = [];
+        this.parentPet.removeAllChildren();
+        this.scrollViewDetailPet.content.removeAllChildren();
+        this.onGetMyPet(pets);
     }
 
     private async handlePetAction(actionType: PetActionType) {

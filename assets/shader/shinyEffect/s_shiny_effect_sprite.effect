@@ -1,0 +1,161 @@
+// Effect Syntax Guide: https://docs.cocos.com/creator/manual/zh/shader/index.html
+
+CCEffect %{
+  techniques:
+  - passes:
+    - vert: sprite-vs:vert
+      frag: shiny-effect-fs:frag
+      depthStencilState:
+        depthTest: false
+        depthWrite: false
+      blendState:
+        targets:
+        - blend: true
+          blendSrc: src_alpha
+          blendDst: one_minus_src_alpha
+          blendDstAlpha: one_minus_src_alpha
+      rasterizerSate: 
+        cullMode: none
+      properties: &props
+        mainTexture:    { value: white }
+        u_color: {value: [1.0, 1.0, 1.0, 1.0], editor: {type: color}} 
+        u_width: {value: 0.05, editor: {type: slider, min: 0.0, max: 1.0, step: 0.01}}
+        u_edge: {value: 0.1, editor: { type: slider, min: 0, max: 1, step: 0.01 }}
+        u_angle: {value: 0.0}
+        u_smoothValue: {value: 3.0, editor: { type: slider, min: 1, max: 25, step: 1 }}
+        u_duration: {value: 1.5}
+        u_delay: {value: 2.0}
+
+        u_uv: {value: [0.0, 1.0, 0.0, 1.0]} 
+}%
+
+CCProgram sprite-vs %{
+  precision mediump float;
+  #include <builtin/uniforms/cc-global>
+  
+
+  in vec3 a_position;
+  in vec2 a_texCoord;
+  in vec4 a_color;
+
+  out vec4 v_color;
+  out vec2 v_uv;
+
+  vec4 vert() {
+    vec4 pos = vec4(a_position, 1.0);
+
+    pos = cc_matViewProj * pos;
+    
+    v_uv = a_texCoord;
+    v_color = a_color;
+
+    return pos;
+  }
+  
+}%
+
+CCProgram shiny-effect-fs %{
+  precision mediump float;
+  #include <builtin/uniforms/cc-global>
+  #include <builtin/internal/embedded-alpha>
+  #include <builtin/internal/alpha-test>
+
+  in vec4 v_color;
+  in vec2 v_uv;
+  uniform sampler2D mainTexture;
+
+  uniform Constant {
+    vec4 u_uv;
+    vec4 u_color;
+    float u_width;
+    float u_edge;
+    float u_angle;
+    float u_smoothValue;
+    float u_duration;
+    float u_delay;
+  };
+
+  #define pi 3.14159265359
+
+  #if USE_SPRITE_TEXTURE
+  #pragma builtin(local)
+  layout (set = 2, binding = 12) uniform sampler2D cc_spriteTexture;
+  #endif
+
+  float remapUV(float value, vec2 from, vec2 to) {
+    return (value - from.x) / (from.y - from.x) * (to.y - to.x) + to.x;
+  }
+
+  vec2 rotate2d(vec2 uv, vec2 pivot, float angle)
+  {
+    float radian = angle * pi / 180.0;
+
+    mat2 rotateMat = mat2(cos(radian), -sin(radian),
+                          sin(radian), cos(radian));
+    
+    vec2 rotate = rotateMat * (uv - pivot);
+    rotate += pivot;
+
+    return rotate;
+  }
+
+  float drawShiny(vec2 uv, vec2 size, float angle, float edge)
+  {
+    uv = rotate2d(uv, vec2(0.5), angle);
+
+    // Draw rect
+    size = 0.5 - size*0.5;
+
+    vec2 rect = smoothstep(size , size + edge , uv);
+    rect *= smoothstep(size, size + edge, 1.0-uv);
+
+    return rect.x*rect.y;
+  }
+
+  float calcShinyPos(float x)
+  {
+    float dist = 3.0 + (u_width + u_edge) * 2.0;
+    float delay = 2.0;
+
+    float f = fract(x / u_duration) * (dist + u_delay*1.5) - u_delay;
+
+    return step(0.0, f) * f - dist/3.0;
+  }
+
+  vec4 frag() {
+    vec4 o = vec4(1.0);
+    
+    // Format uv
+    vec2 uv = vec2(0.0);
+    uv.x = remapUV(v_uv.x, u_uv.xy, vec2(0.0, 1.0)); 
+    uv.y = remapUV(v_uv.y, u_uv.zw, vec2(0.0, 1.0));
+
+    #if USE_SPRITE_TEXTURE
+    vec4 sprite = CCSampleWithAlphaSeparated(cc_spriteTexture, v_uv);
+    #else
+    vec4 sprite = texture(mainTexture, uv);
+    #endif
+
+    o *= sprite;
+    o *= v_color;
+
+    // Shiny handle
+    vec2 shiny_uv = uv;
+    #if HAS_ANIMATION
+    shiny_uv = uv + vec2(0.0, calcShinyPos(cc_time.x));
+    #endif
+
+    float shiny = drawShiny(shiny_uv, vec2(10.35, u_width), u_angle, u_edge);
+    shiny = floor(shiny*u_smoothValue)/u_smoothValue;
+
+    vec4 shinyColor = u_color;
+    shinyColor *= shiny*1.2;
+
+    // o = mix(o, shinyColor, shinyColor.a)*o.a;
+
+    o += shinyColor*o.a;
+
+    ALPHA_TEST(o);
+    return o;
+  }
+}%
