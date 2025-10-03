@@ -435,9 +435,15 @@ export class PopupOwnedAnimals extends BasePopup {
     }
 
     GetPetAfterUpgrade(pets: PetDTO[]) {
-        this.listAllPetPlayer = [];
         this.parentPet.removeAllChildren();
         this.scrollViewDetailPet.content.removeAllChildren();
+        this.listAllPetPlayer = [];
+        this.animalSlots = [];
+        this.animalBrings = [];
+        this.animalBattle = [];
+        this.skillIdsInit = [];
+        this.bringPetIdsInit = [];
+        this.battlePetIdsInit = [];
         this.onGetMyPet(pets);
     }
 
