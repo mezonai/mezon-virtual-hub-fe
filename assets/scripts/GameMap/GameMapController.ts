@@ -8,7 +8,7 @@ import { EVENT_NAME } from '../network/APIConstant';
 import { AnimationEventController } from '../gameplay/player/AnimationEventController';
 import { AnimationController } from '../gameplay/player/AnimationController';
 import { LoadBundleController } from '../bundle/LoadBundleController';
-import { MapData, UserDataResponse } from '../Interface/DataMapAPI';
+import { ClansData, ClansResponseDTO, UserDataResponse } from '../Interface/DataMapAPI';
 import { RandomlyMover } from '../utilities/RandomlyMover';
 import { OfficeSenenParameter } from './OfficeScene/OfficeSenenParameter';
 import { RoomType } from './RoomType';
@@ -96,7 +96,6 @@ export class GameMapController extends Component {
     private async updateUserDataUserClient(office: Office) {
         let userMe = UserMeManager.Get;
         let userData = {
-            "map_id": office.map.id,
             "position_x": null,
             "position_y": null,
             "display_name": userMe.user.display_name != "" ? userMe.user.display_name : userMe.user.username,
@@ -114,7 +113,7 @@ export class GameMapController extends Component {
         this.SetMapUserChoosen(office);
         const officeParam = new OfficeSenenParameter(office.officeBrach, RoomType.NONE, RoomType.COMPLEXNCC, Constants.convertNameRoom(office.officeBrach, RoomType.COMPLEXNCC));
         if (this.currentOffice.region == office.region) {
-            if (this.currentOffice.mapKey == office.mapKey) {
+            if (this.currentOffice.clans.name == office.clans.name) {
                 this.waitForMove = false;
             }
             else {
@@ -191,28 +190,28 @@ export class GameMapController extends Component {
     }
 
     private SetMapUserChoosen(office: Office) {
-        UserMeManager.SetMap = office.map;
+        UserMeManager.SetClan = office.clans;
     }
 
 
-    private async LoadMapUI(userme: UserDataResponse, maps: MapData[]): Promise<void> {
+    private async LoadMapUI(userme: UserDataResponse, clans: ClansData[]): Promise<void> {
         this.planeNotice.node.parent.active = false;
         try {
-            if (maps == null || this.offices == null || this.offices.length <= 0) return;
+            if (clans == null || this.offices == null || this.offices.length <= 0) return;
             this.offices.map((office) => {
-                let mapData = maps.find((map) => map.map_key == office.mapKey);
-                if (mapData) office.setData(mapData, this);
+                let clanData = clans.find((clan) => clan.name == office.mapKey);
+                if (clanData) office.setData(clanData, this);
             });
         } catch (error) {
             console.error("Failed to load maps:", error);
         }
         if (this.offices.length > 0) {
-            if (!userme.map || !userme.map.map_key) {
+            if (!userme.clan || !userme.clan.name) {
                 this.currentOffice = this.offices[0];
                 return;
             }
             let officeAt = this.offices.find((office) => {
-                return office.mapKey == userme.map.map_key
+                return office.mapKey == userme.clan.name
             });
             this.currentOffice = officeAt ?? this.offices[0];
 
@@ -239,8 +238,9 @@ export class GameMapController extends Component {
 
     public async CheckLoadMap(autoLoadMap) {
         await this.LoadDataMapServer();
-        if (autoLoadMap && UserMeManager.Get.map && this.offices && this.offices.length > 0) {
-            let officeLoad = this.offices.find(office => office.mapKey == UserMeManager.Get.map.map_key);
+        console.log(UserMeManager.Get.clan, " - ", UserMeManager.Get.clan.name);
+        if (autoLoadMap && UserMeManager.Get.clan && this.offices && this.offices.length > 0) {
+            let officeLoad = this.offices.find(office => office.mapKey == UserMeManager.Get.clan.name);
             if (officeLoad) {
                 if (this.planeNotice.IsInSideMap) {
                     this.planeNotice.node.parent.active = true;
@@ -255,7 +255,7 @@ export class GameMapController extends Component {
                                 this.playerChat(["Hello"]);
                                 setTimeout(() => {
                                     this.playerChat(["Chờ tí đang vào game"], false);
-                                    const officeParam = new OfficeSenenParameter(officeLoad.officeBrach, RoomType.NONE, RoomType.NONE, UserMeManager.Get.map.map_key);
+                                    const officeParam = new OfficeSenenParameter(officeLoad.officeBrach, RoomType.NONE, RoomType.NONE, Constants.convertNameToKey(UserMeManager.Get.clan.name));
                                     SceneManagerController.loadScene(SceneName.SCENE_OFFICE, officeParam);
                                 }, 500);
                             })
@@ -263,7 +263,7 @@ export class GameMapController extends Component {
                     })
                 }
                 else {
-                    const officeParam = new OfficeSenenParameter(officeLoad.officeBrach, RoomType.NONE, RoomType.NONE, UserMeManager.Get.map.map_key);
+                    const officeParam = new OfficeSenenParameter(officeLoad.officeBrach, RoomType.NONE, RoomType.NONE,  Constants.convertNameToKey(UserMeManager.Get.clan.name));
                     SceneManagerController.loadScene(SceneName.SCENE_OFFICE, officeParam);
                 }
                 return;
@@ -274,11 +274,11 @@ export class GameMapController extends Component {
         await this.LoadMapUI(UserMeManager.Get, ServerMapManager.Get);
     }
 
-    public async LoadDataMapServer(timeout: number = 5000, interval: number = 100): Promise<MapData[]> {
+    public async LoadDataMapServer(timeout: number = 5000, interval: number = 100): Promise<ClansData[]> {
         return new Promise(async (resolve, reject) => {
             try {
-                const maps = await WebRequestManager.instance.GetMapInfo();
-                ServerMapManager.Set = maps;
+                const clans = await WebRequestManager.instance.GetClanInfo();
+                ServerMapManager.Set = clans.result;
                 const startTime = Date.now();
                 while (ServerMapManager.Get === null) {
                     if (Date.now() - startTime > timeout) {

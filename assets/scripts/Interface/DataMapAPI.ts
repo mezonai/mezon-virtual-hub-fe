@@ -20,12 +20,12 @@ export class UserDataResponse {
     inited: boolean = false;
     user: User;
     inventories: InventoryDTO[];
-    map: MapData | null;
+    clan: ClansData; // Before it was map but now changed to clan
     animals: PetDTO[];
 }
 
 export class UserProfileDTO {
-    mapId: string;
+    clanId: string;
     positionX: number;
     positionY: number;
     displayName: string;
@@ -34,11 +34,26 @@ export class UserProfileDTO {
 }
 
 ///////////////////////---------------------MAP-----------------------------------------------------------
-export class MapData {
+export class ClansData {
     id: string;
     name: string;
-    map_key: string;
-    isLocked: boolean;
+    score: number;
+    fund: number;
+    member_count?: number;
+    max_members?: number;
+}
+export class ClansPageInfo {
+    page: number;
+    size: number;
+    total: number;
+    total_page: number;
+    has_previous_page: boolean;
+    has_next_page: boolean;
+}
+
+export class ClansResponseDTO {
+    result: ClansData[];
+    pageInfo: ClansPageInfo;
 }
 ///////////////////////---------------------Mission-----------------------------------------------------------
 export class MissionEvent{

@@ -4,7 +4,7 @@ import APIConstant, { APIConfig, EVENT_NAME } from './APIConstant';
 import UIPopup from '../ui/UI_Popup';
 import ConvetData from '../core/ConvertData';
 import { UserMeManager } from '../core/UserMeManager';
-import { MapData } from '../Interface/DataMapAPI';
+import { ClansData, ClansResponseDTO } from '../Interface/DataMapAPI';
 import { ServerManager } from '../core/ServerManager';
 import { PopupSelectionMini, SelectionMiniParam } from '../PopUp/PopupSelectionMini';
 import { PopupManager } from '../PopUp/PopupManager';
@@ -42,13 +42,13 @@ export class WebRequestManager extends Component {
         this.loadingPanel.active = show;
     }
 
-    public async GetMapInfo(): Promise<MapData[]> {
+    public async GetClanInfo(): Promise<ClansResponseDTO> {
         return new Promise((resolve, reject) => {
             this.toggleLoading(true);
-            APIManager.getData("map", (data: any) => {
-                const maps: MapData[] = ConvetData.ConvertMap(data);
+            APIManager.getData(APIConstant.CLANS, (data: any) => {
+                const clans: ClansResponseDTO = ConvetData.ConvertClans(data);
                 this.toggleLoading(false);
-                resolve(maps); // Trả về danh sách MapData
+                resolve(clans); // Trả về danh sách MapData
             },
                 (error: string) => {
                     this.toggleLoading(false);
@@ -222,7 +222,7 @@ export class WebRequestManager extends Component {
     }
 
     public getMapConfig(successCallback, errorCallback) {
-        APIManager.getData(this.combineWithSlash(APIConstant.MAP), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, false);
+        APIManager.getData(this.combineWithSlash(APIConstant.CLANS), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, false);
     }
 
     public getAllItem(successCallback, errorCallback) {

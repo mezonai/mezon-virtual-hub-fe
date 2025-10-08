@@ -12,8 +12,8 @@ export class UserMeManager {
         return this.me;
     }
 
-    public static set SetMap(mapData) {
-        this.me.map = mapData;
+    public static set SetClan(clanData) {
+        this.me.clan = clanData;
     }
 
     public static get PlayerProperty() {

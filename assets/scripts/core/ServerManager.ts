@@ -54,6 +54,7 @@ export class ServerManager extends Component {
         try {
             this.client = new Colyseus.Client(APIConfig.websocketPath);
             log("Connecting to Colyseus server...");
+            console.log("roomName", roomName);
             await this.joinRoom(roomName);
         } catch (error) {
             log("Connection error:", error);

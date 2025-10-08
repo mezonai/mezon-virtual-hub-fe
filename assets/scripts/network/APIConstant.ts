@@ -4,7 +4,7 @@ export default class APIConstant {
     static USER: string = "user";
     static LOGIN: string = "mezon-login";
     static AUTH: string = "auth";
-    static MAP: string = "map";
+    static CLANS: string = "clans";
     static INVENTORY: string = "inventory";
     static BUY = "buy";
     static ITEM = "item";

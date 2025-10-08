@@ -1,20 +1,44 @@
-import { MapData } from "../Interface/DataMapAPI";
+import { ClansData, ClansPageInfo, ClansResponseDTO } from "../Interface/DataMapAPI";
 import { Food, InventoryDTO, Item, PetReward, QuestType, RewardItemDTO, RewardNewbieDTO, RewardType, StatsConfigDTO } from "../Model/Item";
 import { AnimalElementString, AnimalRarity, Element, PetBattleInfo, PetDTO, PlayerBattle, SkillBattleInfo, Species, TypeSkill } from "../Model/PetDTO";
 
 export default class ConvetData {
-    public static ConvertMap(mapData: any): MapData[] {
-        if (!mapData?.data || !Array.isArray(mapData.data)) {
-            console.error("Dữ liệu API không hợp lệ:", mapData);
-            return [];
+     public static ConvertClans(apiData: any): ClansResponseDTO {
+        if (!apiData?.data?.result || !Array.isArray(apiData.data.result)) {
+            console.error("Dữ liệu API clan không hợp lệ:", apiData);
+            return {
+                result: [],
+                pageInfo: {
+                    page: 1,
+                    size: 0,
+                    total: 0,
+                    total_page: 0,
+                    has_previous_page: false,
+                    has_next_page: false
+                }
+            };
         }
 
-        return mapData.data.map((mapItem: any) => ({
-            id: mapItem.id,
-            name: mapItem.name,
-            map_key: mapItem.map_key,
-            isLocked: mapItem.is_locked
-        }));
+        const clans = apiData.data.result.map((item: any) => ({
+            id: item.id,
+            name: item.name,
+            fund: item.fund,
+            score: item.score,
+            max_members: item.max_members,
+            member_count: item.member_count,
+            created_at: item.created_at,
+            updated_at: item.updated_at
+        })) as ClansData[];
+
+        const pageInfo: ClansPageInfo = {
+            page: apiData.data.page,
+            size: apiData.data.size,
+            total: apiData.data.total,
+            total_page: apiData.data.total_page,
+            has_previous_page: apiData.data.has_previous_page,
+            has_next_page: apiData.data.has_next_page
+        };
+        return { result: clans, pageInfo };
     }
     public static ConvertPets(petData: string): PetDTO[] {
         const dataArray = JSON.parse(petData);

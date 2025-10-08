@@ -74,10 +74,9 @@ export class InteractTeleport extends Interactable {
     }
 
     private updateUserDataUserClient() {
-        UserMeManager.SetMap = Constants.GetMapData(this.officeChange);
+        UserMeManager.SetClan = Constants.GetMapData(this.officeChange);
         let userMe = UserMeManager.Get;
         let userData = {
-            "map_id": userMe.map.id,
             "position_x": null,
             "position_y": null,
             "display_name": userMe.user.display_name != "" ? userMe.user.display_name : userMe.user.username,

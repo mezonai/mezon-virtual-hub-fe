@@ -1,6 +1,6 @@
 import { _decorator, Component, Node ,Button,Enum} from 'cc';
 import { Region } from './Region';
-import { MapData } from '../Interface/DataMapAPI';
+import { ClansData } from '../Interface/DataMapAPI';
 import { GameMapController } from './GameMapController';
 import { OfficePosition } from './OfficePosition';
 const { ccclass, property } = _decorator;
@@ -22,13 +22,13 @@ export class Office extends Component {
     @property
     public mapKey: string = "";
 
-    public map: MapData = null;
+    public clans: ClansData = null;
     private gameMapController: GameMapController = null;
 
-    public setData(map: MapData, gameMapController) {
+    public setData(clans: ClansData, gameMapController) {
         this.node.active = true;
         this.gameMapController = gameMapController;
-        this.map = map;
+        this.clans = clans;
     }
 
     protected start(): void {
@@ -36,7 +36,7 @@ export class Office extends Component {
     }
 
     private onChooseOffice() {
-        if (this.gameMapController && this.map) {
+        if (this.gameMapController && this.clans) {
             this.gameMapController.onClickGoToNextOffice(this);
         }
     }

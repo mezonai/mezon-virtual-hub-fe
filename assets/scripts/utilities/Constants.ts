@@ -1,7 +1,7 @@
 ﻿import { ServerMapManager } from "../core/ServerMapManager";
 import { OfficePosition } from "../GameMap/OfficePosition";
 import { RoomType } from "../GameMap/RoomType";
-import { MapData } from "../Interface/DataMapAPI";
+import { ClansData } from "../Interface/DataMapAPI";
 import { FoodType, InventoryType, ItemType, RewardItemDTO, RewardType } from "../Model/Item";
 import { ConfirmParam, ConfirmPopup } from "../PopUp/ConfirmPopup";
 import { PopupManager } from "../PopUp/PopupManager";
@@ -75,6 +75,22 @@ export class Constants {
         }
     }
 
+    private static readonly NAME_TO_KEY: Record<string, string> = {
+        "sai gon": "sg",
+        "ha noi 1": "hn1",
+        "ha noi 2": "hn2",
+        "ha noi 3": "hn3",
+        "vinh": "vinh",
+        "quy nhon": "qn",
+        "da nang": "dn",
+    };
+
+    public static convertNameToKey(clanName: string): string {
+        if (!clanName) return "sg";
+        const key = clanName.trim().toLowerCase();
+        return this.NAME_TO_KEY[key] ?? "sg";
+    }
+
     public static rarityUpgradeMap: Record<string, string | null> = {
         common: "rare",
         rare: "epic",
@@ -82,8 +98,8 @@ export class Constants {
         legendary: null,
     };
 
-    public static GetMapData(office: OfficePosition): MapData {
-        let mapData = ServerMapManager.Get.find(map => map.map_key == this.convertKeyOffice(office));
+    public static GetMapData(office: OfficePosition): ClansData {
+        let mapData = ServerMapManager.Get.find(map => map.name == this.convertKeyOffice(office));
         return mapData == null ? ServerMapManager.Get[0] : mapData;
     }
 
