@@ -1,4 +1,4 @@
-import { InventoryDTO } from "../Model/Item";
+import { InventoryDTO, PurchaseMethod } from "../Model/Item";
 import { PetDTO } from "../Model/PetDTO";
 
 ///////////////////////---------------------USER-----------------------------------------------------------
@@ -39,10 +39,45 @@ export class ClansData {
     name: string;
     score: number;
     fund: number;
+    description: string | null;
     member_count?: number;
     max_members?: number;
+
+    leader?: UserClan | null;
+    vice_leader?: UserClan | null;
+
+    //temp
+    status?: ClanStatus;
+    rank?: number;
+    avatar_url?: string;
+    funds: ClanFund[];
 }
-export class ClansPageInfo {
+
+export interface ClanFund {
+    id: string;
+    clan_id: string;
+    type: string;
+    amount: number;
+}
+
+export class UserClan {
+    id: string;
+    username: string;
+    display_name: string;
+    avatar_url: string | null;
+    gender: string | null;
+}
+
+
+export enum ClanStatus {
+    NONE = "none",
+    JOINED = "joined",
+    PENDING = "pending",
+    REJECTED = "rejected",
+    LEFT = "left",
+}
+
+export class PageInfo {
     page: number;
     size: number;
     total: number;
@@ -53,8 +88,60 @@ export class ClansPageInfo {
 
 export class ClansResponseDTO {
     result: ClansData[];
-    pageInfo: ClansPageInfo;
+    pageInfo: PageInfo;
 }
+
+export class MemberResponseDTO {
+    result: UserClan[];
+    pageInfo: PageInfo;
+}
+
+export interface ClanContributorDTO {
+  user_id: string;
+  username: string;
+  type: string;
+  total_amount: string;
+  avatar_url?: string;
+  rank?: number;
+}
+
+export interface ClanContributorsResponseDTO {
+  result: ClanContributorDTO[];
+  pageInfo: PageInfo;
+}
+
+export enum SortOrder {
+    ASC = "ASC",
+    DESC = "DESC"
+}
+
+export enum SortBy {
+    CREATED_AT = "created_at",
+    USERNAME = "username",
+    TOTAL_AMOUNT = "total_amount"
+}
+
+export class ClanFundPayload {
+    clanId: string;
+    type: string;
+    amount: number;
+}
+
+export interface ClanFundItemDTO {
+    type: string;
+    amount: number;
+}
+
+export interface ClanFundResponseDTO {
+    clan_id: string;
+    funds: ClanFundItemDTO[];
+}
+
+export class ClanDescriptionDTO {
+    description: string;
+}
+
+
 ///////////////////////---------------------Mission-----------------------------------------------------------
 export class MissionEvent{
     id: string

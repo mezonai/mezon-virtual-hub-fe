@@ -18,6 +18,8 @@ import { MessageTypes } from '../utilities/MessageTypes';
 import { PopupSelectionMini, SelectionMiniParam } from '../PopUp/PopupSelectionMini';
 import { WebRequestManager } from '../network/WebRequestManager';
 import { Constants } from '../utilities/Constants';
+import { PurchaseMethod } from '../Model/Item';
+import { ClanFundManager } from '../Clan/ClanFundManager';
 
 @ccclass('ServerManager')
 export class ServerManager extends Component {
@@ -362,6 +364,32 @@ export class ServerManager extends Component {
             if (data == null || GameManager.instance == null) return;
             GameManager.instance.playerHubController?.onMissionNotice(true);
         });
+
+        this.room.onMessage("onSendClanFundSelf", (data) => {
+            const { clanId, type, playerAmount, totalAmount, sessionId } = data;
+            SoundManager.instance.playSound(AudioType.ReceiveReward);
+            if (type === PurchaseMethod.GOLD.toString()) {
+                UserMeManager.playerCoin += playerAmount;
+            }
+            if (clanId === UserMeManager.Get.clan.id) {
+                ClanFundManager.updateFundFromServer(type, totalAmount);
+            }
+            const msg = `Bạn đã nạp ${Math.abs(playerAmount)} thành công vào quỹ văn phòng</color>`;
+            Constants.showConfirm(msg);
+        });
+
+        this.room.onMessage("onSendClanUpdated", (data) => {
+            const { clanId, type, totalAmount, message } = data;
+            if (UserMeManager.Get && clanId === UserMeManager.Get.clan.id) {
+                ClanFundManager.updateFundFromServer(type, totalAmount);
+            }
+        });
+
+        this.room.onMessage("onSendClanFundFailed", (data) => {
+            Constants.showConfirm(data.reason, "Chú Ý");
+            SoundManager.instance.playSound(AudioType.NoReward);
+        });
+
     }
 
     public async joinBattleRoom(roomId: string): Promise<void> {
@@ -529,6 +557,10 @@ export class ServerManager extends Component {
     public exchangeCoinToDiamond(sessionId: string, sendData: any) {
         this.exchangeAmount = sendData.diamondTransfer;
         this.room.send("onExchangeDiamondToCoin", sendData)
+    }
+
+    public sendClanFund(sendData) {
+        this.room.send("sendClanFund", sendData)
     }
 
     public answerMathQuestion(id, answer) {

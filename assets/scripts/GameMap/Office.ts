@@ -3,6 +3,7 @@ import { Region } from './Region';
 import { ClansData } from '../Interface/DataMapAPI';
 import { GameMapController } from './GameMapController';
 import { OfficePosition } from './OfficePosition';
+import { Tutorial } from '../tutorial/Tutorial';
 const { ccclass, property } = _decorator;
 
 @ccclass('Office')
@@ -32,11 +33,15 @@ export class Office extends Component {
     }
 
     protected start(): void {
-        this.chooseOffButton.node.on(Node.EventType.TOUCH_START, this.onChooseOffice, this);
+        this.chooseOffButton.addAsyncListener(async () => {
+            this.chooseOffButton.interactable = false;
+            this.onChooseOffice();
+            this.chooseOffButton.interactable = true;
+        })
     }
 
     private onChooseOffice() {
-        if (this.gameMapController && this.clans) {
+        if (this.gameMapController) {
             this.gameMapController.onClickGoToNextOffice(this);
         }
     }

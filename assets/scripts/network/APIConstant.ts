@@ -27,7 +27,14 @@ export default class APIConstant {
     static CHECK_UNCLAIMED_QUEST = "check-unclaimed-quest";
     static UPGRADE_STAR_PET = "merge";
     static UPGRADE_RARITY_PET = "upgrade-rarity";
-    static ITEM_TYPE = "item-type";    
+    static ITEM_TYPE = "item-type";
+    static USERS = "users";
+    static JOIN = "join";
+    static LEAVE = "leave";
+    static CLAN_FUNDS = "clan-funds";
+    static CONTRIBUTORS = "contributors";
+    static DESCRIPTION = "description";
+
 }
 
 export class APIConfig {

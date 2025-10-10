@@ -8,21 +8,11 @@ import { UserManager } from '../../../core/UserManager';
 import { AudioType, SoundManager } from '../../../core/SoundManager';
 import { PopupManager } from '../../../PopUp/PopupManager';
 import { PopupSelectionMini, SelectionMiniParam } from '../../../PopUp/PopupSelectionMini';
+import { Constants } from '../../../utilities/Constants';
 const { ccclass, property } = _decorator;
 
 @ccclass('SendGameCoin')
 export class SendGameCoin extends PlayerInteractAction {
-    private readonly notEnoughGoldResponse = [
-        "Bạn nghĩ mình có nhiều tiền thế ư?",
-        "Bạn điền nhiều tiền quá rồi",
-        "Có tâm nhưng không có tiền"
-    ];
-
-    private readonly invalidGoldResponse = [
-        "0đ, thiệc luôn???",
-        "Số tiền phải lớn hơn 0",
-        "Có tâm nhưng không có tiền"
-    ];
 
     protected override async invite(): Promise<void> {
         if (UserMeManager.Get) {
@@ -57,12 +47,12 @@ export class SendGameCoin extends PlayerInteractAction {
 
     protected startAction(data) {
         if (data <= 0) {
-            let chatContent = this.invalidGoldResponse[randomRangeInt(0, this.invalidGoldResponse.length)];
+            let chatContent = Constants.invalidGoldResponse[randomRangeInt(0, Constants.invalidGoldResponse.length)];
             UserManager.instance.GetMyClientPlayer.zoomBubbleChat(chatContent);
             return;
         }
         if (data > UserMeManager.playerDiamond) {
-            let chatContent = this.notEnoughGoldResponse[randomRangeInt(0, this.notEnoughGoldResponse.length)];
+            let chatContent = Constants.notEnoughGoldResponse[randomRangeInt(0, Constants.notEnoughGoldResponse.length)];
             UserManager.instance.GetMyClientPlayer.zoomBubbleChat(chatContent);
             return;
         }
