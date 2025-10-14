@@ -1,25 +1,26 @@
-import { _decorator, Component, Node } from 'cc';
+import { _decorator, Component, Node, Button, Prefab, ScrollView, Label, EditBox, instantiate } from 'cc';
 import { BasePopup } from './BasePopup';
-import { Button } from 'cc';
 import { PopupManager } from './PopupManager';
-import { Prefab } from 'cc';
-import { ScrollView } from 'cc';
-import { ItemLeaderboardClan } from '../Clan/ItemLeaderboardClan';
 import { WebRequestManager } from '../network/WebRequestManager';
-import { instantiate } from 'cc';
-import { ClansResponseDTO } from '../Interface/DataMapAPI';
+import { ItemLeaderboardClan } from '../Clan/ItemLeaderboardClan';
 import { PaginationController } from '../utilities/PaginationController';
+import { ClansResponseDTO } from '../Interface/DataMapAPI';
 const { ccclass, property } = _decorator;
 
 @ccclass('PopupClanLeaderboard')
 export class PopupClanLeaderboard extends BasePopup {
-    @property(Button) closeButton: Button = null;
+    @property(Button) closeButton: Button = null!;
     @property(Prefab) itemPrefab: Prefab = null!;
-    @property(ScrollView) svOfficeList: ScrollView = null!;
+    @property(ScrollView) svClanList: ScrollView = null!;
     @property(PaginationController) pagination: PaginationController = null!;
-    @property(Node) noMember: Node = null;
+    @property(Node) noMember: Node = null!;
+    @property(Label) totalClan: Label = null!;
+    @property(EditBox) searchInput: EditBox = null!;
+    @property(Button) searchButton: Button = null!;
+
     private listClan: ClansResponseDTO;
     private _listClan: ItemLeaderboardClan[] = [];
+    private currentSearch: string = '';
 
     public async init(param?: any) {
         this.closeButton.addAsyncListener(async () => {
@@ -27,28 +28,35 @@ export class PopupClanLeaderboard extends BasePopup {
             await PopupManager.getInstance().closePopup(this.node.uuid);
             this.closeButton.interactable = true;
         });
-        await this.initList();
+
+        this.searchButton.addAsyncListener(async () => {
+            this.searchButton.interactable = false;
+            this.currentSearch = this.searchInput.string.trim();
+            await this.loadList(1, this.currentSearch);
+            this.searchButton.interactable = true;
+        });
+
+        this.pagination.init(
+            async (page: number) => await this.loadList(page, this.currentSearch), 1
+        );
+        await this.loadList(1);
     }
 
-    async initList() {
-        this.listClan = await WebRequestManager.instance.getAllClansync();
-        this.svOfficeList.content.removeAllChildren();
+    private async loadList(page: number, search?: string) {
+        this.listClan = await WebRequestManager.instance.getAllClansync(page, search);
+        this.svClanList.content.removeAllChildren();
         this._listClan = [];
         this.noMember.active = !this.listClan?.result || this.listClan.result.length === 0;
+
         for (const itemClan of this.listClan.result) {
-            const itemJoinClan = instantiate(this.itemPrefab);
-            itemJoinClan.setParent(this.svOfficeList.content);
-            const itemComp = itemJoinClan.getComponent(ItemLeaderboardClan)!;
-            itemComp.setData(itemClan);
-            this._listClan.push(itemComp);
+            const node = instantiate(this.itemPrefab);
+            node.setParent(this.svClanList.content);
+
+            const comp = node.getComponent(ItemLeaderboardClan)!;
+            comp.setData(itemClan);
+            this._listClan.push(comp);
         }
-        this.UpdatePage();
-    }
-   
-    UpdatePage() {
-        const totalPages = this.listClan.pageInfo.total_page || 1;
-        this.pagination.setTotalPages(totalPages);
+        this.totalClan.string = `Tổng số văn phòng: ${this.listClan.pageInfo.total}`;
+        this.pagination.setTotalPages(this.listClan.pageInfo.total_page || 1);
     }
 }
-
-

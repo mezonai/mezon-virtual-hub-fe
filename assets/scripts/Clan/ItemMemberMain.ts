@@ -7,7 +7,6 @@ const { ccclass, property } = _decorator;
 export class ItemMemberMain extends Component {
     @property([SpriteFrame]) rankIcons: SpriteFrame[] = []; //0 = rank 1, 1 = rank 2, 2 = rank 3
     @property(Label) nameMemberLabel: Label = null!;
-    @property(Label) roleLabel: Label = null!;
     @property(Label) scoreWeeklyLabel: Label = null!;
     @property(Label) totalScoreLabel: Label = null!;
     @property(Label) rankLabel: Label = null!;
@@ -27,19 +26,19 @@ export class ItemMemberMain extends Component {
         //this.setRankIcon(data);
     }
 
-    // setRankIcon(data: OfficeMemberDTO) {
-    //     if (data.rank >= 1 && data.rank <= 3) {
-    //         this.rankIcon.node.active = true;
-    //         this.rankIcon.spriteFrame = this.rankIcons[data.rank - 1];
-    //         this.rankIconLabel.string = data.rank.toString();
-    //         this.rankLabel.node.active = false;
-    //     } else {
-    //         this.rankIcon.node.active = false;
-    //         this.rankLabel.node.active = true;
-    //         this.rankIconLabel.string = data.rank.toString();
-    //         this.rankLabel.string = data.rank === 0 ? '--' : data.rank.toString();
-    //     }
-    // }
+    // setRankIcon(data: UserClan) {
+    //        const rank = data?.rank ?? 0;
+    //        const isTop3 = rank >= 1 && rank <= 3;
+    //        this.rankIcon.node.active = isTop3;
+    //        this.rankLabel.node.active = !isTop3;
+    //        if (isTop3) {
+    //            this.rankIcon.spriteFrame = this.rankIcons[rank - 1];
+    //            this.rankIconLabel.string = rank.toString();
+    //        } else {
+    //            const rankText = rank === 0 ? '--' : rank.toString();
+    //            this.rankLabel.string = rankText;
+    //        }
+    //    }
 }
 
 

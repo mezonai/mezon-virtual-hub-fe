@@ -16,6 +16,7 @@ import { ServerManager } from '../core/ServerManager';
 import { RichText } from 'cc';
 import { ClanFundWatcher } from '../Clan/ClanFundWatcher';
 import { PopupSelectionMini } from './PopupSelectionMini';
+import { EditBox } from 'cc';
 const { ccclass, property } = _decorator;
 
 @ccclass('PopupClanFundMember')
@@ -26,21 +27,25 @@ export class PopupClanFundMember extends BasePopup {
     @property(RichText) private totalClanFund: RichText = null!;
     @property(RichText) private clanFundUsed: RichText = null!;
     @property(Prefab) itemPrefab: Prefab = null!;
-    @property(ScrollView) svClanList: ScrollView = null!;
+    @property(ScrollView) svMemberList: ScrollView = null!;
     @property(PaginationController) pagination: PaginationController = null!;
     @property(Node) noMember: Node = null;
+    @property(EditBox) searchInput: EditBox = null!;
+    @property(Button) searchButton: Button = null!;
+
+    private currentSearch: string = '';
     private clanDetail: ClansData;
     private listClanFundMember: ClanContributorsResponseDTO;
     private _listClanFundMember: ItemMemberFund[] = [];
     private goldCallback = (newVal: number) => this.updateGoldUI(newVal);
-    
+
     public init(param?: PopupClanFundMemberParam): void {
         this.closeButton.addAsyncListener(async () => {
             this.closeButton.interactable = false;
+            await ClanFundWatcher.instance.removeCallback(PurchaseMethod.GOLD, this.goldCallback);
             await PopupManager.getInstance().closePopup(this.node.uuid);
             this.closeButton.interactable = true;
         });
-        this.clanDetail = param.clanDetail;
         this.clanFund_Btn.addAsyncListener(async () => {
             this.clanFund_Btn.interactable = false;
             const param: SendClanFundParam = {
@@ -52,39 +57,47 @@ export class PopupClanFundMember extends BasePopup {
         });
         this.historySpending_BTn.addAsyncListener(async () => {
             this.historySpending_BTn.interactable = false;
-            await PopupManager.getInstance().openAnimPopup("UI_OfficeHistory", PopupClanHistory);
+            await PopupManager.getInstance().openAnimPopup("UI_ClanHistory", PopupClanHistory);
             this.historySpending_BTn.interactable = true;
         });
-       
-        this.initList();
+        this.searchButton.addAsyncListener(async () => {
+            this.searchButton.interactable = false;
+            this.currentSearch = this.searchInput.string.trim();
+            await this.loadList(1, this.currentSearch);
+            this.searchButton.interactable = true;
+        });
+
+        this.clanDetail = param.clanDetail;
+        this.updateGoldUI(this.clanDetail.fund);
+        this.pagination.init(
+            async (page: number) => await this.loadList(page), 1
+        );
+        this.loadList(1);
         ClanFundWatcher.instance.onChange(PurchaseMethod.GOLD, this.goldCallback);
     }
 
     updateGoldUI(value: number) {
-        this.totalClanFund.string = ` <outline color=#222222 width=1> ${value}</outline>`;
+        this.totalClanFund.string = ` <outline color=#222222 width=1> ${ClanFundWatcher.instance.getFund(PurchaseMethod.GOLD)}</outline>`;
     }
 
-    async initList() {
-        const goldFund = this.clanDetail.funds?.find(f => f.type === PurchaseMethod.GOLD)?.amount ?? 0;
-        this.totalClanFund.string = ` <outline color=#222222 width=1> ${goldFund.toString()}</outline>`;
-        this.listClanFundMember = await WebRequestManager.instance.GetClanFundContributorsAsync(this.clanDetail.id);
-        this.svClanList.content.removeAllChildren();
+    addSelfContribution() {
+       this.loadList(1);
+    }
+
+    async loadList(page: number, search?: string) {
+        this.listClanFundMember = await WebRequestManager.instance.GetClanFundContributorsAsync(this.clanDetail.id, page);
+        this.svMemberList.content.removeAllChildren();
         this._listClanFundMember = [];
         
         this.noMember.active = !this.listClanFundMember?.result || this.listClanFundMember.result.length === 0;
         for (const itemClan of this.listClanFundMember.result) {
             const itemJoinClan = instantiate(this.itemPrefab);
-            itemJoinClan.setParent(this.svClanList.content);
+            itemJoinClan.setParent(this.svMemberList.content);
             const itemComp = itemJoinClan.getComponent(ItemMemberFund)!;
             itemComp.setData(itemClan);
             this._listClanFundMember.push(itemComp);
         }
-        this.UpdatePage();
-    }
-    
-    UpdatePage(){
-        const totalPages = this.listClanFundMember.pageInfo.total_page || 1;
-        this.pagination.setTotalPages(totalPages);
+        this.pagination.setTotalPages(this.listClanFundMember.pageInfo.total_page || 1);
     }
 
     private async SendClanFund(data) {

@@ -3,13 +3,14 @@ import { APIManager } from './APIManager';
 import APIConstant, { APIConfig, EVENT_NAME } from './APIConstant';
 import ConvetData from '../core/ConvertData';
 import { UserMeManager } from '../core/UserMeManager';
-import { ClanContributorsResponseDTO, ClanDescriptionDTO as ClanDescriptionDTO, ClanFundResponseDTO, ClansData, ClansResponseDTO, MemberResponseDTO, SortBy, SortOrder, UserDataResponse } from '../Interface/DataMapAPI';
+import { ClanContributorsResponseDTO, ClanDescriptionDTO as ClanDescriptionDTO, ClanFundResponseDTO, ClanRequestResponseDTO, ClansData, ClansResponseDTO, MemberResponseDTO, SortBy, SortOrder, UserDataResponse } from '../Interface/DataMapAPI';
 import { ServerManager } from '../core/ServerManager';
 import { PopupSelectionMini, SelectionMiniParam } from '../PopUp/PopupSelectionMini';
 import { PopupManager } from '../PopUp/PopupManager';
 import { BuyItemPayload, InventoryDTO, Item, RewardItemDTO, RewardNewbieDTO, StatsConfigDTO } from '../Model/Item';
 import { GameManager } from '../core/GameManager';
 import { UpgradePetResponseDTO, PetDTO } from '../Model/PetDTO';
+import { Constants } from '../utilities/Constants';
 const { ccclass, property } = _decorator;
 
 @ccclass("WebRequestManager")
@@ -215,7 +216,7 @@ export class WebRequestManager extends Component {
         });
     }
 
-    public getAllClansync(page: number = 1, sortby: SortBy = SortBy.CREATED_AT, sortOrder: SortOrder = SortOrder.DESC, limit: number = 30): Promise<ClansResponseDTO> {
+    public getAllClansync(page: number = 1, search ?: string, sortby: SortBy = SortBy.CREATED_AT, sortOrder: SortOrder = SortOrder.DESC, limit: number = 30): Promise<ClansResponseDTO> {
         return new Promise((resolve) => {
             WebRequestManager.instance.getAllClan(
                 page, sortby, sortOrder, limit,
@@ -225,17 +226,33 @@ export class WebRequestManager extends Component {
                 },
                 (error) => {
                     resolve(null);
-                }
+                },
+                search
             );
         });
     }
 
-    public postJoinClanAsync(officeId: string): Promise<UserDataResponse> {
+    public getAllClanRequestsync(page: number = 1, search ?: string, sortby: SortBy = SortBy.CREATED_AT, sortOrder: SortOrder = SortOrder.DESC, limit: number = 30): Promise<ClansResponseDTO> {
         return new Promise((resolve) => {
-             WebRequestManager.instance.postJoinOffice(
-                officeId,
+            WebRequestManager.instance.getAllClanRequest(
+                page, sortby, sortOrder, limit,
                 (response) => {
-                    UserMeManager.UpdateClanUser = response.data;
+                    const clans = ConvetData.ConvertClans(response);
+                    resolve(clans);
+                },
+                (error) => {
+                    resolve(null);
+                },
+                search
+            );
+        });
+    }
+
+    public postJoinClanAsync(clanId: string): Promise<UserDataResponse> {
+        return new Promise((resolve) => {
+             WebRequestManager.instance.postJoinClan(
+                clanId,
+                (response) => {
                     resolve(response.data);
                 },
                 (error) => {
@@ -245,10 +262,24 @@ export class WebRequestManager extends Component {
         });
     }
 
-    public postLeaveClanAsync(officeId: string): Promise<UserDataResponse> {
+    public postCancelJoinClanAsync(clanId: string): Promise<string> {
+        return new Promise((resolve) => {
+            WebRequestManager.instance.postCancelJoinClan(
+                clanId,
+                (response) => {
+                    resolve(response.data);
+                },
+                (error) => {
+                    resolve(null);
+                }
+            );
+        });
+    }
+
+    public postLeaveClanAsync(clanId: string): Promise<UserDataResponse> {
         return new Promise((resolve) => {
              WebRequestManager.instance.postLeaveClan(
-                officeId,
+                clanId,
                 (response) => {
                     UserMeManager.UpdateClanUser = response.data;
                     resolve(response.data);
@@ -305,35 +336,69 @@ export class WebRequestManager extends Component {
         });
     }
 
-    public getListMemberClanAsync(clanId: String, page: number = 1, sortOrder: SortOrder = SortOrder.DESC, sortby: SortBy = SortBy.USERNAME, limit: number = 30): Promise<MemberResponseDTO> {
+    public getListMemberClanAsync(clanId: String, page: number = 1, search ?: string, sortOrder: SortOrder = SortOrder.DESC, sortby: SortBy = SortBy.USERNAME, limit: number = 30): Promise<MemberResponseDTO> {
         return new Promise((resolve, reject) => {
            WebRequestManager.instance.getListMemberClan(
-                clanId, page,sortOrder, sortby,  limit,
+                clanId, page, sortOrder, sortby,  limit,
                 (response) => {
                     const clans = ConvetData.ConvertMemberClan(response);
                     resolve(clans);
                 },
                 (error) => {
                     resolve(null);
-                }
+                },
+                search
             );
         });
     }
 
-   public GetClanFundContributorsAsync(clanId: String, page: number = 1,sortOrder: SortOrder = SortOrder.DESC, sortby: SortBy = SortBy.TOTAL_AMOUNT, limit: number = 30): Promise<ClanContributorsResponseDTO> {
+   public GetClanFundContributorsAsync(clanId: String, page: number = 1, search ?: string, sortOrder: SortOrder = SortOrder.DESC, sortby: SortBy = SortBy.TOTAL_AMOUNT, limit: number = 30): Promise<ClanContributorsResponseDTO> {
         return new Promise((resolve, reject) => {
            WebRequestManager.instance.GetClanFundContributors(
-                clanId, page,sortOrder, sortby,  limit,
+                clanId, page, sortOrder, sortby,  limit,
                 (response) => {
                     const clans = ConvetData.convertContributorsClan(response);
                     resolve(clans);
                 },
                 (error) => {
                     resolve(null);
+                },
+                search
+            );
+        });
+    }
+
+    public getListMemberClanPendingAsync(clanId: string, page: number = 1, search ?: string, sortby: SortBy = SortBy.CREATED_AT, sortOrder: SortOrder = SortOrder.DESC, limit: number = 30): Promise<ClanRequestResponseDTO> {
+        return new Promise((resolve) => {
+            WebRequestManager.instance.getListMemberClanPending(
+                clanId, page, sortby, sortOrder, limit,
+                (response) => {
+                    const clanDetailData = ConvetData.ConvertClanRequests(response);
+                    resolve(clanDetailData);
+                },
+                (error) => {
+                    resolve(null);
+                },
+                search
+            );
+        });
+    }
+    
+    public postApproveMembersAsync(clanId: string, is_approved: boolean): Promise<void> {
+        return new Promise((resolve, reject) => {
+            WebRequestManager.instance.postApproveMembers(
+                clanId,
+                is_approved,
+                (response) => {
+                    resolve();
+                },
+                (error) => {
+                    reject(error);
                 }
             );
         });
-    } 
+    }
+
 
     public getGameConfig(successCallback, errorCallback) {
         APIManager.getData(this.combineWithSlash(APIConstant.CONFIG, APIConstant.GAME_CONFIG), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, false);
@@ -455,13 +520,28 @@ export class WebRequestManager extends Component {
     }
 
     //Clan
-    public getAllClan(page = 1, sortby: SortBy, sortOrder: SortOrder, limit = 30, successCallback, errorCallback) {
-        const url = `${APIConstant.CLANS}?page=${page}&sort_by=${sortby.toString()}&order=${sortOrder.toString()}&limit=${limit}`;
+    public getAllClan(page = 1,sortby: SortBy, sortOrder: SortOrder, limit = 30, successCallback, errorCallback, search?: string) {
+        let  url = `${APIConstant.CLANS}?page=${page}&sort_by=${sortby.toString()}&order=${sortOrder.toString()}&limit=${limit}`;
+        if (search && search.trim() !== "") {
+            url += `&search=${encodeURIComponent(search.trim())}`;
+        }
         APIManager.getData(url, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
-    public postJoinOffice(clan_id, successCallback, errorCallback) {
-        APIManager.postData(this.combineWithSlash(APIConstant.CLANS, clan_id, APIConstant.JOIN), {}, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    public getAllClanRequest(page = 1,sortby: SortBy, sortOrder: SortOrder, limit = 30, successCallback, errorCallback, search?: string) {
+        let  url = `${APIConstant.CLANS}/${APIConstant.CLAN_REQUESTS}?page=${page}&sort_by=${sortby.toString()}&order=${sortOrder.toString()}&limit=${limit}`;
+        if (search && search.trim() !== "") {
+            url += `&search=${encodeURIComponent(search.trim())}`;
+        }
+        APIManager.getData(url, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    }
+
+    public postJoinClan(clan_id, successCallback, errorCallback) {
+        APIManager.postData(this.combineWithSlash(APIConstant.CLANS, clan_id, APIConstant.REQUEST_JOIN), {}, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    }
+
+    public postCancelJoinClan(clan_id, successCallback, errorCallback) {
+        APIManager.postData(this.combineWithSlash(APIConstant.CLANS, clan_id, APIConstant.CANCEL_JOIN), {}, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
     
     public postLeaveClan(clan_id, successCallback, errorCallback) {
@@ -476,18 +556,40 @@ export class WebRequestManager extends Component {
         APIManager.postData(this.combineWithSlash(APIConstant.CLANS, clan_id, APIConstant.DESCRIPTION), data, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
-    public getListMemberClan(clan_id, page = 1, sortOrder: SortOrder, sortby: SortBy, limit = 30, successCallback, errorCallback) {
-        const url = `${APIConstant.CLANS}/${clan_id}/${APIConstant.USERS}?page=${page}&order=${sortOrder.toString()}&sort_by=${sortby.toString()}&limit=${limit}`;
+    public getListMemberClan(clan_id, page = 1, sortOrder: SortOrder, sortby: SortBy, limit = 30, successCallback, errorCallback, search?: string) {
+        let url = `${APIConstant.CLANS}/${clan_id}/${APIConstant.USERS}?`;
+        if (search && search.trim() !== "") {
+            url += `search=${encodeURIComponent(search.trim())}&`;
+        }
+        url += `page=${page}&order=${sortOrder.toString()}&sort_by=${sortby.toString()}&limit=${limit}`;
         APIManager.getData(url, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
-    public GetClanFundContributors(clan_id, page = 1, sortOrder: SortOrder, sortby: SortBy, limit = 30, successCallback, errorCallback) {
-        const url = `${APIConstant.CLAN_FUNDS}/${clan_id}/${APIConstant.CONTRIBUTORS}?page=${page}&order=${sortOrder.toString()}&sort_by=${sortby.toString()}&limit=${limit}`;
+    public GetClanFundContributors(clan_id, page = 1, sortOrder: SortOrder, sortby: SortBy, limit = 30, successCallback, errorCallback, search?: string) {
+        let url = `${APIConstant.CLAN_FUNDS}/${clan_id}/${APIConstant.CONTRIBUTORS}?`;
+        if (search && search.trim() !== "") {
+            url += `&search=${encodeURIComponent(search.trim())}`;
+        }
+        url += `page=${page}&order=${sortOrder.toString()}&sort_by=${sortby.toString()}&limit=${limit}`;
         APIManager.getData(url, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
     public GetClanFund(clan_id, successCallback, errorCallback) {
         APIManager.getData(this.combineWithSlash(APIConstant.CLAN_FUNDS, clan_id), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    }
+
+    public getListMemberClanPending(clan_id, page = 1,sortby: SortBy, sortOrder: SortOrder, limit = 30, successCallback, errorCallback, search?: string) {
+        let url = `${APIConstant.CLAN_REQUESTS}/${APIConstant.PENDING}?`;
+        if (search && search.trim() !== "") {
+            url += `&search=${encodeURIComponent(search.trim())}`;
+        }
+        url += `page=${page}&order=${sortOrder.toString()}&clan_id=${clan_id}&sort_by=${sortby.toString()}&limit=${limit}`;
+        APIManager.getData(url, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    }
+
+    public postApproveMembers(clan_id, is_approved, successCallback, errorCallback) {
+        let url = `${APIConstant.CLAN_REQUESTS}/${clan_id}/${APIConstant.APPROVE}?is_approved=${is_approved}`;
+        APIManager.patchData(url, {}, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
     private errorMessageMap: Map<number, string> = new Map([

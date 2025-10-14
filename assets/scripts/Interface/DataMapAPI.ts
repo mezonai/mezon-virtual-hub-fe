@@ -47,7 +47,7 @@ export class ClansData {
     vice_leader?: UserClan | null;
 
     //temp
-    status?: ClanStatus;
+    join_status?: ClanStatus;
     rank?: number;
     avatar_url?: string;
     funds: ClanFund[];
@@ -71,10 +71,10 @@ export class UserClan {
 
 export enum ClanStatus {
     NONE = "none",
-    JOINED = "joined",
     PENDING = "pending",
     REJECTED = "rejected",
-    LEFT = "left",
+    APPROVED = "approved",
+    CANCELLED = 'cancel',
 }
 
 export class PageInfo {
@@ -110,6 +110,11 @@ export interface ClanContributorsResponseDTO {
   pageInfo: PageInfo;
 }
 
+export enum MemberAction {
+    ACCEPT = 'accept',
+    REJECT = 'reject',
+}
+
 export enum SortOrder {
     ASC = "ASC",
     DESC = "DESC"
@@ -141,6 +146,18 @@ export class ClanDescriptionDTO {
     description: string;
 }
 
+export class MemberClanRequestDTO {
+  id: string;
+  status: ClanStatus;
+  created_at: string;
+  user: User;
+  clan?: ClansData;
+}
+
+export class ClanRequestResponseDTO {
+  result: MemberClanRequestDTO[];
+  pageInfo: PageInfo;
+}
 
 ///////////////////////---------------------Mission-----------------------------------------------------------
 export class MissionEvent{

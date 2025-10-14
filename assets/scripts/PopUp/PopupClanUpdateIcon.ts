@@ -39,7 +39,6 @@ export class PopupClanUpdateIcon extends BasePopup {
 
         this.updateButton.addAsyncListener(async () => {
             this.updateButton.interactable = false;
-            console.log('Avatar mới được chọn:', this.selectedAvatarName);
             // APIManager.postUpdateOfficeAvatar(this.myOffice.id, this.selectedAvatarName);
             this.onAvatarUpdated?.(this.selectedAvatarName);
             this.updateButton.interactable = true;

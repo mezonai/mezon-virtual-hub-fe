@@ -4,6 +4,7 @@ import { BasePopup } from './BasePopup';
 import { PopupApprovedMember } from './PopupApprovedMember';
 import { PopupManageMember } from './PopupManageMember';
 import { ClansData } from '../Interface/DataMapAPI';
+import { EditBox } from 'cc';
 const { ccclass, property } = _decorator;
 
 enum UpgradeTab {
@@ -16,8 +17,8 @@ export class PopupClanMemberManager extends BasePopup {
     @property({ type: Node }) tabManagerMember: Node = null;
     @property({ type: PopupManageMember }) popupManageMember: PopupManageMember = null;
     @property({ type: Node }) tabAprovedmember: Node = null;
+    @property({ type: Node }) redNoticeAprrove: Node = null;
     @property({ type: PopupApprovedMember }) popupApprovedMember: PopupApprovedMember = null;
-    @property(Node) noMember: Node = null;
     private currentTab: UpgradeTab = null;
     private clanDetail: ClansData;
     private isInitManager = false;
@@ -26,14 +27,13 @@ export class PopupClanMemberManager extends BasePopup {
     public init(param?: PopupClanMemberManagerParam): void {
         this.closeButton.addAsyncListener(async () => {
             this.closeButton.interactable = false;
-            PopupManager.getInstance().closePopup(this.node.uuid);
+            await PopupManager.getInstance().closePopup(this.node.uuid);
             this.closeButton.interactable = true;
         });
-        if (!param.clanDetail) return;
         this.clanDetail = param.clanDetail;
         this.tabManagerMember.on(Node.EventType.TOUCH_END, () => this.switchTab(UpgradeTab.MANAGER));
         this.tabAprovedmember.on(Node.EventType.TOUCH_END, () => this.switchTab(UpgradeTab.APPROVE));
-        this.switchTab(UpgradeTab.MANAGER);
+        this.switchTab(UpgradeTab.APPROVE);
     }
 
     private setActiveTabUI(tab: UpgradeTab) {
@@ -59,8 +59,8 @@ export class PopupClanMemberManager extends BasePopup {
         }
     }
 
-    public ShowNoItem(){
-        this.noMember.active = true;
+    public ShowNoticeApprove(isShow:boolean){
+        this.redNoticeAprrove.active = isShow;
     }
 }
 

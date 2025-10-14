@@ -8,6 +8,8 @@ import { UserMeManager } from '../core/UserMeManager';
 import { PopupClanMemberManager, PopupClanMemberManagerParam } from './PopupClanMemberManager';
 import { ClansData, ClansResponseDTO, MemberResponseDTO } from '../Interface/DataMapAPI';
 import { PaginationController } from '../utilities/PaginationController';
+import { Label } from 'cc';
+import { EditBox } from 'cc';
 const { ccclass, property } = _decorator;
 
 @ccclass('PopupClanMember')
@@ -15,9 +17,13 @@ export class PopupClanMember extends BasePopup {
     @property(Button) closeButton: Button = null;
     @property(Button) memberManageButton: Button = null;
     @property(Prefab) itemPrefab: Prefab = null!;
-    @property(ScrollView) svOfficeList: ScrollView = null!;
+    @property(ScrollView) svMemberList: ScrollView = null!;
     @property(PaginationController) pagination: PaginationController = null!;
     @property(Node) noMember: Node = null;
+    @property(Label) totalMember: Label = null;
+    @property(EditBox) searchInput: EditBox = null!;
+    @property(Button) searchButton: Button = null!;
+    private currentSearch: string = '';
 
     private listMember: MemberResponseDTO;
     private _listMember: ItemMemberMain[] = [];
@@ -29,8 +35,15 @@ export class PopupClanMember extends BasePopup {
             await PopupManager.getInstance().closePopup(this.node.uuid);
             this.closeButton.interactable = true;
         });
-        if (!param) return;
         this.clanDetail = param.clanDetail;
+        this.CheckShowMemberManager();
+        this.searchButton.addAsyncListener(async () => {
+            this.searchButton.interactable = false;
+            this.currentSearch = this.searchInput.string.trim();
+            await this.loadList(1, this.currentSearch);
+            this.searchButton.interactable = true;
+        });
+
         this.memberManageButton.addAsyncListener(async () => {
             this.memberManageButton.interactable = false;
             const param: PopupClanMemberManagerParam =
@@ -40,41 +53,39 @@ export class PopupClanMember extends BasePopup {
             await PopupManager.getInstance().openAnimPopup("UI_ClanMemberManager", PopupClanMemberManager, param);
             this.memberManageButton.interactable = true;
         });
-        this.initList();
-        this.CheckShowMemberManager();
-        this.UpdatePage();
+        this.pagination.init(
+            async (page: number) => await this.loadList(page), 1
+        );
+        this.loadList(1);
     }
 
     CheckShowMemberManager() {
-        const userId = UserMeManager.Get.user.id;
-        const { leader, vice_leader } = this.clanDetail;
-
-        const canManage =
-            (leader && userId === leader.id) ||
-            (vice_leader && userId === vice_leader.id);
-
+        const leaderId = this.clanDetail?.leader?.id;
+        const viceLeaderId = this.clanDetail?.vice_leader?.id;
+        const canManage = UserMeManager.Get.user.id === leaderId || UserMeManager.Get.user.id === viceLeaderId;
         this.memberManageButton.node.active = !!canManage;
     }
 
-    UpdatePage() {
-        const totalPages = this.listMember?.pageInfo.total_page || 1;
-        this.pagination.setTotalPages(totalPages);
-    }
+    private async loadList(page: number, search?: string) {
+        this.listMember = await WebRequestManager.instance.getListMemberClanAsync(this.clanDetail.id, page, search);
 
-    async initList() {
-        this.listMember = await WebRequestManager.instance.getListMemberClanAsync(this.clanDetail.id);
-        this.svOfficeList.content.removeAllChildren();
+        this.svMemberList.content.removeAllChildren();
         this._listMember = [];
         this.noMember.active = !this.listMember?.result || this.listMember.result.length === 0;
-        for (const itemMember of this.listMember.result) {
-            const itemJoinGuild = instantiate(this.itemPrefab);
-            itemJoinGuild.setParent(this.svOfficeList.content);
 
-            const itemComp = itemJoinGuild.getComponent(ItemMemberMain)!;
+        for (const itemMember of this.listMember.result) {
+            const itemNode = instantiate(this.itemPrefab);
+            itemNode.setParent(this.svMemberList.content);
+
+            const itemComp = itemNode.getComponent(ItemMemberMain)!;
             itemComp.setData(itemMember);
             this._listMember.push(itemComp);
         }
+
+        this.totalMember.string = `Tổng số thành viên: ${this.listMember.pageInfo.total}`;
+        this.pagination.setTotalPages(this.listMember.pageInfo.total_page || 1);
     }
+
 }
 
 export interface PopupClanMemberParam {

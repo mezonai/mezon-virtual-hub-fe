@@ -1,5 +1,5 @@
 
-import { ClansData, PageInfo, ClansResponseDTO, MemberResponseDTO, UserClan, ClanContributorDTO, ClanContributorsResponseDTO, ClanFundResponseDTO, ClanFund } from "../Interface/DataMapAPI";
+import { ClansData, PageInfo, ClansResponseDTO, MemberResponseDTO, UserClan, ClanContributorDTO, ClanContributorsResponseDTO, ClanFundResponseDTO, ClanFund, ClanRequestResponseDTO, MemberClanRequestDTO, ClanStatus } from "../Interface/DataMapAPI";
 import { Food, InventoryDTO, Item, PetReward, QuestType, RewardItemDTO, RewardNewbieDTO, RewardType, StatsConfigDTO } from "../Model/Item";
 import { AnimalElementString, AnimalRarity, Element, PetBattleInfo, PetDTO, PlayerBattle, SkillBattleInfo, Species, TypeSkill } from "../Model/PetDTO";
 
@@ -31,15 +31,14 @@ export default class ConvetData {
         if (!data || typeof data !== "object")
             return { result: [], pageInfo: this.defaultPageInfo() };
 
-        const clans: ClansData[] = (Array.isArray(data.result) ? data.result : []).map((item: any) => ({
-            id: item.id ?? "",
-            name: item.name ?? "Không tên",
-            fund: item.fund ?? 0,
-            score: item.score ?? 0,
-            max_members: item.max_members ?? 0,
-            member_count: item.member_count ?? 0,
-            created_at: item.created_at ?? null,
-            updated_at: item.updated_at ?? null,
+        const clans: ClansData[] = (Array.isArray(data.result) ? data.result : []).map((clan: any) => ({
+            id: clan.id ?? "",
+            name: clan.name ?? "",
+            fund: clan.fund ?? 0,
+            score: clan.score ?? 0,
+            max_members: clan.max_members ?? 0,
+            member_count: clan.member_count ?? 0,
+            join_status: clan.join_status ?? ClanStatus.NONE,
         }));
 
         return { result: clans, pageInfo: this.extractPageInfo(data) };
@@ -63,14 +62,14 @@ export default class ConvetData {
             ? clanDT.funds.map((f: any) => ({
                 id: f.id ?? "",
                 clan_id: f.clan_id ?? clanDT.id ?? "",
-                type: f.type ?? "unknown",
+                type: f.type ?? "",
                 amount: f.amount ?? 0,
             }))
             : [];
 
         return {
             id: clanDT.id ?? "",
-            name: clanDT.name ?? "Không tên",
+            name: clanDT.name ?? "",
             fund: clanDT.fund ?? 0,
             score: clanDT.score ?? 0,
             description: clanDT.description ?? null,
@@ -78,9 +77,9 @@ export default class ConvetData {
             max_members: clanDT.max_members ?? 0,
             leader: mapUser(clanDT.leader),
             vice_leader: mapUser(clanDT.vice_leader),
-            status: clanDT.status ?? undefined,
-            rank: clanDT.rank ?? undefined,
-            avatar_url: clanDT.avatar_url ?? undefined,
+            join_status: clanDT.join_status ?? null,
+            rank: clanDT.rank ?? null,
+            avatar_url: clanDT.avatar_url ?? null,
             funds: funds,
         };
     }
@@ -130,6 +129,24 @@ export default class ConvetData {
         );
 
         return { result: contributors, pageInfo: this.extractPageInfo(data) };
+    }
+
+    public static ConvertClanRequests(apiData: any): ClanRequestResponseDTO {
+        const data = apiData?.data;
+        const requests: MemberClanRequestDTO[] = Array.isArray(data?.result)
+            ? data.result.map((member: any) => ({
+                id: member.id ?? "",
+                status: member.status ?? ClanStatus.PENDING,
+                created_at: member.created_at ?? "",
+                user: member.user ?? null,
+                clan: member.clan ?? null,
+            }))
+            : [];
+
+        return {
+            result: requests,
+            pageInfo: data ? this.extractPageInfo(data) : this.defaultPageInfo()
+        };
     }
 
     public static ConvertPets(petData: string): PetDTO[] {

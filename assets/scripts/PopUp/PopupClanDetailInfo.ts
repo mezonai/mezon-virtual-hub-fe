@@ -23,7 +23,7 @@ export class PopupClanDetailInfo extends BasePopup {
     @property(Label) private nameViceLeader: Label = null!;
     @property(Label) private total_Member: Label = null!;
     @property(RichText) private totalClanFund: RichText = null!;
-    @property(RichText) private description: RichText = null!;
+    @property(Label) private description: Label = null!;
     @property(Button) private wallPostBtn: Button = null!;
     @property(Button) private inventoryClanBtn: Button = null!;
     @property(Button) private contributeBtn: Button = null!;
@@ -37,10 +37,11 @@ export class PopupClanDetailInfo extends BasePopup {
     private descriptionNotice: ClanDescriptionDTO;
     private _description:string;
     private goldCallback = (newVal: number) => this.updateGoldUI(newVal);
-    
+
     public init(param?: any): void {
         this.closeButton.addAsyncListener(async () => {
             this.closeButton.interactable = false;
+            await ClanFundWatcher.instance.removeCallback(PurchaseMethod.GOLD, this.goldCallback);
             await PopupManager.getInstance().closePopup(this.node.uuid);
             this.closeButton.interactable = true;
         });
@@ -93,6 +94,10 @@ export class PopupClanDetailInfo extends BasePopup {
     }
 
     async outClan(){
+        if(UserMeManager.Get.user.id == this.clanDetail?.leader?.id){
+            Constants.showConfirm("Bạn đang là Giám đốc văn phòng. Hãy bổ nhiệm người khác trước khi rời văn phòng!");
+            return;
+        }
         const panel = await PopupManager.getInstance().openAnimPopup("PopupSelectionMini", PopupSelectionMini, {
             content: "Bạn có chắc chắn muốn rời văn phòng?",
             textButtonLeft: "Có",
@@ -126,7 +131,7 @@ export class PopupClanDetailInfo extends BasePopup {
                 send: async (message: string) => {
                     await this.callApiPostNotice(message);
                 },
-                defaultText: this._description || "Hãy Nhập gì đó..."
+                defaultText: this._description || ""
             };
             await PopupManager.getInstance().openAnimPopup("UI_ClanNotice", PopupClanNotice, param);
         } else {
@@ -135,7 +140,7 @@ export class PopupClanDetailInfo extends BasePopup {
     }
 
     updateGoldUI(value: number) {
-        this.totalClanFund.string = ` <outline color=#222222 width=1> ${value}</outline>`;
+        this.totalClanFund.string = ` <outline color=#222222 width=1> ${ClanFundWatcher.instance.getFund(PurchaseMethod.GOLD)}</outline>`;
     }
 
     async getMyClan() {
@@ -150,18 +155,18 @@ export class PopupClanDetailInfo extends BasePopup {
         this.nameViceLeader.string = ` ${clanData.vice_leader?.display_name ?? "Hiện chưa có"}`;
         this.total_Member.string = ` ${(clanData.member_count ?? 0).toString()} `;
         this._description = clanData.description;
-        this.description.string = ` <outline color=#222222 width=1> Mô tả: ${this._description ?? ""}</outline>`;
+        this.description.string = `Mô tả: ${this._description ?? ""}`;
         this.avatarSprite.setAvatar(clanData.avatar_url ?? "avatar_1");
-        const goldFund = clanData.funds?.find(f => f.type === PurchaseMethod.GOLD)?.amount ?? 0;
-        this.totalClanFund.string = ` <outline color=#222222 width=1> ${goldFund.toString()}</outline>`;
+        ClanFundWatcher.instance.setFund(PurchaseMethod.GOLD, clanData.fund);
+        this.updateGoldUI(clanData.fund);
     }
-    
+
     async callApiPostNotice(message: string) {
         const description: ClanDescriptionDTO = { description: message };
         this.descriptionNotice = await WebRequestManager.instance.postUpdateNoticeAsync(this.clanDetail.id, description);
-        this._description = this.descriptionNotice.description;
-        this.description.string = this._description ?? ` <outline color=#222222 width=1> Mô tả: </outline>`;
+        const desc = this.descriptionNotice?.description?.trim();
+        this._description = desc && desc.length > 0 ? desc : "";
+        this.description.string = `Mô tả: ${this._description}`;
     }
 
 }
-

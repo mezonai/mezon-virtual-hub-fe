@@ -14,27 +14,31 @@ export class ItemJoinClan extends Component {
     @property(Label) rankLabel: Label = null!;
     @property(AvatarIconHelper) avatarSprite: AvatarIconHelper = null!;
     @property(Button) joinButton: Button = null!
+    @property(Button) cancelButton: Button = null!;
     @property(RichText) joinLabel: RichText = null!
-    private officeData: ClansData = null!;
+    private clanDetail: ClansData = null!;
     private joinCallback: ((clan: ClansData) => void) | null = null;
+    private cancelCallback: ((clan: ClansData) => void) | null = null;
 
-    setData(data: ClansData, callback?: (office: ClansData) => void) {
-        this.officeData = data;
+    setData(data: ClansData, callback?: (clan: ClansData) => void, cancelCb?: (clan: ClansData) => void) {
+        this.clanDetail = data;
         this.joinCallback = callback || null;
+        this.cancelCallback = cancelCb || null;
         this.nameOfficeLabel.string = data.name;
         this.memberLabel.string = `${data.member_count === 0 ? '--' : data.member_count.toString()}`;
         this.totalScoreLabel.string = data.score === 0 ? '--' : data.score.toString();
         
-        const status = data.status ?? ClanStatus.NONE;
-        this.joinLabel.string = (status === ClanStatus.NONE)
-            ? "<outline color=#222222 width=1> Tham gia </outline>"
-            : "<outline color=#222222 width=1> Đang chờ duyệt </outline>";
-
-        this.joinButton.interactable = (status === ClanStatus.NONE);
+        const status = data.join_status ?? ClanStatus.NONE;
+        this.updateStatus(status);
         this.joinButton.addAsyncListener(async () => {
             this.joinButton.interactable = false;
-            this.joinCallback?.(this.officeData);
+            this.joinCallback?.(this.clanDetail);
             this.joinButton.interactable = true;
+        });
+        this.cancelButton.addAsyncListener(async () => {
+            this.cancelButton.interactable = false;
+            this.cancelCallback?.(this.clanDetail);
+            this.cancelButton.interactable = true;
         });
         this.setRankIcon(data);
         const avatar = data.avatar_url?.trim() || "avatar_1";
@@ -56,15 +60,16 @@ export class ItemJoinClan extends Component {
     }
 
     public updateStatus(status: ClanStatus) {
-        this.officeData.status = status;
-        this.joinLabel.string = (status === ClanStatus.NONE)
-            ? "<outline color=#222222 width=1> Tham gia </outline>"
-            : "<outline color=#222222 width=1> Đang chờ duyệt </outline>";
+        this.clanDetail.join_status = status;
+        this.joinLabel.string = (status === ClanStatus.PENDING)
+            ? "<outline color=#222222 width=1> Chờ duyệt </outline>"
+            : "<outline color=#222222 width=1> Gia Nhập </outline>";
 
-        this.joinButton.interactable = (status === ClanStatus.NONE);
+        this.joinButton.interactable = (status !== ClanStatus.PENDING);
+        this.cancelButton.node.active = (status === ClanStatus.PENDING);
     }
 
     public getOfficeId(): string {
-        return this.officeData?.id || "";
+        return this.clanDetail?.id || "";
     }
 }

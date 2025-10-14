@@ -24,4 +24,10 @@ export enum MessageTypes {
     TIME_REMAINING_USING_SKILL = "Time_remaining_using_skill",
     AUTO_ATTACK = "Auto_attack",
     NOTIFY_MISSION = "notify_mission",
+    ON_SEND_CLAND_FUND_SELF = "onSendClanFundSelf",
+    ON_SEND_CLAND_FUND_UPDATE = "onSendClanUpdated",
+    ON_SEND_CLAND_FUND_FAILED = "onSendClanFundFailed",
+    JOIN_CLAN_REQUEST = 'join_clan_request',
+    JOIN_CLAN_APPROVED = 'join_clan_approved',
+    JOIN_CLAN_REJECTED = 'join_clan_rejected',
 }

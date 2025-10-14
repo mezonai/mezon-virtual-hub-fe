@@ -29,11 +29,15 @@ export default class APIConstant {
     static UPGRADE_RARITY_PET = "upgrade-rarity";
     static ITEM_TYPE = "item-type";
     static USERS = "users";
-    static JOIN = "join";
+    static REQUEST_JOIN = "request-join";
     static LEAVE = "leave";
     static CLAN_FUNDS = "clan-funds";
     static CONTRIBUTORS = "contributors";
     static DESCRIPTION = "description";
+    static CLAN_REQUESTS = "clan-requests";
+    static PENDING = "pending";
+    static APPROVE = "approve";
+    static CANCEL_JOIN = "cancel-join";
 
 }
 

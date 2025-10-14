@@ -19,7 +19,9 @@ import { PopupSelectionMini, SelectionMiniParam } from '../PopUp/PopupSelectionM
 import { WebRequestManager } from '../network/WebRequestManager';
 import { Constants } from '../utilities/Constants';
 import { PurchaseMethod } from '../Model/Item';
-import { ClanFundManager } from '../Clan/ClanFundManager';
+import { PopupClanFundMember } from '../PopUp/PopupClanFundMember';
+import { ClanFundWatcher } from '../Clan/ClanFundWatcher';
+import { PopupClanList } from '../PopUp/PopupClanList';
 
 @ccclass('ServerManager')
 export class ServerManager extends Component {
@@ -365,31 +367,56 @@ export class ServerManager extends Component {
             GameManager.instance.playerHubController?.onMissionNotice(true);
         });
 
-        this.room.onMessage("onSendClanFundSelf", (data) => {
+        this.room.onMessage(MessageTypes.ON_SEND_CLAND_FUND_SELF, (data) => {
             const { clanId, type, playerAmount, totalAmount, sessionId } = data;
-            SoundManager.instance.playSound(AudioType.ReceiveReward);
-            if (type === PurchaseMethod.GOLD.toString()) {
-                UserMeManager.playerCoin += playerAmount;
+            console.log(clanId , " - ", UserMeManager.Get.clan.id);
+            if (UserMeManager.Get && clanId === UserMeManager.Get.clan.id) {
+                 SoundManager.instance.playSound(AudioType.ReceiveReward);
+                if (type === PurchaseMethod.GOLD.toString()) {
+                    UserMeManager.playerCoin += playerAmount;
+                }
+                    ClanFundWatcher.instance.setFund(type, totalAmount);
+                    const popupComp = PopupManager.getInstance().getPopupComponent("UI_ClanFundMember", PopupClanFundMember);
+                    popupComp?.addSelfContribution();
+            
+                const msg = `Bạn đã nạp ${Math.abs(playerAmount)} thành công vào quỹ văn phòng</color>`;
+                Constants.showConfirm(msg);
             }
-            if (clanId === UserMeManager.Get.clan.id) {
-                ClanFundManager.updateFundFromServer(type, totalAmount);
-            }
-            const msg = `Bạn đã nạp ${Math.abs(playerAmount)} thành công vào quỹ văn phòng</color>`;
-            Constants.showConfirm(msg);
         });
 
-        this.room.onMessage("onSendClanUpdated", (data) => {
+        this.room.onMessage(MessageTypes.ON_SEND_CLAND_FUND_UPDATE, (data) => {
             const { clanId, type, totalAmount, message } = data;
             if (UserMeManager.Get && clanId === UserMeManager.Get.clan.id) {
-                ClanFundManager.updateFundFromServer(type, totalAmount);
+                ClanFundWatcher.instance.setFund(type, totalAmount);
+                const popupComp = PopupManager.getInstance().getPopupComponent("UI_ClanFundMember", PopupClanFundMember);
+                popupComp?.addSelfContribution();
             }
         });
 
-        this.room.onMessage("onSendClanFundFailed", (data) => {
+        this.room.onMessage(MessageTypes.ON_SEND_CLAND_FUND_FAILED, (data) => {
             Constants.showConfirm(data.reason, "Chú Ý");
             SoundManager.instance.playSound(AudioType.NoReward);
         });
 
+        this.room.onMessage(MessageTypes.JOIN_CLAN_REQUEST, (data) => {
+            Constants.showConfirm(data.message, "Chú Ý");
+            SoundManager.instance.playSound(AudioType.NoReward);
+        });
+
+        this.room.onMessage(MessageTypes.JOIN_CLAN_APPROVED, async (data)  => {
+            await WebRequestManager.instance.getUserProfileAsync();
+            console.log(" clan.id - ", UserMeManager.Get.clan.id);
+            const popupComp = PopupManager.getInstance().getPopupComponent('UI_ClanList', PopupClanList);
+            popupComp?.ShowOpenClanWhenAprrove(data.message);
+            SoundManager.instance.playSound(AudioType.NoReward);
+        });
+
+        this.room.onMessage(MessageTypes.JOIN_CLAN_REJECTED, (data) => {
+            const popupComp = PopupManager.getInstance().getPopupComponent('UI_ClanList', PopupClanList);
+            popupComp?.loadList(1);
+            Constants.showConfirm(data.message, "Chú Ý");
+            SoundManager.instance.playSound(AudioType.NoReward);
+        });
     }
 
     public async joinBattleRoom(roomId: string): Promise<void> {
