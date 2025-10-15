@@ -20,8 +20,8 @@ import { WebRequestManager } from '../network/WebRequestManager';
 import { Constants } from '../utilities/Constants';
 import { PurchaseMethod } from '../Model/Item';
 import { PopupClanFundMember } from '../PopUp/PopupClanFundMember';
-import { ClanFundWatcher } from '../Clan/ClanFundWatcher';
 import { PopupClanList } from '../PopUp/PopupClanList';
+import { PopupClanMemberManager } from '../PopUp/PopupClanMemberManager';
 
 @ccclass('ServerManager')
 export class ServerManager extends Component {
@@ -369,15 +369,13 @@ export class ServerManager extends Component {
 
         this.room.onMessage(MessageTypes.ON_SEND_CLAND_FUND_SELF, (data) => {
             const { clanId, type, playerAmount, totalAmount, sessionId } = data;
-            console.log(clanId , " - ", UserMeManager.Get.clan.id);
             if (UserMeManager.Get && clanId === UserMeManager.Get.clan.id) {
                  SoundManager.instance.playSound(AudioType.ReceiveReward);
                 if (type === PurchaseMethod.GOLD.toString()) {
                     UserMeManager.playerCoin += playerAmount;
                 }
-                    ClanFundWatcher.instance.setFund(type, totalAmount);
                     const popupComp = PopupManager.getInstance().getPopupComponent("UI_ClanFundMember", PopupClanFundMember);
-                    popupComp?.addSelfContribution();
+                    popupComp?.addSelfContribution(totalAmount);
             
                 const msg = `Bạn đã nạp ${Math.abs(playerAmount)} thành công vào quỹ văn phòng</color>`;
                 Constants.showConfirm(msg);
@@ -387,9 +385,8 @@ export class ServerManager extends Component {
         this.room.onMessage(MessageTypes.ON_SEND_CLAND_FUND_UPDATE, (data) => {
             const { clanId, type, totalAmount, message } = data;
             if (UserMeManager.Get && clanId === UserMeManager.Get.clan.id) {
-                ClanFundWatcher.instance.setFund(type, totalAmount);
                 const popupComp = PopupManager.getInstance().getPopupComponent("UI_ClanFundMember", PopupClanFundMember);
-                popupComp?.addSelfContribution();
+                popupComp?.addSelfContribution(totalAmount);
             }
         });
 
@@ -400,12 +397,14 @@ export class ServerManager extends Component {
 
         this.room.onMessage(MessageTypes.JOIN_CLAN_REQUEST, (data) => {
             Constants.showConfirm(data.message, "Chú Ý");
+            const popupApprovedMember = PopupManager.getInstance().getPopupComponent('UI_ClanMemberManager', PopupClanMemberManager);
+            popupApprovedMember?.popupApprovedMember.node.active && popupApprovedMember?.popupApprovedMember.loadList(1);
+
             SoundManager.instance.playSound(AudioType.NoReward);
         });
 
         this.room.onMessage(MessageTypes.JOIN_CLAN_APPROVED, async (data)  => {
             await WebRequestManager.instance.getUserProfileAsync();
-            console.log(" clan.id - ", UserMeManager.Get.clan.id);
             const popupComp = PopupManager.getInstance().getPopupComponent('UI_ClanList', PopupClanList);
             popupComp?.ShowOpenClanWhenAprrove(data.message);
             SoundManager.instance.playSound(AudioType.NoReward);

@@ -41,16 +41,20 @@ export class PopupApprovedMember extends Component {
         this.loadList(1);
     }
 
-    async loadList(page: number, search?: string) {
+    public async loadList(page: number, search?: string) {
         this.listMemberJoinClan = await WebRequestManager.instance.getListMemberClanPendingAsync(this.clanDetail.id, page, search);
         this.svMemberList.content.removeAllChildren();
         this.noMember.active = false;
-        if (!this.listMemberJoinClan?.result || this.listMemberJoinClan.result.length === 0) {
+
+        const hasPending = Array.isArray(this.listMemberJoinClan?.result) && this.listMemberJoinClan.result.length > 0;
+        this.popupClanMemberManager.ShowNoticeApprove(hasPending);
+
+        if (!hasPending) {
             this.noMember.active = true;
             return;
         }
+
         for (const member of this.listMemberJoinClan.result) {
-            this.popupClanMemberManager.ShowNoticeApprove(this.listMemberJoinClan.result.length > 0 ? true : false); 
             const itemNode = instantiate(this.itemPrefab);
             itemNode.setParent(this.svMemberList.content);
 
@@ -60,7 +64,8 @@ export class PopupApprovedMember extends Component {
             });
             this._listMemberJoinClan.push(itemComp);
         }
-        this.totalMember.string =  `Tổng số thành viên: ${this.listMemberJoinClan.pageInfo.total}`;
+
+        this.totalMember.string = `Tổng số thành viên: ${this.listMemberJoinClan.pageInfo.total}`;
         this.pagination.setTotalPages(this.listMemberJoinClan.pageInfo.total_page || 1);
     }
 

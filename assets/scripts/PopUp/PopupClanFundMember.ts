@@ -14,7 +14,6 @@ import { ItemMemberFund } from '../Clan/ItemMemberFund';
 import { PurchaseMethod } from '../Model/Item';
 import { ServerManager } from '../core/ServerManager';
 import { RichText } from 'cc';
-import { ClanFundWatcher } from '../Clan/ClanFundWatcher';
 import { PopupSelectionMini } from './PopupSelectionMini';
 import { EditBox } from 'cc';
 const { ccclass, property } = _decorator;
@@ -37,12 +36,10 @@ export class PopupClanFundMember extends BasePopup {
     private clanDetail: ClansData;
     private listClanFundMember: ClanContributorsResponseDTO;
     private _listClanFundMember: ItemMemberFund[] = [];
-    private goldCallback = (newVal: number) => this.updateGoldUI(newVal);
 
     public init(param?: PopupClanFundMemberParam): void {
         this.closeButton.addAsyncListener(async () => {
             this.closeButton.interactable = false;
-            await ClanFundWatcher.instance.removeCallback(PurchaseMethod.GOLD, this.goldCallback);
             await PopupManager.getInstance().closePopup(this.node.uuid);
             this.closeButton.interactable = true;
         });
@@ -73,14 +70,14 @@ export class PopupClanFundMember extends BasePopup {
             async (page: number) => await this.loadList(page), 1
         );
         this.loadList(1);
-        ClanFundWatcher.instance.onChange(PurchaseMethod.GOLD, this.goldCallback);
     }
 
     updateGoldUI(value: number) {
-        this.totalClanFund.string = ` <outline color=#222222 width=1> ${ClanFundWatcher.instance.getFund(PurchaseMethod.GOLD)}</outline>`;
+        this.totalClanFund.string = ` <outline color=#222222 width=1> ${value}</outline>`;
     }
 
-    addSelfContribution() {
+    addSelfContribution(value: number) {
+       this.updateGoldUI(value)
        this.loadList(1);
     }
 

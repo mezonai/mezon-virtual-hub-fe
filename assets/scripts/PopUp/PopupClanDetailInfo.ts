@@ -12,8 +12,6 @@ import { ClanDescriptionDTO, ClansData } from '../Interface/DataMapAPI';
 import { UserMeManager } from '../core/UserMeManager';
 import { PopupSelectionMini } from './PopupSelectionMini';
 import { Constants } from '../utilities/Constants';
-import { PurchaseMethod } from '../Model/Item';
-import { ClanFundWatcher } from '../Clan/ClanFundWatcher';
 const { ccclass, property } = _decorator;
 
 @ccclass('PopupClanDetailInfo')
@@ -36,12 +34,10 @@ export class PopupClanDetailInfo extends BasePopup {
     private clanDetail: ClansData;
     private descriptionNotice: ClanDescriptionDTO;
     private _description:string;
-    private goldCallback = (newVal: number) => this.updateGoldUI(newVal);
 
     public init(param?: any): void {
         this.closeButton.addAsyncListener(async () => {
             this.closeButton.interactable = false;
-            await ClanFundWatcher.instance.removeCallback(PurchaseMethod.GOLD, this.goldCallback);
             await PopupManager.getInstance().closePopup(this.node.uuid);
             this.closeButton.interactable = true;
         });
@@ -90,7 +86,6 @@ export class PopupClanDetailInfo extends BasePopup {
             this.outClanBtn.interactable = true;
         });
         this.getMyClan();
-        ClanFundWatcher.instance.onChange(PurchaseMethod.GOLD, this.goldCallback);
     }
 
     async outClan(){
@@ -140,12 +135,11 @@ export class PopupClanDetailInfo extends BasePopup {
     }
 
     updateGoldUI(value: number) {
-        this.totalClanFund.string = ` <outline color=#222222 width=1> ${ClanFundWatcher.instance.getFund(PurchaseMethod.GOLD)}</outline>`;
+        this.totalClanFund.string = ` <outline color=#222222 width=1> ${value}</outline>`;
     }
 
     async getMyClan() {
         this.clanDetail = await WebRequestManager.instance.getClanDetailAsync(UserMeManager.Get.clan.id);
-        console.log("Clan id", UserMeManager.Get.clan.id);
         this.setDataMyClanInfo(this.clanDetail);
     }
 
@@ -157,7 +151,6 @@ export class PopupClanDetailInfo extends BasePopup {
         this._description = clanData.description;
         this.description.string = `Mô tả: ${this._description ?? ""}`;
         this.avatarSprite.setAvatar(clanData.avatar_url ?? "avatar_1");
-        ClanFundWatcher.instance.setFund(PurchaseMethod.GOLD, clanData.fund);
         this.updateGoldUI(clanData.fund);
     }
 

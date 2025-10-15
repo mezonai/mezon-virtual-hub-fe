@@ -81,7 +81,7 @@ export class PopupManageMember extends Component {
         this.removeMemberBtn.node.active = isLeader || isViceLeader;
     }
 
-    async loadList(page: number, search?: string) {
+    public async loadList(page: number, search?: string) {
         this.listMember = await WebRequestManager.instance.getListMemberClanAsync(this.clanDetail.id, page, search);
         this.svMemberList.content.removeAllChildren();
         this._listMember = [];
