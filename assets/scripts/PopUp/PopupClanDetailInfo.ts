@@ -12,6 +12,7 @@ import { ClanDescriptionDTO, ClansData } from '../Interface/DataMapAPI';
 import { UserMeManager } from '../core/UserMeManager';
 import { PopupSelectionMini } from './PopupSelectionMini';
 import { Constants } from '../utilities/Constants';
+import { isValid } from 'cc';
 const { ccclass, property } = _decorator;
 
 @ccclass('PopupClanDetailInfo')
@@ -32,6 +33,7 @@ export class PopupClanDetailInfo extends BasePopup {
     @property(AvatarIconHelper) avatarSprite: AvatarIconHelper = null!;
 
     private clanDetail: ClansData;
+    private clanFund: number;
     private descriptionNotice: ClanDescriptionDTO;
     private _description:string;
 
@@ -58,7 +60,12 @@ export class PopupClanDetailInfo extends BasePopup {
             this.contributeBtn.interactable = false;
             const param: PopupClanFundMemberParam =
             {
-                clanDetail: this.clanDetail
+                clanDetail: this.clanDetail,
+                clanFund: this.clanFund,
+                onUpdateFund: (newFund: number) => {
+                    this.clanFund = newFund;
+                    this.totalClanFund.string = `<outline color=#222222 width=1>${newFund}</outline>`;
+                }
             }
             await PopupManager.getInstance().openAnimPopup("UI_ClanFundMember", PopupClanFundMember, param);
             this.contributeBtn.interactable = true;
@@ -68,7 +75,10 @@ export class PopupClanDetailInfo extends BasePopup {
             this.listMemberBtn.interactable = false;
             const param: PopupClanMemberParam =
             {
-                clanDetail: this.clanDetail
+                clanDetail: this.clanDetail,
+                onMemberChanged: async () => {
+                    await this.getMyClan();
+                },
             }
             await PopupManager.getInstance().openAnimPopup('UI_ClanMember', PopupClanMember, param);
             this.listMemberBtn.interactable = true;
@@ -134,12 +144,13 @@ export class PopupClanDetailInfo extends BasePopup {
         }
     }
 
-    updateGoldUI(value: number) {
-        this.totalClanFund.string = ` <outline color=#222222 width=1> ${value}</outline>`;
-    }
-
     async getMyClan() {
         this.clanDetail = await WebRequestManager.instance.getClanDetailAsync(UserMeManager.Get.clan.id);
+
+        const value = await WebRequestManager.instance.getClanFundAsync(UserMeManager.Get.clan.id);
+        this.clanFund = value?.funds.find(f => f.type === "gold")?.amount ?? 0;
+        this.totalClanFund.string = ` <outline color=#222222 width=1> ${this.clanFund}</outline>`;
+
         this.setDataMyClanInfo(this.clanDetail);
     }
 
@@ -151,7 +162,6 @@ export class PopupClanDetailInfo extends BasePopup {
         this._description = clanData.description;
         this.description.string = `Mô tả: ${this._description ?? ""}`;
         this.avatarSprite.setAvatar(clanData.avatar_url ?? "avatar_1");
-        this.updateGoldUI(clanData.fund);
     }
 
     async callApiPostNotice(message: string) {

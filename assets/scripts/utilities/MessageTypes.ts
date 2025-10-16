@@ -30,4 +30,8 @@ export enum MessageTypes {
     JOIN_CLAN_REQUEST = 'join_clan_request',
     JOIN_CLAN_APPROVED = 'join_clan_approved',
     JOIN_CLAN_REJECTED = 'join_clan_rejected',
+    CLAN_LEADER_TRANSFERRED = 'new_clan_leader_transferred',
+    CLAN_VICE_LEADER_ASSIGNED = 'clan_vice_leader_assigned',
+    CLAN_VICE_LEADER_DEMOTED = 'clan_vice_leader_demoted',
+    CLAN_MEMBER_KICKED = 'clan_member_kicked',
 }

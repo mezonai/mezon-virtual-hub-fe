@@ -22,6 +22,7 @@ import { PurchaseMethod } from '../Model/Item';
 import { PopupClanFundMember } from '../PopUp/PopupClanFundMember';
 import { PopupClanList } from '../PopUp/PopupClanList';
 import { PopupClanMemberManager } from '../PopUp/PopupClanMemberManager';
+import { PopupClanDetailInfo } from '../PopUp/PopupClanDetailInfo';
 
 @ccclass('ServerManager')
 export class ServerManager extends Component {
@@ -396,25 +397,50 @@ export class ServerManager extends Component {
         });
 
         this.room.onMessage(MessageTypes.JOIN_CLAN_REQUEST, (data) => {
-            Constants.showConfirm(data.message, "Chú Ý");
+            SoundManager.instance.playSound(AudioType.NoReward);
             const popupApprovedMember = PopupManager.getInstance().getPopupComponent('UI_ClanMemberManager', PopupClanMemberManager);
             popupApprovedMember?.popupApprovedMember.node.active && popupApprovedMember?.popupApprovedMember.loadList(1);
+            Constants.showConfirm(data.message);
 
-            SoundManager.instance.playSound(AudioType.NoReward);
         });
 
         this.room.onMessage(MessageTypes.JOIN_CLAN_APPROVED, async (data)  => {
+            SoundManager.instance.playSound(AudioType.NoReward);
             await WebRequestManager.instance.getUserProfileAsync();
             const popupComp = PopupManager.getInstance().getPopupComponent('UI_ClanList', PopupClanList);
-            popupComp?.ShowOpenClanWhenAprrove(data.message);
-            SoundManager.instance.playSound(AudioType.NoReward);
+            popupComp?.ShowOpenClanWhenAprrove();
+            Constants.showConfirm(data.message);
         });
 
         this.room.onMessage(MessageTypes.JOIN_CLAN_REJECTED, (data) => {
+            SoundManager.instance.playSound(AudioType.NoReward);
             const popupComp = PopupManager.getInstance().getPopupComponent('UI_ClanList', PopupClanList);
             popupComp?.loadList(1);
             Constants.showConfirm(data.message, "Chú Ý");
+        });
+        
+        this.room.onMessage(MessageTypes.CLAN_LEADER_TRANSFERRED, async (data) => {
             SoundManager.instance.playSound(AudioType.NoReward);
+            await PopupManager.getInstance().closeAllPopups();
+            Constants.showConfirm(data.message);
+        });
+
+        this.room.onMessage(MessageTypes.CLAN_VICE_LEADER_ASSIGNED, async (data) => {
+            SoundManager.instance.playSound(AudioType.NoReward);
+            await PopupManager.getInstance().closeAllPopups();
+            Constants.showConfirm(data.message);
+        });
+
+        this.room.onMessage(MessageTypes.CLAN_VICE_LEADER_DEMOTED, async (data) => {
+            SoundManager.instance.playSound(AudioType.NoReward);
+            await PopupManager.getInstance().closeAllPopups();
+            Constants.showConfirm(data.message, "Chú Ý");
+        });
+
+        this.room.onMessage(MessageTypes.CLAN_MEMBER_KICKED, async (data) => {
+            SoundManager.instance.playSound(AudioType.NoReward);
+            await PopupManager.getInstance().closeAllPopups();
+            Constants.showConfirm(data.message);
         });
     }
 

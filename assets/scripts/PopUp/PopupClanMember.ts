@@ -28,6 +28,7 @@ export class PopupClanMember extends BasePopup {
     private listMember: MemberResponseDTO;
     private _listMember: ItemMemberMain[] = [];
     private clanDetail: ClansData;
+    private  onMemberChanged?: () => void;
 
     public init(param?: PopupClanMemberParam): void {
         this.closeButton.addAsyncListener(async () => {
@@ -35,8 +36,11 @@ export class PopupClanMember extends BasePopup {
             await PopupManager.getInstance().closePopup(this.node.uuid);
             this.closeButton.interactable = true;
         });
+        if (!param) return;
         this.clanDetail = param.clanDetail;
         this.CheckShowMemberManager();
+        this.onMemberChanged = param?.onMemberChanged;
+
         this.searchButton.addAsyncListener(async () => {
             this.searchButton.interactable = false;
             this.currentSearch = this.searchInput.string.trim();
@@ -48,7 +52,11 @@ export class PopupClanMember extends BasePopup {
             this.memberManageButton.interactable = false;
             const param: PopupClanMemberManagerParam =
             {
-                clanDetail: this.clanDetail
+                clanDetail: this.clanDetail,
+                onMemberChanged: async () => {
+                    await this.loadList(1);
+                    this.onMemberChanged?.();
+                },
             }
             await PopupManager.getInstance().openAnimPopup("UI_ClanMemberManager", PopupClanMemberManager, param);
             this.memberManageButton.interactable = true;
@@ -90,6 +98,7 @@ export class PopupClanMember extends BasePopup {
 
 export interface PopupClanMemberParam {
     clanDetail: ClansData;
+    onMemberChanged?: () => void;
 }
 
 

@@ -3,7 +3,7 @@ import { APIManager } from './APIManager';
 import APIConstant, { APIConfig, EVENT_NAME } from './APIConstant';
 import ConvetData from '../core/ConvertData';
 import { UserMeManager } from '../core/UserMeManager';
-import { ClanContributorsResponseDTO, ClanDescriptionDTO as ClanDescriptionDTO, ClanFundResponseDTO, ClanRequestResponseDTO, ClansData, ClansResponseDTO, MemberResponseDTO, SortBy, SortOrder, UserDataResponse } from '../Interface/DataMapAPI';
+import { ClanContributorsResponseDTO, ClanDescriptionDTO as ClanDescriptionDTO, ClanFundResponseDTO, ClanRequestResponseDTO, ClansData, ClansResponseDTO, MemberResponseDTO, RemoveMembersPayload, SortBy, SortOrder, UserDataResponse } from '../Interface/DataMapAPI';
 import { ServerManager } from '../core/ServerManager';
 import { PopupSelectionMini, SelectionMiniParam } from '../PopUp/PopupSelectionMini';
 import { PopupManager } from '../PopUp/PopupManager';
@@ -291,13 +291,13 @@ export class WebRequestManager extends Component {
         });
     }
 
-    public getClanFundAsync(clanId: string): Promise<ClanFundResponseDTO> {
+    public getClanDetailAsync(clanId: string): Promise<ClansData> {
         return new Promise((resolve) => {
-            WebRequestManager.instance.GetClanFund(
+            WebRequestManager.instance.getClanDetail(
                 clanId,
                 (response) => {
-                    const clanFundData = ConvetData.convertClanFund(response);
-                    resolve(clanFundData);
+                    const clanDetailData = ConvetData.ConvertClanDetail(response);
+                    resolve(clanDetailData);
                 },
                 (error) => {
                     resolve(null);
@@ -306,13 +306,13 @@ export class WebRequestManager extends Component {
         });
     }
 
-    public getClanDetailAsync(clanId: string): Promise<ClansData> {
+    public getClanFundAsync(clanId: string): Promise<ClanFundResponseDTO> {
         return new Promise((resolve) => {
-            WebRequestManager.instance.getClanDetail(
+            WebRequestManager.instance.GetClanFund(
                 clanId,
                 (response) => {
-                    const clanDetailData = ConvetData.ConvertClanDetail(response);
-                    resolve(clanDetailData);
+                    const clanFundData = ConvetData.convertClanFund(response);
+                    resolve(clanFundData);
                 },
                 (error) => {
                     resolve(null);
@@ -384,10 +384,11 @@ export class WebRequestManager extends Component {
         });
     }
     
-    public postApproveMembersAsync(clanId: string, is_approved: boolean): Promise<void> {
+    public postApproveMembersAsync(clanId: string, target_user_id: string, is_approved: boolean): Promise<void> {
         return new Promise((resolve, reject) => {
-            WebRequestManager.instance.postApproveMembers(
+            WebRequestManager.instance.patchApproveMembers(
                 clanId,
+                target_user_id,
                 is_approved,
                 (response) => {
                     resolve();
@@ -399,6 +400,65 @@ export class WebRequestManager extends Component {
         });
     }
 
+    public patchTransferLeaderShipAsync(clanId: string, target_user_id: string): Promise<void> {
+        return new Promise((resolve, reject) => {
+            WebRequestManager.instance.patchTransferLeaderShip(
+                clanId,
+                target_user_id,
+                (response) => {
+                    resolve();
+                },
+                (error) => {
+                    reject(error);
+                }
+            );
+        });
+    }
+
+    public patchAssignViceLeaderAsync(clanId: string, target_user_id: string): Promise<void> {
+        return new Promise((resolve, reject) => {
+            WebRequestManager.instance.patchAssignViceLeader(
+                clanId,
+                target_user_id,
+                (response) => {
+                    resolve();
+                },
+                (error) => {
+                    reject(error);
+                }
+            );
+        });
+    }
+
+    public patchRemoveViceLeaderAsync(clanId: string, target_user_id: string): Promise<void> {
+        return new Promise((resolve, reject) => {
+            WebRequestManager.instance.patchRemoveViceLeader(
+                clanId,
+                target_user_id,
+                (response) => {
+                    resolve();
+                },
+                (error) => {
+                    reject(error);
+                }
+            );
+        });
+    }
+
+    public removeMemberAsync(clanId: string, target_user_id: string[]): Promise<void> {
+        return new Promise((resolve, reject) => {
+            WebRequestManager.instance.removeMembers(
+                clanId,
+                target_user_id,
+                (response) => {
+                    resolve();
+                },
+                (error) => {
+                    reject(error);
+                }
+            );
+        });
+    }
 
     public getGameConfig(successCallback, errorCallback) {
         APIManager.getData(this.combineWithSlash(APIConstant.CONFIG, APIConstant.GAME_CONFIG), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, false);
@@ -579,17 +639,38 @@ export class WebRequestManager extends Component {
     }
 
     public getListMemberClanPending(clan_id, page = 1,sortby: SortBy, sortOrder: SortOrder, limit = 30, successCallback, errorCallback, search?: string) {
-        let url = `${APIConstant.CLAN_REQUESTS}/${APIConstant.PENDING}?`;
+        let url = `${APIConstant.CLANS}/${clan_id}/${APIConstant.CLAN_REQUESTS}/${APIConstant.PENDING}?`;
         if (search && search.trim() !== "") {
             url += `&search=${encodeURIComponent(search.trim())}`;
         }
-        url += `page=${page}&order=${sortOrder.toString()}&clan_id=${clan_id}&sort_by=${sortby.toString()}&limit=${limit}`;
+        url += `page=${page}&order=${sortOrder.toString()}&sort_by=${sortby.toString()}&limit=${limit}`;
         APIManager.getData(url, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
-    public postApproveMembers(clan_id, is_approved, successCallback, errorCallback) {
-        let url = `${APIConstant.CLAN_REQUESTS}/${clan_id}/${APIConstant.APPROVE}?is_approved=${is_approved}`;
+    public patchApproveMembers(clan_id, clan_request_id, is_approved, successCallback, errorCallback) {
+        let url = `${APIConstant.CLANS}/${clan_id}/${APIConstant.CLAN_REQUESTS}/${clan_request_id}/${APIConstant.APPROVE}?is_approved=${is_approved}`;
         APIManager.patchData(url, {}, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    }
+
+    public patchTransferLeaderShip (clan_id, target_user_id, successCallback, errorCallback) {
+        let url = `${APIConstant.CLANS}/${clan_id}/${APIConstant.MEMBERS}/${target_user_id}/${APIConstant.TRANSFER_LEADERSHIP}`;
+        APIManager.patchData(url, {}, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    }
+
+    public patchAssignViceLeader (clan_id, target_user_id, successCallback, errorCallback) {
+        let url = `${APIConstant.CLANS}/${clan_id}/${APIConstant.MEMBERS}/${target_user_id}/${APIConstant.ASSIGN_VICE_LEADER}`;
+        APIManager.patchData(url, {}, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    }
+
+    public patchRemoveViceLeader (clan_id, target_user_id, successCallback, errorCallback) {
+        let url = `${APIConstant.CLANS}/${clan_id}/${APIConstant.MEMBERS}/${target_user_id}/${APIConstant.REMOVE_VICE_LEADER}`;
+        APIManager.patchData(url, {}, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    }
+
+    public removeMembers (clan_id, target_user_id: string[], successCallback, errorCallback) {
+        let url = `${APIConstant.CLANS}/${clan_id}/${APIConstant.MEMBERS}`;
+        const data: RemoveMembersPayload = { targetUserIds: target_user_id };
+        APIManager.deleteData(url, data, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
     private errorMessageMap: Map<number, string> = new Map([

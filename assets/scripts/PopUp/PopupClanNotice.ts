@@ -18,9 +18,8 @@ export class PopupClanNotice extends BasePopup {
         this.closeButton.addAsyncListener(async () => {
             await PopupManager.getInstance().closePopup(this.node.uuid);
         });
-
-        if (!param?.send) return;
-
+        
+        if (!param) return;
         this.sendWallNotice = param.send;
         if (param.defaultText) this.editBox.string = param.defaultText;
 

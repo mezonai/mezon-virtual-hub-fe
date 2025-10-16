@@ -44,6 +44,7 @@ export class PopupApprovedMember extends Component {
     public async loadList(page: number, search?: string) {
         this.listMemberJoinClan = await WebRequestManager.instance.getListMemberClanPendingAsync(this.clanDetail.id, page, search);
         this.svMemberList.content.removeAllChildren();
+        this._listMemberJoinClan = [];
         this.noMember.active = false;
 
         const hasPending = Array.isArray(this.listMemberJoinClan?.result) && this.listMemberJoinClan.result.length > 0;
@@ -81,7 +82,7 @@ export class PopupApprovedMember extends Component {
                 textButtonCenter: "",
                 onActionButtonLeft: async () => {
                     if (!popup?.node?.uuid) return;
-                    await WebRequestManager.instance.postApproveMembersAsync(id, isAccept);
+                    await WebRequestManager.instance.postApproveMembersAsync(this.clanDetail.id, id, isAccept);
                     await Promise.all([
                         Constants.showConfirm(successMsg, "Thông báo"),
                         await this.loadList(1),

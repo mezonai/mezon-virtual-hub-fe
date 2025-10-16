@@ -1,5 +1,5 @@
 import { _decorator, Component, Node, Sprite, Button, SpriteFrame, RichText, Label } from 'cc';
-import { ClanContributorDTO } from '../Interface/DataMapAPI';
+import { ClanContributorDTO, ClanRole } from '../Interface/DataMapAPI';
 import { Constants } from '../utilities/Constants';
 const { ccclass, property } = _decorator;
 
@@ -8,6 +8,8 @@ export class ItemMemberFund extends Component {
     @property([SpriteFrame]) rankIcons: SpriteFrame[] = []; //0 = rank 1, 1 = rank 2, 2 = rank 3
     @property(Label) nameMemberLabel: Label = null!;
     @property(Label) total_Fund: Label = null!;
+    @property(Node) roleNode: Node = null!;
+    @property(Label) roleLabel: Label = null!;
     @property(Label) rankLabel: Label = null!;
     @property(Sprite) rankIcon: Sprite = null!;
     @property(Label) rankIconLabel: Label = null!;
@@ -20,8 +22,15 @@ export class ItemMemberFund extends Component {
         this.nameMemberLabel.string = data.username;
         this.total_Fund.string = data.total_amount;
         // this.setRankIcon(data);
-        // Constants.loadAvatar(this.avatarSprite, data.avatar_url);
-        //this.roleLabel.string = OfficeRoleText[data.role];
+        this.setRole(data.clan_role);
+        Constants.loadAvatar(this.avatarSprite, data.avatar_url);
+    }
+
+    setRole(clan_role: string) {
+        const role = clan_role;
+        this.roleNode.active = role !== ClanRole.MEMBER;
+        const roleText = Constants.roleMap[role] ?? "";
+        this.roleLabel.string = roleText;
     }
 
     setRankIcon(data: ClanContributorDTO) {

@@ -55,6 +55,7 @@ export default class ConvetData {
                 display_name: user.display_name ?? "",
                 avatar_url: user.avatar_url ?? null,
                 gender: user.gender ?? null,
+                clan_role: user.clan_role ?? null,
             }
             : null;
 
@@ -109,6 +110,7 @@ export default class ConvetData {
             display_name: user.display_name ?? "",
             avatar_url: user.avatar_url ?? null,
             gender: user.gender ?? null,
+            clan_role: user.clan_role ?? null,
         }));
 
         return { result: members, pageInfo: this.extractPageInfo(data) };
@@ -125,6 +127,8 @@ export default class ConvetData {
                 username: user.username ?? '',
                 type: user.type ?? '',
                 total_amount: user.total_amount ?? 0,
+                avatar_url: user.avatar_url ?? null,
+                clan_role: user.clan_role ?? null,
             }),
         );
 

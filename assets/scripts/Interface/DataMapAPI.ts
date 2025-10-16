@@ -14,6 +14,7 @@ export class User {
     gender: string | null;
     display_name: string | null;
     skin_set: string[] | null;
+    clan_role: string | null;
 }
 
 export class UserDataResponse {
@@ -66,6 +67,7 @@ export class UserClan {
     display_name: string;
     avatar_url: string | null;
     gender: string | null;
+    clan_role: string | null;
 }
 
 
@@ -101,6 +103,7 @@ export interface ClanContributorDTO {
   username: string;
   type: string;
   total_amount: string;
+  clan_role: string | null;
   avatar_url?: string;
   rank?: number;
 }
@@ -142,6 +145,10 @@ export interface ClanFundResponseDTO {
     funds: ClanFundItemDTO[];
 }
 
+export interface RemoveMembersPayload {
+    targetUserIds: string[];
+}
+
 export class ClanDescriptionDTO {
     description: string;
 }
@@ -157,6 +164,12 @@ export class MemberClanRequestDTO {
 export class ClanRequestResponseDTO {
   result: MemberClanRequestDTO[];
   pageInfo: PageInfo;
+}
+
+export enum ClanRole {
+  LEADER = 'leader',
+  VICE_LEADER = 'vice_leader',
+  MEMBER = 'member',
 }
 
 ///////////////////////---------------------Mission-----------------------------------------------------------

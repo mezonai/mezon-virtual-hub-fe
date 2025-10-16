@@ -36,6 +36,7 @@ export class PopupClanFundMember extends BasePopup {
     private clanDetail: ClansData;
     private listClanFundMember: ClanContributorsResponseDTO;
     private _listClanFundMember: ItemMemberFund[] = [];
+    private onUpdateFund?: (newFund: number) => void;
 
     public init(param?: PopupClanFundMemberParam): void {
         this.closeButton.addAsyncListener(async () => {
@@ -43,6 +44,7 @@ export class PopupClanFundMember extends BasePopup {
             await PopupManager.getInstance().closePopup(this.node.uuid);
             this.closeButton.interactable = true;
         });
+        if (!param) return;
         this.clanFund_Btn.addAsyncListener(async () => {
             this.clanFund_Btn.interactable = false;
             const param: SendClanFundParam = {
@@ -65,7 +67,8 @@ export class PopupClanFundMember extends BasePopup {
         });
 
         this.clanDetail = param.clanDetail;
-        this.updateGoldUI(this.clanDetail.fund);
+        this.onUpdateFund = param.onUpdateFund;
+        this.updateGoldUI(param.clanFund);
         this.pagination.init(
             async (page: number) => await this.loadList(page), 1
         );
@@ -77,8 +80,11 @@ export class PopupClanFundMember extends BasePopup {
     }
 
     addSelfContribution(value: number) {
-       this.updateGoldUI(value)
-       this.loadList(1);
+        this.updateGoldUI(value)
+        this.loadList(1);
+        if (this.onUpdateFund) {
+            this.onUpdateFund(value);
+        }
     }
 
     async loadList(page: number, search?: string) {
@@ -99,11 +105,14 @@ export class PopupClanFundMember extends BasePopup {
 
     private async SendClanFund(data) {
         const { clanId, type, amount } = data;
+        console.log("data:", data);
+        console.log("amount:", amount);
         if (amount <= 0) {
             let chatContent = Constants.invalidGoldResponse[randomRangeInt(0, Constants.invalidGoldResponse.length)];
             Constants.showConfirm(chatContent);
             return;
         }
+        console.log("Coin:", UserMeManager.playerCoin);
         if (amount > UserMeManager.playerCoin) {
             let chatContent = Constants.notEnoughGoldResponse[randomRangeInt(0, Constants.notEnoughGoldResponse.length)];
             Constants.showConfirm(chatContent);
@@ -127,5 +136,7 @@ export class PopupClanFundMember extends BasePopup {
 
 export interface PopupClanFundMemberParam {
     clanDetail: ClansData;
+    clanFund: number;
+    onUpdateFund?: (newFund: number) => void;
 }
 

@@ -23,6 +23,7 @@ export class PopupClanMemberManager extends BasePopup {
     private clanDetail: ClansData;
     private isInitManager = false;
     private isInitApprove = false;
+    private  onMemberChanged?: () => void;
 
     public init(param?: PopupClanMemberManagerParam): void {
         this.closeButton.addAsyncListener(async () => {
@@ -30,7 +31,9 @@ export class PopupClanMemberManager extends BasePopup {
             await PopupManager.getInstance().closePopup(this.node.uuid);
             this.closeButton.interactable = true;
         });
+        if (!param) return;
         this.clanDetail = param.clanDetail;
+        this.onMemberChanged = param?.onMemberChanged;
         this.tabManagerMember.on(Node.EventType.TOUCH_END, () => this.switchTab(UpgradeTab.MANAGER));
         this.tabAprovedmember.on(Node.EventType.TOUCH_END, () => this.switchTab(UpgradeTab.APPROVE));
         this.switchTab(UpgradeTab.APPROVE);
@@ -47,7 +50,9 @@ export class PopupClanMemberManager extends BasePopup {
 
         if (tab === UpgradeTab.MANAGER) {
             if (!this.isInitManager) {
-                await this.popupManageMember.init(this.clanDetail, this);
+                await this.popupManageMember.init(this.clanDetail, this,  {
+                    onMemberChanged: this.onMemberChanged,
+                });
                 this.isInitManager = true;
             }
         } 
@@ -67,6 +72,7 @@ export class PopupClanMemberManager extends BasePopup {
 
 export interface PopupClanMemberManagerParam {
     clanDetail: ClansData;
+    onMemberChanged?: () => void;
 }
 
 

@@ -2,7 +2,7 @@
 import { ServerMapManager } from "../core/ServerMapManager";
 import { OfficePosition } from "../GameMap/OfficePosition";
 import { RoomType } from "../GameMap/RoomType";
-import { ClansData } from "../Interface/DataMapAPI";
+import { ClanRole, ClansData } from "../Interface/DataMapAPI";
 import { FoodType, InventoryType, ItemType, RewardItemDTO, RewardType } from "../Model/Item";
 import { ConfirmParam, ConfirmPopup } from "../PopUp/ConfirmPopup";
 import { PopupManager } from "../PopUp/PopupManager";
@@ -244,5 +244,11 @@ export class Constants {
         "Số tiền phải lớn hơn 0",
         "Có tâm nhưng không có tiền"
     ];
-    
+
+    public static readonly roleMap: Record<string, string> = {
+        [ClanRole.LEADER]: "Giám Đốc",
+        [ClanRole.VICE_LEADER]: "P.Giám Đốc",
+        [ClanRole.MEMBER]: "",
+    };
+
 }

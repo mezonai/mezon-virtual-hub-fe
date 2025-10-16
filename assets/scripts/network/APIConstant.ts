@@ -38,6 +38,13 @@ export default class APIConstant {
     static PENDING = "pending";
     static APPROVE = "approve";
     static CANCEL_JOIN = "cancel-join";
+    static MEMBERS = "members";
+    static TRANSFER_LEADERSHIP = "transfer-leadership";
+    static ASSIGN_VICE_LEADER = "assign-vice-leader";
+    static REMOVE_VICE_LEADER = "remove-vice-leader";
+    
+   
+    
 
 }
 

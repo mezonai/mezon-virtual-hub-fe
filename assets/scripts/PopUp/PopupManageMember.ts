@@ -3,7 +3,7 @@ import { PopupManager } from './PopupManager';
 import { ItemMemberManager } from '../Clan/ItemMemberManager';
 import { Label } from 'cc';
 import { PopupClanMemberManager } from './PopupClanMemberManager';
-import { ClansData, MemberResponseDTO } from '../Interface/DataMapAPI';
+import { ClansData, MemberResponseDTO, RemoveMembersPayload, UserClan } from '../Interface/DataMapAPI';
 import { WebRequestManager } from '../network/WebRequestManager';
 import { Constants } from '../utilities/Constants';
 import { PopupSelectionMini, SelectionMiniParam } from './PopupSelectionMini';
@@ -31,11 +31,12 @@ export class PopupManageMember extends Component {
     private listMember: MemberResponseDTO;
     private _listMember: ItemMemberManager[] = [];
     private clanDetail: ClansData;
-    private memberSelectedIds: Set<string> = new Set();
+    private memberSelected: Map<string, UserClan> = new Map();
     
     private popupClanMemberManager: PopupClanMemberManager;
+    private  onMemberChanged?: () => void;
 
-    public init(clansData: ClansData, popupClanMemberManager: PopupClanMemberManager): void {
+    public init(clansData: ClansData, popupClanMemberManager: PopupClanMemberManager, param?: { onMemberChanged?: () => void }): void {
         this.tranferBtn.addAsyncListener(async () => {
             this.tranferBtn.interactable = false;
             this.onTransferMembers();
@@ -63,6 +64,7 @@ export class PopupManageMember extends Component {
             this.searchButton.interactable = true;
         });
         this.clanDetail = clansData;
+        this.onMemberChanged = param?.onMemberChanged;
         this.checkShowMemberManager();
         this.popupClanMemberManager = popupClanMemberManager;
         this.pagination.init(
@@ -96,8 +98,8 @@ export class PopupManageMember extends Component {
             itemJoinGuild.setParent(this.svMemberList.content);
 
             const itemComp = itemJoinGuild.getComponent(ItemMemberManager)!;
-            itemComp.setData(itemOffice, (id: string, selected: boolean) => {
-                this.onSelectMember(id, selected);
+            itemComp.setData(itemOffice, (itemOffice, selected: boolean) => {
+                this.onSelectMember(itemOffice, selected);
                 this._listMember.push(itemComp);
             });
             this.totalMember.string = `Tổng số thành viên: ${this.listMember.pageInfo.total}`;
@@ -105,19 +107,19 @@ export class PopupManageMember extends Component {
         }
     }
 
-    private onSelectMember(id: string, selected: boolean) {
+    private onSelectMember(member: UserClan, selected: boolean) {
         if (selected) {
-            this.memberSelectedIds.add(id);
+            this.memberSelected.set(member.id, member);
         } else {
-            this.memberSelectedIds.delete(id);
+            this.memberSelected.delete(member.id);
         }
 
-        const count = this.memberSelectedIds.size;
+        const count = this.memberSelected.size;
         this.selectedCountLabel.string = `Đã chọn: ${count} thành viên`;
     }
 
-    private validateSingleSelection(actionName: string): boolean {
-        const count = this.memberSelectedIds.size;
+    private validateSingleSelection(actionName: string, target :UserClan = null): boolean {
+        const count = this.memberSelected.size;
         if (count === 0) {
             Constants.showConfirm(`Vui lòng thành viên bất kì để "${actionName}"!`);
             return false;
@@ -130,72 +132,181 @@ export class PopupManageMember extends Component {
     }
 
     private async onTransferMembers() {
-        if (!this.validateSingleSelection("Chuyển Chức Vụ")) return;
-        const param: SelectionMiniParam = {
-            title: "Thông báo",
+        const [target] = Array.from(this.memberSelected.values());
+        if (!this.validateSingleSelection("Chuyển Chức Vụ", target)) return;
+        if (!this.validateTransfer(target)) return;
+        const popup = await PopupManager.getInstance().openAnimPopup(
+            "PopupSelectionMini", PopupSelectionMini, {
             content: "Bạn có muốn chuyển chức Giám Đốc cho người này không?",
             textButtonLeft: "Có",
-            textButtonRight: "không",
+            textButtonRight: "Không",
             textButtonCenter: "",
-            onActionButtonLeft: () => {
+            onActionButtonLeft: async () => {
+                if (!popup?.node?.uuid) return;
+                await WebRequestManager.instance.patchTransferLeaderShipAsync(this.clanDetail.id, target.id);
+                await Promise.all([
+                    this.onMemberChanged?.(),
+                    this.loadList(1),
+                    this.memberSelected.clear(),
+                    PopupManager.getInstance().closePopup(popup.node.uuid),
+                ]);
             },
             onActionButtonRight: () => {
+                if (popup?.node?.uuid) {
+                    PopupManager.getInstance().closePopup(popup.node.uuid);
+                }
             },
-        };
-        PopupManager.getInstance().openAnimPopup("PopupSelectionMini", PopupSelectionMini, param);
-       
+        });
     }
-    
+
     private async onPromoteMembers() {
-        if (!this.validateSingleSelection("Thăng Chức Vụ")) return;
-       const param: SelectionMiniParam = {
-            title: "Thông báo",
+       const [target] = Array.from(this.memberSelected.values());
+        if (!this.validateSingleSelection("Thăng Chức Vụ", target)) return;
+        if (!this.validatePromote(target)) return;
+
+        const popup = await PopupManager.getInstance().openAnimPopup(
+            "PopupSelectionMini", PopupSelectionMini, {
             content: "Bạn có muốn thăng chức Phó Giám Đốc cho người này không?",
             textButtonLeft: "Có",
-            textButtonRight: "không",
+            textButtonRight: "Không",
             textButtonCenter: "",
-            onActionButtonLeft: () => {
+            onActionButtonLeft: async () => {
+                if (!popup?.node?.uuid) return;
+                await WebRequestManager.instance.patchAssignViceLeaderAsync(this.clanDetail.id, target.id);
+                await Promise.all([
+                    this.onMemberChanged?.(),
+                    this.loadList(1),
+                    this.memberSelected.clear(),
+                    PopupManager.getInstance().closePopup(popup.node.uuid),
+                ]);
             },
             onActionButtonRight: () => {
+                if (popup?.node?.uuid) {
+                    PopupManager.getInstance().closePopup(popup.node.uuid);
+                }
             },
-        };
-        PopupManager.getInstance().openAnimPopup("PopupSelectionMini", PopupSelectionMini, param);
+        });
     }
 
-
     private async onDemoteMembers() {
-        if (!this.validateSingleSelection("Hủy Chức Vụ")) return;
-        const param: SelectionMiniParam = {
-            title: "Thông báo",
+        const [target] = Array.from(this.memberSelected.values());
+        if (!this.validateSingleSelection("Hủy Chức Vụ", target)) return;
+        if (!this.validateDemote(target)) return;
+        const popup = await PopupManager.getInstance().openAnimPopup(
+            "PopupSelectionMini", PopupSelectionMini, {
             content: "Bạn có muốn hủy chức Phó Giám Đốc của người này không?",
             textButtonLeft: "Có",
-            textButtonRight: "không",
+            textButtonRight: "Không",
             textButtonCenter: "",
-            onActionButtonLeft: () => {
+            onActionButtonLeft: async () => {
+                if (!popup?.node?.uuid) return;
+                await WebRequestManager.instance.patchRemoveViceLeaderAsync(this.clanDetail.id, target.id);
+                await Promise.all([
+                    this.onMemberChanged?.(),
+                    this.loadList(1),
+                    this.memberSelected.clear(),
+                    PopupManager.getInstance().closePopup(popup.node.uuid),
+                ]);
             },
             onActionButtonRight: () => {
+                if (popup?.node?.uuid) {
+                    PopupManager.getInstance().closePopup(popup.node.uuid);
+                }
             },
-        };
-        PopupManager.getInstance().openAnimPopup("PopupSelectionMini", PopupSelectionMini, param);
+        });
     }
 
     private async onRemoveMembers() {
-        const count = this.memberSelectedIds.size;
+        const count = this.memberSelected.size;
         if (count === 0) {
-            Constants.showConfirm(`Vui lòng chọn thành viên để xóa khỏi văn phòng`);
+            Constants.showConfirm("Vui lòng chọn thành viên để xóa khỏi văn phòng!");
+            return;
+        }
+
+        const ids = Array.from(this.memberSelected.keys());
+        const targets = Array.from(this.memberSelected.values());
+        const invalidTarget = targets.find(user => !this.validateRemove(user));
+        if (invalidTarget) return;
+
+        const popup = await PopupManager.getInstance().openAnimPopup(
+            "PopupSelectionMini",
+            PopupSelectionMini,
+            {
+                content: `Bạn có muốn xóa ${count > 1 ? count + " thành viên" : "người này"} ra khỏi văn phòng không?`,
+                textButtonLeft: "Có",
+                textButtonRight: "Không",
+                textButtonCenter: "",
+                onActionButtonLeft: async () => {
+                    if (!popup?.node?.uuid) return;
+                    await WebRequestManager.instance.removeMemberAsync(this.clanDetail.id, ids);
+
+                    await Promise.all([
+                        this.onMemberChanged?.(),
+                        this.loadList(1),
+                        this.memberSelected.clear(),
+                        PopupManager.getInstance().closePopup(popup.node.uuid),
+                    ]);
+                },
+                onActionButtonRight: () => {
+                    PopupManager.getInstance().closePopup(popup.node.uuid);
+                },
+            }
+        );
+    }
+
+    private validateTransfer(target: UserClan): boolean {
+        const userMe = UserMeManager.Get.user;
+
+        if (target.id === userMe.id) {
+            Constants.showConfirm("Bạn không thể tự chuyển chức cho chính mình!");
             return false;
         }
-        const param: SelectionMiniParam = {
-            title: "Thông báo",
-            content: "Bạn có muốn xóa những người đã chọn ra khỏi văn phòng không?",
-            textButtonLeft: "Có",
-            textButtonRight: "không",
-            textButtonCenter: "",
-            onActionButtonLeft: () => {
-            },
-            onActionButtonRight: () => {
-            },
-        };
-        PopupManager.getInstance().openAnimPopup("PopupSelectionMini", PopupSelectionMini, param);
+        if (target.clan_role === 'leader') {
+            Constants.showConfirm("Người này đã là Giám đốc!");
+            return false;
+        }
+        if (target.clan_role === 'vice_leader') {
+            Constants.showConfirm("Không thể chuyển chức trực tiếp cho Phó Giám đốc! Hãy hủy chức Phó trước.");
+            return false;
+        }
+        return true;
+    }
+
+    private validatePromote(target: UserClan): boolean {
+        const leaderId = this.clanDetail?.leader?.id;
+        const viceId = this.clanDetail?.vice_leader?.id;
+
+        if (target.id === leaderId) {
+            Constants.showConfirm("Không thể thăng chức cho Giám đốc!");
+            return false;
+        }
+        if (viceId && viceId !== target.id) {
+            Constants.showConfirm("Đã có Phó Giám đốc! Hãy hủy chức Phó hiện tại trước khi thăng người mới.");
+            return false;
+        }
+        if (target.clan_role === 'vice_leader') {
+            Constants.showConfirm("Người này đã là Phó Giám đốc!");
+            return false;
+        }
+
+        return true;
+    }
+
+    private validateDemote(target: UserClan): boolean {
+        if (target.clan_role !== 'vice_leader') {
+            Constants.showConfirm("Người này không phải là Phó Giám đốc!");
+            return false;
+        }
+        return true;
+    }
+
+    private validateRemove(target: UserClan): boolean {
+        const leaderId = this.clanDetail?.leader?.id;
+
+        if (target.id === leaderId) {
+            Constants.showConfirm("Không thể xóa Giám đốc khỏi văn phòng!");
+            return false;
+        }
+        return true;
     }
 }
