@@ -7,13 +7,14 @@ export class UserMeManager {
     private static me: UserDataResponse | null = null;
     private static myPets: PetDTO[] | null = null;
     private static _playerProperty = null;
+    private static _playerClanFund = null;
 
     public static get Get(): UserDataResponse | null {
         return this.me;
     }
 
-    public static set SetMap(mapData) {
-        this.me.map = mapData;
+    public static set SetClan(clanData) {
+        this.me.clan = clanData;
     }
 
     public static get PlayerProperty() {
@@ -28,6 +29,12 @@ export class UserMeManager {
         }
         this.PlayerProperty.gold = me.user.gold;
         this.PlayerProperty.diamond = me.user.diamond;
+    }
+
+    public static set UpdateClanUser(me: UserDataResponse | null) {
+        if (!me) return;
+        this.me.user = me.user;
+        this.me.clan = me.clan ?? null;
     }
 
     public static get GetFoods(): InventoryDTO[] | null {

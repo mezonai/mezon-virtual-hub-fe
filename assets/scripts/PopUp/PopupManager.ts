@@ -151,6 +151,13 @@ export class PopupManager extends Component {
         }
         this.popupDict.clear();
     }
+
+    public getPopupComponent<T extends Component>(popupName: string, componentType: { new(): T }): T | null {
+        const popupNode = this.getPopup(popupName);
+        if (!popupNode) return null;
+        return popupNode.getComponent(componentType);
+    }
+
 }
 
 

@@ -4,7 +4,7 @@ export default class APIConstant {
     static USER: string = "user";
     static LOGIN: string = "mezon-login";
     static AUTH: string = "auth";
-    static MAP: string = "map";
+    static CLANS: string = "clans";
     static INVENTORY: string = "inventory";
     static BUY = "buy";
     static ITEM = "item";
@@ -27,7 +27,25 @@ export default class APIConstant {
     static CHECK_UNCLAIMED_QUEST = "check-unclaimed-quest";
     static UPGRADE_STAR_PET = "merge";
     static UPGRADE_RARITY_PET = "upgrade-rarity";
-    static ITEM_TYPE = "item-type";    
+    static ITEM_TYPE = "item-type";
+    static USERS = "users";
+    static REQUEST_JOIN = "request-join";
+    static LEAVE = "leave";
+    static CLAN_FUNDS = "clan-funds";
+    static CONTRIBUTORS = "contributors";
+    static DESCRIPTION = "description";
+    static CLAN_REQUESTS = "clan-requests";
+    static PENDING = "pending";
+    static APPROVE = "approve";
+    static CANCEL_JOIN = "cancel-join";
+    static MEMBERS = "members";
+    static TRANSFER_LEADERSHIP = "transfer-leadership";
+    static ASSIGN_VICE_LEADER = "assign-vice-leader";
+    static REMOVE_VICE_LEADER = "remove-vice-leader";
+    
+   
+    
+
 }
 
 export class APIConfig {

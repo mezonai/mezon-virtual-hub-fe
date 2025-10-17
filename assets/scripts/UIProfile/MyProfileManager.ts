@@ -67,7 +67,7 @@ export class MyProfileManager extends BaseProfileManager {
     private updateUserTextFields(userData: any) {
         let fullName = userData.display_name || userData.username
         this.fullName_txt.string = fullName;
-        this.branch_txt.string = this.UserProfileData.map?.name || "";
+        this.branch_txt.string = this.UserProfileData.clan?.name || "";
         this.fullName_EBox.string = fullName;
     }
 
@@ -141,7 +141,7 @@ export class MyProfileManager extends BaseProfileManager {
 
     convertToUserDTO(response: any): UserProfileDTO {
         return {
-            mapId: response.map_id || "",
+            clanId: response.clanId || "",
             positionX: null,
             positionY: null,
             displayName: response.display_name || "",

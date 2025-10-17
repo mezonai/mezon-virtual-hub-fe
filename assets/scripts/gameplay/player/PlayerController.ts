@@ -17,6 +17,7 @@ import { PetCatchingController } from './PetCatchingController';
 import { AnimalController } from '../../animal/AnimalController';
 import { Sprite } from 'cc';
 import { ServerManager } from '../../core/ServerManager';
+import { Constants } from '../../utilities/Constants';
 
 @ccclass('PlayerController')
 export class PlayerController extends Component {
@@ -125,9 +126,9 @@ export class PlayerController extends Component {
         this.setPlayerName(this.userName);
         this.playerNameText.fontColor = this.isMyClient ? this.playerNameColor[0] : this.playerNameColor[1];
         this.showName(this.isMyClient || (!this.isMyClient && isShowName));
-        if (localStorage.getItem(Tutorial.tutorial_completed) != "true") {
+        if (localStorage.getItem(Constants.TUTORIAL_COMPLETE) != "true") {
             this.zoomBubbleChat("Không khí thật trong lành, đi dạo một vòng nào !!!");
-            sys.localStorage.setItem(Tutorial.tutorial_completed, true);
+            sys.localStorage.setItem(Constants.TUTORIAL_COMPLETE, true);
         }
     }
 

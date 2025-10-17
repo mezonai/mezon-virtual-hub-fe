@@ -6,6 +6,10 @@ import { UIMissionDetail } from '../gameplay/Mission/UIMissionDetail';
 import { WebRequestManager } from '../network/WebRequestManager';
 import { PopupLoginQuest, PopupLoginQuestParam } from '../PopUp/PopupLoginQuest';
 import { PopupOwnedAnimals } from '../PopUp/PopupOwnedAnimals';
+import { PopupClanList } from '../PopUp/PopupClanList';
+import { PopupClanDetailInfo } from '../PopUp/PopupClanDetailInfo';
+import { UserMeManager } from '../core/UserMeManager';
+
 const { ccclass, property } = _decorator;
 
 @ccclass('PlayerHubController')
@@ -15,6 +19,7 @@ export class PlayerHubController extends Component {
     @property(Button) private btn_UIMission: Button = null!;
     @property(Button) private showOwnedButton: Button;
     @property(Button) private btn_UIDailyReward: Button = null!;
+    @property(Button) private btn_UIGuildReward: Button = null!;
     @property(Node) private redDotNoticeMission: Node = null!;
     @property(Node) private redDotDailyReward: Node = null!;
 
@@ -36,8 +41,18 @@ export class PlayerHubController extends Component {
         });
         this.showOwnedButton.addAsyncListener(async () => {
             this.showOwnedButton.interactable = false;
-            await PopupManager.getInstance().openAnimPopup('PopupOwnedAnimals', PopupOwnedAnimals, { message: "" });
+            await PopupManager.getInstance().openAnimPopup('PopupOwnedAnimals', PopupOwnedAnimals);
             this.showOwnedButton.interactable = true;
+        });
+        this.btn_UIGuildReward.addAsyncListener(async () => {
+            this.btn_UIGuildReward.interactable = false;
+            if(UserMeManager.Get.clan){
+                await PopupManager.getInstance().openAnimPopup('UI_ClanDetailInfo', PopupClanDetailInfo);
+            }
+            else{
+                await PopupManager.getInstance().openAnimPopup('UI_ClanList', PopupClanList);
+            }
+            this.btn_UIGuildReward.interactable = true;
         });
         this.btn_UIDailyReward.addAsyncListener(async () => {
             this.btn_UIDailyReward.interactable = false;
