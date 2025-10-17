@@ -67,9 +67,11 @@ export class PopupClanList extends BasePopup {
         this.pagination.setTotalPages(this.listClan.pageInfo.total_page || 1);
     }
 
-    async ShowOpenClanWhenAprrove(){
+    async ShowOpenClanWhenAprrove(message: string){
         await PopupManager.getInstance().openAnimPopup('UI_ClanDetailInfo', PopupClanDetailInfo);
         await PopupManager.getInstance().closePopup(this.node.uuid);
+        Constants.showConfirm(message);
+
     }
 
     UpdatePage(){

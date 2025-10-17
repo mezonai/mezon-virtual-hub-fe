@@ -407,9 +407,9 @@ export class ServerManager extends Component {
         this.room.onMessage(MessageTypes.JOIN_CLAN_APPROVED, async (data)  => {
             SoundManager.instance.playSound(AudioType.NoReward);
             await WebRequestManager.instance.getUserProfileAsync();
-            const popupComp = PopupManager.getInstance().getPopupComponent('UI_ClanList', PopupClanList);
-            popupComp?.ShowOpenClanWhenAprrove();
-            Constants.showConfirm(data.message);
+            PopupManager.getInstance().getPopupComponent('UI_ClanList', PopupClanList)
+                ?.ShowOpenClanWhenAprrove(data.message)
+                ?? Constants.showConfirm(data.message);
         });
 
         this.room.onMessage(MessageTypes.JOIN_CLAN_REJECTED, (data) => {
@@ -439,6 +439,7 @@ export class ServerManager extends Component {
 
         this.room.onMessage(MessageTypes.CLAN_MEMBER_KICKED, async (data) => {
             SoundManager.instance.playSound(AudioType.NoReward);
+            await WebRequestManager.instance.getUserProfileAsync();
             await PopupManager.getInstance().closeAllPopups();
             Constants.showConfirm(data.message);
         });

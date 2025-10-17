@@ -85,6 +85,7 @@ export class PopupApprovedMember extends Component {
                     await WebRequestManager.instance.postApproveMembersAsync(this.clanDetail.id, id, isAccept);
                     await Promise.all([
                         Constants.showConfirm(successMsg, "Thông báo"),
+                        this.popupClanMemberManager?.onMemberChanged?.(),
                         await this.loadList(1),
                         PopupManager.getInstance().closePopup(this.node.uuid),
                         PopupManager.getInstance().closePopup(popup.node.uuid),

@@ -23,7 +23,7 @@ export class PopupClanMemberManager extends BasePopup {
     private clanDetail: ClansData;
     private isInitManager = false;
     private isInitApprove = false;
-    private  onMemberChanged?: () => void;
+    public  onMemberChanged?: () => void;
 
     public init(param?: PopupClanMemberManagerParam): void {
         this.closeButton.addAsyncListener(async () => {
