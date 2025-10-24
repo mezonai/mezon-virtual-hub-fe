@@ -59,6 +59,8 @@ export class Constants {
                 return `${this.convertKeyOffice(officeTeleport)}-shop1`;
             case RoomType.MEETING:
                 return `${this.convertKeyOffice(officeTeleport)}-office-meeting-room1`;
+            case RoomType.FARM:
+                return `${this.convertKeyOffice(officeTeleport)}-farm`;
             case RoomType.COMPLEXNCC:
             default:
                 return this.convertKeyOffice(officeTeleport);

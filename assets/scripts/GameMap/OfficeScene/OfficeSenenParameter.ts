@@ -6,6 +6,7 @@ export class OfficeSenenParameter{
     roomStart: RoomType;// Từ Map vào Office nên truyền vào là RoomType = None vì chưa xác định được loại phòng
     roomEnds: RoomType;
     nameRoomServer: string;
+    idclan: string;
 
     constructor(currentOffice: OfficePosition, roomStart: RoomType, roomEnds: RoomType, nameRoom: string) {
         this.currentOffice = currentOffice;
@@ -13,6 +14,10 @@ export class OfficeSenenParameter{
         this.roomEnds = roomEnds;
         this.nameRoomServer = nameRoom;
     }   
+
+    setIdClan(idclan: string){
+        this.idclan = idclan;
+    }
 }
 
 

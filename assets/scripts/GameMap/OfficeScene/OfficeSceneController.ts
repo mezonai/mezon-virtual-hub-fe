@@ -36,7 +36,7 @@ export class OfficeSceneController extends Component {
     public async LoadData(): Promise<boolean> {
         const param = SceneManagerController.getSceneParam<OfficeSenenParameter>();
         if (param != null) {
-            let nameRoom = this.nameCode = param.nameRoomServer;
+            let nameRoom = `${param.idclan}`;
             let map = instantiate(this.mapOffice[this.getOffice(param.currentOffice, nameRoom)]);
             map.setParent(this.mapParent);
             let mapManager = map.getComponent("MapManagerBase") as MapManagerBase;
@@ -92,6 +92,9 @@ export class OfficeSceneController extends Component {
         }
         else if (nameRoom.includes("-shop")) {
             return 0;
+        }
+        else if(nameRoom.includes("-farm")){
+            return 9;
         }
         else {
             return 1;

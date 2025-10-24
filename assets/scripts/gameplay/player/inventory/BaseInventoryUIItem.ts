@@ -2,6 +2,7 @@ import { _decorator, Component, Label, Node, Sprite, SpriteFrame, Toggle, tween,
 import { Food, InventoryDTO, InventoryType, Item, ItemType, PurchaseMethod, RewardItemDTO } from '../../../Model/Item';
 import { AudioType, SoundManager } from '../../../core/SoundManager';
 import { IconItemUIHelper } from '../../../Reward/IconItemUIHelper';
+import { PlantData } from '../../../Farm/EnumPlant';
 const { ccclass, property } = _decorator;
 
 @ccclass('BaseInventoryUIITem')
@@ -12,7 +13,7 @@ export class BaseInventoryUIITem extends Component {
     @property({ type: [SpriteFrame] }) stasFrame: SpriteFrame[] = [];
     @property({ type: Toggle }) toggle: Toggle = null;
     @property({ type: Label }) amountLabel: Label;
-    public onClick?: (uiItem: this, data: Item | Food) => void;
+    public onClick?: (uiItem: this, data: Item | Food | PlantData) => void;
     protected lastTriggerTime = 0;
     public data: Item = null;
     public dataFood: Food = null;

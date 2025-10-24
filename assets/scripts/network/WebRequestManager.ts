@@ -11,6 +11,7 @@ import { BuyItemPayload, InventoryDTO, Item, RewardItemDTO, RewardNewbieDTO, Sta
 import { GameManager } from '../core/GameManager';
 import { UpgradePetResponseDTO, PetDTO } from '../Model/PetDTO';
 import { Constants } from '../utilities/Constants';
+import { FarmDTO } from '../Farm/EnumPlant';
 const { ccclass, property } = _decorator;
 
 @ccclass("WebRequestManager")
@@ -460,6 +461,22 @@ export class WebRequestManager extends Component {
         });
     }
 
+    public GetListLandSlotAsync(clanId: string): Promise<FarmDTO> {
+        return new Promise((resolve, reject) => {
+            WebRequestManager.instance.GetListLandSlot(
+                clanId,
+                (response) => {
+                    console.log("response: ", response);
+                    const farmData = ConvetData.ConvertFarmRequests(response);
+                    resolve(farmData);
+                },
+                (error) => {
+                    reject(error);
+                }
+            );
+        });
+    }
+
     public getGameConfig(successCallback, errorCallback) {
         APIManager.getData(this.combineWithSlash(APIConstant.CONFIG, APIConstant.GAME_CONFIG), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, false);
     }
@@ -671,6 +688,11 @@ export class WebRequestManager extends Component {
         let url = `${APIConstant.CLANS}/${clan_id}/${APIConstant.MEMBERS}`;
         const data: RemoveMembersPayload = { targetUserIds: target_user_id };
         APIManager.deleteData(url, data, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    }
+
+    //Farm
+    public GetListLandSlot(clan_id, successCallback, errorCallback) {
+        APIManager.getData(this.combineWithSlash(APIConstant.FARM_SLOT, clan_id), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
     private errorMessageMap: Map<number, string> = new Map([

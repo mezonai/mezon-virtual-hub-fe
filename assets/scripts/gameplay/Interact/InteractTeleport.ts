@@ -45,6 +45,8 @@ export class InteractTeleport extends Interactable {
             case RoomType.SHOP1:
             case RoomType.SHOP2:
                 return "Để Dịch Chuyển Đến Cửa hàng";
+            case RoomType.FARM:
+                return "Để Dịch Chuyển Đến Nông Trại";
             case RoomType.NONE:
                 return "";
             default:
@@ -108,6 +110,13 @@ export class InteractTeleport extends Interactable {
     private loadOfficeMap(officeMoved: OfficePosition) {
         const previousOffice = UserMeManager.CurrentOffice;
         const previousRoomType = UserMeManager.CurrentRoomType;
+        console.log(
+            "[Teleport → LoadOfficeMap]",
+            "\n  previousOffice:", previousOffice,
+            "\n  previousRoomType:", previousRoomType,
+            "\n  targetRoomType:", this.roomTypeTeleport,
+            "\n  targetRoomName:", Constants.convertNameRoom(previousOffice, this.roomTypeTeleport)
+        );
         const param = new OfficeSenenParameter(previousOffice, previousRoomType, this.roomTypeTeleport, Constants.convertNameRoom(previousOffice, this.roomTypeTeleport));
         SceneManagerController.loadScene(SceneName.SCENE_OFFICE, param)
     }

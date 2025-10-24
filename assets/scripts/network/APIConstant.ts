@@ -42,7 +42,7 @@ export default class APIConstant {
     static TRANSFER_LEADERSHIP = "transfer-leadership";
     static ASSIGN_VICE_LEADER = "assign-vice-leader";
     static REMOVE_VICE_LEADER = "remove-vice-leader";
-    
+    static FARM_SLOT = "farm-slots";
    
     
 

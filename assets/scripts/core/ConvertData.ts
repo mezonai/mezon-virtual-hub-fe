@@ -1,4 +1,5 @@
 
+import { FarmDTO, FarmSlotDTO, PlantState, WarehouseSlotDTO } from "../Farm/EnumPlant";
 import { ClansData, PageInfo, ClansResponseDTO, MemberResponseDTO, UserClan, ClanContributorDTO, ClanContributorsResponseDTO, ClanFundResponseDTO, ClanFund, ClanRequestResponseDTO, MemberClanRequestDTO, ClanStatus } from "../Interface/DataMapAPI";
 import { Food, InventoryDTO, Item, PetReward, QuestType, RewardItemDTO, RewardNewbieDTO, RewardType, StatsConfigDTO } from "../Model/Item";
 import { AnimalElementString, AnimalRarity, Element, PetBattleInfo, PetDTO, PlayerBattle, SkillBattleInfo, Species, TypeSkill } from "../Model/PetDTO";
@@ -150,6 +151,46 @@ export default class ConvetData {
         return {
             result: requests,
             pageInfo: data ? this.extractPageInfo(data) : this.defaultPageInfo()
+        };
+    }
+
+    public static ConvertFarmRequests(farmData: any): FarmDTO {
+        const parsed = typeof farmData === 'string' ? JSON.parse(farmData) : farmData;
+
+        const data = parsed.data || { slots: [], warehouseSlots: [], farm_id: '' };
+
+        const warehouseSlots: WarehouseSlotDTO[] = (data.warehouseSlots || []).map((w: any) => ({
+            id: w.id,
+            farm_id: w.farm_id,
+            plant_id: w.plant_id,
+            quantity: w.quantity,
+            is_harvested: w.is_harvested,
+        }));
+
+        const slots: FarmSlotDTO[] = (data.slots || []).map((s: any) => ({
+            id: s.id,
+            slot_index: s.slot_index,
+            currentPlant: s.currentPlant
+                ? {
+                    id: s.currentPlant.id,
+                    plant_id: s.currentPlant.plant_id,
+                    plant_name: s.currentPlant.plant_name,
+                    planted_by: s.currentPlant.planted_by,
+                    grow_time: s.currentPlant.grow_time,
+                    grow_time_remain: s.currentPlant.grow_time_remain,
+                    stage: s.currentPlant.stage as PlantState,
+                    can_harvest: s.currentPlant.can_harvest,
+                    need_water: s.currentPlant.need_water,
+                    has_bug: s.currentPlant.has_bug,
+                    harvest_at: s.currentPlant.harvest_at ? new Date(s.currentPlant.harvest_at) : null,
+                }
+                : null,
+        }));
+
+        return {
+            farm_id: data.farm_id,
+            warehouseSlots,
+            slots,
         };
     }
 
