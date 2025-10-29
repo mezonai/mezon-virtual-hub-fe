@@ -54,6 +54,11 @@ export class InteractTeleport extends Interactable {
 
     moveTeleport() {
         if (!UserManager.instance.GetMyClientPlayer) return;
+        if (!this.currentOffice) {
+            this.currentOffice = UserMeManager.CurrentOffice;
+        }
+        UserMeManager.CurrentOffice = this.currentOffice;
+        UserMeManager.CurrentRoomType = this.currentRoomType;
         UserManager.instance.GetMyClientPlayer.leaveRoom(() => {
             this.teleport();
         });
@@ -74,12 +79,11 @@ export class InteractTeleport extends Interactable {
     }
 
     private updateUserDataUserClient() {
-        UserMeManager.SetMap = Constants.GetMapData(this.officeChange);
+        UserMeManager.SetClan = Constants.GetMapData(this.officeChange);
         let userMe = UserMeManager.Get;
         let userData = {
-            "map_id": userMe.map.id,
-            "position_x": null,
-            "position_y": null,
+            "position_x": Constants.POSX_PLAYER_INIT,
+            "position_y": Constants.POSY_PLAYER_INIT,
             "display_name": userMe.user.display_name != "" ? userMe.user.display_name : userMe.user.username,
             "gender": userMe.user.gender,
             "skin_set": UserMeManager.Get.user.skin_set
@@ -102,7 +106,9 @@ export class InteractTeleport extends Interactable {
     }
 
     private loadOfficeMap(officeMoved: OfficePosition) {
-        const param = new OfficeSenenParameter(officeMoved, this.currentRoomType, this.roomTypeTeleport, Constants.convertNameRoom(officeMoved, this.roomTypeTeleport));
+        const previousOffice = UserMeManager.CurrentOffice;
+        const previousRoomType = UserMeManager.CurrentRoomType;
+        const param = new OfficeSenenParameter(previousOffice, previousRoomType, this.roomTypeTeleport, Constants.convertNameRoom(previousOffice, this.roomTypeTeleport));
         SceneManagerController.loadScene(SceneName.SCENE_OFFICE, param)
     }
 }

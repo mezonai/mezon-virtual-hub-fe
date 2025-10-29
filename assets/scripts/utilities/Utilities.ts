@@ -367,4 +367,13 @@ export default class Utilities {
         return Math.random() * (max - min) + min;
     }
 
+    static formatDateVN(isoString: string): string {
+        return new Date(isoString).toLocaleDateString('vi-VN', {
+            timeZone: 'Asia/Ho_Chi_Minh',
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        });
+    }
+
 }

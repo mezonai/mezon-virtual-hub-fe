@@ -18,6 +18,11 @@ import { MessageTypes } from '../utilities/MessageTypes';
 import { PopupSelectionMini, SelectionMiniParam } from '../PopUp/PopupSelectionMini';
 import { WebRequestManager } from '../network/WebRequestManager';
 import { Constants } from '../utilities/Constants';
+import { PurchaseMethod } from '../Model/Item';
+import { PopupClanFundMember } from '../PopUp/PopupClanFundMember';
+import { PopupClanList } from '../PopUp/PopupClanList';
+import { PopupClanMemberManager } from '../PopUp/PopupClanMemberManager';
+import { PopupClanDetailInfo } from '../PopUp/PopupClanDetailInfo';
 
 @ccclass('ServerManager')
 export class ServerManager extends Component {
@@ -54,6 +59,7 @@ export class ServerManager extends Component {
         try {
             this.client = new Colyseus.Client(APIConfig.websocketPath);
             log("Connecting to Colyseus server...");
+            console.log("roomName", roomName);
             await this.joinRoom(roomName);
         } catch (error) {
             log("Connection error:", error);
@@ -361,6 +367,82 @@ export class ServerManager extends Component {
             if (data == null || GameManager.instance == null) return;
             GameManager.instance.playerHubController?.onMissionNotice(true);
         });
+
+        this.room.onMessage(MessageTypes.ON_SEND_CLAND_FUND_SELF, (data) => {
+            const { clanId, type, playerAmount, totalAmount, sessionId } = data;
+            if (UserMeManager.Get && clanId === UserMeManager.Get.clan.id) {
+                 SoundManager.instance.playSound(AudioType.ReceiveReward);
+                if (type === PurchaseMethod.GOLD.toString()) {
+                    UserMeManager.playerCoin += playerAmount;
+                }
+                    const popupComp = PopupManager.getInstance().getPopupComponent("UI_ClanFundMember", PopupClanFundMember);
+                    popupComp?.addSelfContribution(totalAmount);
+            
+                const msg = `Bạn đã nạp ${Math.abs(playerAmount)} thành công vào quỹ văn phòng</color>`;
+                Constants.showConfirm(msg);
+            }
+        });
+
+        this.room.onMessage(MessageTypes.ON_SEND_CLAND_FUND_UPDATE, (data) => {
+            const { clanId, type, totalAmount, message } = data;
+            if (UserMeManager.Get && clanId === UserMeManager.Get.clan.id) {
+                const popupComp = PopupManager.getInstance().getPopupComponent("UI_ClanFundMember", PopupClanFundMember);
+                popupComp?.addSelfContribution(totalAmount);
+            }
+        });
+
+        this.room.onMessage(MessageTypes.ON_SEND_CLAND_FUND_FAILED, (data) => {
+            Constants.showConfirm(data.reason, "Chú Ý");
+            SoundManager.instance.playSound(AudioType.NoReward);
+        });
+
+        this.room.onMessage(MessageTypes.JOIN_CLAN_REQUEST, (data) => {
+            SoundManager.instance.playSound(AudioType.NoReward);
+            const popupApprovedMember = PopupManager.getInstance().getPopupComponent('UI_ClanMemberManager', PopupClanMemberManager);
+            popupApprovedMember?.popupApprovedMember.node.active && popupApprovedMember?.popupApprovedMember.loadList(1);
+            Constants.showConfirm(data.message);
+
+        });
+
+        this.room.onMessage(MessageTypes.JOIN_CLAN_APPROVED, async (data)  => {
+            SoundManager.instance.playSound(AudioType.NoReward);
+            await WebRequestManager.instance.getUserProfileAsync();
+            PopupManager.getInstance().getPopupComponent('UI_ClanList', PopupClanList)
+                ?.ShowOpenClanWhenAprrove(data.message)
+                ?? Constants.showConfirm(data.message);
+        });
+
+        this.room.onMessage(MessageTypes.JOIN_CLAN_REJECTED, (data) => {
+            SoundManager.instance.playSound(AudioType.NoReward);
+            const popupComp = PopupManager.getInstance().getPopupComponent('UI_ClanList', PopupClanList);
+            popupComp?.loadList(1);
+            Constants.showConfirm(data.message, "Chú Ý");
+        });
+        
+        this.room.onMessage(MessageTypes.CLAN_LEADER_TRANSFERRED, async (data) => {
+            SoundManager.instance.playSound(AudioType.NoReward);
+            await PopupManager.getInstance().closeAllPopups();
+            Constants.showConfirm(data.message);
+        });
+
+        this.room.onMessage(MessageTypes.CLAN_VICE_LEADER_ASSIGNED, async (data) => {
+            SoundManager.instance.playSound(AudioType.NoReward);
+            await PopupManager.getInstance().closeAllPopups();
+            Constants.showConfirm(data.message);
+        });
+
+        this.room.onMessage(MessageTypes.CLAN_VICE_LEADER_DEMOTED, async (data) => {
+            SoundManager.instance.playSound(AudioType.NoReward);
+            await PopupManager.getInstance().closeAllPopups();
+            Constants.showConfirm(data.message, "Chú Ý");
+        });
+
+        this.room.onMessage(MessageTypes.CLAN_MEMBER_KICKED, async (data) => {
+            SoundManager.instance.playSound(AudioType.NoReward);
+            await WebRequestManager.instance.getUserProfileAsync();
+            await PopupManager.getInstance().closeAllPopups();
+            Constants.showConfirm(data.message);
+        });
     }
 
     public async joinBattleRoom(roomId: string): Promise<void> {
@@ -528,6 +610,10 @@ export class ServerManager extends Component {
     public exchangeCoinToDiamond(sessionId: string, sendData: any) {
         this.exchangeAmount = sendData.diamondTransfer;
         this.room.send("onExchangeDiamondToCoin", sendData)
+    }
+
+    public sendClanFund(sendData) {
+        this.room.send("sendClanFund", sendData)
     }
 
     public answerMathQuestion(id, answer) {

@@ -7,6 +7,7 @@ import { ServerManager } from '../../core/ServerManager';
 import { OfficePosition } from '../OfficePosition';
 import { MapManagerBase } from '../Map/MapManagerBase';
 import { ResourceManager } from '../../core/ResourceManager';
+import { UserMeManager } from '../../core/UserMeManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('OfficeSceneController')
@@ -59,6 +60,8 @@ export class OfficeSceneController extends Component {
             });
 
         });
+        UserMeManager.CurrentOffice = param.currentOffice;
+        UserMeManager.CurrentRoomType = param.roomStart;
         return true;
     }
 
