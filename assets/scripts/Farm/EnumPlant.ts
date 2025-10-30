@@ -5,6 +5,7 @@ export enum PlantState {
   GROWING = 3,
   HARVESTABLE = 4
 }
+
 export class PlantData {
   id: string;
   plant_id: string;
@@ -25,16 +26,39 @@ export interface FarmSlotDTO {
   currentPlant: PlantData;
 }
 
-export interface WarehouseSlotDTO {
+export interface PlantDataDTO {
+  id: string;
+  name: string;
+  grow_time: number;
+  harvest_point: number;
+  buy_price: PlantState;
+  description: boolean;
+}
+
+export interface ClanWarehouseSlotDTO {
   id: string;
   farm_id: string;
   plant_id: string;
   quantity: number;
   is_harvested: boolean;
+  purchased_by: string;
+  plant?: PlantDataDTO;
 }
 
 export interface FarmDTO {
   farm_id: string;
   slots: FarmSlotDTO[];
-  warehouseSlots: WarehouseSlotDTO[];
+  warehouseSlots: ClanWarehouseSlotDTO[];
 }
+
+export interface FarmPDTO {
+  farm_id: string;
+  slots: FarmSlotDTO[];
+  warehouseSlots: ClanWarehouseSlotDTO[];
+}
+
+export interface PlantToSlotPayload {
+  farm_slot_id: string;
+  plant_id?: string;
+}
+

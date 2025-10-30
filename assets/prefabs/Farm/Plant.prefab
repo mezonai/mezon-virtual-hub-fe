@@ -38,7 +38,7 @@
       }
     ],
     "_prefab": {
-      "__id__": 89
+      "__id__": 134
     },
     "_lpos": {
       "__type__": "cc.Vec3",
@@ -140,7 +140,7 @@
     "_contentSize": {
       "__type__": "cc.Size",
       "width": 31,
-      "height": 32
+      "height": 62
     },
     "_anchorPoint": {
       "__type__": "cc.Vec2",
@@ -224,7 +224,7 @@
     "_originalWidth": 0,
     "_originalHeight": 0,
     "_alignMode": 2,
-    "_lockFlags": 18,
+    "_lockFlags": 16,
     "_id": ""
   },
   {
@@ -1791,6 +1791,33 @@
     "allPlantData": [
       {
         "__id__": 84
+      },
+      {
+        "__id__": 89
+      },
+      {
+        "__id__": 94
+      },
+      {
+        "__id__": 99
+      },
+      {
+        "__id__": 104
+      },
+      {
+        "__id__": 109
+      },
+      {
+        "__id__": 114
+      },
+      {
+        "__id__": 119
+      },
+      {
+        "__id__": 124
+      },
+      {
+        "__id__": 129
       }
     ],
     "timeLabel": {
@@ -1816,9 +1843,9 @@
   },
   {
     "__type__": "PlantData",
-    "plantName": "Potato",
+    "plantName": "Broccoli",
     "icon": {
-      "__uuid__": "880630b8-7202-41ea-bd22-7f556105d851@f9941",
+      "__uuid__": "0af5f540-f728-4d96-9f0b-10945db00fea@f9941",
       "__expectedType__": "cc.SpriteFrame"
     },
     "stages": [
@@ -1839,15 +1866,7 @@
   {
     "__type__": "PlantStageData",
     "sprite": {
-      "__uuid__": "ea3a12f1-8b79-403e-9a6a-072d3c10d676@f9941",
-      "__expectedType__": "cc.SpriteFrame"
-    },
-    "type": 0
-  },
-  {
-    "__type__": "PlantStageData",
-    "sprite": {
-      "__uuid__": "9da26154-de8d-4422-a1d6-7efa82f318bd@f9941",
+      "__uuid__": "bd04bab7-2f64-41c2-8dff-c35c65e8a7d5@f9941",
       "__expectedType__": "cc.SpriteFrame"
     },
     "type": 1
@@ -1855,7 +1874,7 @@
   {
     "__type__": "PlantStageData",
     "sprite": {
-      "__uuid__": "d49e618c-3a1e-4556-8e65-72a36f6381e5@f9941",
+      "__uuid__": "1cb094f2-688b-474f-bce7-c7aca0536ca9@f9941",
       "__expectedType__": "cc.SpriteFrame"
     },
     "type": 2
@@ -1863,10 +1882,504 @@
   {
     "__type__": "PlantStageData",
     "sprite": {
-      "__uuid__": "3108e59e-71d1-4f5f-8bfd-c282c8f3051e@f9941",
+      "__uuid__": "86f18dbf-5886-47ef-8d34-631dfc3cafe2@f9941",
       "__expectedType__": "cc.SpriteFrame"
     },
     "type": 3
+  },
+  {
+    "__type__": "PlantStageData",
+    "sprite": {
+      "__uuid__": "d7297d3f-2c06-4e3c-a143-20a360dd0093@f9941",
+      "__expectedType__": "cc.SpriteFrame"
+    },
+    "type": 4
+  },
+  {
+    "__type__": "PlantData",
+    "plantName": "Chilli",
+    "icon": {
+      "__uuid__": "0c8a5edd-08d5-4325-9fe5-4096909181a1@f9941",
+      "__expectedType__": "cc.SpriteFrame"
+    },
+    "stages": [
+      {
+        "__id__": 90
+      },
+      {
+        "__id__": 91
+      },
+      {
+        "__id__": 92
+      },
+      {
+        "__id__": 93
+      }
+    ]
+  },
+  {
+    "__type__": "PlantStageData",
+    "sprite": {
+      "__uuid__": "443e3c1b-a3da-40f5-98c9-168ef6ee0f13@f9941",
+      "__expectedType__": "cc.SpriteFrame"
+    },
+    "type": 1
+  },
+  {
+    "__type__": "PlantStageData",
+    "sprite": {
+      "__uuid__": "a6fa4a99-74e2-48aa-8ea6-7c87d2942786@f9941",
+      "__expectedType__": "cc.SpriteFrame"
+    },
+    "type": 2
+  },
+  {
+    "__type__": "PlantStageData",
+    "sprite": {
+      "__uuid__": "b1b78701-2235-4ebf-9e12-5e3498495892@f9941",
+      "__expectedType__": "cc.SpriteFrame"
+    },
+    "type": 3
+  },
+  {
+    "__type__": "PlantStageData",
+    "sprite": {
+      "__uuid__": "9c058b8c-3ef9-4415-9fad-ef9e60e52fbf@f9941",
+      "__expectedType__": "cc.SpriteFrame"
+    },
+    "type": 4
+  },
+  {
+    "__type__": "PlantData",
+    "plantName": "Corn",
+    "icon": {
+      "__uuid__": "fbb37e16-aa17-496d-8340-6a0320ee12d9@f9941",
+      "__expectedType__": "cc.SpriteFrame"
+    },
+    "stages": [
+      {
+        "__id__": 95
+      },
+      {
+        "__id__": 96
+      },
+      {
+        "__id__": 97
+      },
+      {
+        "__id__": 98
+      }
+    ]
+  },
+  {
+    "__type__": "PlantStageData",
+    "sprite": {
+      "__uuid__": "5e3ef063-e6a8-4f54-a0ca-d786162ea959@f9941",
+      "__expectedType__": "cc.SpriteFrame"
+    },
+    "type": 1
+  },
+  {
+    "__type__": "PlantStageData",
+    "sprite": {
+      "__uuid__": "cd824fa3-06be-4ed4-99fb-0bd39f87493a@f9941",
+      "__expectedType__": "cc.SpriteFrame"
+    },
+    "type": 2
+  },
+  {
+    "__type__": "PlantStageData",
+    "sprite": {
+      "__uuid__": "86b1e0ac-8f03-4523-ab32-7cdf5b03cd25@f9941",
+      "__expectedType__": "cc.SpriteFrame"
+    },
+    "type": 3
+  },
+  {
+    "__type__": "PlantStageData",
+    "sprite": {
+      "__uuid__": "ae29994b-aebc-4942-ab82-798c98992e43@f9941",
+      "__expectedType__": "cc.SpriteFrame"
+    },
+    "type": 4
+  },
+  {
+    "__type__": "PlantData",
+    "plantName": "Eggplant",
+    "icon": {
+      "__uuid__": "3bb29ef0-bbaa-42e1-b02d-0e574c81131c@f9941",
+      "__expectedType__": "cc.SpriteFrame"
+    },
+    "stages": [
+      {
+        "__id__": 100
+      },
+      {
+        "__id__": 101
+      },
+      {
+        "__id__": 102
+      },
+      {
+        "__id__": 103
+      }
+    ]
+  },
+  {
+    "__type__": "PlantStageData",
+    "sprite": {
+      "__uuid__": "15052634-8851-42c2-a7f0-70a1d84b1cb6@f9941",
+      "__expectedType__": "cc.SpriteFrame"
+    },
+    "type": 1
+  },
+  {
+    "__type__": "PlantStageData",
+    "sprite": {
+      "__uuid__": "69c0d5e6-2f18-452d-909c-f541b6e4c5ba@f9941",
+      "__expectedType__": "cc.SpriteFrame"
+    },
+    "type": 2
+  },
+  {
+    "__type__": "PlantStageData",
+    "sprite": {
+      "__uuid__": "e728f309-3e3a-484d-a66d-0cf6ceba6b05@f9941",
+      "__expectedType__": "cc.SpriteFrame"
+    },
+    "type": 3
+  },
+  {
+    "__type__": "PlantStageData",
+    "sprite": {
+      "__uuid__": "8c3b56e3-0e35-4c9c-80eb-9c354fb4626f@f9941",
+      "__expectedType__": "cc.SpriteFrame"
+    },
+    "type": 4
+  },
+  {
+    "__type__": "PlantData",
+    "plantName": "Garlic",
+    "icon": {
+      "__uuid__": "c878cacc-0618-4e10-8d92-593c4d902aeb@f9941",
+      "__expectedType__": "cc.SpriteFrame"
+    },
+    "stages": [
+      {
+        "__id__": 105
+      },
+      {
+        "__id__": 106
+      },
+      {
+        "__id__": 107
+      },
+      {
+        "__id__": 108
+      }
+    ]
+  },
+  {
+    "__type__": "PlantStageData",
+    "sprite": {
+      "__uuid__": "eaba8af7-75c2-4f20-a20f-8697ee2b069e@f9941",
+      "__expectedType__": "cc.SpriteFrame"
+    },
+    "type": 1
+  },
+  {
+    "__type__": "PlantStageData",
+    "sprite": {
+      "__uuid__": "bdd8dd87-a5ab-4eba-af9d-9a970440d37c@f9941",
+      "__expectedType__": "cc.SpriteFrame"
+    },
+    "type": 2
+  },
+  {
+    "__type__": "PlantStageData",
+    "sprite": {
+      "__uuid__": "cb61f2ba-dd89-45e1-86c6-2dd21ab05fe5@f9941",
+      "__expectedType__": "cc.SpriteFrame"
+    },
+    "type": 3
+  },
+  {
+    "__type__": "PlantStageData",
+    "sprite": {
+      "__uuid__": "f930fecb-55ff-4463-8ee4-ed5dc186fa7c@f9941",
+      "__expectedType__": "cc.SpriteFrame"
+    },
+    "type": 4
+  },
+  {
+    "__type__": "PlantData",
+    "plantName": "Grape",
+    "icon": {
+      "__uuid__": "acb5939c-59e2-4b9f-9ffa-24ec836bcd06@f9941",
+      "__expectedType__": "cc.SpriteFrame"
+    },
+    "stages": [
+      {
+        "__id__": 110
+      },
+      {
+        "__id__": 111
+      },
+      {
+        "__id__": 112
+      },
+      {
+        "__id__": 113
+      }
+    ]
+  },
+  {
+    "__type__": "PlantStageData",
+    "sprite": {
+      "__uuid__": "e59c26f5-9fc8-4893-a70a-94980b6373fc@f9941",
+      "__expectedType__": "cc.SpriteFrame"
+    },
+    "type": 1
+  },
+  {
+    "__type__": "PlantStageData",
+    "sprite": {
+      "__uuid__": "898751a5-1f12-481b-843c-9e74e41a8c36@f9941",
+      "__expectedType__": "cc.SpriteFrame"
+    },
+    "type": 2
+  },
+  {
+    "__type__": "PlantStageData",
+    "sprite": {
+      "__uuid__": "3cac5564-75bc-4b55-bedf-ab97963c2659@f9941",
+      "__expectedType__": "cc.SpriteFrame"
+    },
+    "type": 3
+  },
+  {
+    "__type__": "PlantStageData",
+    "sprite": {
+      "__uuid__": "a18d6686-cd9a-480b-b16b-f3318f509863@f9941",
+      "__expectedType__": "cc.SpriteFrame"
+    },
+    "type": 4
+  },
+  {
+    "__type__": "PlantData",
+    "plantName": "Potato",
+    "icon": {
+      "__uuid__": "880630b8-7202-41ea-bd22-7f556105d851@f9941",
+      "__expectedType__": "cc.SpriteFrame"
+    },
+    "stages": [
+      {
+        "__id__": 115
+      },
+      {
+        "__id__": 116
+      },
+      {
+        "__id__": 117
+      },
+      {
+        "__id__": 118
+      }
+    ]
+  },
+  {
+    "__type__": "PlantStageData",
+    "sprite": {
+      "__uuid__": "ea3a12f1-8b79-403e-9a6a-072d3c10d676@f9941",
+      "__expectedType__": "cc.SpriteFrame"
+    },
+    "type": 1
+  },
+  {
+    "__type__": "PlantStageData",
+    "sprite": {
+      "__uuid__": "9da26154-de8d-4422-a1d6-7efa82f318bd@f9941",
+      "__expectedType__": "cc.SpriteFrame"
+    },
+    "type": 2
+  },
+  {
+    "__type__": "PlantStageData",
+    "sprite": {
+      "__uuid__": "d49e618c-3a1e-4556-8e65-72a36f6381e5@f9941",
+      "__expectedType__": "cc.SpriteFrame"
+    },
+    "type": 3
+  },
+  {
+    "__type__": "PlantStageData",
+    "sprite": {
+      "__uuid__": "3108e59e-71d1-4f5f-8bfd-c282c8f3051e@f9941",
+      "__expectedType__": "cc.SpriteFrame"
+    },
+    "type": 4
+  },
+  {
+    "__type__": "PlantData",
+    "plantName": "Pumpkin",
+    "icon": {
+      "__uuid__": "5cb422aa-ec52-434a-aa52-bcc28badb158@f9941",
+      "__expectedType__": "cc.SpriteFrame"
+    },
+    "stages": [
+      {
+        "__id__": 120
+      },
+      {
+        "__id__": 121
+      },
+      {
+        "__id__": 122
+      },
+      {
+        "__id__": 123
+      }
+    ]
+  },
+  {
+    "__type__": "PlantStageData",
+    "sprite": {
+      "__uuid__": "a2f4aefe-ae89-4d67-a801-de925f17cd0d@f9941",
+      "__expectedType__": "cc.SpriteFrame"
+    },
+    "type": 1
+  },
+  {
+    "__type__": "PlantStageData",
+    "sprite": {
+      "__uuid__": "809eb3cb-8dae-441d-bc1d-165aeb477078@f9941",
+      "__expectedType__": "cc.SpriteFrame"
+    },
+    "type": 2
+  },
+  {
+    "__type__": "PlantStageData",
+    "sprite": {
+      "__uuid__": "6a6494f6-2b26-4ee6-bd6f-afb1594e8194@f9941",
+      "__expectedType__": "cc.SpriteFrame"
+    },
+    "type": 3
+  },
+  {
+    "__type__": "PlantStageData",
+    "sprite": {
+      "__uuid__": "028cc132-7e29-4bcc-827a-d4de77ae36a6@f9941",
+      "__expectedType__": "cc.SpriteFrame"
+    },
+    "type": 4
+  },
+  {
+    "__type__": "PlantData",
+    "plantName": "Strawberry",
+    "icon": {
+      "__uuid__": "75295e04-52e5-4e8e-a561-bb8eba89d078@f9941",
+      "__expectedType__": "cc.SpriteFrame"
+    },
+    "stages": [
+      {
+        "__id__": 125
+      },
+      {
+        "__id__": 126
+      },
+      {
+        "__id__": 127
+      },
+      {
+        "__id__": 128
+      }
+    ]
+  },
+  {
+    "__type__": "PlantStageData",
+    "sprite": {
+      "__uuid__": "bc434d4b-e0fe-43bd-b692-1c56b33a5052@f9941",
+      "__expectedType__": "cc.SpriteFrame"
+    },
+    "type": 1
+  },
+  {
+    "__type__": "PlantStageData",
+    "sprite": {
+      "__uuid__": "41d319c8-b952-47c1-9f92-ac1bbf30d0ac@f9941",
+      "__expectedType__": "cc.SpriteFrame"
+    },
+    "type": 2
+  },
+  {
+    "__type__": "PlantStageData",
+    "sprite": {
+      "__uuid__": "acdedb79-aa62-4f82-8cb1-90dd088aa70e@f9941",
+      "__expectedType__": "cc.SpriteFrame"
+    },
+    "type": 3
+  },
+  {
+    "__type__": "PlantStageData",
+    "sprite": {
+      "__uuid__": "bcb352ff-b1ab-4ed1-8bcd-f4d7b9ac64b8@f9941",
+      "__expectedType__": "cc.SpriteFrame"
+    },
+    "type": 4
+  },
+  {
+    "__type__": "PlantData",
+    "plantName": "Watermelon",
+    "icon": {
+      "__uuid__": "4b70172d-ec6a-4de5-998f-4b0eca13459f@f9941",
+      "__expectedType__": "cc.SpriteFrame"
+    },
+    "stages": [
+      {
+        "__id__": 130
+      },
+      {
+        "__id__": 131
+      },
+      {
+        "__id__": 132
+      },
+      {
+        "__id__": 133
+      }
+    ]
+  },
+  {
+    "__type__": "PlantStageData",
+    "sprite": {
+      "__uuid__": "2026fce1-2b1a-441c-8c88-8961546d6d75@f9941",
+      "__expectedType__": "cc.SpriteFrame"
+    },
+    "type": 1
+  },
+  {
+    "__type__": "PlantStageData",
+    "sprite": {
+      "__uuid__": "2f7b2d0b-abb7-421f-942a-cc209c5338df@f9941",
+      "__expectedType__": "cc.SpriteFrame"
+    },
+    "type": 2
+  },
+  {
+    "__type__": "PlantStageData",
+    "sprite": {
+      "__uuid__": "5bd7e10e-a827-45fe-b38c-6508df324024@f9941",
+      "__expectedType__": "cc.SpriteFrame"
+    },
+    "type": 3
+  },
+  {
+    "__type__": "PlantStageData",
+    "sprite": {
+      "__uuid__": "50629cae-7d73-4925-a166-2733609d35f1@f9941",
+      "__expectedType__": "cc.SpriteFrame"
+    },
+    "type": 4
   },
   {
     "__type__": "cc.PrefabInfo",

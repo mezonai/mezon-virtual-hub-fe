@@ -6,7 +6,7 @@ import { PopupClanNotice, PopupClanNoticeParam as PopupOfficeNoticeParam } from 
 import { PopupClanMember, PopupClanMemberParam } from './PopupClanMember';
 import { PopupClanLeaderboard } from './PopupClanLeaderboard';
 import { PopupClanFundMember, PopupClanFundMemberParam } from './PopupClanFundMember';
-import { PopupClanInventory } from './PopupClanInventory';
+import { PopupClanInventory, PopupClanInventoryParam } from './PopupClanInventory';
 import { AvatarIconHelper } from '../Clan/AvatarIconHelper';
 import { ClanDescriptionDTO, ClansData } from '../Interface/DataMapAPI';
 import { UserMeManager } from '../core/UserMeManager';
@@ -52,7 +52,15 @@ export class PopupClanDetailInfo extends BasePopup {
 
         this.inventoryClanBtn.addAsyncListener(async () => {
             this.inventoryClanBtn.interactable = false;
-            await PopupManager.getInstance().openAnimPopup("UI_ClanInventory", PopupClanInventory);
+            const param: PopupClanInventoryParam =
+            {
+                clanDetail: this.clanDetail,
+                onUpdateFund: (newFund: number) => {
+                    this.clanFund = newFund;
+                    this.setDataDundClan(newFund);
+                }
+            }
+            await PopupManager.getInstance().openAnimPopup("UI_ClanInventory", PopupClanInventory, param);
             this.inventoryClanBtn.interactable = true;
         });
 
@@ -149,9 +157,12 @@ export class PopupClanDetailInfo extends BasePopup {
 
         const value = await WebRequestManager.instance.getClanFundAsync(UserMeManager.Get.clan.id);
         this.clanFund = value?.funds.find(f => f.type === "gold")?.amount ?? 0;
-        this.totalClanFund.string = ` <outline color=#222222 width=1> ${this.clanFund}</outline>`;
-
+        this.setDataDundClan(this.clanFund);
         this.setDataMyClanInfo(this.clanDetail);
+    }
+
+    public setDataDundClan(value: Number){
+         this.totalClanFund.string = ` <outline color=#222222 width=1> ${value}</outline>`;
     }
 
     setDataMyClanInfo(clanData: ClansData) {

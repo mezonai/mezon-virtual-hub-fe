@@ -13,7 +13,7 @@ export class BaseInventoryUIITem extends Component {
     @property({ type: [SpriteFrame] }) stasFrame: SpriteFrame[] = [];
     @property({ type: Toggle }) toggle: Toggle = null;
     @property({ type: Label }) amountLabel: Label;
-    public onClick?: (uiItem: this, data: Item | Food | PlantData) => void;
+    public onClick?: (uiItem: this, data: Item | Food ) => void;
     protected lastTriggerTime = 0;
     public data: Item = null;
     public dataFood: Food = null;

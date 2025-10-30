@@ -104,6 +104,7 @@ export enum ItemType {
 export enum InventoryType {
     ITEM = 'item',
     FOOD = 'food',
+    PLANT ='plant'
 }
 
 export enum FoodType {
@@ -186,6 +187,7 @@ export enum ItemCode {
 }
 
 export interface BuyItemPayload {
+    clanId?: string | number;
     itemId: string | number;
     quantity: number;
     type: string;

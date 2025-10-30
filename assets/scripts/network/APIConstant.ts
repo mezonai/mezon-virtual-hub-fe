@@ -43,9 +43,9 @@ export default class APIConstant {
     static ASSIGN_VICE_LEADER = "assign-vice-leader";
     static REMOVE_VICE_LEADER = "remove-vice-leader";
     static FARM_SLOT = "farm-slots";
-   
-    
-
+    static CLANWAREHOUSE = "Clan-Warehouses";
+    static PLANT = "plants";
+    static BUY_ITEM_CLAN = "buy-items-clan";
 }
 
 export class APIConfig {

@@ -34,4 +34,14 @@ export enum MessageTypes {
     CLAN_VICE_LEADER_ASSIGNED = 'clan_vice_leader_assigned',
     CLAN_VICE_LEADER_DEMOTED = 'clan_vice_leader_demoted',
     CLAN_MEMBER_KICKED = 'clan_member_kicked',
+    SEND_CLAN_FUND = 'sendClanFund',
+    ON_BUY_CLAN_UPDATE_FUND = 'onBuyClanUpdatedFund',
+    ON_BUY_CLAN_ITEM_SUCCESS = 'onBuyClanItemSuccess',
+    ON_BUY_CLAN_ITEM_FAILED = 'onBuyClanItemFailed',
+    JOIN_FARM = 'joinFarm',
+    ON_SLOT_FARM = 'onSlotFarm',
+    ON_SLOT_UPDATE = 'onSlotUpdate',
+    ON_SLOT_UPDATE_RT = 'onSlotUpdateRT',
+    ON_WATER_PLANT = 'onWaterPlant',
+    ON_CATCH_BUG = 'onCatchBug'
 }

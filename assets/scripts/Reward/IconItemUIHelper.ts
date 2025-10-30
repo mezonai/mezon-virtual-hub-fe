@@ -67,7 +67,7 @@ export class IconItemUIHelper extends Component {
         this.plantMap = {};
         for (const sf of this.plantIcons) {
             if (sf && sf.name) {
-                this.plantMap[sf.name.toLowerCase()] = sf;
+                this.plantMap[sf.name] = sf;
             }
         }
     }
@@ -99,7 +99,7 @@ export class IconItemUIHelper extends Component {
     private async applyPlantIcon(plantName: string) {
         if (!plantName) return;
         if (!this.plantMap) this.initPlantMap();
-        this.icon.spriteFrame = this.plantMap?.[plantName.toLowerCase()] ?? null;
+        this.icon.spriteFrame = this.plantMap?.[plantName] ?? null;
     }
 
     private async applySkinIcon(item: Item) {
@@ -146,25 +146,6 @@ export class IconItemUIHelper extends Component {
         }
     }
 
-    private getLocalData(item: Item) {
-        if (!item) return null;
-        return ResourceManager.instance.getLocalSkinById(item.id, item.type);
-    }
-
-    private async getSkinSprite(localData: LocalItemDataConfig, item: Item): Promise<SpriteFrame> {
-        if (!localData) return null;
-
-        if (!item.iconSF || item.iconSF.length === 0) {
-            item.iconSF = [];
-            for (const icon of localData.icons) {
-                const spriteFrame = await this.loadSkinIcon(localData.bundleName, icon);
-                item.iconSF.push(spriteFrame);
-            }
-        }
-        item.mappingLocalData = localData;
-        return item.iconSF[0];
-    }
-    
     public setSizeIconByItemType(itemType?: ItemType, sizeSpecial = 0.16, sizeDefault = 0.3) {
         let value = sizeDefault;
         if (itemType) {
@@ -193,12 +174,39 @@ export class IconItemUIHelper extends Component {
     public GetIcon(): SpriteFrame {
         return this.icon.spriteFrame;
     }
+    
+    private getLocalData(item: Item) {
+        if (!item) return null;
+        return ResourceManager.instance.getLocalSkinById(item.id, item.type);
+    }
+
+    public getMoneyIcon(rewardType: RewardType | string): SpriteFrame {
+        if (!this.moneyMap) this.initMoneyMap();
+        return this.moneyMap?.[rewardType] ?? null;
+    }
+
+    private async getSkinSprite(localData: LocalItemDataConfig, item: Item): Promise<SpriteFrame> {
+        if (!localData) return null;
+
+        if (!item.iconSF || item.iconSF.length === 0) {
+            item.iconSF = [];
+            for (const icon of localData.icons) {
+                const spriteFrame = await this.loadSkinIcon(localData.bundleName, icon);
+                item.iconSF.push(spriteFrame);
+            }
+        }
+        item.mappingLocalData = localData;
+        return item.iconSF[0];
+    }
 
     public getPetIcon(species: string): SpriteFrame {
+        if (!this.petMap) this.initPetMap();
         return this.petMap?.[species.toLowerCase()] ?? null;
     }
 
     public getPlantIcon(plantName: string): SpriteFrame {
-        return this.plantMap?.[plantName.toLowerCase()] ?? null;
+        if (!this.plantMap) this.initPlantMap();
+        const key = plantName;
+        return this.plantMap?.[key] ?? null;
     }
 }

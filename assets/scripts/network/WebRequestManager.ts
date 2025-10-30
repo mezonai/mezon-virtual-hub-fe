@@ -11,7 +11,7 @@ import { BuyItemPayload, InventoryDTO, Item, RewardItemDTO, RewardNewbieDTO, Sta
 import { GameManager } from '../core/GameManager';
 import { UpgradePetResponseDTO, PetDTO } from '../Model/PetDTO';
 import { Constants } from '../utilities/Constants';
-import { FarmDTO } from '../Farm/EnumPlant';
+import { ClanWarehouseSlotDTO, FarmDTO, PlantData, PlantDataDTO, PlantToSlotPayload } from '../Farm/EnumPlant';
 const { ccclass, property } = _decorator;
 
 @ccclass("WebRequestManager")
@@ -461,13 +461,26 @@ export class WebRequestManager extends Component {
         });
     }
 
-    public GetListLandSlotAsync(clanId: string): Promise<FarmDTO> {
+    public GetClanWarehousesAsync(clanId: string): Promise<ClanWarehouseSlotDTO[]> {
         return new Promise((resolve, reject) => {
-            WebRequestManager.instance.GetListLandSlot(
+            WebRequestManager.instance.GetClanWarehouses(
                 clanId,
                 (response) => {
-                    console.log("response: ", response);
-                    const farmData = ConvetData.ConvertFarmRequests(response);
+                    const farmData = ConvetData.ConvertWarehouseSlots(response.data);
+                    resolve(farmData);
+                },
+                (error) => {
+                    reject(error);
+                }
+            );
+        });
+    }
+
+    public GetShopPlantAsync(): Promise<PlantDataDTO[]> {
+        return new Promise((resolve, reject) => {
+            WebRequestManager.instance.GetShopPlant(
+                (response) => {
+                    const farmData = ConvetData.ConvertPlants(response.data);
                     resolve(farmData);
                 },
                 (error) => {
@@ -690,10 +703,15 @@ export class WebRequestManager extends Component {
         APIManager.deleteData(url, data, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
-    //Farm
-    public GetListLandSlot(clan_id, successCallback, errorCallback) {
-        APIManager.getData(this.combineWithSlash(APIConstant.FARM_SLOT, clan_id), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    public GetClanWarehouses(clan_id, successCallback, errorCallback) {
+        APIManager.getData(this.combineWithSlash(APIConstant.CLANWAREHOUSE, clan_id), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
+
+    //Farm
+    public GetShopPlant(successCallback, errorCallback) {
+        APIManager.getData(this.combineWithSlash(APIConstant.PLANT), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    }
+
 
     private errorMessageMap: Map<number, string> = new Map([
         [400, 'Bad Request'],

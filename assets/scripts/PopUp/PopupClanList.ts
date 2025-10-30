@@ -52,6 +52,7 @@ export class PopupClanList extends BasePopup {
         this.svClanList.content.removeAllChildren();
         this._listClan = [];
         this.noMember.active = !this.listClan?.result || this.listClan.result.length === 0;
+        if (!this.listClan || this.listClan.result.length === 0) return;
         for (const itemClan of this.listClan.result) {
                 const itemJoinClan = instantiate(this.itemPrefab);
                 itemJoinClan.setParent(this.svClanList.content);

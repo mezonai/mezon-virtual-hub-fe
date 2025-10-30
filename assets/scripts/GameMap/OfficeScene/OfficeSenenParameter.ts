@@ -8,16 +8,13 @@ export class OfficeSenenParameter{
     nameRoomServer: string;
     idclan: string;
 
-    constructor(currentOffice: OfficePosition, roomStart: RoomType, roomEnds: RoomType, nameRoom: string) {
+    constructor(currentOffice: OfficePosition, roomStart: RoomType, roomEnds: RoomType, nameRoom: string, idclan: string) {
         this.currentOffice = currentOffice;
         this.roomStart = roomStart;
         this.roomEnds = roomEnds;
         this.nameRoomServer = nameRoom;
-    }   
-
-    setIdClan(idclan: string){
         this.idclan = idclan;
-    }
+    }   
 }
 
 

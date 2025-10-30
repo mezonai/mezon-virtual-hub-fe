@@ -1,9 +1,12 @@
 import { _decorator, Component, Node, Button, instantiate, Prefab } from 'cc';
 import { PopupManager } from './PopupManager';
-import { PlantData } from '../Farm/EnumPlant';
-import { PlantInventoryItem } from '../gameplay/player/inventory/PlantInventoryItem';
+import { ClanWarehouseSlotDTO, PlantData, PlantDataDTO } from '../Farm/EnumPlant';
 import { BasePopup } from './BasePopup';
 import { ScrollView } from 'cc';
+import { WebRequestManager } from '../network/WebRequestManager';
+import { InventoryClanUIItem } from '../Clan/InventoryClanUIItem';
+import { UserMeManager } from '../core/UserMeManager';
+import { UserManager } from '../core/UserManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('PopupChoosePlant')
@@ -11,37 +14,47 @@ export class PopupChoosePlant extends BasePopup {
     @property(ScrollView) plantListParent: ScrollView = null!;
     @property(Prefab) plantItemPrefab: Prefab = null!;
     @property(Button) closeButton: Button = null!;
-
-    private onChoose: ((plant: PlantData) => void) | null = null;
-
+    private clanWarehouseSlot: ClanWarehouseSlotDTO[];
+    private onChoose: ((plant: PlantDataDTO) => void) | null = null;
+    private _clanWarehouseSlot: InventoryClanUIItem[];
+    
     public async init(param: PopupChoosePlantParam) {
-        this.closeButton.node.on('click', () => {
-            PopupManager.getInstance().closePopup(this.node.uuid);
+        this.closeButton.addAsyncListener(async () => {
+            this.closeButton.interactable = false;
+            await this.CloseUI();
+            this.closeButton.interactable = true;
         });
-        console.log("param.plantItems: ", param.plantItems);
+        UserManager.instance.GetMyClientPlayer.get_MoveAbility.StopMove();
         this.onChoose = param.onChoose;
-        this.plantListParent.content.removeAllChildren();
-
-        param.plantItems.forEach(plant => {
-            const node = instantiate(this.plantItemPrefab);
-            node.setParent(this.plantListParent.content);
-
-            const itemUI = node.getComponent(PlantInventoryItem)!;
-            itemUI.initPlant(plant);
-
-            itemUI.onClick = (_uiItem, dataPlant) => {
-                this.onChoose?.(dataPlant as PlantData);
-                PopupManager.getInstance().closePopup(this.node.uuid);
-            };
-        });
-     
+    }
+    
+    private async CloseUI() {
+       await PopupManager.getInstance().closePopup(this.node.uuid);
+       await UserManager.instance.GetMyClientPlayer.get_MoveAbility.startMove();
     }
 
+    public InitItemInventory(data: ClanWarehouseSlotDTO[]) {
+        if (!this.node.isValid || !this.plantListParent?.content) return;
+        this.plantListParent.content.removeAllChildren();
+        this._clanWarehouseSlot = [];
+
+        for (const element of data) {
+            const slotNode = instantiate(this.plantItemPrefab);
+            const plantItem = slotNode.getComponent(InventoryClanUIItem);
+            if (plantItem) {
+                plantItem.initPlant(element, async (item) => {
+                    if (!item?.clanWarehouseSlotDTO?.plant) return;
+                    const plantToSend = item.clanWarehouseSlotDTO.plant;
+                    await this.onChoose?.(plantToSend);
+                });
+            }
+            slotNode.setParent(this.plantListParent.content);
+            this._clanWarehouseSlot.push(plantItem);
+        }
+    }
 }
 
 export interface PopupChoosePlantParam {
-    slotId: number;
-    plantItems: PlantData[];
-    onChoose: (plant: PlantData) => void;
+    onChoose?: (plant: PlantDataDTO) => void;
 }
 

@@ -91,8 +91,8 @@ export class PopupClanFundMember extends BasePopup {
         this.listClanFundMember = await WebRequestManager.instance.GetClanFundContributorsAsync(this.clanDetail.id, page);
         this.svMemberList.content.removeAllChildren();
         this._listClanFundMember = [];
-        
         this.noMember.active = !this.listClanFundMember?.result || this.listClanFundMember.result.length === 0;
+        if (!this.listClanFundMember || this.listClanFundMember.result.length === 0) return;
         for (const itemClan of this.listClanFundMember.result) {
             const itemJoinClan = instantiate(this.itemPrefab);
             itemJoinClan.setParent(this.svMemberList.content);
@@ -105,14 +105,11 @@ export class PopupClanFundMember extends BasePopup {
 
     private async SendClanFund(data) {
         const { clanId, type, amount } = data;
-        console.log("data:", data);
-        console.log("amount:", amount);
         if (amount <= 0) {
             let chatContent = Constants.invalidGoldResponse[randomRangeInt(0, Constants.invalidGoldResponse.length)];
             Constants.showConfirm(chatContent);
             return;
         }
-        console.log("Coin:", UserMeManager.playerCoin);
         if (amount > UserMeManager.playerCoin) {
             let chatContent = Constants.notEnoughGoldResponse[randomRangeInt(0, Constants.notEnoughGoldResponse.length)];
             Constants.showConfirm(chatContent);

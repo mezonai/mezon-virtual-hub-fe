@@ -1,4 +1,6 @@
+import { Office } from "../GameMap/Office";
 import { OfficePosition } from "../GameMap/OfficePosition";
+import { OfficeSenenParameter } from "../GameMap/OfficeScene/OfficeSenenParameter";
 import { RoomType } from "../GameMap/RoomType";
 import { UserDataResponse } from "../Interface/DataMapAPI";
 import { Food, FoodType, InventoryDTO, Item } from "../Model/Item";
@@ -10,7 +12,7 @@ export class UserMeManager {
     private static myPets: PetDTO[] | null = null;
     private static _playerProperty = null;
     private static _playerClanFund = null;
-    private static _currentOffice: OfficePosition = OfficePosition.NONE;
+    private static _currentOffice: OfficeSenenParameter;
     private static _currentRoomType: RoomType = RoomType.NONE;
 
     public static get Get(): UserDataResponse | null {
@@ -110,7 +112,7 @@ export class UserMeManager {
     public static get CurrentOffice() {
         return this._currentOffice;
     }
-    public static set CurrentOffice(value: OfficePosition) {
+    public static set CurrentOffice(value: OfficeSenenParameter) {
         this._currentOffice = value;
     }
 

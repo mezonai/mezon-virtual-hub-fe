@@ -1,5 +1,5 @@
 
-import { FarmDTO, FarmSlotDTO, PlantState, WarehouseSlotDTO } from "../Farm/EnumPlant";
+import { FarmDTO, FarmSlotDTO, PlantState, ClanWarehouseSlotDTO, PlantDataDTO, PlantData } from "../Farm/EnumPlant";
 import { ClansData, PageInfo, ClansResponseDTO, MemberResponseDTO, UserClan, ClanContributorDTO, ClanContributorsResponseDTO, ClanFundResponseDTO, ClanFund, ClanRequestResponseDTO, MemberClanRequestDTO, ClanStatus } from "../Interface/DataMapAPI";
 import { Food, InventoryDTO, Item, PetReward, QuestType, RewardItemDTO, RewardNewbieDTO, RewardType, StatsConfigDTO } from "../Model/Item";
 import { AnimalElementString, AnimalRarity, Element, PetBattleInfo, PetDTO, PlayerBattle, SkillBattleInfo, Species, TypeSkill } from "../Model/PetDTO";
@@ -154,38 +154,90 @@ export default class ConvetData {
         };
     }
 
-    public static ConvertFarmRequests(farmData: any): FarmDTO {
-        const parsed = typeof farmData === 'string' ? JSON.parse(farmData) : farmData;
+    public static ConvertPlants(plants: any[]): PlantDataDTO[] {
+        return (plants || []).map(p => ({
+            id: p.id,
+            name: p.name,
+            grow_time: p.grow_time,
+            harvest_point: p.harvest_point,
+            buy_price: p.buy_price,
+            description: p.description,
+        }));
+    }
 
-        const data = parsed.data || { slots: [], warehouseSlots: [], farm_id: '' };
-
-        const warehouseSlots: WarehouseSlotDTO[] = (data.warehouseSlots || []).map((w: any) => ({
+    public static ConvertWarehouseSlots(warehouses: any[]): ClanWarehouseSlotDTO[] {
+        return (warehouses || []).map(w => ({
             id: w.id,
-            farm_id: w.farm_id,
-            plant_id: w.plant_id,
+            farm_id: w.clan_id,
+            plant_id: w.item_id,
             quantity: w.quantity,
             is_harvested: w.is_harvested,
-        }));
-
-        const slots: FarmSlotDTO[] = (data.slots || []).map((s: any) => ({
-            id: s.id,
-            slot_index: s.slot_index,
-            currentPlant: s.currentPlant
+            purchased_by: w.purchased_by || '',
+            plant: w.plant
                 ? {
-                    id: s.currentPlant.id,
-                    plant_id: s.currentPlant.plant_id,
-                    plant_name: s.currentPlant.plant_name,
-                    planted_by: s.currentPlant.planted_by,
-                    grow_time: s.currentPlant.grow_time,
-                    grow_time_remain: s.currentPlant.grow_time_remain,
-                    stage: s.currentPlant.stage as PlantState,
-                    can_harvest: s.currentPlant.can_harvest,
-                    need_water: s.currentPlant.need_water,
-                    has_bug: s.currentPlant.has_bug,
-                    harvest_at: s.currentPlant.harvest_at ? new Date(s.currentPlant.harvest_at) : null,
+                    id: w.plant.id,
+                    name: w.plant.name,
+                    grow_time: w.plant.grow_time,
+                    harvest_point: w.plant.harvest_point,
+                    buy_price: w.plant.buy_price as PlantState,
+                    description: w.plant.description,
                 }
-                : null,
+                : undefined,
         }));
+    }
+
+    public static ConvertWarehouseSlot(warehouse: any): ClanWarehouseSlotDTO {
+        return {
+            id: warehouse.id,
+            farm_id: warehouse.farm_id,
+            plant_id: warehouse.plant_id,
+            quantity: warehouse.quantity,
+            is_harvested: warehouse.is_harvested,
+            purchased_by: warehouse.purchased_by || '',
+            plant: warehouse.plant
+                ? {
+                    id: warehouse.plant.id,
+                    name: warehouse.plant.name,
+                    grow_time: warehouse.plant.grow_time,
+                    harvest_point: warehouse.plant.harvest_point,
+                    buy_price: warehouse.plant.buy_price as PlantState,
+                    description: warehouse.plant.description,
+                }
+                : undefined,
+        };
+    }
+
+    public static convertPlantData(slotPlant: any): PlantData | null {
+        if (!slotPlant) return null!;
+        return {
+            id: slotPlant.id,
+            plant_id: slotPlant.plant_id,
+            plant_name: slotPlant.plant_name,
+            planted_by: slotPlant.planted_by,
+            grow_time: slotPlant.grow_time,
+            grow_time_remain: slotPlant.grow_time_remain,
+            stage: slotPlant.stage as PlantState,
+            can_harvest: slotPlant.can_harvest,
+            need_water: slotPlant.need_water,
+            has_bug: slotPlant.has_bug,
+            harvest_at: slotPlant.harvest_at ? new Date(slotPlant.harvest_at) : null,
+        };
+    }
+
+    public static ConvertFarmSlot(slot: any): FarmSlotDTO {
+        return {
+            id: slot.id,
+            slot_index: slot.slot_index,
+            currentPlant: this.convertPlantData(slot.currentPlant),
+        };
+    }
+
+    public static ConvertFarmRequests(farmData: any): FarmDTO {
+        const parsed = typeof farmData === 'string' ? JSON.parse(farmData) : farmData;
+        const data = parsed.data || { slots: [], warehouseSlots: [], farm_id: '' };
+
+        const warehouseSlots = (data.warehouseSlots || []).map(this.ConvertWarehouseSlot);
+        const slots = (data.slots || []).map(this.ConvertFarmSlot);
 
         return {
             farm_id: data.farm_id,

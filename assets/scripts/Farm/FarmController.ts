@@ -3,8 +3,11 @@ import { PopupManager } from '../PopUp/PopupManager';
 import { PopupChoosePlant, PopupChoosePlantParam } from '../PopUp/PopupChoosePlant';
 import { FarmSlot } from './FarmSlot';
 import { WebRequestManager } from '../network/WebRequestManager';
+import { FarmDTO, FarmSlotDTO, PlantDataDTO, PlantToSlotPayload } from './EnumPlant';
+import { ServerManager } from '../core/ServerManager';
+import { UserManager } from '../core/UserManager';
 import { UserMeManager } from '../core/UserMeManager';
-import { FarmDTO, FarmSlotDTO } from './EnumPlant';
+import { Constants } from '../utilities/Constants';
 const { ccclass, property } = _decorator;
 
 @ccclass('FarmController')
@@ -13,54 +16,13 @@ export class FarmController extends Component {
   @property(Node) landParent1: Node = null!;
   @property(Node) landParent2: Node = null!;
   private landSlots: FarmSlot[] = [];
-  private farm: FarmDTO;
-  private isPopupOpen: boolean = false;
   static instance: FarmController;
 
   onLoad() {
     FarmController.instance = this;
-    this.LoadFarmDataFromServer();
   }
 
-  async LoadFarmDataFromServer() {
-    // const fakePlant: PlantData = {
-    //   id: "1",
-    //   name: "Potato",
-    //   state: PlantState.SEED,
-    //   currentHarvestTime: 60,
-    //   needWater: false,
-    //   bugInfested: false,
-    //   harvestTimes: 600,
-    //   hasWager: false,
-    //   needWaterRemain: 0,
-    //   bugInfestedRemain: 0,
-    //   harvestPoint: 1,
-    //   buyPrice: 100,
-    //   quantityRemain: 3
-    // };
-
-    // const data: LandSlotData[] = [];
-
-    // for (let i = 0; i < 30; i++) {
-    //   if (i < 2) {
-    //     data.push({
-    //       id: i,
-    //       state: LandState.NORMAL,
-    //       plantData: fakePlant
-    //     });
-    //   } else {
-    //     data.push({
-    //       id: i,
-    //       state: LandState.EMPTY,
-    //       plantData: null
-    //     });
-    //   }
-    // }
-    this.farm = await WebRequestManager.instance.GetListLandSlotAsync(UserMeManager.Get.clan.id);
-    this.loadFromServer(this.farm.slots);
-  }
-
-  public loadFromServer(data: FarmSlotDTO[]) {
+  public InitFarmSlot(data: FarmSlotDTO[]) {
     this.landParent1.removeAllChildren();
     this.landParent2.removeAllChildren();
     this.landSlots = [];
@@ -78,32 +40,56 @@ export class FarmController extends Component {
     });
   }
 
-  // public openPlantMenu(plant) {
-  //   console.log('Mở menu cây:', plant);
-  // }
+  public async openPlantMenu(slot: FarmSlot) {
+    await UserManager.instance.GetMyClientPlayer.get_MoveAbility.startMove();
 
-  // public showSeedMenu(slot: FarmSlot) {
-  //   if (this.isPopupOpen) return;
-  //   this.isPopupOpen = true;
+    if (!UserMeManager.Get.clan.id || UserMeManager.Get.clan.id !== UserMeManager.CurrentOffice.idclan) {
+      PopupManager.getInstance().closeAllPopups();
+      Constants.showConfirm("Bạn cần thuộc một văn phòng để trồng cây tại nông trại của văn phòng");
+      return;
+    }
 
-  //   const plantItems: PlantData[] = [
-  //     { id: '1', name: 'Potato', state: PlantState.NONE, currentHarvestTime: 60, needWater: false, bugInfested: false, harvestPoint: 10, buyPrice: 5, quantityRemain: 10 },
-  //   ];
+    const inventory = await WebRequestManager.instance.GetClanWarehousesAsync(UserMeManager.CurrentOffice.idclan);
+    if (!inventory || inventory.length === 0) {
+      Constants.showConfirm("Hiện tại bạn không có cây nào trong kho để trồng.");
+      return;
+    }
 
-  //   const param: PopupChoosePlantParam = {
-  //     slotId: slot['data'].id,
-  //     plantItems,
-  //     onChoose: (plant: PlantData) => {
-  //       slot.setup({ ...slot['data'], plantData: plant });
-  //       this.isPopupOpen = false;
-  //     }
-  //   };
+    const param: PopupChoosePlantParam = {
+      onChoose: (plant: PlantDataDTO) => {
+        this.plantToslot(slot.data.id, plant.id);
+      }
+    };
 
-  //   PopupManager.getInstance().openAnimPopup('PopupChoosePlant', PopupChoosePlant, param);
-  // }
-
-
-  public getPlantPrefab(id: number) {
-    return null!;
+    const popup = await PopupManager.getInstance().openAnimPopup('PopupChoosePlant', PopupChoosePlant, param);
+    popup.InitItemInventory(inventory);
   }
+  async plantToslot(farm_slot_id: string, plant_id: string) {
+    const param: PlantToSlotPayload = {
+      farm_slot_id: farm_slot_id,
+      plant_id: plant_id
+    }
+    ServerManager.instance.sendPlantToSlot(param);
+  }
+
+  public UpdateSlot(slotData: FarmSlotDTO) {
+    if (!this.landSlots || this.landSlots.length === 0) {
+      return;
+    }
+    const slot = this.landSlots.find(s => s.data?.id === slotData.id);
+    if (!slot) {
+      return;
+    }
+
+    console.log("🌱 Update slot:", slotData.id);
+    slot.setup(slotData);
+  }
+
+  public hideAllInteractActions() {
+    if (!this.landSlots) return;
+    this.landSlots.forEach(slot => {
+      if (slot.interactAction) slot.interactAction.active = false;
+    });
+  }
+
 }

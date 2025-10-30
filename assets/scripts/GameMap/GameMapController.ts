@@ -110,8 +110,7 @@ export class GameMapController extends Component {
 
     private async onUpdateDataSuccess(respone, office: Office) {
         //this.SetMapUserChoosen(office); Temporarily disable clan update on office select — player may not have a clan yet.
-        const officeParam = new OfficeSenenParameter(office.officeBrach, RoomType.NONE, RoomType.COMPLEXNCC, Constants.convertNameRoom(office.officeBrach, RoomType.COMPLEXNCC));
-        officeParam.setIdClan(office.clans.id);
+        const officeParam = new OfficeSenenParameter(office.officeBrach, RoomType.NONE, RoomType.COMPLEXNCC, Constants.convertNameRoom(office.officeBrach, RoomType.COMPLEXNCC), office.clans.id);
         if (this.currentOffice.region == office.region) {
             if (this.currentOffice.clans.name == office.clans.name) {
                 this.waitForMove = false;
@@ -278,9 +277,9 @@ export class GameMapController extends Component {
             officeLoad.officeBrach,
             RoomType.NONE,
             RoomType.NONE,
-            Constants.convertNameToKey(clanName)
+            Constants.convertNameToKey(clanName),
+            UserMeManager.Get.clan?.id
         );
-        officeParam.setIdClan(UserMeManager.Get.clan?.id);
 
         if (this.planeNotice.IsInSideMap) {
             this.planeNotice.node.parent.active = true;

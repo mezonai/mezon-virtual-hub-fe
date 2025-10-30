@@ -2,10 +2,12 @@ import { _decorator, Component, Node } from 'cc';
 import { CCFloat } from 'cc';
 import { PopupManager } from '../PopUp/PopupManager';
 import { PopupChoosePlant } from '../PopUp/PopupChoosePlant';
+import { FarmSlot } from './FarmSlot';
 const { ccclass, property } = _decorator;
 
 @ccclass('FarmSlotInteract')
 export class FarmSlotInteract extends Component {
+    @property(FarmSlot) slot: FarmSlot = null!;
     @property({ type: Node }) targetClicker: Node = null;
     @property({ type: CCFloat }) interactDistance: number = 60;
 
@@ -23,7 +25,8 @@ export class FarmSlotInteract extends Component {
     }
 
     onTouchStart(event) {
-        PopupManager.getInstance().openPopup( "PopupChoosePlant", PopupChoosePlant);
+        if (!this.slot) return;
+        this.slot.onClick();
     }
 }
 
