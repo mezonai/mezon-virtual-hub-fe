@@ -43,5 +43,12 @@ export enum MessageTypes {
     ON_SLOT_UPDATE = 'onSlotUpdate',
     ON_SLOT_UPDATE_RT = 'onSlotUpdateRT',
     ON_WATER_PLANT = 'onWaterPlant',
-    ON_CATCH_BUG = 'onCatchBug'
+    ON_CATCH_BUG = 'onCatchBug',
+    ON_HARVEST_STARTED = 'onHarvestStarted',
+    ON_HARVEST_COMPLETE = 'onHarvestComplete',
+    ON_HARVEST_DENIED = 'onHarvestDenied',
+    ON_HARVEST_FAILED = 'onHarvestFailed',
+    ON_HARVEST_INTERRUPTED = 'onHarvestInterrupted',
+    ON_HARVEST_INTERRUPTED_BY_OTHER = 'onHarvestInterruptedByOther',
+    ON_HARVEST_INTERRUPTED_FAILED = 'onHarvestInterruptedFailed',
 }

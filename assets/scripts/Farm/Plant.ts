@@ -72,7 +72,7 @@ export class Plant extends Component {
       }
     }
 
-    this.timeLabel.string = `${Utilities.secondsToHMSPlant(this.growthTime)}s`;
+    this.timeLabel.string = `${Utilities.secondsToHMSPlant(this.growthTime)}`;
     this.timeLabel.node.active = !(this.growthTime <= 0);
     this.updateStatusWater(this.data.need_water);
     this.updateStatusBug(this.data.has_bug);

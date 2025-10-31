@@ -15,6 +15,7 @@ export class FarmController extends Component {
   @property(Prefab) landSlotPrefab: Prefab = null!;
   @property(Node) landParent1: Node = null!;
   @property(Node) landParent2: Node = null!;
+  @property(Node) blockInteractHarvest: Node = null!;
   private landSlots: FarmSlot[] = [];
   static instance: FarmController;
 
@@ -90,6 +91,10 @@ export class FarmController extends Component {
     this.landSlots.forEach(slot => {
       if (slot.interactAction) slot.interactAction.active = false;
     });
+  }
+
+  public showBlockInteractHarvest(isBlock: boolean) {
+    this.blockInteractHarvest.active = isBlock;
   }
 
 }

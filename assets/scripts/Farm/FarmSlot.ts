@@ -5,6 +5,7 @@ import { FarmController } from "./FarmController";
 import { Constants } from "../utilities/Constants";
 import { ServerManager } from "../core/ServerManager";
 import { UserMeManager } from "../core/UserMeManager";
+import { UserManager } from "../core/UserManager";
 
 const { ccclass, property } = _decorator;
 
@@ -142,6 +143,8 @@ export class FarmSlot extends Component {
     const param: PlantToSlotPayload = {
       farm_slot_id: this.data.id,
     }
+    UserManager.instance.GetMyClientPlayer.get_MoveAbility.StopMove();
+    FarmController.instance.showBlockInteractHarvest(true);
     ServerManager.instance.sendHarvest(param);
   }
 }

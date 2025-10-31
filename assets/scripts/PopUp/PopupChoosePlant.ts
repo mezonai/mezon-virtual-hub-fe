@@ -1,11 +1,9 @@
 import { _decorator, Component, Node, Button, instantiate, Prefab } from 'cc';
 import { PopupManager } from './PopupManager';
-import { ClanWarehouseSlotDTO, PlantData, PlantDataDTO } from '../Farm/EnumPlant';
+import { ClanWarehouseSlotDTO, PlantDataDTO } from '../Farm/EnumPlant';
 import { BasePopup } from './BasePopup';
 import { ScrollView } from 'cc';
-import { WebRequestManager } from '../network/WebRequestManager';
 import { InventoryClanUIItem } from '../Clan/InventoryClanUIItem';
-import { UserMeManager } from '../core/UserMeManager';
 import { UserManager } from '../core/UserManager';
 const { ccclass, property } = _decorator;
 

@@ -6,6 +6,7 @@ import { RPSGame } from './RPSGame';
 import { PetCombat } from './PetCombat';
 import { PopupManager } from '../../../PopUp/PopupManager';
 import { MessageTimeoutParam, PopupMessageTimeout } from '../../../PopUp/PopupMessageTimeout';
+import { Constants } from '../../../utilities/Constants';
 const { ccclass, property } = _decorator;
 
 @ccclass('P2PInteractManager')
@@ -46,6 +47,12 @@ export class P2PInteractManager extends Ability {
         if (this.playerController.isInBattle) {
             return;
         }
+
+        if (this.playerController.playerInteractFarm.isHarvesting) {
+            this.playerController.playerInteractFarm.OnActionInterruptHarvest();
+            return;
+        }
+
         if (this.CanShowUI) {
             if (Date.now() - this.lastActionTime > this.interactDelay) {
                 this.lastActionTime = Date.now()

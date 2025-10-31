@@ -509,6 +509,49 @@ export class ServerManager extends Component {
             await PopupManager.getInstance().closeAllPopups();
             Constants.showConfirm(data.message);
         });
+
+        this.room.onMessage(MessageTypes.ON_HARVEST_STARTED, (data) => {
+            console.log(`🧑‍🌾 ${data.sessionId} đang thu hoạch slot ${data.slotId}`);
+            const player = UserManager.instance.getPlayerById(data.sessionId);
+            if (!player) return;
+
+            player.playerInteractFarm.showHarvestingBar(data.endTime, data.slotId);
+        });
+
+        this.room.onMessage(MessageTypes.ON_HARVEST_DENIED, (data) => {
+            Constants.showConfirm(data.message);
+        });
+
+        this.room.onMessage(MessageTypes.ON_HARVEST_COMPLETE, (data) => {
+            const isMe = data.sessionId === UserManager.instance.GetMyClientPlayer?.myID;
+            console.log(`🌾 ON_HARVEST_COMPLETE từ ${data.playerName} (${data.sessionId})`);
+            if (isMe) {
+                UserManager.instance.GetMyClientPlayer.get_MoveAbility.startMove();
+                FarmController.instance.showBlockInteractHarvest(false);
+                const myPlayer = UserManager.instance.GetMyClientPlayer;
+                if (myPlayer) myPlayer.playerInteractFarm.showHarvestingComplete("Bạn đã thu hoạch xong!");
+            }
+            else {
+                const otherPlayer = UserManager.instance.getPlayerById(data.sessionId);
+                if (otherPlayer) {
+                    otherPlayer.playerInteractFarm.showHarvestingComplete("${data.playerName} đã thu hoạch xong!");
+                }
+            }
+        });
+
+        this.room.onMessage(MessageTypes.ON_HARVEST_INTERRUPTED, (data) => {
+            Constants.showConfirm(`Bạn đã phá thu hoạch của  ${data.interruptedPlayer} thành công`);
+        });
+
+        this.room.onMessage(MessageTypes.ON_HARVEST_INTERRUPTED_BY_OTHER, (data) => {
+            Constants.showConfirm(`Bạn đã phá thu hoạch bởi ${data.interruptedByName}`);
+        });
+
+        this.room.onMessage(MessageTypes.ON_HARVEST_INTERRUPTED_FAILED, (data) => {
+             Constants.showConfirm(data.message);
+        });
+        
+
     }
 
     public async joinBattleRoom(roomId: string): Promise<void> {
@@ -699,7 +742,11 @@ export class ServerManager extends Component {
     }
 
     public sendHarvest(sendData) {
-        this.room.send("harvest", sendData)
+      this.room.send('startHarvest', sendData);
+    }
+
+    sendInterruptHarvest(sendData) {
+        this.room.send('interruptHarvest', sendData);
     }
 
     public answerMathQuestion(id, answer) {
