@@ -68,6 +68,9 @@ export class UserClan {
     avatar_url: string | null;
     gender: string | null;
     clan_role: string | null;
+    total_score: number | null;
+    weekly_score: number | null;
+    rank: number | null;
 }
 
 

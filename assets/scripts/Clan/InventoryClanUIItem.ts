@@ -5,9 +5,11 @@ const { ccclass, property } = _decorator;
 
 @ccclass('InventoryClanUIItem')
 export class InventoryClanUIItem extends Component {
-    @property({ type: IconItemUIHelper }) iconItemUIHelper: IconItemUIHelper = null;
+    @property({ type: Sprite }) iconSeed: Sprite = null;
+    @property({ type: IconItemUIHelper }) iconItemUIHelperPlant: IconItemUIHelper = null;
     @property({ type: Node }) selectedMark: Node = null;
     @property({ type: Sprite }) stasSprite: Sprite = null;
+    @property({ type: Sprite }) seedBags: Sprite = null;
     @property({ type: [SpriteFrame] }) stasFrame: SpriteFrame[] = [];
     @property({ type: Toggle }) toggle: Toggle = null;
     @property({ type: Label }) amountLabel: Label;
@@ -19,8 +21,14 @@ export class InventoryClanUIItem extends Component {
         this.clanWarehouseSlotDTO = clanWarehouseSlotDTO;
         this.onClick = callback;
         if (clanWarehouseSlotDTO.plant) {
-            const sprite = this.iconItemUIHelper.getPlantIcon(clanWarehouseSlotDTO.plant?.name);
-            if (sprite) this.iconItemUIHelper.icon.spriteFrame = sprite;
+            const sprite =  this.iconItemUIHelperPlant.getPlantIcon(clanWarehouseSlotDTO.plant?.name);
+            this.seedBags.node.active = !clanWarehouseSlotDTO.is_harvested;
+            this.iconItemUIHelperPlant.node.active = clanWarehouseSlotDTO.is_harvested;
+            if (sprite) {
+                this.iconItemUIHelperPlant.icon.spriteFrame = sprite;
+                this.iconSeed.spriteFrame = sprite;
+            }
+
             this.amountLabel.string = `${clanWarehouseSlotDTO.quantity}`;
         }
         if (this.toggle) {

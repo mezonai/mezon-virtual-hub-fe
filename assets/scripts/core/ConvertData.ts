@@ -1,5 +1,5 @@
 
-import { FarmDTO, FarmSlotDTO, PlantState, ClanWarehouseSlotDTO, PlantDataDTO, PlantData } from "../Farm/EnumPlant";
+import { FarmDTO, FarmSlotDTO, PlantState, ClanWarehouseSlotDTO, PlantDataDTO, PlantData, HarvestCountDTO } from "../Farm/EnumPlant";
 import { ClansData, PageInfo, ClansResponseDTO, MemberResponseDTO, UserClan, ClanContributorDTO, ClanContributorsResponseDTO, ClanFundResponseDTO, ClanFund, ClanRequestResponseDTO, MemberClanRequestDTO, ClanStatus } from "../Interface/DataMapAPI";
 import { Food, InventoryDTO, Item, PetReward, QuestType, RewardItemDTO, RewardNewbieDTO, RewardType, StatsConfigDTO } from "../Model/Item";
 import { AnimalElementString, AnimalRarity, Element, PetBattleInfo, PetDTO, PlayerBattle, SkillBattleInfo, Species, TypeSkill } from "../Model/PetDTO";
@@ -40,6 +40,7 @@ export default class ConvetData {
             max_members: clan.max_members ?? 0,
             member_count: clan.member_count ?? 0,
             join_status: clan.join_status ?? ClanStatus.NONE,
+            rank: clan.rank ?? 0,
         }));
 
         return { result: clans, pageInfo: this.extractPageInfo(data) };
@@ -57,6 +58,9 @@ export default class ConvetData {
                 avatar_url: user.avatar_url ?? null,
                 gender: user.gender ?? null,
                 clan_role: user.clan_role ?? null,
+                total_score: user.total_score ?? 0,
+                weekly_score: user.total_score ?? 0,
+                rank: user.rank ?? 0,
             }
             : null;
 
@@ -80,7 +84,7 @@ export default class ConvetData {
             leader: mapUser(clanDT.leader),
             vice_leader: mapUser(clanDT.vice_leader),
             join_status: clanDT.join_status ?? null,
-            rank: clanDT.rank ?? null,
+            rank: clanDT.rank ?? 0,
             avatar_url: clanDT.avatar_url ?? null,
             funds: funds,
         };
@@ -112,6 +116,9 @@ export default class ConvetData {
             avatar_url: user.avatar_url ?? null,
             gender: user.gender ?? null,
             clan_role: user.clan_role ?? null,
+            total_score: user.total_score ?? 0,
+            weekly_score:  user.total_score ?? 0,
+            rank: user.rank ?? 0,
         }));
 
         return { result: members, pageInfo: this.extractPageInfo(data) };
@@ -130,6 +137,7 @@ export default class ConvetData {
                 total_amount: user.total_amount ?? 0,
                 avatar_url: user.avatar_url ?? null,
                 clan_role: user.clan_role ?? null,
+                rank: user.rank ?? 0,
             }),
         );
 
@@ -164,6 +172,14 @@ export default class ConvetData {
             description: p.description,
         }));
     }
+
+    public static convertHarvestCountDTO(apiData: any): HarvestCountDTO {
+    return {
+        harvest_count: apiData.harvest_count,
+        harvest_count_use: apiData.harvest_count_use,
+        harvest_interrupt_count: apiData.harvest_interrupt_count,
+        harvest_interrupt_count_use: apiData.harvest_interrupt_count_use
+    };}
 
     public static ConvertWarehouseSlots(warehouses: any[]): ClanWarehouseSlotDTO[] {
         return (warehouses || []).map(w => ({

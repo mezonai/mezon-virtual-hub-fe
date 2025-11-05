@@ -21,7 +21,7 @@ export class ItemMemberFund extends Component {
         this.ClanContributor = data;
         this.nameMemberLabel.string = data.username;
         this.total_Fund.string = data.total_amount;
-        // this.setRankIcon(data);
+        this.setRankIcon(data);
         this.setRole(data.clan_role);
         Constants.loadAvatar(this.avatarSprite, data.avatar_url);
     }

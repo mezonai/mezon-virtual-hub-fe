@@ -62,3 +62,10 @@ export interface PlantToSlotPayload {
   plant_id?: string;
 }
 
+export interface HarvestCountDTO {
+  harvest_count: number;
+  harvest_count_use: number;
+  harvest_interrupt_count: number;
+  harvest_interrupt_count_use: number;
+}
+

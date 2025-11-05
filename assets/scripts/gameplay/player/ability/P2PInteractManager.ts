@@ -1,12 +1,9 @@
 import { _decorator, CCFloat, Node, tween, Vec3 } from 'cc';
 import { Ability } from './Ability';
 import { ActionType, PlayerInteractAction } from './PlayerInteractAction';
-import { UIManager } from '../../../core/UIManager';
 import { RPSGame } from './RPSGame';
-import { PetCombat } from './PetCombat';
 import { PopupManager } from '../../../PopUp/PopupManager';
 import { MessageTimeoutParam, PopupMessageTimeout } from '../../../PopUp/PopupMessageTimeout';
-import { Constants } from '../../../utilities/Constants';
 const { ccclass, property } = _decorator;
 
 @ccclass('P2PInteractManager')

@@ -2,7 +2,7 @@ import { _decorator, Component, Node, Sprite, Label, tween, Tween} from 'cc';
 import { PopupManager } from '../../PopUp/PopupManager';
 import { PopupSelectionMini, SelectionMiniParam } from '../../PopUp/PopupSelectionMini';
 import { ServerManager } from '../../core/ServerManager';
-import { PlantToSlotPayload } from '../../Farm/EnumPlant';
+import { UserManager } from '../../core/UserManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('PlayerInteractFarm')
@@ -20,8 +20,6 @@ export class PlayerInteractFarm extends Component {
         this.isHarvesting = true;
         const now = Date.now();
         const duration = endTime ? Math.max(endTime - now, 0) : 10000;
-        console.log(`🌾 Harvest started | now=${now}, endTime=${endTime}, duration=${duration}ms`);
-
         if (duration <= 0) {
             this.hideHarvestingBar();
             return;
@@ -46,10 +44,9 @@ export class PlayerInteractFarm extends Component {
             .start();
     }
 
-    public showHarvestingComplete(context: string) {
+    public showHarvestingComplete() {
         this.isHarvesting = false;
         this.hideHarvestingBar();
-        this.contentBubbleChat.string = context;
     }
 
     public hideHarvestingBar() {
@@ -65,7 +62,6 @@ export class PlayerInteractFarm extends Component {
     }
 
     public OnActionInterruptHarvest() {
-        console.log("this.currentHarvestSlotId: ", this.currentHarvestSlotId);
         if(!this.currentHarvestSlotId) return;
         const param: SelectionMiniParam = {
             title: "Chú ý",
@@ -75,6 +71,7 @@ export class PlayerInteractFarm extends Component {
             textButtonCenter: "",
             onActionButtonLeft: async () => {
                 let data = {
+                    fromPlayerId: UserManager.instance.GetMyClientPlayer.myID,
                     farm_slot_id: this.currentHarvestSlotId,
                 }
                 ServerManager.instance.sendInterruptHarvest(data)

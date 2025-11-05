@@ -46,6 +46,9 @@ export default class APIConstant {
     static CLANWAREHOUSE = "Clan-Warehouses";
     static PLANT = "plants";
     static BUY_ITEM_CLAN = "buy-items-clan";
+    static USER_CLAN_STATS = "user-clan-stats";
+    static HARVEST_COUNTS = "harvest-counts";
+    
 }
 
 export class APIConfig {

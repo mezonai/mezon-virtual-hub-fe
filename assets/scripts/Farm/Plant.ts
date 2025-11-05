@@ -35,6 +35,7 @@ export class Plant extends Component {
   private elapsed: number = 0;
 
   public setup(data: PlantData) {
+    if(!data) return;
     this.data = data;
     this.growthTime = data.grow_time_remain || 0;
     this.updateVisual(data.stage);
@@ -42,45 +43,23 @@ export class Plant extends Component {
     this.schedule(this.onTick, 1);
   }
 
-  private getPlantOffsetY(plantName: string, stage: PlantState): number {
-    const plantOffsets: Record<string, Partial<Record<PlantState, number>>> = {
-      Corn: {
-        [PlantState.SEED]: 0,
-        [PlantState.SMALL]: 50,
-        [PlantState.GROWING]: 80,
-        [PlantState.HARVESTABLE]: 80,
-      }
-    };
-
-    const plantType = Object.keys(plantOffsets).find(type =>
-      plantName.includes(type)
-    );
-    return plantType && plantOffsets[plantType][stage] !== undefined
-      ? plantOffsets[plantType][stage]!
-      : 0;
-  }
-
-  public updateVisual(state: PlantState) {
-    const offsetY = this.getPlantOffsetY(this.data.plant_name, this.data.stage);
-    this.plantIcon.node.setPosition(0, offsetY, 0);
+  public async updateVisual(state: PlantState) {
     const plantData = this.allPlantData.find(p => p.plantName === this.data.plant_name);
     if (plantData) {
       const stage = plantData.stages.find(s => s.type === state);
-      if (stage && stage.sprite) {
-        const spriteComp = this.plantIcon;
-        spriteComp.spriteFrame = stage.sprite;
+      if (stage?.sprite) {
+        this.plantIcon.spriteFrame = stage.sprite;
       }
     }
-
     this.timeLabel.string = `${Utilities.secondsToHMSPlant(this.growthTime)}`;
     this.timeLabel.node.active = !(this.growthTime <= 0);
     this.updateStatusWater(this.data.need_water);
     this.updateStatusBug(this.data.has_bug);
+    this.plantIcon.node.active = true;
   }
 
   private onTick() {
     if (!this.data) return;
-
     this.elapsed += 1;
     this.growthTime -= 1;
     if (this.growthTime <= 0) {
@@ -103,7 +82,8 @@ export class Plant extends Component {
     this.data.stage = PlantState.HARVESTABLE;
     this.updateVisual(this.data.stage);
     this.unschedule(this.onTick);
+    this.needWaterIcon.active = false;
+    this.bugInfestedIcon.active = false;
   }
-
 
 }

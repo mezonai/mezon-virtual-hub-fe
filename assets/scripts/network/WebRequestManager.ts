@@ -11,7 +11,7 @@ import { BuyItemPayload, InventoryDTO, Item, RewardItemDTO, RewardNewbieDTO, Sta
 import { GameManager } from '../core/GameManager';
 import { UpgradePetResponseDTO, PetDTO } from '../Model/PetDTO';
 import { Constants } from '../utilities/Constants';
-import { ClanWarehouseSlotDTO, FarmDTO, PlantData, PlantDataDTO, PlantToSlotPayload } from '../Farm/EnumPlant';
+import { ClanWarehouseSlotDTO, FarmDTO, HarvestCountDTO, PlantData, PlantDataDTO, PlantToSlotPayload } from '../Farm/EnumPlant';
 const { ccclass, property } = _decorator;
 
 @ccclass("WebRequestManager")
@@ -466,7 +466,7 @@ export class WebRequestManager extends Component {
             WebRequestManager.instance.GetClanWarehouses(
                 clanId,
                 (response) => {
-                    const farmData = ConvetData.ConvertWarehouseSlots(response.data);
+                    const farmData = ConvetData.ConvertWarehouseSlots(response.data.items);
                     resolve(farmData);
                 },
                 (error) => {
@@ -481,6 +481,21 @@ export class WebRequestManager extends Component {
             WebRequestManager.instance.GetShopPlant(
                 (response) => {
                     const farmData = ConvetData.ConvertPlants(response.data);
+                    resolve(farmData);
+                },
+                (error) => {
+                    reject(error);
+                }
+            );
+        });
+    }
+
+    public GetHarvestCountsAsync(clanId: string): Promise<HarvestCountDTO> {
+        return new Promise((resolve, reject) => {
+            WebRequestManager.instance.GetHarvestCounts(
+                clanId,
+                (response) => {
+                    const farmData = ConvetData.convertHarvestCountDTO(response.data);
                     resolve(farmData);
                 },
                 (error) => {
@@ -710,6 +725,10 @@ export class WebRequestManager extends Component {
     //Farm
     public GetShopPlant(successCallback, errorCallback) {
         APIManager.getData(this.combineWithSlash(APIConstant.PLANT), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    }
+
+    public GetHarvestCounts(clan_id, successCallback, errorCallback) {
+        APIManager.getData(this.combineWithSlash(APIConstant.USER_CLAN_STATS, clan_id,APIConstant.HARVEST_COUNTS), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
 

@@ -153,8 +153,7 @@ export class PopupClanShop extends BasePopup {
         const fund = value?.funds.find(f => f.type === "gold")?.amount ?? 0;
         const totalPrice = plant.buy_price * this.quantityBuy;
         if (fund < totalPrice) {
-            console.warn('🚫 [Buy] Not enough clan gold to buy item');
-            Constants.showConfirm("Không đủ vàng trong quỹ clan.");
+            Constants.showConfirm("Không đủ vàng trong quỹ văn phòng.");
             return;
         }
 
@@ -168,7 +167,6 @@ export class PopupClanShop extends BasePopup {
     }
 
     public async ReloadAfterBuyItem() {
-        console.log('🔄 [Reload] ReloadAfterBuyItem called');
         this.quantityBuy = 1;
         this.param.onBuySuccess?.();
     }

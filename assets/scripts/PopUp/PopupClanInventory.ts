@@ -4,10 +4,12 @@ import { PopupManager } from './PopupManager';
 import { WebRequestManager } from '../network/WebRequestManager';
 import { ClansData } from '../Interface/DataMapAPI';
 import { UserMeManager } from '../core/UserMeManager';
-import { ClanWarehouseSlotDTO } from '../Farm/EnumPlant';
+import { ClanWarehouseSlotDTO, HarvestCountDTO } from '../Farm/EnumPlant';
 import { IconItemUIHelper } from '../Reward/IconItemUIHelper';
 import { PopupClanShop } from './PopupClanShop';
 import { InventoryClanUIItem } from '../Clan/InventoryClanUIItem';
+import { Sprite } from 'cc';
+import { Constants } from '../utilities/Constants';
 const { ccclass, property } = _decorator;
 
 @ccclass('PopupClanInventory')
@@ -18,17 +20,25 @@ export class PopupClanInventory extends BasePopup {
     @property(RichText) growTimert: RichText = null;
     @property(RichText) harvestScorert: RichText = null;
     @property(RichText) priceBuyrt: RichText = null;
-    @property(RichText) harvertCountrt: RichText = null;
     @property(Button) ShopClanButton: Button = null;
     @property(Node) noItemPanel: Node = null;
     @property(Node) detailMain: Node = null;
     @property(Prefab) itemPrefab: Prefab = null!;
     @property(ScrollView) svInvenoryClan: ScrollView = null!;
+
+    @property(RichText) harvertCountrt: RichText = null;
+    @property(RichText) harvertInterrupCountrt: RichText = null;
+    @property(RichText) timeResetHarvest: RichText = null;
+    @property(Sprite) seedBags: Sprite = null;
+    @property({type: IconItemUIHelper }) iconItemUIHelper: IconItemUIHelper = null;
+    @property(Sprite) iconSeed: Sprite = null;
+
     private clanDetail: ClansData;
     private clanWarehouseSlot: ClanWarehouseSlotDTO[];
     private _clanWarehouseSlot: InventoryClanUIItem[];
     private timeoutLoadSlot: number = 50;
-    @property({ type: IconItemUIHelper }) iconItemUIHelper: IconItemUIHelper = null;
+    
+    private harvestCountDTO: HarvestCountDTO;
 
     public init(param?: PopupClanInventoryParam): void {
         this.closeButton.addAsyncListener(async () => {
@@ -52,9 +62,23 @@ export class PopupClanInventory extends BasePopup {
 
             this.ShopClanButton.interactable = true;
         });
-
+        this.GetHarvestCounts();
         this.CheckShowMemberManager();
         this.GetClanWareHouse();
+    }
+
+    setCountLabel = (label, used, max) => {
+        const isMaxed = used >= max;
+        const color = isMaxed ? '#ff4d4d' : '#ffffff';
+        const suffix = isMaxed ? ' (Hết lượt)' : '';
+        label.string = `<outline color=#222 width=1><color=${color}> ${used}/${max}${suffix} </color></outline>`;
+    };
+
+    async GetHarvestCounts(){
+        this.harvestCountDTO = await WebRequestManager.instance.GetHarvestCountsAsync(this.clanDetail.id);
+        this.setCountLabel(this.harvertCountrt, this.harvestCountDTO.harvest_count_use, this.harvestCountDTO.harvest_count);
+        this.setCountLabel(this.harvertInterrupCountrt, this.harvestCountDTO.harvest_interrupt_count_use, this.harvestCountDTO.harvest_interrupt_count);
+        this.timeResetHarvest.string = `<outline color=#222222 width=1> Đặt lại số lần thu hoạch đã dùng hàng ngày</outline>`;
     }
 
     CheckShowMemberManager() {
@@ -102,15 +126,18 @@ export class PopupClanInventory extends BasePopup {
     }
 
     private showSlotDetail(item: InventoryClanUIItem) {
-        console.log("Show detail:", item.clanWarehouseSlotDTO);
         const sprite = this.iconItemUIHelper.getPlantIcon(item.clanWarehouseSlotDTO.plant.name);
-        if (sprite) this.iconItemUIHelper.icon.spriteFrame = sprite;
+        if (sprite){
+            this.iconItemUIHelper.icon.spriteFrame = sprite;
+            this.iconSeed.spriteFrame = sprite;
+        } 
+        this.seedBags.node.active = !item.clanWarehouseSlotDTO.is_harvested;
+        this.iconItemUIHelper.node.active = item.clanWarehouseSlotDTO.is_harvested;
         this.descriptionrt.string = `${item.clanWarehouseSlotDTO.plant.description}`;
-        this.plantNamert.string = `<outline color=#222222 width=1> ${item.clanWarehouseSlotDTO.plant.name}</outline>`;
+        this.plantNamert.string = `<outline color=#222222 width=1> ${Constants.getPlantName(item.clanWarehouseSlotDTO.plant.name)}</outline>`;
         this.growTimert.string = `<outline color=#222222 width=1> ${item.clanWarehouseSlotDTO.plant.grow_time} s</outline>`;
         this.harvestScorert.string = `<outline color=#222222 width=1> ${item.clanWarehouseSlotDTO.plant.harvest_point}</outline>`;
         this.priceBuyrt.string = `<outline color=#222222 width=1> ${item.clanWarehouseSlotDTO.plant.buy_price}</outline>`;
-        this.harvertCountrt.string = `<outline color=#222222 width=1> ${item.clanWarehouseSlotDTO.plant.name}</outline>`;
     }
 }
 

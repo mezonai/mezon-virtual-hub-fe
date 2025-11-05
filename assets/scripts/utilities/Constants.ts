@@ -253,4 +253,24 @@ export class Constants {
         [ClanRole.MEMBER]: "",
     };
 
+    public static getPlantName(englishName: string): string {
+        const nameMap: Record<string, string> = {
+            Broccoli: 'Bông cải xanh',
+            Chilli: 'Ớt',
+            Corn: 'Ngô',
+            Eggplant: 'Cà tím',
+            Garlic: 'Tỏi',
+            Potato: 'Khoai tây',
+            Pumpkin: 'Bí đỏ',
+            Strawberry: 'Dâu tây',
+            Watermelon: 'Dưa hấu',
+            Grape: 'Nho',
+        };
+        const normalized = englishName.trim().toLowerCase();
+        const matched = Object.keys(nameMap).find(
+            key => key.toLowerCase() === normalized
+        );
+        return matched ? nameMap[matched] : englishName;
+    }
+
 }

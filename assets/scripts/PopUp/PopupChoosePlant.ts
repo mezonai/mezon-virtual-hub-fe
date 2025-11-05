@@ -37,6 +37,7 @@ export class PopupChoosePlant extends BasePopup {
         this._clanWarehouseSlot = [];
 
         for (const element of data) {
+            if(element.is_harvested) continue;
             const slotNode = instantiate(this.plantItemPrefab);
             const plantItem = slotNode.getComponent(InventoryClanUIItem);
             if (plantItem) {

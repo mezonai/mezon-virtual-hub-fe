@@ -6,6 +6,7 @@ import { Constants } from "../utilities/Constants";
 import { ServerManager } from "../core/ServerManager";
 import { UserMeManager } from "../core/UserMeManager";
 import { UserManager } from "../core/UserManager";
+import { GameManager } from "../core/GameManager";
 
 const { ccclass, property } = _decorator;
 
@@ -51,6 +52,10 @@ export class FarmSlot extends Component {
         this.spawnPlant(data.currentPlant);
       }
     }
+    else {
+      this.plantParent.removeAllChildren();
+      this.plant = null;
+    }
   }
 
   private hasPlant(plantData: PlantData | null | undefined): boolean {
@@ -66,45 +71,46 @@ export class FarmSlot extends Component {
   }
 
   public onClick() {
-    const wasActive = this.interactAction.active;
     FarmController.instance.hideAllInteractActions();
-    if (this.plant) {
-      if (wasActive) {
-        this.interactAction.active = false;
-        return;
-      }
-      const { need_water, has_bug, can_harvest } = this.plant.data;
-      if (need_water || has_bug || can_harvest) {
-        this.interactAction.active = true;
-        this.waterPlantBtn.node.active = need_water && this.data.currentPlant.stage !== PlantState.HARVESTABLE;
-        this.catchBugBTn.node.active = has_bug && this.data.currentPlant.stage !== PlantState.HARVESTABLE;
-        this.harvestBtn.node.active = can_harvest;
-      } else {
-        Constants.showConfirm("Ô đất này đã có cây, không thể trồng thêm.");
-        this.interactAction.active = false;
-      }
-    } else {
+
+    if (!this.plant) {
       FarmController.instance.openPlantMenu(this);
+      return;
     }
+
+    const { need_water, has_bug, can_harvest, stage } = this.plant.data;
+    if (this.interactAction.active) {
+      this.interactAction.active = false;
+      return;
+    }
+
+    if (!need_water && !has_bug && !can_harvest) {
+      Constants.showConfirm("Ô đất này đã có cây, không thể trồng thêm.");
+      this.resetInteractButtons();
+      return;
+    }
+
+    this.interactAction.active = true;
+    this.waterPlantBtn.node.active = need_water && stage !== PlantState.HARVESTABLE;
+    this.catchBugBTn.node.active = has_bug && stage !== PlantState.HARVESTABLE;
+    this.harvestBtn.node.active = can_harvest;
   }
 
   private canInteractSlot(): boolean {
-      return !!UserMeManager.Get.clan?.id;
+    return !!UserMeManager.Get.clan?.id;
   }
 
   public waterPlant() {
     if (!this.canInteractSlot()) {
-        Constants.showConfirm("Bạn cần thuộc một văn phòng bất kì để có thể thu hoạch cây trồng tại các văn phòng");
-        this.interactAction.active = false;
-        return;
-    }
-    this.interactAction.active = false;
-    if (!this.plant || this.plant.data.stage === PlantState.HARVESTABLE || !this.plant.data.need_water) {
-      console.log("Cây không thể tưới nữa!");
+      Constants.showConfirm("Bạn cần thuộc một văn phòng bất kì để có thể thu hoạch cây trồng tại các văn phòng");
       this.interactAction.active = false;
       return;
     }
-    console.log("Tưới nước cho cây");
+    this.interactAction.active = false;
+    if (!this.plant || this.plant.data.stage === PlantState.HARVESTABLE || !this.plant.data.need_water) {
+      this.interactAction.active = false;
+      return;
+    }
     const param: PlantToSlotPayload = {
       farm_slot_id: this.data.id,
     }
@@ -113,19 +119,16 @@ export class FarmSlot extends Component {
 
   public catchBug() {
     if (!this.canInteractSlot()) {
-        Constants.showConfirm("Bạn cần thuộc một văn phòng bất kì để có thể thu hoạch cây trồng tại các văn phòng");
-        this.interactAction.active = false;
-        return;
+      Constants.showConfirm("Bạn cần thuộc một văn phòng bất kì để có thể thu hoạch cây trồng tại các văn phòng");
+      this.interactAction.active = false;
+      return;
     }
     this.interactAction.active = false;
 
     if (!this.plant || this.plant.data.stage === PlantState.HARVESTABLE || !this.plant.data.has_bug) {
-      console.log("Không có bọ để bắt hoặc cây đã thu hoạch!");
       this.interactAction.active = false;
       return;
     }
-
-    console.log("Bắt bọ cho cây");
     const param: PlantToSlotPayload = {
       farm_slot_id: this.data.id,
     }
@@ -134,17 +137,24 @@ export class FarmSlot extends Component {
 
   public harvest() {
     if (!this.canInteractSlot()) {
-       Constants.showConfirm("Bạn cần thuộc một văn phòng bất kì để có thể thu hoạch cây trồng tại các văn phòng");
-        this.interactAction.active = false;
-        return;
+      Constants.showConfirm("Bạn cần thuộc một văn phòng bất kì để có thể thu hoạch cây trồng tại các văn phòng");
+      this.interactAction.active = false;
+      return;
     }
     this.interactAction.active = false;
-    console.log("Thu hoạch cây");
     const param: PlantToSlotPayload = {
       farm_slot_id: this.data.id,
     }
     UserManager.instance.GetMyClientPlayer.get_MoveAbility.StopMove();
-    FarmController.instance.showBlockInteractHarvest(true);
+    GameManager.instance.playerHubController.showBlockInteractHarvest(true);
     ServerManager.instance.sendHarvest(param);
   }
+
+  private resetInteractButtons() {
+    this.interactAction.active = false;
+    this.harvestBtn.node.active = false;
+    this.waterPlantBtn.node.active = false;
+    this.catchBugBTn.node.active = false;
+  }
+
 }
