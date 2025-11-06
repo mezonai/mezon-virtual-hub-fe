@@ -1,6 +1,7 @@
 import { _decorator, SpriteFrame } from "cc";
 import { LocalItemDataConfig } from "./LocalItemConfig";
 import { AnimalRarity, PetDTO, Species, Element } from "./PetDTO";
+import { Enum } from "cc";
 
 export class BaseInventoryDTO {
 
@@ -187,3 +188,27 @@ export interface BuyItemPayload {
     quantity: number;
     type: string;
 }
+
+export class PlantDTO {
+    id: string;
+    name: string;
+    harvestTimes: number;
+    growTime: number;
+    harvestPoint: number;
+    buyPrice: number;
+    quantity: number;
+}
+
+export enum PlantStage {
+    SEED = 'seed',
+    SPROUT = 'sprout',
+    GROWN = 'grown',
+    HARVEST = 'harvest',
+}
+
+export const PlantType = Enum({
+    NONE: 0,
+    RICE: 1,
+    COCONUT: 2,
+    BANANA: 3,
+});

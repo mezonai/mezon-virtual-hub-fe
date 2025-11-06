@@ -1,3 +1,5 @@
+import { OfficePosition } from "../GameMap/OfficePosition";
+import { RoomType } from "../GameMap/RoomType";
 import { UserDataResponse } from "../Interface/DataMapAPI";
 import { Food, FoodType, InventoryDTO, Item } from "../Model/Item";
 import { PetDTO } from "../Model/PetDTO";
@@ -7,13 +9,16 @@ export class UserMeManager {
     private static me: UserDataResponse | null = null;
     private static myPets: PetDTO[] | null = null;
     private static _playerProperty = null;
+    private static _playerClanFund = null;
+    private static _currentOffice: OfficePosition = OfficePosition.NONE;
+    private static _currentRoomType: RoomType = RoomType.NONE;
 
     public static get Get(): UserDataResponse | null {
         return this.me;
     }
 
-    public static set SetMap(mapData) {
-        this.me.map = mapData;
+    public static set SetClan(clanData) {
+        this.me.clan = clanData;
     }
 
     public static get PlayerProperty() {
@@ -28,6 +33,12 @@ export class UserMeManager {
         }
         this.PlayerProperty.gold = me.user.gold;
         this.PlayerProperty.diamond = me.user.diamond;
+    }
+
+    public static set UpdateClanUser(me: UserDataResponse | null) {
+        if (!me) return;
+        this.me.user = me.user;
+        this.me.clan = me.clan ?? null;
     }
 
     public static get GetFoods(): InventoryDTO[] | null {
@@ -94,6 +105,20 @@ export class UserMeManager {
 
     public static get playerDiamond() {
         return UserMeManager.PlayerProperty.diamond;
+    }
+
+    public static get CurrentOffice() {
+        return this._currentOffice;
+    }
+    public static set CurrentOffice(value: OfficePosition) {
+        this._currentOffice = value;
+    }
+
+    public static get CurrentRoomType() {
+        return this._currentRoomType;
+    }
+    public static set CurrentRoomType(value: RoomType) {
+        this._currentRoomType = value;
     }
 }
 

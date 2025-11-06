@@ -11,6 +11,8 @@ import { Tutorial } from '../tutorial/Tutorial';
 import { PopupSelectionMini, SelectionMiniParam } from '../PopUp/PopupSelectionMini';
 import { PopupManager } from '../PopUp/PopupManager';
 import { PetDTO } from '../Model/PetDTO';
+import { Constants } from '../utilities/Constants';
+import { sys } from 'cc';
 
 const { ccclass, property } = _decorator;
 
@@ -263,9 +265,8 @@ export class UILoginControll extends Component {
             textButtonCenter: "Ok",
             onActionButtonCenter: () => {
                 let data = {
-                    "map_id": null,
-                    "position_x": null,
-                    "position_y": null,
+                    "position_x": Constants.POSX_PLAYER_INIT,
+                    "position_y": Constants.POSY_PLAYER_INIT,
                     "display_name": this.usernameLabel.string,
                     "gender": this.genderLabel.string.toLowerCase() == "nam" ? "male" : "female",
                     "skin_set": ResourceManager.instance.LocalSkinConfig.male.defaultSet
@@ -299,6 +300,7 @@ export class UILoginControll extends Component {
     private closePanel(autoLoadMap: boolean = true, isFirstTime: boolean = false) {
         this.node.active = false;
         if (isFirstTime) {
+            sys.localStorage.setItem(Constants.TUTORIAL_COMPLETE, false);
             this.tutorial.startTutorial();
             return;
         }

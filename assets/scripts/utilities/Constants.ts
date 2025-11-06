@@ -1,12 +1,18 @@
-﻿import { ServerMapManager } from "../core/ServerMapManager";
+﻿import { Sprite } from "cc";
+import { ServerMapManager } from "../core/ServerMapManager";
 import { OfficePosition } from "../GameMap/OfficePosition";
 import { RoomType } from "../GameMap/RoomType";
-import { MapData } from "../Interface/DataMapAPI";
+import { ClanRole, ClansData } from "../Interface/DataMapAPI";
 import { FoodType, InventoryType, ItemType, RewardItemDTO, RewardType } from "../Model/Item";
 import { ConfirmParam, ConfirmPopup } from "../PopUp/ConfirmPopup";
 import { PopupManager } from "../PopUp/PopupManager";
 import { RewardNewType } from "../PopUp/PopupReward";
 import Utilities from "./Utilities";
+import { assetManager } from "cc";
+import { ImageAsset } from "cc";
+import { Texture2D } from "cc";
+import { SpriteFrame } from "cc";
+import { Vec3 } from "cc";
 
 export class Constants {
 
@@ -19,6 +25,10 @@ export class Constants {
     public static TUTORIAL_CACTH_PET = "tutorialCatchPet";
     public static NOTICE_TRANSFER_DIAMOND = "dont_show_buy_notice";
     public static SHOW_DAILY_QUEST_FIRST_DAY = "show_daily_quest_first_day";
+    public static LAST_VISITED_CLAN ="last_visited_clan";
+    public static TUTORIAL_COMPLETE:string ="tutorial_completed";
+    public static POSX_PLAYER_INIT = 912;
+    public static POSY_PLAYER_INIT = -261;
 
     public static convertKeyOffice(positionTarget: OfficePosition): string {
         switch (positionTarget) {
@@ -75,6 +85,20 @@ export class Constants {
         }
     }
 
+    private static readonly NAME_TO_KEY: Record<string, string> = {
+        "Sai Gon": "sg",
+        "Ha Noi 1": "hn1",
+        "Ha Noi 2": "hn2",
+        "Ha Noi3": "hn3",
+        "Vinh": "vinh",
+        "Quy Nhon": "qn",
+        "Da Nang": "dn",
+    };
+
+    public static convertNameToKey(clanName: string): string {
+        return this.NAME_TO_KEY[clanName];
+    }
+
     public static rarityUpgradeMap: Record<string, string | null> = {
         common: "rare",
         rare: "epic",
@@ -82,8 +106,8 @@ export class Constants {
         legendary: null,
     };
 
-    public static GetMapData(office: OfficePosition): MapData {
-        let mapData = ServerMapManager.Get.find(map => map.map_key == this.convertKeyOffice(office));
+    public static GetMapData(office: OfficePosition): ClansData {
+        let mapData = ServerMapManager.Get.find(map => map.name == this.convertKeyOffice(office));
         return mapData == null ? ServerMapManager.Get[0] : mapData;
     }
 
@@ -181,8 +205,50 @@ export class Constants {
             title: title,
         };
         PopupManager.getInstance().openPopup("ConfirmPopup", ConfirmPopup, param);
+    }    
+
+    public static loadAvatar(sprite: Sprite, url: string, scaleFactor: number = 62.13): void {
+        if (!sprite || !url) return;
+
+        assetManager.loadRemote(url, { ext: '.png' }, (err, imageAsset) => {
+            if (err) {
+                console.warn("[AvatarLoader] Failed to load image:", err);
+                return;
+            }
+
+            if (!(imageAsset instanceof ImageAsset)) {
+                console.warn("[AvatarLoader] Loaded asset is not an ImageAsset!");
+                return;
+            }
+
+            const texture = new Texture2D();
+            texture.image = imageAsset;
+
+            const spriteFrame = new SpriteFrame();
+            spriteFrame.texture = texture;
+
+            let scaleValue = scaleFactor / spriteFrame.width;
+            sprite.node.scale = new Vec3(scaleValue, scaleValue, scaleValue);
+            sprite.spriteFrame = spriteFrame;
+        });
     }
-    
+
+    public static readonly notEnoughGoldResponse = [
+        "Bạn nghĩ mình có nhiều tiền thế ư?",
+        "Bạn điền nhiều tiền quá rồi",
+        "Có tâm nhưng không có tiền"
+    ];
+
+    public static readonly invalidGoldResponse = [
+        "0đ, thiệc luôn???",
+        "Số tiền phải lớn hơn 0",
+        "Có tâm nhưng không có tiền"
+    ];
+
+    public static readonly roleMap: Record<string, string> = {
+        [ClanRole.LEADER]: "Giám Đốc",
+        [ClanRole.VICE_LEADER]: "P.Giám Đốc",
+        [ClanRole.MEMBER]: "",
+    };
+
 }
-
-
