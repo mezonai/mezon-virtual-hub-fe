@@ -8,6 +8,7 @@ export class ShopClanItem extends Component {
     @property({ type: IconItemUIHelper }) iconItemUIHelper: IconItemUIHelper = null;
     @property({ type: Node }) selectedMark: Node = null;
     @property({ type: Sprite }) stasSprite: Sprite = null;
+    @property({ type: Sprite }) seedBags: Sprite = null;
     @property({ type: [SpriteFrame] }) stasFrame: SpriteFrame[] = [];
     @property({ type: Toggle }) toggle: Toggle = null;
     @property({ type: Label }) amountLabel: Label;
@@ -18,6 +19,7 @@ export class ShopClanItem extends Component {
         this.plant = plant;
         this.onClick = callback;
         if (plant) {
+            this.seedBags.node.active = true;
             const sprite = this.iconItemUIHelper.getPlantIcon(plant?.name);
             if (sprite) this.iconItemUIHelper.icon.spriteFrame = sprite;
         }

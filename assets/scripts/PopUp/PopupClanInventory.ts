@@ -54,8 +54,7 @@ export class PopupClanInventory extends BasePopup {
             await PopupManager.getInstance().openAnimPopup("UI_ClanShop", PopupClanShop, {
                 clanDetail: this.clanDetail,
                 onBuySuccess: async () => {
-                    this.clanWarehouseSlot = await WebRequestManager.instance.getClanWarehousesAsync(this.clanDetail.id);
-                    this.InitItemInventory(this.clanWarehouseSlot);
+                   this.GetClanWareHouse();
                 }
             });
 
