@@ -41,9 +41,8 @@ export class FarmController extends Component {
   }
 
   public async openPlantMenu(slot: FarmSlot) {
-    await UserManager.instance.GetMyClientPlayer.get_MoveAbility.StopMove();
-
-    if (!UserMeManager.Get.clan.id || UserMeManager.Get.clan.id !== UserMeManager.CurrentOffice.idclan) {
+    
+    if (!UserMeManager.Get.clan || !UserMeManager.Get.clan.id || UserMeManager.Get.clan.id !== UserMeManager.CurrentOffice.idclan) {
       PopupManager.getInstance().closeAllPopups();
       Constants.showConfirm("Bạn cần thuộc một văn phòng để trồng cây tại nông trại của văn phòng");
       return;
@@ -60,7 +59,8 @@ export class FarmController extends Component {
         this.plantToslot(slot.data.id, plant.id);
       }
     };
-
+    
+    await UserManager.instance.GetMyClientPlayer.get_MoveAbility.StopMove();
     const popup = await PopupManager.getInstance().openAnimPopup('PopupChoosePlant', PopupChoosePlant, param);
     popup.InitItemInventory(inventory);
   }
