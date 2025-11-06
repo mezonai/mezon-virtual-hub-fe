@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, Button, Prefab, ScrollView, instantiate, RichText, Label } from 'cc';
+import { _decorator, Component, Node, Button, Prefab, ScrollView, instantiate, RichText, Label, Sprite } from 'cc';
 import { BasePopup } from './BasePopup';
 import { PopupManager } from './PopupManager';
 import { WebRequestManager } from '../network/WebRequestManager';
@@ -8,7 +8,6 @@ import { ClanWarehouseSlotDTO, HarvestCountDTO } from '../Farm/EnumPlant';
 import { IconItemUIHelper } from '../Reward/IconItemUIHelper';
 import { PopupClanShop } from './PopupClanShop';
 import { InventoryClanUIItem } from '../Clan/InventoryClanUIItem';
-import { Sprite } from 'cc';
 import { Constants } from '../utilities/Constants';
 const { ccclass, property } = _decorator;
 
@@ -55,7 +54,7 @@ export class PopupClanInventory extends BasePopup {
             await PopupManager.getInstance().openAnimPopup("UI_ClanShop", PopupClanShop, {
                 clanDetail: this.clanDetail,
                 onBuySuccess: async () => {
-                    this.clanWarehouseSlot = await WebRequestManager.instance.GetClanWarehousesAsync(this.clanDetail.id);
+                    this.clanWarehouseSlot = await WebRequestManager.instance.getClanWarehousesAsync(this.clanDetail.id);
                     this.InitItemInventory(this.clanWarehouseSlot);
                 }
             });
@@ -75,7 +74,7 @@ export class PopupClanInventory extends BasePopup {
     };
 
     async GetHarvestCounts(){
-        this.harvestCountDTO = await WebRequestManager.instance.GetHarvestCountsAsync(this.clanDetail.id);
+        this.harvestCountDTO = await WebRequestManager.instance.getHarvestCountsAsync(this.clanDetail.id);
         this.setCountLabel(this.harvertCountrt, this.harvestCountDTO.harvest_count_use, this.harvestCountDTO.harvest_count);
         this.setCountLabel(this.harvertInterrupCountrt, this.harvestCountDTO.harvest_interrupt_count_use, this.harvestCountDTO.harvest_interrupt_count);
         this.timeResetHarvest.string = `<outline color=#222222 width=1> Đặt lại số lần thu hoạch đã dùng hàng ngày</outline>`;
@@ -89,7 +88,7 @@ export class PopupClanInventory extends BasePopup {
     }
 
     public async GetClanWareHouse() {
-        this.clanWarehouseSlot = await WebRequestManager.instance.GetClanWarehousesAsync(UserMeManager.CurrentOffice.idclan);
+        this.clanWarehouseSlot = await WebRequestManager.instance.getClanWarehousesAsync(UserMeManager.CurrentOffice.idclan);
         this.noItemPanel.active = !this.clanWarehouseSlot || this.clanWarehouseSlot.length === 0;
         if (!this.clanWarehouseSlot || this.clanWarehouseSlot.length === 0) return;
         this.detailMain.active = true;

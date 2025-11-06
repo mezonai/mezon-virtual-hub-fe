@@ -89,11 +89,11 @@ export class BaseInventoryUIITem extends Component {
         this.iconItemUIHelper.setIconByPurchaseMethod(purchaseMethod);
     }
 
-    public setScaleByItemType (itemType?: ItemType, sizeSpecial = 0.16, sizeDefault = 0.3){
+    public setScaleByItemType (itemType?: ItemType, sizeSpecial = 0.16, sizeDefault = 0.25){
         this.iconItemUIHelper.setSizeIconByItemType(itemType, sizeSpecial, sizeDefault);
     }
 
-    public setScaleByRewardType (rewardItemDTO: RewardItemDTO, sizeSpecial = 0.16, sizeDefault = 0.3){
+    public setScaleByRewardType (rewardItemDTO: RewardItemDTO, sizeSpecial = 0.16, sizeDefault = 0.25){
         this.iconItemUIHelper.setSizeIconByRewardType(rewardItemDTO, sizeSpecial, sizeDefault);
     }
 }

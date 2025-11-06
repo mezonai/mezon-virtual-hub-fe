@@ -48,6 +48,7 @@ export default class APIConstant {
     static BUY_ITEM_CLAN = "buy-items-clan";
     static USER_CLAN_STATS = "user-clan-stats";
     static HARVEST_COUNTS = "harvest-counts";
+    static CLAN_ACTIVITYS = "clan-activitys";
     
 }
 

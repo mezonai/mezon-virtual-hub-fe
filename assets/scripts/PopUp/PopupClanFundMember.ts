@@ -4,14 +4,11 @@ import { PopupManager } from './PopupManager';
 import { PopupTransferCoinPopup, SendClanFundParam} from './PopupTransferCoinPopup';
 import { BasePopup } from './BasePopup';
 import { Constants } from '../utilities/Constants';
-import { UserManager } from '../core/UserManager';
 import { UserMeManager } from '../core/UserMeManager';
-import { PopupClanHistory } from './PopupClanHistory';
 import { PaginationController } from '../utilities/PaginationController';
-import { ClanContributorsResponseDTO, ClanFundPayload, ClansData } from '../Interface/DataMapAPI';
+import { ClanContributorsResponseDTO, ClansData } from '../Interface/DataMapAPI';
 import { WebRequestManager } from '../network/WebRequestManager';
 import { ItemMemberFund } from '../Clan/ItemMemberFund';
-import { PurchaseMethod } from '../Model/Item';
 import { ServerManager } from '../core/ServerManager';
 import { RichText } from 'cc';
 import { PopupSelectionMini } from './PopupSelectionMini';
@@ -22,7 +19,6 @@ const { ccclass, property } = _decorator;
 export class PopupClanFundMember extends BasePopup {
     @property(Button) closeButton: Button = null;
     @property(Button) private clanFund_Btn : Button = null!;
-    @property(Button) private historySpending_BTn: Button = null!;
     @property(RichText) private totalClanFund: RichText = null!;
     @property(RichText) private clanFundUsed: RichText = null!;
     @property(Prefab) itemPrefab: Prefab = null!;
@@ -54,11 +50,7 @@ export class PopupClanFundMember extends BasePopup {
             await PopupManager.getInstance().openAnimPopup("UITransferCoinPopup", PopupTransferCoinPopup, param);
             this.clanFund_Btn.interactable = true;
         });
-        this.historySpending_BTn.addAsyncListener(async () => {
-            this.historySpending_BTn.interactable = false;
-            await PopupManager.getInstance().openAnimPopup("UI_ClanHistory", PopupClanHistory);
-            this.historySpending_BTn.interactable = true;
-        });
+
         this.searchButton.addAsyncListener(async () => {
             this.searchButton.interactable = false;
             this.currentSearch = this.searchInput.string.trim();
@@ -88,7 +80,7 @@ export class PopupClanFundMember extends BasePopup {
     }
 
     async loadList(page: number, search?: string) {
-        this.listClanFundMember = await WebRequestManager.instance.GetClanFundContributorsAsync(this.clanDetail.id, page);
+        this.listClanFundMember = await WebRequestManager.instance.getClanFundContributorsAsync(this.clanDetail.id, page);
         this.svMemberList.content.removeAllChildren();
         this._listClanFundMember = [];
         this.noMember.active = !this.listClanFundMember?.result || this.listClanFundMember.result.length === 0;

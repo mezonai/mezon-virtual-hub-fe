@@ -60,7 +60,7 @@ export class PopupClanShop extends BasePopup {
     }
 
     async initList() {
-        this.plantDataDTO = await WebRequestManager.instance.GetShopPlantAsync();
+        this.plantDataDTO = await WebRequestManager.instance.getShopPlantAsync();
         this.loadFromServer(this.plantDataDTO);
     }
 

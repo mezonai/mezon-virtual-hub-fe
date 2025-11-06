@@ -175,6 +175,30 @@ export enum ClanRole {
   MEMBER = 'member',
 }
 
+export class ClanActivityItemDTO {
+  userName: string;
+  actionType: string;
+  itemName?: string;
+  quantity?: number;
+  amount?: number;
+  time: string;
+  createdAt: string;
+}
+
+export class ClanActivityResponseDTO {
+    result: ClanActivityItemDTO[];
+    pageInfo: PageInfo;
+}
+
+export enum ClanActivityActionType {
+    HARVEST = 'harvest',
+    PURCHASE = 'purchase',
+    FUND = 'fund',
+    JOIN = 'join',
+    LEAVE = 'leave',
+}
+
+
 ///////////////////////---------------------Mission-----------------------------------------------------------
 export class MissionEvent{
     id: string

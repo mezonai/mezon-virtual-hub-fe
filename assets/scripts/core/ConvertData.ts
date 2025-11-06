@@ -1,6 +1,6 @@
 
 import { FarmDTO, FarmSlotDTO, PlantState, ClanWarehouseSlotDTO, PlantDataDTO, PlantData, HarvestCountDTO } from "../Farm/EnumPlant";
-import { ClansData, PageInfo, ClansResponseDTO, MemberResponseDTO, UserClan, ClanContributorDTO, ClanContributorsResponseDTO, ClanFundResponseDTO, ClanFund, ClanRequestResponseDTO, MemberClanRequestDTO, ClanStatus } from "../Interface/DataMapAPI";
+import { ClansData, PageInfo, ClansResponseDTO, MemberResponseDTO, UserClan, ClanContributorDTO, ClanContributorsResponseDTO, ClanFundResponseDTO, ClanFund, ClanRequestResponseDTO, MemberClanRequestDTO, ClanStatus, ClanActivityItemDTO, ClanActivityResponseDTO } from "../Interface/DataMapAPI";
 import { Food, InventoryDTO, Item, PetReward, QuestType, RewardItemDTO, RewardNewbieDTO, RewardType, StatsConfigDTO } from "../Model/Item";
 import { AnimalElementString, AnimalRarity, Element, PetBattleInfo, PetDTO, PlayerBattle, SkillBattleInfo, Species, TypeSkill } from "../Model/PetDTO";
 
@@ -142,6 +142,27 @@ export default class ConvetData {
         );
 
         return { result: contributors, pageInfo: this.extractPageInfo(data) };
+    }
+
+    public static ConvertClanActivity(response: any): ClanActivityResponseDTO {
+        const data = response?.data ?? {};
+
+        const clanActivityItems: ClanActivityItemDTO[] = Array.isArray(data.result)
+            ? data.result.map((item: any) => ({
+                userName: item.userName ?? '',
+                actionType: item.actionType ?? '',
+                itemName: item.itemName,
+                quantity: item.quantity,
+                amount: item.amount,
+                time: item.time,
+                createdAt: item.created_at
+            }))
+            : [];
+
+        return {
+            result: clanActivityItems,
+            pageInfo: data ? this.extractPageInfo(data) : this.defaultPageInfo()
+        };
     }
 
     public static ConvertClanRequests(apiData: any): ClanRequestResponseDTO {
