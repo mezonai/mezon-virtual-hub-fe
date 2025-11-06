@@ -542,7 +542,7 @@ export class ServerManager extends Component {
                 const myPlayer = UserManager.instance.GetMyClientPlayer;
                 if (myPlayer) {
                     myPlayer.playerInteractFarm.showHarvestingComplete();
-                    if (data.remaining) {
+                    if (data.remainingHarvest) {
                         Constants.showConfirm(`${data.message}\nLượt thu hoạch còn lại của bạn là: ${data.remainingHarvest}/${data.maxHarvest}`);
                     }
                     myPlayer.zoomBubbleChat("Mình đã thu hoạch xong!");
