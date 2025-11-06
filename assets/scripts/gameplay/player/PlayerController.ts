@@ -18,6 +18,7 @@ import { AnimalController } from '../../animal/AnimalController';
 import { Sprite } from 'cc';
 import { ServerManager } from '../../core/ServerManager';
 import { Constants } from '../../utilities/Constants';
+import { PlayerInteractFarm } from './PlayerInteractFarm';
 
 @ccclass('PlayerController')
 export class PlayerController extends Component {
@@ -48,6 +49,8 @@ export class PlayerController extends Component {
     private hideTimeout: number | null = null;
     private showNameTimer: number | null = null;
     public CanUpdateAnim: boolean = true;
+    @property(PlayerInteractFarm) playerInteractFarm: PlayerInteractFarm;
+   
     public get get_MoveAbility(): MoveAbility {
         return this.moveAbility;
     }

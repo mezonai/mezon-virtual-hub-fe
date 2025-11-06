@@ -59,6 +59,8 @@ export class Constants {
                 return `${this.convertKeyOffice(officeTeleport)}-shop1`;
             case RoomType.MEETING:
                 return `${this.convertKeyOffice(officeTeleport)}-office-meeting-room1`;
+            case RoomType.FARM:
+                return `${this.convertKeyOffice(officeTeleport)}-farm`;
             case RoomType.COMPLEXNCC:
             default:
                 return this.convertKeyOffice(officeTeleport);
@@ -250,5 +252,25 @@ export class Constants {
         [ClanRole.VICE_LEADER]: "P.Giám Đốc",
         [ClanRole.MEMBER]: "",
     };
+
+    public static getPlantName(englishName: string): string {
+        const nameMap: Record<string, string> = {
+            Broccoli: 'Bông cải xanh',
+            Chilli: 'Ớt',
+            Corn: 'Ngô',
+            Eggplant: 'Cà tím',
+            Garlic: 'Tỏi',
+            Potato: 'Khoai tây',
+            Pumpkin: 'Bí đỏ',
+            Strawberry: 'Dâu tây',
+            Watermelon: 'Dưa hấu',
+            Grape: 'Nho',
+        };
+        const normalized = englishName.trim().toLowerCase();
+        const matched = Object.keys(nameMap).find(
+            key => key.toLowerCase() === normalized
+        );
+        return matched ? nameMap[matched] : englishName;
+    }
 
 }

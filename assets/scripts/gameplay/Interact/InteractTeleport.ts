@@ -21,7 +21,7 @@ export class InteractTeleport extends Interactable {
     officeChange: OfficePosition = OfficePosition.NONE;// Office sẽ đến. None = không thay đổi Office
     @property({ type: Enum(RoomType) })
     roomTypeTeleport: RoomType = RoomType.NONE;// Room sẽ được dịch chuyển đến
-    currentOffice: OfficePosition
+    currentOffice: OfficeSenenParameter;
     protected async interact(playerSessionId: string) {
         if (!this.isPlayerNearby) return;
         await this.moveTeleport();
@@ -39,12 +39,14 @@ export class InteractTeleport extends Interactable {
         }
         switch (roomType) {
             case RoomType.OFFICE:
-                return `Để Dịch Chuyển Đến Văn Phòng ${Constants.convertNameOffice(this.currentOffice)}`;;
+                return `Để Dịch Chuyển Đến Văn Phòng ${Constants.convertNameOffice(this.currentOffice.currentOffice)}`;;
             case RoomType.COMPLEXNCC:
                 return "Để Dịch Chuyển Đến Khu Phức Hợp";
             case RoomType.SHOP1:
             case RoomType.SHOP2:
                 return "Để Dịch Chuyển Đến Cửa hàng";
+            case RoomType.FARM:
+                return "Để Dịch Chuyển Đến Nông Trại";
             case RoomType.NONE:
                 return "";
             default:
@@ -70,8 +72,8 @@ export class InteractTeleport extends Interactable {
             SceneManagerController.loadScene(SceneName.SCENE_GAME_MAP, param)
             return;
         }
-        if (this.officeChange == OfficePosition.NONE || this.officeChange == this.currentOffice) {
-            this.loadOfficeMap(this.currentOffice);
+        if (this.officeChange == OfficePosition.NONE || this.officeChange == this.currentOffice.currentOffice) {
+            this.loadOfficeMap(this.currentOffice.currentOffice);
         }
         else {
             this.updateUserDataUserClient();
@@ -108,7 +110,7 @@ export class InteractTeleport extends Interactable {
     private loadOfficeMap(officeMoved: OfficePosition) {
         const previousOffice = UserMeManager.CurrentOffice;
         const previousRoomType = UserMeManager.CurrentRoomType;
-        const param = new OfficeSenenParameter(previousOffice, previousRoomType, this.roomTypeTeleport, Constants.convertNameRoom(previousOffice, this.roomTypeTeleport));
+        const param = new OfficeSenenParameter(previousOffice.currentOffice, previousRoomType, this.roomTypeTeleport, Constants.convertNameRoom(previousOffice.currentOffice, this.roomTypeTeleport), UserMeManager.CurrentOffice.idclan);
         SceneManagerController.loadScene(SceneName.SCENE_OFFICE, param)
     }
 }

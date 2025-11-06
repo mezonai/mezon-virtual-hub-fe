@@ -6,6 +6,7 @@ import { UserManager } from '../../core/UserManager';
 import { AnimalSpawner } from '../../animal/AnimalSpawner';
 import { Constants } from '../../utilities/Constants';
 import { InteractableDoor } from '../../gameplay/Interact/InteractableDoor';
+import { OfficeSenenParameter } from '../OfficeScene/OfficeSenenParameter';
 const { ccclass, property } = _decorator;
 
 @ccclass('MapManagerBase')
@@ -28,12 +29,12 @@ export abstract class MapManagerBase extends Component {
     }
 
     startRoom: RoomType = RoomType.NONE;
-    public setCurrentOffice(office: OfficePosition, startRoom: RoomType) {
+    public setCurrentOffice(currentOffice: OfficeSenenParameter, office: OfficePosition, startRoom: RoomType) {
         if (this.mapName) {
             this.mapName.string = Constants.convertNameOffice(office)
         }
         for (const teleport of this.interactTeleports) {
-            teleport.currentOffice = office;
+            teleport.currentOffice = currentOffice;
         }
         this.startRoom = startRoom;
         this.updatePositionPlayer(office, startRoom);

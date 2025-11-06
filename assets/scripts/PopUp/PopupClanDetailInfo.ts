@@ -6,13 +6,14 @@ import { PopupClanNotice, PopupClanNoticeParam as PopupOfficeNoticeParam } from 
 import { PopupClanMember, PopupClanMemberParam } from './PopupClanMember';
 import { PopupClanLeaderboard } from './PopupClanLeaderboard';
 import { PopupClanFundMember, PopupClanFundMemberParam } from './PopupClanFundMember';
-import { PopupClanInventory } from './PopupClanInventory';
+import { PopupClanInventory, PopupClanInventoryParam } from './PopupClanInventory';
 import { AvatarIconHelper } from '../Clan/AvatarIconHelper';
 import { ClanDescriptionDTO, ClansData } from '../Interface/DataMapAPI';
 import { UserMeManager } from '../core/UserMeManager';
 import { PopupSelectionMini } from './PopupSelectionMini';
 import { Constants } from '../utilities/Constants';
 import { isValid } from 'cc';
+import { PopupClanHistory, PopupClanHistoryParam } from './PopupClanHistory';
 const { ccclass, property } = _decorator;
 
 @ccclass('PopupClanDetailInfo')
@@ -31,6 +32,7 @@ export class PopupClanDetailInfo extends BasePopup {
     @property(Button) private outClanBtn: Button = null!;
     @property(Button) closeButton: Button = null;
     @property(AvatarIconHelper) avatarSprite: AvatarIconHelper = null!;
+    @property(Button) private history_Btn: Button = null!;
 
     private clanDetail: ClansData;
     private clanFund: number;
@@ -52,7 +54,15 @@ export class PopupClanDetailInfo extends BasePopup {
 
         this.inventoryClanBtn.addAsyncListener(async () => {
             this.inventoryClanBtn.interactable = false;
-            await PopupManager.getInstance().openAnimPopup("UI_ClanInventory", PopupClanInventory);
+            const param: PopupClanInventoryParam =
+            {
+                clanDetail: this.clanDetail,
+                onUpdateFund: (newFund: number) => {
+                    this.clanFund = newFund;
+                    this.setDataDundClan(newFund);
+                }
+            }
+            await PopupManager.getInstance().openAnimPopup("UI_ClanInventory", PopupClanInventory, param);
             this.inventoryClanBtn.interactable = true;
         });
 
@@ -95,6 +105,17 @@ export class PopupClanDetailInfo extends BasePopup {
             await this.outClan();
             this.outClanBtn.interactable = true;
         });
+
+        this.history_Btn.addAsyncListener(async () => {
+            this.history_Btn.interactable = false;
+            const param: PopupClanHistoryParam =
+            {
+                clanDetail: this.clanDetail,
+            }
+            await PopupManager.getInstance().openAnimPopup("UI_ClanHistory", PopupClanHistory, param);
+            this.history_Btn.interactable = true;
+        });
+
         this.getMyClan();
     }
 
@@ -149,9 +170,12 @@ export class PopupClanDetailInfo extends BasePopup {
 
         const value = await WebRequestManager.instance.getClanFundAsync(UserMeManager.Get.clan.id);
         this.clanFund = value?.funds.find(f => f.type === "gold")?.amount ?? 0;
-        this.totalClanFund.string = ` <outline color=#222222 width=1> ${this.clanFund}</outline>`;
-
+        this.setDataDundClan(this.clanFund);
         this.setDataMyClanInfo(this.clanDetail);
+    }
+
+    public setDataDundClan(value: Number){
+         this.totalClanFund.string = ` <outline color=#222222 width=1> ${value}</outline>`;
     }
 
     setDataMyClanInfo(clanData: ClansData) {

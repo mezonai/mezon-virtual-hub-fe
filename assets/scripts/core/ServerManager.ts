@@ -23,6 +23,10 @@ import { PopupClanFundMember } from '../PopUp/PopupClanFundMember';
 import { PopupClanList } from '../PopUp/PopupClanList';
 import { PopupClanMemberManager } from '../PopUp/PopupClanMemberManager';
 import { PopupClanDetailInfo } from '../PopUp/PopupClanDetailInfo';
+import { PopupClanShop } from '../PopUp/PopupClanShop';
+import { PopupClanInventory } from '../PopUp/PopupClanInventory';
+import { FarmController } from '../Farm/FarmController';
+import { FarmSlotDTO } from '../Farm/EnumPlant';
 
 @ccclass('ServerManager')
 export class ServerManager extends Component {
@@ -362,7 +366,7 @@ export class ServerManager extends Component {
             if (data == null) return;
             UserManager.instance.NotifyBattle(data);
         });
-        
+
         this.room.onMessage(MessageTypes.NOTIFY_MISSION, (data) => {
             if (data == null || GameManager.instance == null) return;
             GameManager.instance.playerHubController?.onMissionNotice(true);
@@ -371,13 +375,13 @@ export class ServerManager extends Component {
         this.room.onMessage(MessageTypes.ON_SEND_CLAND_FUND_SELF, (data) => {
             const { clanId, type, playerAmount, totalAmount, sessionId } = data;
             if (UserMeManager.Get && clanId === UserMeManager.Get.clan.id) {
-                 SoundManager.instance.playSound(AudioType.ReceiveReward);
+                SoundManager.instance.playSound(AudioType.ReceiveReward);
                 if (type === PurchaseMethod.GOLD.toString()) {
                     UserMeManager.playerCoin += playerAmount;
                 }
-                    const popupComp = PopupManager.getInstance().getPopupComponent("UI_ClanFundMember", PopupClanFundMember);
-                    popupComp?.addSelfContribution(totalAmount);
-            
+                const popupComp = PopupManager.getInstance().getPopupComponent("UI_ClanFundMember", PopupClanFundMember);
+                popupComp?.addSelfContribution(totalAmount);
+
                 const msg = `Bạn đã nạp ${Math.abs(playerAmount)} thành công vào quỹ văn phòng</color>`;
                 Constants.showConfirm(msg);
             }
@@ -396,6 +400,31 @@ export class ServerManager extends Component {
             SoundManager.instance.playSound(AudioType.NoReward);
         });
 
+        this.room.onMessage(MessageTypes.ON_BUY_CLAN_ITEM_SUCCESS, (data) => {
+            const { clanId, item, fund } = data;
+            if (UserMeManager.Get && clanId === UserMeManager.Get.clan.id) {
+                SoundManager.instance.playSound(AudioType.ReceiveReward);
+                Constants.showConfirm('Bạn đã mua vật phẩm  cho văn phòng thành công');
+                const popupShop = PopupManager.getInstance().getPopupComponent("UI_ClanShop", PopupClanShop);
+                popupShop?.ReloadAfterBuyItem();
+            }
+        });
+
+        this.room.onMessage(MessageTypes.ON_BUY_CLAN_UPDATE_FUND, (data) => {
+            const { clanId, fund } = data;
+            if (UserMeManager.Get && clanId === UserMeManager.Get.clan.id) {
+                const popupFund = PopupManager.getInstance().getPopupComponent("UI_ClanFundMember", PopupClanFundMember);
+                popupFund?.addSelfContribution(fund);
+                const popupInfo = PopupManager.getInstance().getPopupComponent("UI_ClanDetailInfo", PopupClanDetailInfo);
+                popupInfo?.setDataDundClan(fund);
+            }
+        });
+
+        this.room.onMessage(MessageTypes.ON_BUY_CLAN_ITEM_FAILED, (data) => {
+            SoundManager.instance.playSound(AudioType.NoReward);
+            Constants.showConfirm(data.message, "Chú Ý");
+        });
+
         this.room.onMessage(MessageTypes.JOIN_CLAN_REQUEST, (data) => {
             SoundManager.instance.playSound(AudioType.NoReward);
             const popupApprovedMember = PopupManager.getInstance().getPopupComponent('UI_ClanMemberManager', PopupClanMemberManager);
@@ -404,7 +433,7 @@ export class ServerManager extends Component {
 
         });
 
-        this.room.onMessage(MessageTypes.JOIN_CLAN_APPROVED, async (data)  => {
+        this.room.onMessage(MessageTypes.JOIN_CLAN_APPROVED, async (data) => {
             SoundManager.instance.playSound(AudioType.NoReward);
             await WebRequestManager.instance.getUserProfileAsync();
             PopupManager.getInstance().getPopupComponent('UI_ClanList', PopupClanList)
@@ -418,7 +447,7 @@ export class ServerManager extends Component {
             popupComp?.loadList(1);
             Constants.showConfirm(data.message, "Chú Ý");
         });
-        
+
         this.room.onMessage(MessageTypes.CLAN_LEADER_TRANSFERRED, async (data) => {
             SoundManager.instance.playSound(AudioType.NoReward);
             await PopupManager.getInstance().closeAllPopups();
@@ -442,6 +471,121 @@ export class ServerManager extends Component {
             await WebRequestManager.instance.getUserProfileAsync();
             await PopupManager.getInstance().closeAllPopups();
             Constants.showConfirm(data.message);
+        });
+
+        this.room.onMessage(MessageTypes.ON_SLOT_FARM, async (data) => {
+            if (!data || !data.slots) {
+                return;
+            }
+            FarmController.instance.InitFarmSlot(data.slots);
+        });
+
+        this.room.onMessage(MessageTypes.ON_SLOT_UPDATE, async (data) => {
+            if (!data || !data.slot) {
+                return;
+            }
+            await PopupManager.getInstance().closeAllPopups();
+            FarmController.instance.UpdateSlot(data.slot);
+        });
+
+        this.room.onMessage(MessageTypes.ON_SLOT_UPDATE_RT, (data) => {
+            if (!data || !data.slots) return;
+            data.slots.forEach(slotData => {
+                FarmController.instance.UpdateSlot(slotData);
+            });
+        });
+
+        this.room.onMessage(MessageTypes.ON_WATER_PLANT, async (data) => {
+            await PopupManager.getInstance().closeAllPopups();
+            Constants.showConfirm(data.message);
+        });
+
+        this.room.onMessage(MessageTypes.ON_CATCH_BUG, async (data) => {
+            await PopupManager.getInstance().closeAllPopups();
+            Constants.showConfirm(data.message);
+        });
+
+        this.room.onMessage(MessageTypes.ON_HARVEST_STARTED, (data) => {
+            const player = UserManager.instance.getPlayerById(data.sessionId);
+            if (!player) return;
+
+            player.playerInteractFarm.showHarvestingBar(data.endTime, data.slotId);
+        });
+
+        this.room.onMessage(MessageTypes.ON_HARVEST_STARTED_ONJOIN, (data) => {
+          const slots = data.slots || [data];
+            slots.forEach((slot) => {
+                const otherPlayer = UserManager.instance.getPlayerById(slot.sessionId);
+                if (otherPlayer) {
+                    otherPlayer.playerInteractFarm.showHarvestingBar(slot.endTime, slot.slotId);
+                }
+            });
+        });
+
+        this.room.onMessage(MessageTypes.ON_HARVEST_DENIED, (data) => {
+            const isMe = data.sessionId === UserManager.instance.GetMyClientPlayer?.myID;
+            if (isMe) {
+                if (data.remaining) {
+                    Constants.showConfirm(`${data.message}\nLượt thu hoạch còn lại của bạn là: ${data.remaining}/${data.max}`);
+                }
+                Constants.showConfirm(`${data.message}`);
+                UserManager.instance.GetMyClientPlayer.get_MoveAbility.startMove();
+                GameManager.instance.playerHubController.showBlockInteractHarvest(false);
+            }
+        });
+
+        this.room.onMessage(MessageTypes.ON_HARVEST_COMPLETE, (data) => {
+            const isMe = data.sessionId === UserManager.instance.GetMyClientPlayer?.myID;
+            if (isMe) {
+                UserManager.instance.GetMyClientPlayer.get_MoveAbility.startMove();
+                GameManager.instance.playerHubController.showBlockInteractHarvest(false);
+                const myPlayer = UserManager.instance.GetMyClientPlayer;
+                if (myPlayer) {
+                    myPlayer.playerInteractFarm.showHarvestingComplete();
+                    if (data.remaining) {
+                        Constants.showConfirm(`${data.message}\nLượt thu hoạch còn lại của bạn là: ${data.remainingHarvest}/${data.maxHarvest}`);
+                    }
+                    myPlayer.zoomBubbleChat("Mình đã thu hoạch xong!");
+                }
+            }
+            const otherPlayer = UserManager.instance.getPlayerById(data.sessionId);
+            if (otherPlayer) {
+                otherPlayer.playerInteractFarm.showHarvestingComplete();
+                otherPlayer.zoomBubbleChat(`${data.playerName} đã thu hoạch xong!`);
+            }
+        });
+
+        this.room.onMessage(MessageTypes.ON_HARVEST_INTERRUPTED, (data) => {
+            const isMe = data.sessionId === UserManager.instance.GetMyClientPlayer?.myID;
+            if (isMe) {
+                Constants.showConfirm(`Bạn đã phá thu hoạch của ${data.interruptedPlayerName} thành công!\n` +
+                    `Lượt phá còn lại: ${data.selfHarvestInterrupt.remaining}/${data.selfHarvestInterrupt.max}`);
+            }
+            const otherPlayer = UserManager.instance.getPlayerById(data.interruptedPlayer);
+            if (otherPlayer) {
+                otherPlayer.playerInteractFarm.showHarvestingComplete();
+            }
+        });
+
+        this.room.onMessage(MessageTypes.ON_HARVEST_INTERRUPTED_BY_OTHER, (data) => {
+            Constants.showConfirm(
+                `Bạn bị phá bởi ${data.interruptedByName}!\n` +
+                `Lượt thu hoạch của bạn còn lại: ${data.selfHarvest.remaining}/${data.selfHarvest.max}\n` +
+                `Lượt thu hoạch còn lại của cây: ${data.plantHarvest.remaining}/${data.plantHarvest.max}`);
+            UserManager.instance.GetMyClientPlayer.get_MoveAbility.startMove();
+            GameManager.instance.playerHubController.showBlockInteractHarvest(false);
+            UserManager.instance.GetMyClientPlayer.playerInteractFarm.showHarvestingComplete();
+            const otherPlayer = UserManager.instance.getPlayerById(data.sessionId);
+            if (otherPlayer) {
+                otherPlayer.playerInteractFarm.showHarvestingComplete();
+            }
+        });
+
+        this.room.onMessage(MessageTypes.ON_HARVEST_INTERRUPTED_FAILED, (data) => {
+            const isMe = data.sessionId === UserManager.instance.GetMyClientPlayer?.myID;
+            if (isMe) {
+                Constants.showConfirm(`${data.message}`);
+            }
         });
     }
 
@@ -616,6 +760,30 @@ export class ServerManager extends Component {
         this.room.send("sendClanFund", sendData)
     }
 
+    public sendBuyItem(sendData) {
+        this.room.send("buyClanItem", sendData)
+    }
+
+    public sendPlantToSlot(sendData) {
+        this.room.send("plantToSlot", sendData)
+    }
+
+    public sendWaterPlant(sendData) {
+        this.room.send("waterPlant", sendData)
+    }
+
+    public sendCatchBug(sendData) {
+        this.room.send("catchBug", sendData)
+    }
+
+    public sendHarvest(sendData) {
+      this.room.send('startHarvest', sendData);
+    }
+
+    sendInterruptHarvest(sendData) {
+        this.room.send('interruptHarvest', sendData);
+    }
+
     public answerMathQuestion(id, answer) {
         let data = {
             id: id,
@@ -700,4 +868,5 @@ export class ServerManager extends Component {
     public sendNotEnoughSkillPet(data) {
         this.room.send(MessageTypes.NOT_ENOUGH_SKILL_PET_BATTLE, data);
     }
+
 }

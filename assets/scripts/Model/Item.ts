@@ -84,6 +84,7 @@ export enum RewardType {
     DIAMOND = 'diamond',
     FOOD = 'food',
     PET = 'pet',
+    PLANT = 'plant',
 }
 
 export enum ItemType {
@@ -97,11 +98,13 @@ export enum ItemType {
     GLASSES = 'glasses',
     PET_CARD = 'pet_card',
     PET_FOOD = 'pet_food',
+    ITEM_CLAN = 'item_clan',
 }
 
 export enum InventoryType {
     ITEM = 'item',
     FOOD = 'food',
+    PLANT ='plant'
 }
 
 export enum FoodType {
@@ -184,31 +187,8 @@ export enum ItemCode {
 }
 
 export interface BuyItemPayload {
+    clanId?: string | number;
     itemId: string | number;
     quantity: number;
     type: string;
 }
-
-export class PlantDTO {
-    id: string;
-    name: string;
-    harvestTimes: number;
-    growTime: number;
-    harvestPoint: number;
-    buyPrice: number;
-    quantity: number;
-}
-
-export enum PlantStage {
-    SEED = 'seed',
-    SPROUT = 'sprout',
-    GROWN = 'grown',
-    HARVEST = 'harvest',
-}
-
-export const PlantType = Enum({
-    NONE: 0,
-    RICE: 1,
-    COCONUT: 2,
-    BANANA: 3,
-});

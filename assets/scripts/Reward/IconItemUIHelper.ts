@@ -1,135 +1,188 @@
-import { _decorator, Component, Sprite, SpriteFrame, Label } from 'cc';
-import { Food, InventoryDTO, InventoryType, Item, ItemType, PurchaseMethod, RewardItemDTO, RewardType } from '../Model/Item';
+import { _decorator, Component, Sprite, SpriteFrame, Vec3 } from 'cc';
+import { Food, Item, ItemType, PurchaseMethod, RewardItemDTO, RewardType } from '../Model/Item';
 import { LoadBundleController } from '../bundle/LoadBundleController';
 import { LocalItemDataConfig } from '../Model/LocalItemConfig';
 import { ResourceManager } from '../core/ResourceManager';
-import { Vec3 } from 'cc';
+import { Species } from '../Model/PetDTO';
 const { ccclass, property } = _decorator;
 
 @ccclass('IconItemUIHelper')
 export class IconItemUIHelper extends Component {
+
     @property([SpriteFrame]) foodIcons: SpriteFrame[] = [];
     @property([SpriteFrame]) cardIcons: SpriteFrame[] = [];
     @property([SpriteFrame]) moneyIcons: SpriteFrame[] = [];
     @property([SpriteFrame]) petIcons: SpriteFrame[] = [];
+    @property([SpriteFrame]) plantIcons: SpriteFrame[] = [];
+    @property(Sprite) icon: Sprite = null!;
 
-    private foodIconMap: Record<string, SpriteFrame> = {};
-    private cardIconMap: Record<string, SpriteFrame> = {};
-    private moneyIconMap: Record<string, SpriteFrame> = {};
-    private petIconMap: Record<string, SpriteFrame> = {};
+    private foodMap: Record<string, SpriteFrame> | null = null;
+    private cardMap: Record<string, SpriteFrame> | null = null;
+    private moneyMap: Record<string, SpriteFrame> | null = null;
+    private petMap: Record<string, SpriteFrame> | null = null;
+    private plantMap: Record<string, SpriteFrame> | null = null;
 
-    @property(Sprite) icon: Sprite;
-
-    onLoad() {
-        this.initMaps();
-    }
-
-    private initMaps() {
+    private initFoodMap() {
+        this.foodMap = {};
         if (this.foodIcons.length >= 3) {
-            this.foodIconMap = {
+            this.foodMap = {
                 normal: this.foodIcons[0],
                 premium: this.foodIcons[1],
                 ultrapremium: this.foodIcons[2]
             };
         }
+    }
+
+    private initCardMap() {
+        this.cardMap = {};
         if (this.cardIcons.length >= 3) {
-            this.cardIconMap = {
+            this.cardMap = {
                 rarity_card_rare: this.cardIcons[0],
                 rarity_card_epic: this.cardIcons[1],
                 rarity_card_legendary: this.cardIcons[2]
             };
         }
+    }
+
+    private initMoneyMap() {
+        this.moneyMap = {};
         if (this.moneyIcons.length >= 2) {
-            this.moneyIconMap = {
+            this.moneyMap = {
                 gold: this.moneyIcons[0],
                 diamond: this.moneyIcons[1]
             };
         }
-        if (this.petIcons.length > 0) {
+    }
+
+    private initPetMap() {
+        this.petMap = {};
         for (const sf of this.petIcons) {
             if (sf && sf.name) {
-                this.petIconMap[sf.name.toLowerCase()] = sf;
+                this.petMap[sf.name.toLowerCase()] = sf;
             }
         }
     }
-    }
 
-    private ensureMaps() {
-        if (Object.keys(this.foodIconMap).length === 0 && this.foodIcons.length <= 3) {
-            this.initMaps();
-        }
-        if (Object.keys(this.cardIconMap).length === 0 && this.cardIcons.length <= 3) {
-            this.initMaps();
-        }
-        if (Object.keys(this.moneyIconMap).length === 0 && this.moneyIcons.length <= 2) {
-            this.initMaps();
-        }
-    }
-
-    private async applyIcon(food?: Food, item?: Item, rewardType?: RewardType, species?: string) {
-        this.ensureMaps();
-        if (!this.icon) return;
-
-        if (rewardType === RewardType.GOLD || rewardType === RewardType.DIAMOND) {
-            this.icon.spriteFrame = this.moneyIconMap[rewardType] ?? null;
-            return;
-        }
-        
-        if (rewardType === RewardType.PET && species) {
-            this.icon.spriteFrame = this.getPetIcon(species);
-            return;
-        }
-
-        if (food) {
-            const normalizedType = food.type.replace(/-/g, "");
-            this.icon.spriteFrame = this.foodIconMap[normalizedType] ?? null;
-            return;
-        }
-
-        if (item) {
-            if (item.type === ItemType.PET_CARD) {
-                this.icon.spriteFrame = this.cardIconMap[item.item_code] ?? null;
-            } else {
-                const skinLocalData = this.getLocalData(item);
-                this.icon.spriteFrame = await this.getSkinSprite(skinLocalData, item);
+    private initPlantMap() {
+        this.plantMap = {};
+        for (const sf of this.plantIcons) {
+            if (sf && sf.name) {
+                this.plantMap[sf.name] = sf;
             }
-            return;
         }
     }
 
-    public async setIconByReward(reward: RewardItemDTO) {
-        await this.applyIcon(reward.food, reward.item, reward.type, reward.pet?.species ? reward.pet.species.toString() : undefined);
+    private async applyFoodIcon(food: Food) {
+        if (!food) return;
+        if (!this.foodMap) this.initFoodMap();
+        const normalizedType = food.type.replace(/-/g, "");
+        this.icon.spriteFrame = this.foodMap?.[normalizedType] ?? null;
     }
 
-    public async setIconByItem(item: Item) {
-        await this.applyIcon(null, item, null);
+    private async applyCardIcon(item: Item) {
+        if (!item || item.type !== ItemType.PET_CARD) return;
+        if (!this.cardMap) this.initCardMap();
+        this.icon.spriteFrame = this.cardMap?.[item.item_code] ?? null;
+    }
+
+    private async applyMoneyIcon(rewardType: RewardType) {
+        if (!this.moneyMap) this.initMoneyMap();
+        this.icon.spriteFrame = this.moneyMap?.[rewardType] ?? null;
+    }
+
+    private async applyPetIcon(species: Species) {
+        if (!species) return;
+        if (!this.petMap) this.initPetMap();
+        this.icon.spriteFrame = this.petMap?.[species] ?? null;
+    }
+
+    private async applyPlantIcon(plantName: string) {
+        if (!plantName) return;
+        if (!this.plantMap) this.initPlantMap();
+        this.icon.spriteFrame = this.plantMap?.[plantName] ?? null;
+    }
+
+    private async applySkinIcon(item: Item) {
+        const localData = this.getLocalData(item);
+        this.icon.spriteFrame = await this.getSkinSprite(localData, item);
     }
 
     public async setIconByFood(food: Food) {
-        await this.applyIcon(food, null, null);
+        await this.applyFoodIcon(food);
     }
 
-    public getPetIcon(species: string): SpriteFrame {
-        const speciesName = species.toLowerCase();
-        return this.petIconMap[speciesName] || null;
+    public async setIconByItem(item: Item) {
+        if (item.type === ItemType.PET_CARD) {
+            await this.applyCardIcon(item);
+        } else {
+            await this.applySkinIcon(item);
+        }
+    }
+
+    public async setIconPlantByItem(plantName: string) {
+        await this.applyPlantIcon(plantName);
+    }
+
+    public async setIconByReward(reward: RewardItemDTO) {
+        if (reward.type === RewardType.GOLD || reward.type === RewardType.DIAMOND) {
+            await this.applyMoneyIcon(reward.type);
+        } else if (reward.type === RewardType.PET && reward.pet?.species) {
+            await this.applyPetIcon(reward.pet.species);
+        } else if (reward.type === RewardType.ITEM && reward.item) {
+            await this.setIconByItem(reward.item);
+        } else if (reward.type === RewardType.PLANT && reward.item) {
+            await this.applyPlantIcon(reward.item.name);
+        }
     }
 
     public async setIconByPurchaseMethod(method: PurchaseMethod) {
         switch (method) {
             case PurchaseMethod.GOLD:
-                await this.applyIcon(undefined, undefined, RewardType.GOLD);
+                await this.applyMoneyIcon(RewardType.GOLD);
                 break;
             case PurchaseMethod.DIAMOND:
-                await this.applyIcon(undefined, undefined, RewardType.DIAMOND);
+                await this.applyMoneyIcon(RewardType.DIAMOND);
                 break;
         }
     }
 
-    private getLocalData(item: Item) {
-        if (!item) {
-            return null;
+    public setSizeIconByItemType(itemType?: ItemType, sizeSpecial = 0.16, sizeDefault = 0.3) {
+        let value = sizeDefault;
+        if (itemType) {
+            if (itemType === ItemType.PET_CARD) value = 0.06;
+            else if (itemType === ItemType.HAIR || itemType === ItemType.FACE) value = sizeSpecial;
         }
+        this.node.scale = new Vec3(value, value, value);
+    }
+
+    public setSizeIconByRewardType(reward: RewardItemDTO, sizeSpecial = 0.16, sizeDefault = 0.3) {
+        let value = sizeDefault;
+        if (reward.type === RewardType.ITEM && reward.item) {
+            if (reward.item.type === ItemType.PET_CARD) value = 0.06;
+            else if (reward.item.type === ItemType.HAIR || reward.item.type === ItemType.FACE) value = sizeSpecial;
+        } else if (reward.type === RewardType.PET) {
+            value = 0.06;
+        }
+        this.node.scale = new Vec3(value, value, value);
+    }
+
+    private async loadSkinIcon(bundleName: string, bundlePath: string) {
+        const bundleData = { bundleName, bundlePath };
+        return await LoadBundleController.instance.spriteBundleLoader.getBundleData(bundleData);
+    }
+
+    public GetIcon(): SpriteFrame {
+        return this.icon.spriteFrame;
+    }
+    
+    private getLocalData(item: Item) {
+        if (!item) return null;
         return ResourceManager.instance.getLocalSkinById(item.id, item.type);
+    }
+
+    public getMoneyIcon(rewardType: RewardType | string): SpriteFrame {
+        if (!this.moneyMap) this.initMoneyMap();
+        return this.moneyMap?.[rewardType] ?? null;
     }
 
     private async getSkinSprite(localData: LocalItemDataConfig, item: Item): Promise<SpriteFrame> {
@@ -138,7 +191,7 @@ export class IconItemUIHelper extends Component {
         if (!item.iconSF || item.iconSF.length === 0) {
             item.iconSF = [];
             for (const icon of localData.icons) {
-                let spriteFrame = await this.loadSkinIcon(localData.bundleName, icon);
+                const spriteFrame = await this.loadSkinIcon(localData.bundleName, icon);
                 item.iconSF.push(spriteFrame);
             }
         }
@@ -146,45 +199,14 @@ export class IconItemUIHelper extends Component {
         return item.iconSF[0];
     }
 
-    private async loadSkinIcon(bundleName, bundlePath) {
-        let bundleData = {
-            bundleName: bundleName,
-            bundlePath: bundlePath
-        }
-        return await LoadBundleController.instance.spriteBundleLoader.getBundleData(bundleData);
+    public getPetIcon(species: string): SpriteFrame {
+        if (!this.petMap) this.initPetMap();
+        return this.petMap?.[species.toLowerCase()] ?? null;
     }
 
-    public setSizeIconByItemType(itemType?: ItemType, sizeSpecial = 0.16, sizeDefault = 0.3) {
-        let value: number = sizeDefault;
-        if (itemType) {
-            if (itemType === ItemType.PET_CARD) {
-                value = 0.06;
-            } else if (itemType === ItemType.HAIR || itemType === ItemType.FACE) {
-                value = sizeSpecial;
-            }
-        }
-        this.node.scale = new Vec3(value, value, value);
-    }
-
-    public setSizeIconByRewardType(reward: RewardItemDTO, sizeSpecial = 0.16, sizeDefault = 0.3) {
-        let value: number = sizeDefault;
-
-        if (reward.type === RewardType.ITEM && reward.item) {
-            if (reward.item.type === ItemType.PET_CARD) {
-                value = 0.06;
-            } else if (reward.item.type === ItemType.HAIR || reward.item.type === ItemType.FACE) {
-                value = sizeSpecial;
-            } else {
-                value = sizeDefault;
-            }
-        } else if (reward.type === RewardType.PET) {
-            value = 0.06;
-        }
-
-        this.node.scale = new Vec3(value, value, value);
-    }
-
-    public GetIcon():SpriteFrame{
-        return this.icon.spriteFrame;
+    public getPlantIcon(plantName: string): SpriteFrame {
+        if (!this.plantMap) this.initPlantMap();
+        const key = plantName;
+        return this.plantMap?.[key] ?? null;
     }
 }

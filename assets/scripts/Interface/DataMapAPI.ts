@@ -68,6 +68,9 @@ export class UserClan {
     avatar_url: string | null;
     gender: string | null;
     clan_role: string | null;
+    total_score: number | null;
+    weekly_score: number | null;
+    rank: number | null;
 }
 
 
@@ -171,6 +174,30 @@ export enum ClanRole {
   VICE_LEADER = 'vice_leader',
   MEMBER = 'member',
 }
+
+export class ClanActivityItemDTO {
+  userName: string;
+  actionType: string;
+  itemName?: string;
+  quantity?: number;
+  amount?: number;
+  time: string;
+  createdAt: string;
+}
+
+export class ClanActivityResponseDTO {
+    result: ClanActivityItemDTO[];
+    pageInfo: PageInfo;
+}
+
+export enum ClanActivityActionType {
+    HARVEST = 'harvest',
+    PURCHASE = 'purchase',
+    FUND = 'fund',
+    JOIN = 'join',
+    LEAVE = 'leave',
+}
+
 
 ///////////////////////---------------------Mission-----------------------------------------------------------
 export class MissionEvent{

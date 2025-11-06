@@ -23,9 +23,9 @@ export class ItemMemberMain extends Component {
         Constants.loadAvatar(this.avatarSprite, data.avatar_url);
         this.nameMemberLabel.string = data.display_name;
         this.setRole(data.clan_role);
-        // this.totalScoreLabel.string = data.score === 0 ? '--' : data.totalScore.toString();
-        // this.scoreWeeklyLabel.string = data.totalScore === 0 ? '--' : data.totalScore.toString();
-        //this.setRankIcon(data);
+        this.totalScoreLabel.string = data.total_score === 0 ? '--' : data.total_score.toString();
+        this.scoreWeeklyLabel.string = data.weekly_score === 0 ? '--' : data.weekly_score.toString();
+        this.setRankIcon(data);
     }
 
     setRole(clan_role: string) {
@@ -35,19 +35,19 @@ export class ItemMemberMain extends Component {
         this.roleLabel.string = roleText;
     }
 
-    // setRankIcon(data: UserClan) {
-    //        const rank = data?.rank ?? 0;
-    //        const isTop3 = rank >= 1 && rank <= 3;
-    //        this.rankIcon.node.active = isTop3;
-    //        this.rankLabel.node.active = !isTop3;
-    //        if (isTop3) {
-    //            this.rankIcon.spriteFrame = this.rankIcons[rank - 1];
-    //            this.rankIconLabel.string = rank.toString();
-    //        } else {
-    //            const rankText = rank === 0 ? '--' : rank.toString();
-    //            this.rankLabel.string = rankText;
-    //        }
-    //    }
+    setRankIcon(data: UserClan) {
+           const rank = data?.rank ?? 0;
+           const isTop3 = rank >= 1 && rank <= 3;
+           this.rankIcon.node.active = isTop3;
+           this.rankLabel.node.active = !isTop3;
+           if (isTop3) {
+               this.rankIcon.spriteFrame = this.rankIcons[rank - 1];
+               this.rankIconLabel.string = rank.toString();
+           } else {
+               const rankText = rank === 0 ? '--' : rank.toString();
+               this.rankLabel.string = rankText;
+           }
+       }
 }
 
 

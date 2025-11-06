@@ -1,5 +1,6 @@
 
-import { ClansData, PageInfo, ClansResponseDTO, MemberResponseDTO, UserClan, ClanContributorDTO, ClanContributorsResponseDTO, ClanFundResponseDTO, ClanFund, ClanRequestResponseDTO, MemberClanRequestDTO, ClanStatus } from "../Interface/DataMapAPI";
+import { FarmDTO, FarmSlotDTO, PlantState, ClanWarehouseSlotDTO, PlantDataDTO, PlantData, HarvestCountDTO } from "../Farm/EnumPlant";
+import { ClansData, PageInfo, ClansResponseDTO, MemberResponseDTO, UserClan, ClanContributorDTO, ClanContributorsResponseDTO, ClanFundResponseDTO, ClanFund, ClanRequestResponseDTO, MemberClanRequestDTO, ClanStatus, ClanActivityItemDTO, ClanActivityResponseDTO } from "../Interface/DataMapAPI";
 import { Food, InventoryDTO, Item, PetReward, QuestType, RewardItemDTO, RewardNewbieDTO, RewardType, StatsConfigDTO } from "../Model/Item";
 import { AnimalElementString, AnimalRarity, Element, PetBattleInfo, PetDTO, PlayerBattle, SkillBattleInfo, Species, TypeSkill } from "../Model/PetDTO";
 
@@ -39,6 +40,7 @@ export default class ConvetData {
             max_members: clan.max_members ?? 0,
             member_count: clan.member_count ?? 0,
             join_status: clan.join_status ?? ClanStatus.NONE,
+            rank: clan.rank ?? 0,
         }));
 
         return { result: clans, pageInfo: this.extractPageInfo(data) };
@@ -56,6 +58,9 @@ export default class ConvetData {
                 avatar_url: user.avatar_url ?? null,
                 gender: user.gender ?? null,
                 clan_role: user.clan_role ?? null,
+                total_score: user.total_score ?? 0,
+                weekly_score: user.total_score ?? 0,
+                rank: user.rank ?? 0,
             }
             : null;
 
@@ -79,7 +84,7 @@ export default class ConvetData {
             leader: mapUser(clanDT.leader),
             vice_leader: mapUser(clanDT.vice_leader),
             join_status: clanDT.join_status ?? null,
-            rank: clanDT.rank ?? null,
+            rank: clanDT.rank ?? 0,
             avatar_url: clanDT.avatar_url ?? null,
             funds: funds,
         };
@@ -111,6 +116,9 @@ export default class ConvetData {
             avatar_url: user.avatar_url ?? null,
             gender: user.gender ?? null,
             clan_role: user.clan_role ?? null,
+            total_score: user.total_score ?? 0,
+            weekly_score:  user.total_score ?? 0,
+            rank: user.rank ?? 0,
         }));
 
         return { result: members, pageInfo: this.extractPageInfo(data) };
@@ -129,10 +137,32 @@ export default class ConvetData {
                 total_amount: user.total_amount ?? 0,
                 avatar_url: user.avatar_url ?? null,
                 clan_role: user.clan_role ?? null,
+                rank: user.rank ?? 0,
             }),
         );
 
         return { result: contributors, pageInfo: this.extractPageInfo(data) };
+    }
+
+    public static ConvertClanActivity(response: any): ClanActivityResponseDTO {
+        const data = response?.data ?? {};
+
+        const clanActivityItems: ClanActivityItemDTO[] = Array.isArray(data.result)
+            ? data.result.map((item: any) => ({
+                userName: item.userName ?? '',
+                actionType: item.actionType ?? '',
+                itemName: item.itemName,
+                quantity: item.quantity,
+                amount: item.amount,
+                time: item.time,
+                createdAt: item.created_at
+            }))
+            : [];
+
+        return {
+            result: clanActivityItems,
+            pageInfo: data ? this.extractPageInfo(data) : this.defaultPageInfo()
+        };
     }
 
     public static ConvertClanRequests(apiData: any): ClanRequestResponseDTO {
@@ -150,6 +180,106 @@ export default class ConvetData {
         return {
             result: requests,
             pageInfo: data ? this.extractPageInfo(data) : this.defaultPageInfo()
+        };
+    }
+
+    public static ConvertPlants(plants: any[]): PlantDataDTO[] {
+        return (plants || []).map(p => ({
+            id: p.id,
+            name: p.name,
+            grow_time: p.grow_time,
+            harvest_point: p.harvest_point,
+            buy_price: p.buy_price,
+            description: p.description,
+        }));
+    }
+
+    public static convertHarvestCountDTO(apiData: any): HarvestCountDTO {
+    return {
+        harvest_count: apiData.harvest_count,
+        harvest_count_use: apiData.harvest_count_use,
+        harvest_interrupt_count: apiData.harvest_interrupt_count,
+        harvest_interrupt_count_use: apiData.harvest_interrupt_count_use
+    };}
+
+    public static ConvertWarehouseSlots(warehouses: any[]): ClanWarehouseSlotDTO[] {
+        return (warehouses || []).map(w => ({
+            id: w.id,
+            farm_id: w.clan_id,
+            plant_id: w.item_id,
+            quantity: w.quantity,
+            is_harvested: w.is_harvested,
+            purchased_by: w.purchased_by || '',
+            plant: w.plant
+                ? {
+                    id: w.plant.id,
+                    name: w.plant.name,
+                    grow_time: w.plant.grow_time,
+                    harvest_point: w.plant.harvest_point,
+                    buy_price: w.plant.buy_price as PlantState,
+                    description: w.plant.description,
+                }
+                : undefined,
+        }));
+    }
+
+    public static ConvertWarehouseSlot(warehouse: any): ClanWarehouseSlotDTO {
+        return {
+            id: warehouse.id,
+            farm_id: warehouse.farm_id,
+            plant_id: warehouse.plant_id,
+            quantity: warehouse.quantity,
+            is_harvested: warehouse.is_harvested,
+            purchased_by: warehouse.purchased_by || '',
+            plant: warehouse.plant
+                ? {
+                    id: warehouse.plant.id,
+                    name: warehouse.plant.name,
+                    grow_time: warehouse.plant.grow_time,
+                    harvest_point: warehouse.plant.harvest_point,
+                    buy_price: warehouse.plant.buy_price as PlantState,
+                    description: warehouse.plant.description,
+                }
+                : undefined,
+        };
+    }
+
+    public static convertPlantData(slotPlant: any): PlantData | null {
+        if (!slotPlant) return null!;
+        return {
+            id: slotPlant.id,
+            plant_id: slotPlant.plant_id,
+            plant_name: slotPlant.plant_name,
+            planted_by: slotPlant.planted_by,
+            grow_time: slotPlant.grow_time,
+            grow_time_remain: slotPlant.grow_time_remain,
+            stage: slotPlant.stage as PlantState,
+            can_harvest: slotPlant.can_harvest,
+            need_water: slotPlant.need_water,
+            has_bug: slotPlant.has_bug,
+            harvest_at: slotPlant.harvest_at ? new Date(slotPlant.harvest_at) : null,
+        };
+    }
+
+    public static ConvertFarmSlot(slot: any): FarmSlotDTO {
+        return {
+            id: slot.id,
+            slot_index: slot.slot_index,
+            currentPlant: this.convertPlantData(slot.currentPlant),
+        };
+    }
+
+    public static ConvertFarmRequests(farmData: any): FarmDTO {
+        const parsed = typeof farmData === 'string' ? JSON.parse(farmData) : farmData;
+        const data = parsed.data || { slots: [], warehouseSlots: [], farm_id: '' };
+
+        const warehouseSlots = (data.warehouseSlots || []).map(this.ConvertWarehouseSlot);
+        const slots = (data.slots || []).map(this.ConvertFarmSlot);
+
+        return {
+            farm_id: data.farm_id,
+            warehouseSlots,
+            slots,
         };
     }
 

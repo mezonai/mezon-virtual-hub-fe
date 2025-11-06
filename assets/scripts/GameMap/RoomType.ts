@@ -6,6 +6,7 @@ export enum RoomType  {
     OFFICE,
     MEETING,
     NONE,
+    FARM
 }
 
 

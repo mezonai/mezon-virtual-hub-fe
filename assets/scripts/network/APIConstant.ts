@@ -42,10 +42,14 @@ export default class APIConstant {
     static TRANSFER_LEADERSHIP = "transfer-leadership";
     static ASSIGN_VICE_LEADER = "assign-vice-leader";
     static REMOVE_VICE_LEADER = "remove-vice-leader";
+    static FARM_SLOT = "farm-slots";
+    static CLANWAREHOUSE = "Clan-Warehouses";
+    static PLANT = "plants";
+    static BUY_ITEM_CLAN = "buy-items-clan";
+    static USER_CLAN_STATS = "user-clan-stats";
+    static HARVEST_COUNTS = "harvest-counts";
+    static CLAN_ACTIVITYS = "clan-activitys";
     
-   
-    
-
 }
 
 export class APIConfig {

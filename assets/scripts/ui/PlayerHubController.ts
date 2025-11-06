@@ -22,6 +22,7 @@ export class PlayerHubController extends Component {
     @property(Button) private btn_UIGuildReward: Button = null!;
     @property(Node) private redDotNoticeMission: Node = null!;
     @property(Node) private redDotDailyReward: Node = null!;
+    @property(Node) private blockInteractHarvest: Node = null!;
 
     onLoad() {
         this.btn_UIInventory.addAsyncListener(async () => {
@@ -78,4 +79,9 @@ export class PlayerHubController extends Component {
     showUIDailyReward(isShow: boolean){
         this.btn_UIDailyReward.node.active = isShow;
     }
+    
+    public showBlockInteractHarvest(isBlock: boolean) {
+        this.blockInteractHarvest.active = isBlock;
+    }
+
 }
