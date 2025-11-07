@@ -3,7 +3,7 @@ import { PopupManager } from '../PopUp/PopupManager';
 import { PopupChoosePlant, PopupChoosePlantParam } from '../PopUp/PopupChoosePlant';
 import { FarmSlot } from './FarmSlot';
 import { WebRequestManager } from '../network/WebRequestManager';
-import { FarmDTO, FarmSlotDTO, PlantDataDTO, PlantToSlotPayload } from './EnumPlant';
+import { FarmDTO, FarmSlotDTO, PlantDataDTO, PlantToSlotPayload, SlotActionType } from './EnumPlant';
 import { ServerManager } from '../core/ServerManager';
 import { UserManager } from '../core/UserManager';
 import { UserMeManager } from '../core/UserMeManager';
@@ -73,14 +73,32 @@ export class FarmController extends Component {
     ServerManager.instance.sendPlantToSlot(param);
   }
 
+  private findSlotById(slotId: string): FarmSlot | null {
+    if (!this.landSlots || this.landSlots.length === 0) return null;
+    return this.landSlots.find(s => s.data?.id === slotId) ?? null;
+  }
+
+  public UpdateSlotAction(slotId: string, type: SlotActionType, isDone: boolean = false) {
+    const slot = this.findSlotById(slotId);
+    if (!slot) return;
+
+    switch (type) {
+      case SlotActionType.Water:
+        slot.PlayWaterPlantAnim(isDone);
+        break;
+      case SlotActionType.CatchBug:
+        slot.PlayCatchBugAnim(isDone);
+        break;
+      case SlotActionType.Harvest:
+        slot.PlayHarvestAnim(isDone);
+        break;
+    }
+  }
+
   public UpdateSlot(slotData: FarmSlotDTO) {
-    if (!this.landSlots || this.landSlots.length === 0) {
-      return;
-    }
-    const slot = this.landSlots.find(s => s.data?.id === slotData.id);
-    if (!slot) {
-      return;
-    }
+    if (!this.landSlots || this.landSlots.length === 0) return;
+    const slot = this.findSlotById(slotData.id);
+    if (!slot) return;
     slot.setup(slotData);
   }
 
