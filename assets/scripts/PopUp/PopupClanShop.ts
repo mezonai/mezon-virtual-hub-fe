@@ -22,7 +22,6 @@ export class PopupClanShop extends BasePopup {
     @property(RichText) growTimert: RichText = null;
     @property(RichText) harvestScorert: RichText = null;
     @property(RichText) priceBuyrt: RichText = null;
-    @property(RichText) harvertCountrt: RichText = null;
     @property(Node) noItemPanel: Node = null;
     @property(Prefab) itemPrefab: Prefab = null!;
     @property(ScrollView) svShopClan: ScrollView = null!;
@@ -102,7 +101,6 @@ export class PopupClanShop extends BasePopup {
         this.growTimert.string = `<outline color=#222222 width=1> ${item.plant.grow_time} s</outline>`;
         this.harvestScorert.string = `<outline color=#222222 width=1> ${item.plant.harvest_point}</outline>`;
         this.priceBuyrt.string = `<outline color=#222222 width=1> ${item.plant.buy_price}</outline>`;
-        this.harvertCountrt.string = `<outline color=#222222 width=1> ${item.plant.name}</outline>`;
     }
 
     private showBuyQuantityPopup(): Promise<number> {

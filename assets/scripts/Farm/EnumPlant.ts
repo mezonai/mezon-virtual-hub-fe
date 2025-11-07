@@ -69,3 +69,9 @@ export interface HarvestCountDTO {
   harvest_interrupt_count_use: number;
 }
 
+export enum SlotActionType {
+  Water = 'water',
+  CatchBug = 'catch_bug',
+  Harvest = 'harvest',
+}
+

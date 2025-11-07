@@ -16,7 +16,9 @@ export class FarmSlot extends Component {
   @property(Prefab) plantPrefab: Prefab = null!;
   @property(Node) plantParent: Node = null!;
   @property(Node) interactAction: Node = null!;
-
+  @property(Node) waterPlantAnim: Node = null!;
+  @property(Node) catchBugAnim: Node = null!;
+  @property(Node) harvestAnim: Node = null!;
   @property(Button) waterPlantBtn: Button = null!;
   @property(Button) catchBugBTn: Button = null!;
   @property(Button) harvestBtn: Button = null!;
@@ -44,6 +46,7 @@ export class FarmSlot extends Component {
 
   public setup(data: FarmSlotDTO) {
     this.data = data;
+    
     if (this.hasPlant(data.currentPlant)) {
       if (this.plant) {
         this.plant.unscheduleAllCallbacks();
@@ -55,6 +58,7 @@ export class FarmSlot extends Component {
     else {
       this.plantParent.removeAllChildren();
       this.plant = null;
+      this.resetInteractButtons();
     }
   }
 
@@ -111,6 +115,7 @@ export class FarmSlot extends Component {
       this.interactAction.active = false;
       return;
     }
+    this.PlayWaterPlantAnim(true);
     const param: PlantToSlotPayload = {
       farm_slot_id: this.data.id,
     }
@@ -129,6 +134,7 @@ export class FarmSlot extends Component {
       this.interactAction.active = false;
       return;
     }
+    this.PlayCatchBugAnim(true);
     const param: PlantToSlotPayload = {
       farm_slot_id: this.data.id,
     }
@@ -145,6 +151,7 @@ export class FarmSlot extends Component {
     const param: PlantToSlotPayload = {
       farm_slot_id: this.data.id,
     }
+   
     UserManager.instance.GetMyClientPlayer.get_MoveAbility.StopMove();
     GameManager.instance.playerHubController.showBlockInteractHarvest(true);
     ServerManager.instance.sendHarvest(param);
@@ -155,6 +162,21 @@ export class FarmSlot extends Component {
     this.harvestBtn.node.active = false;
     this.waterPlantBtn.node.active = false;
     this.catchBugBTn.node.active = false;
+    this.harvestAnim.active = false;
+    this.waterPlantAnim.active = false;
+    this.catchBugAnim.active = false;
+  }
+
+  public PlayHarvestAnim(isShow: boolean) {
+    this.harvestAnim.active = isShow;
+  }
+
+  public PlayWaterPlantAnim(isShow: boolean) {
+    this.waterPlantAnim.active = isShow;
+  }
+
+  public PlayCatchBugAnim(isShow: boolean) {
+    this.catchBugAnim.active = isShow;
   }
 
 }

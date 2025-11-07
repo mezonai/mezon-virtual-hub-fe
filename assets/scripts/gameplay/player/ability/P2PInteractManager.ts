@@ -4,6 +4,10 @@ import { ActionType, PlayerInteractAction } from './PlayerInteractAction';
 import { RPSGame } from './RPSGame';
 import { PopupManager } from '../../../PopUp/PopupManager';
 import { MessageTimeoutParam, PopupMessageTimeout } from '../../../PopUp/PopupMessageTimeout';
+import { UserManager } from '../../../core/UserManager';
+import { UserMeManager } from '../../../core/UserMeManager';
+import { OfficePosition } from '../../../GameMap/OfficePosition';
+import { RoomType } from '../../../GameMap/RoomType';
 const { ccclass, property } = _decorator;
 
 @ccclass('P2PInteractManager')
@@ -41,7 +45,7 @@ export class P2PInteractManager extends Ability {
     }
 
     onTouchStart(event) {
-        if (this.playerController.isInBattle) {
+        if (this.playerController.isInBattle || UserMeManager.CurrentOffice.roomEnds == RoomType.FARM) {
             return;
         }
 
