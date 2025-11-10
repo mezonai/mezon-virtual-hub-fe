@@ -3,7 +3,7 @@ import { APIManager } from './APIManager';
 import APIConstant, { APIConfig, EVENT_NAME } from './APIConstant';
 import ConvetData from '../core/ConvertData';
 import { UserMeManager } from '../core/UserMeManager';
-import { ClanActivityResponseDTO, ClanContributorsResponseDTO, ClanDescriptionDTO as ClanDescriptionDTO, ClanFundResponseDTO, ClanRequestResponseDTO, ClansData, ClansResponseDTO, MemberResponseDTO, RemoveMembersPayload, SortBy, SortOrder, UserDataResponse } from '../Interface/DataMapAPI';
+import { ClanActivityResponseDTO, ClanContributorsResponseDTO, ClanDescriptionDTO as ClanDescriptionDTO, ClanFundResponseDTO, ClanRequestResponseDTO, ClansData, ClansResponseDTO, MemberResponseDTO, RemoveMembersPayload, RequestToJoinDTO, SortBy, SortOrder, UserDataResponse } from '../Interface/DataMapAPI';
 import { ServerManager } from '../core/ServerManager';
 import { PopupSelectionMini, SelectionMiniParam } from '../PopUp/PopupSelectionMini';
 import { PopupManager } from '../PopUp/PopupManager';
@@ -249,12 +249,13 @@ export class WebRequestManager extends Component {
         });
     }
 
-    public postJoinClanAsync(clanId: string): Promise<UserDataResponse> {
+    public postJoinClanAsync(clanId: string): Promise<RequestToJoinDTO> {
         return new Promise((resolve) => {
              WebRequestManager.instance.postJoinClan(
                 clanId,
                 (response) => {
-                    resolve(response.data);
+                    const responseData = ConvetData.ConvertRequestToJoin(response.data);
+                    resolve(responseData);
                 },
                 (error) => {
                     resolve(null);
@@ -343,6 +344,7 @@ export class WebRequestManager extends Component {
                 clanId, page, sortOrder, sortby,  limit,
                 (response) => {
                     const clans = ConvetData.ConvertMemberClan(response);
+                    console.log("DATA: ", clans);
                     resolve(clans);
                 },
                 (error) => {

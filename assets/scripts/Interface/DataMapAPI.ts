@@ -198,6 +198,11 @@ export enum ClanActivityActionType {
     LEAVE = 'leave',
 }
 
+export interface RequestToJoinDTO {
+  canRequestAt?: string;
+  request?: MemberClanRequestDTO;
+}
+
 
 ///////////////////////---------------------Mission-----------------------------------------------------------
 export class MissionEvent{
