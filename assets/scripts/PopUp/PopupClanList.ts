@@ -48,7 +48,7 @@ export class PopupClanList extends BasePopup {
     }
 
     async loadList(page: number, search?: string) {
-        this.listClan = await WebRequestManager.instance.getAllClanRequestsync(page);
+        this.listClan = await WebRequestManager.instance.getAllClanRequestsync(page, search);
         this.svClanList.content.removeAllChildren();
         this._listClan = [];
         this.noMember.active = !this.listClan?.result || this.listClan.result.length === 0;
@@ -89,7 +89,13 @@ export class PopupClanList extends BasePopup {
             return;
         }
 
-        await WebRequestManager.instance.postJoinClanAsync(clan.id);
+        const data = await WebRequestManager.instance.postJoinClanAsync(clan.id);
+        if(data.canRequestAt){
+            Constants.showConfirm(
+                `Hiện tại bạn chưa thể xin gia nhập văn phòng. Bạn có thể gửi yêu cầu mới từ: ${new Date(data.canRequestAt).toLocaleString('vi-VN')}`
+            );
+            return;
+        }
         Constants.showConfirm("Đơn gia nhập của bạn đã được gửi đi", "Thông báo");
         itemComp.updateStatus(ClanStatus.PENDING);
     }
@@ -103,11 +109,8 @@ export class PopupClanList extends BasePopup {
             textButtonCenter: "",
             onActionButtonLeft: async () => {
                 if (!popup?.node?.uuid) return;
-                const timeCanCancel = await WebRequestManager.instance.postCancelJoinClanAsync(clan.id);
-                timeCanCancel
-                ? await Constants.showConfirm(`Yêu cầu gia nhập chỉ có thể hủy sau ${timeCanCancel} giờ kể từ khi tạo.`)
-                : itemComp.updateStatus(ClanStatus.NONE);
-
+                await WebRequestManager.instance.postCancelJoinClanAsync(clan.id);
+                await itemComp.updateStatus(ClanStatus.NONE);
                 await PopupManager.getInstance().closePopup(popup.node.uuid);
 
             },

@@ -1,6 +1,6 @@
 
 import { FarmDTO, FarmSlotDTO, PlantState, ClanWarehouseSlotDTO, PlantDataDTO, PlantData, HarvestCountDTO } from "../Farm/EnumPlant";
-import { ClansData, PageInfo, ClansResponseDTO, MemberResponseDTO, UserClan, ClanContributorDTO, ClanContributorsResponseDTO, ClanFundResponseDTO, ClanFund, ClanRequestResponseDTO, MemberClanRequestDTO, ClanStatus, ClanActivityItemDTO, ClanActivityResponseDTO } from "../Interface/DataMapAPI";
+import { ClansData, PageInfo, ClansResponseDTO, MemberResponseDTO, UserClan, ClanContributorDTO, ClanContributorsResponseDTO, ClanFundResponseDTO, ClanFund, ClanRequestResponseDTO, MemberClanRequestDTO, ClanStatus, ClanActivityItemDTO, ClanActivityResponseDTO, RequestToJoinDTO } from "../Interface/DataMapAPI";
 import { Food, InventoryDTO, Item, PetReward, QuestType, RewardItemDTO, RewardNewbieDTO, RewardType, StatsConfigDTO } from "../Model/Item";
 import { AnimalElementString, AnimalRarity, Element, PetBattleInfo, PetDTO, PlayerBattle, SkillBattleInfo, Species, TypeSkill } from "../Model/PetDTO";
 
@@ -59,7 +59,7 @@ export default class ConvetData {
                 gender: user.gender ?? null,
                 clan_role: user.clan_role ?? null,
                 total_score: user.total_score ?? 0,
-                weekly_score: user.total_score ?? 0,
+                weekly_score: user.weekly_score ?? 0,
                 rank: user.rank ?? 0,
             }
             : null;
@@ -117,7 +117,7 @@ export default class ConvetData {
             gender: user.gender ?? null,
             clan_role: user.clan_role ?? null,
             total_score: user.total_score ?? 0,
-            weekly_score:  user.total_score ?? 0,
+            weekly_score:  user.weekly_score ?? 0,
             rank: user.rank ?? 0,
         }));
 
@@ -181,6 +181,14 @@ export default class ConvetData {
             result: requests,
             pageInfo: data ? this.extractPageInfo(data) : this.defaultPageInfo()
         };
+    }
+
+    public static ConvertRequestToJoin(apiData: any): RequestToJoinDTO {
+        const inner = apiData;
+        return {
+            request: inner?.request,
+            canRequestAt: inner?.canRequestAt
+        }
     }
 
     public static ConvertPlants(plants: any[]): PlantDataDTO[] {
