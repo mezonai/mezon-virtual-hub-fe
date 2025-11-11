@@ -273,4 +273,29 @@ export class Constants {
         return matched ? nameMap[matched] : englishName;
     }
 
+    public static getOfficeName(englishName: string): string {
+        const nameMap: Record<string, string> = {
+            "Ha Noi 1 Farm": "nông trại Hà Nội 1",
+            "Ha Noi 2 Farm": "nông trại Hà Nội 2",
+            "Ha Noi 3 Farm": "nông trại Hà Nội 3",
+            "Vinh Farm": "nông trại Vinh",
+            "Da Nang Farm": "nông trại Đà Nẵng",
+            "Quy Nhon Farm": "nông trại Quy Nhơn",
+            "Sai Gon Farm": "nông trại Sài Gòn",
+        };
+
+        const normalized = englishName.trim().toLowerCase();
+
+        const matched = Object.keys(nameMap).find(
+            key => key.toLowerCase() === normalized
+        );
+
+        return matched ? nameMap[matched] : englishName;
+    }
+
+    public static getSearchIfChanged(currentSearch: string, newSearch?: string): string | null {
+        const searchKey = newSearch?.trim() ?? '';
+        if (searchKey === currentSearch) return null;
+        return searchKey;
+    }
 }

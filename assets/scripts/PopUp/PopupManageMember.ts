@@ -57,12 +57,17 @@ export class PopupManageMember extends Component {
             this.onRemoveMembers();
             this.removeMemberBtn.interactable = true;
         });
+
+        this.searchInput.node.on('editing-return', async () => {
+            await this.searchClansIfChanged(this.searchInput.string);
+        });
+
         this.searchButton.addAsyncListener(async () => {
             this.searchButton.interactable = false;
-            this.currentSearch = this.searchInput.string.trim();
-            await this.loadList(1, this.currentSearch);
+            await this.searchClansIfChanged(this.searchInput.string);
             this.searchButton.interactable = true;
         });
+
         this.clanDetail = clansData;
         this.onMemberChanged = param?.onMemberChanged;
         this.checkShowMemberManager();
@@ -71,6 +76,14 @@ export class PopupManageMember extends Component {
             async (page: number) => await this.loadList(page), 1
         );
         this.loadList(1);
+    }
+
+    private async searchClansIfChanged(newSearch?: string) {
+        const result = Constants.getSearchIfChanged(this.currentSearch, newSearch);
+        if (result !== null) {
+            this.currentSearch = result;
+            await this.loadList(1, this.currentSearch);
+        }
     }
 
     private checkShowMemberManager() {

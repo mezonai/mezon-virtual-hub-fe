@@ -13,22 +13,28 @@ export class ItemHistoryClan extends Component {
 
         switch (data.actionType) {
             case ClanActivityActionType.HARVEST:
-                text = `  ${data.userName} thu hoạch ${Constants.getPlantName(data.itemName).toLowerCase() || 'vật phẩm'} lúc ${data.time}`;
+                text = ` - ${data.userName} thu hoạch ${Constants.getPlantName(data.itemName).toLowerCase() || 'vật phẩm'} lúc ${data.time} tại ${ Constants.getOfficeName(data.officeName) }`;
+                break;
+            case ClanActivityActionType.HARVEST_INTRUDER:
+                text = ` - ${data.userName} của ${ Constants.getOfficeName(data.officeName)} đã thu hoạch trộm ${Constants.getPlantName(data.itemName).toLowerCase() || 'vật phẩm'} lúc ${data.time}`;
+                break;
+            case ClanActivityActionType.HARVESTED_OTHER_FARM:
+                text = ` - ${data.userName} đã thu hoạch trộm ${Constants.getPlantName(data.itemName).toLowerCase() || 'vật phẩm'} lúc ${data.time} tại ${ Constants.getOfficeName(data.officeName)}`;
                 break;
             case ClanActivityActionType.PURCHASE:
-                text = `  ${data.userName} mua ${data.quantity ?? 0} x ${Constants.getPlantName(data.itemName).toLowerCase()  || 'vật phẩm'} lúc ${data.time}`;
+                text = ` - ${data.userName} mua ${data.quantity ?? 0} x ${Constants.getPlantName(data.itemName).toLowerCase()  || 'vật phẩm'} lúc ${data.time}`;
                 break;
             case ClanActivityActionType.FUND:
-                text = `  ${data.userName} nộp ${data.amount ?? 0} vào quỹ clan lúc ${data.time}`;
+                text = ` - ${data.userName} nộp ${data.amount ?? 0} vào quỹ clan lúc ${data.time}`;
                 break;
             case ClanActivityActionType.JOIN:
-                text = `  ${data.userName} đã tham gia clan lúc ${data.time}`;
+                text = ` - ${data.userName} đã tham gia clan lúc ${data.time}`;
                 break;
             case ClanActivityActionType.LEAVE:
-                text = `  ${data.userName} đã rời clan lúc ${data.time}`;
+                text = ` - ${data.userName} đã rời clan lúc ${data.time}`;
                 break;
             default:
-                text = `  ${data.userName} thực hiện ${data.actionType} lúc ${data.time}`;
+                text = ` - ${data.userName} thực hiện ${data.actionType} lúc ${data.time}`;
                 break;
         }
 

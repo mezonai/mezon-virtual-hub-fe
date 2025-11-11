@@ -62,8 +62,8 @@ export class ItemJoinClan extends Component {
     public updateStatus(status: ClanStatus) {
         this.clanDetail.join_status = status;
         this.joinLabel.string = (status === ClanStatus.PENDING)
-            ? "<outline color=#222222 width=1> Chờ duyệt </outline>"
-            : "<outline color=#222222 width=1> Gia Nhập </outline>";
+            ? "<outline color=#222222 width=1>  Chờ duyệt </outline>"
+            : "<outline color=#222222 width=1>  Gia Nhập </outline>";
 
         this.joinButton.interactable = (status !== ClanStatus.PENDING);
         this.cancelButton.node.active = (status === ClanStatus.PENDING);
