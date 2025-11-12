@@ -4,7 +4,7 @@ import { PopupManager } from './PopupManager';
 import { WebRequestManager } from '../network/WebRequestManager';
 import { ItemJoinClan } from '../Clan/ItemJoinClan';
 import { PaginationController } from '../utilities/PaginationController';
-import { ClansData, ClansResponseDTO, ClanStatus, UserDataResponse } from '../Interface/DataMapAPI';
+import { ClansData, ClansResponseDTO, ClanStatus } from '../Interface/DataMapAPI';
 import { Constants } from '../utilities/Constants';
 import { Label } from 'cc';
 import { EditBox } from 'cc';
@@ -33,10 +33,14 @@ export class PopupClanList extends BasePopup {
             await PopupManager.getInstance().closePopup(this.node.uuid);
             this.closeButton.interactable = true;
         });
+
+        this.searchInput.node.on('editing-return', async () => {
+            await this.searchClansIfChanged(this.searchInput.string);
+        });
+
         this.searchButton.addAsyncListener(async () => {
             this.searchButton.interactable = false;
-            this.currentSearch = this.searchInput.string.trim();
-            await this.loadList(1, this.currentSearch);
+            await this.searchClansIfChanged(this.searchInput.string);
             this.searchButton.interactable = true;
         });
 
@@ -46,13 +50,20 @@ export class PopupClanList extends BasePopup {
         this.loadList(1);
         this.UpdatePage();
     }
+    
+    private async searchClansIfChanged(newSearch?: string) {
+        const result = Constants.getSearchIfChanged(this.currentSearch, newSearch);
+        if (result !== null) {
+            this.currentSearch = result;
+            await this.loadList(1, this.currentSearch);
+        }
+    }
 
     async loadList(page: number, search?: string) {
         this.listClan = await WebRequestManager.instance.getAllClanRequestsync(page, search);
         this.svClanList.content.removeAllChildren();
         this._listClan = [];
         this.noMember.active = !this.listClan?.result || this.listClan.result.length === 0;
-        if (!this.listClan || this.listClan.result.length === 0) return;
         for (const itemClan of this.listClan.result) {
                 const itemJoinClan = instantiate(this.itemPrefab);
                 itemJoinClan.setParent(this.svClanList.content);

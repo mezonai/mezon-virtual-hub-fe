@@ -50,15 +50,18 @@ export class PopupClanFundMember extends BasePopup {
             await PopupManager.getInstance().openAnimPopup("UITransferCoinPopup", PopupTransferCoinPopup, param);
             this.clanFund_Btn.interactable = true;
         });
+        
+        this.clanDetail = param.clanDetail;
+        this.searchInput.node.on('editing-return', async () => {
+            await this.searchClansIfChanged(this.searchInput.string);
+        });
 
         this.searchButton.addAsyncListener(async () => {
             this.searchButton.interactable = false;
-            this.currentSearch = this.searchInput.string.trim();
-            await this.loadList(1, this.currentSearch);
+            await this.searchClansIfChanged(this.searchInput.string);
             this.searchButton.interactable = true;
         });
 
-        this.clanDetail = param.clanDetail;
         this.onUpdateFund = param.onUpdateFund;
         this.updateGoldUI(param.clanFund);
         this.pagination.init(
@@ -66,12 +69,21 @@ export class PopupClanFundMember extends BasePopup {
         );
         this.loadList(1);
     }
+    
+    private async searchClansIfChanged(newSearch?: string) {
+        const result = Constants.getSearchIfChanged(this.currentSearch, newSearch);
+        if (result !== null) {
+            this.currentSearch = result;
+            await this.loadList(1, this.currentSearch);
+        }
+    }
 
     updateGoldUI(value: number) {
         this.totalClanFund.string = ` <outline color=#222222 width=1> ${value}</outline>`;
     }
 
     addSelfContribution(value: number) {
+        this.searchInput.string = "";
         this.updateGoldUI(value)
         this.loadList(1);
         if (this.onUpdateFund) {
@@ -80,11 +92,10 @@ export class PopupClanFundMember extends BasePopup {
     }
 
     async loadList(page: number, search?: string) {
-        this.listClanFundMember = await WebRequestManager.instance.getClanFundContributorsAsync(this.clanDetail.id, page);
+        this.listClanFundMember = await WebRequestManager.instance.getClanFundContributorsAsync(this.clanDetail.id, page, search);
         this.svMemberList.content.removeAllChildren();
         this._listClanFundMember = [];
         this.noMember.active = !this.listClanFundMember?.result || this.listClanFundMember.result.length === 0;
-        if (!this.listClanFundMember || this.listClanFundMember.result.length === 0) return;
         for (const itemClan of this.listClanFundMember.result) {
             const itemJoinClan = instantiate(this.itemPrefab);
             itemJoinClan.setParent(this.svMemberList.content);
