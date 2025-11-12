@@ -15,6 +15,7 @@ import { RoomType } from './RoomType';
 import { OfficePosition } from './OfficePosition';
 import { Constants } from '../utilities/Constants';
 import { ServerMapManager } from '../core/ServerMapManager';
+import { LoadingManager } from '../PopUp/LoadingManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('GameMapController')
@@ -84,69 +85,87 @@ export class GameMapController extends Component {
         GameMapController._instance = null;
     }
 
-    public onClickGoToNextOffice(office: Office) {
+    public async onClickGoToNextOffice(office: Office) {
         if (office.officeBrach === OfficePosition.NONE) {
             Constants.showConfirm("Văn phòng đang chưa có sẵn", "Thông báo");
             return;
         }
-        this.updateUserDataUserClient(office);
+
+        this.updateUserData(office);
     }
 
-    private async updateUserDataUserClient(office: Office) {
+    private async updateUserData(office: Office) {
         let userMe = UserMeManager.Get;
-        let userData = {
-            "position_x": Constants.POSX_PLAYER_INIT,
-            "position_y": Constants.POSY_PLAYER_INIT,
-            "display_name": userMe.user.display_name != "" ? userMe.user.display_name : userMe.user.username,
-            "gender": userMe.user.gender,
-            "skin_set": UserMeManager.Get.user.skin_set
+        if (userMe == null) return;
+        try {
+            let userData = {
+                "position_x": Constants.POSX_PLAYER_INIT,
+                "position_y": Constants.POSY_PLAYER_INIT,
+                "display_name": userMe.user.display_name != "" ? userMe.user.display_name : userMe.user.username,
+                "gender": userMe.user.gender,
+                "skin_set": UserMeManager.Get.user.skin_set
+            }
+            const success = await WebRequestManager.instance.updateProfileAsync(userData);
+            if (!success) return;
+            await this.playAnimMoveOffice(office);
+            LoadingManager.getInstance().openLoading();
+            await this.changeOffice(office);
+        } catch (error) {
+            console.error("Lỗi khi lấy dữ liệu clan:", error);
+
+        } finally {
+            LoadingManager.getInstance().closeLoading();
         }
-        WebRequestManager.instance.updateProfile(
-            userData,
-            (response) => this.onUpdateDataSuccess(response, office),
-            (error) => this.onError(error)
-        );
     }
 
-    private async onUpdateDataSuccess(respone, office: Office) {
+    private async changeOffice(office: Office) {
         //this.SetMapUserChoosen(office); Temporarily disable clan update on office select — player may not have a clan yet.
         const officeParam = new OfficeSenenParameter(office.officeBrach, RoomType.NONE, RoomType.COMPLEXNCC, Constants.convertNameRoom(office.officeBrach, RoomType.COMPLEXNCC), office.clans.id);
+        this.currentOffice = office;
+        localStorage.setItem(Constants.LAST_VISITED_CLAN, office.mapKey);
+        await SceneManagerController.loadSceneAsync(SceneName.SCENE_OFFICE, officeParam);
+    }
+
+    async playAnimMoveOffice(office: Office) {
         if (this.currentOffice.region == office.region) {
             if (this.currentOffice.clans.name == office.clans.name) {
                 this.waitForMove = false;
             }
             else {
-                this.playerWalkToPosition(office.officePoint.worldPosition.clone());
+                await this.playerWalkToPosition(office.officePoint.worldPosition.clone());
             }
         }
         else {
             let startPoint: Node = this.currentOffice.officePoint;
             let endNode: Node = office.officePoint;
-            this.spawnAndMove(startPoint.worldPosition, endNode.worldPosition);
+            await this.spawnFlightAndMove(startPoint.worldPosition, endNode.worldPosition);
         }
-
-        this.currentOffice = office;
-        localStorage.setItem(Constants.LAST_VISITED_CLAN, office.mapKey);
-        SceneManagerController.loadScene(SceneName.SCENE_OFFICE, officeParam);
     }
 
     private waitForMove = false;
-    private playerWalkToPosition(target: Vec3) {
-        this.bubbleChat.active = false;
-        this.playerAnim.play("move");
-        this.waitForMove = true;
-        this.playerNode.scale = new Vec3(
-            target.x > this.playerNode.worldPosition.x ? this.playerNode.scale.x : -this.playerNode.scale.x,
-            this.playerNode.scale.y,
-            this.playerNode.scale.z);
+    private playerWalkToPosition(target: Vec3): Promise<void> {
+        return new Promise<void>((resolve) => {
+            this.bubbleChat.active = false;
+            this.playerAnim.play("move");
+            this.waitForMove = true;
 
-        tween(this.playerNode)
-            .to(1, { worldPosition: target })
-            .call(() => {
-                this.waitForMove = false;
-            })
-            .start()
+            // Đảo hướng nhân vật
+            this.playerNode.scale = new Vec3(
+                target.x > this.playerNode.worldPosition.x ? this.playerNode.scale.x : -this.playerNode.scale.x,
+                this.playerNode.scale.y,
+                this.playerNode.scale.z);
+
+            // Bắt đầu tween di chuyển
+            tween(this.playerNode)
+                .to(1, { worldPosition: target })
+                .call(() => {
+                    this.waitForMove = false;
+                    resolve(); // ✅ Báo Promise hoàn thành
+                })
+                .start();
+        });
     }
+
 
     private async waitForPlayerMove(interval: number = 100): Promise<void> {
         return new Promise((resolve) => {
@@ -169,7 +188,7 @@ export class GameMapController extends Component {
         }
     }
 
-    async spawnAndMove(start: Vec3, end: Vec3) {
+    async spawnFlightAndMove(start: Vec3, end: Vec3) {
         this.playerNode.active = false;
         this.planeNotice.node.worldPosition = start.clone();
         this.waitForMove = true;
@@ -185,33 +204,33 @@ export class GameMapController extends Component {
         });
     }
 
-    delay(ms: number): Promise<void> {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    }
-
-    private SetMapUserChoosen(office: Office) {
-        UserMeManager.SetClan = office.clans;
-    }
-
-    public async LoadMapUI(userme: UserDataResponse, clans: ClansData[]): Promise<void> {
+    public async LoadMapUI(userme: UserDataResponse): Promise<void> {
         this.planeNotice.node.parent.active = false;
-        if (!this.offices?.length) return;
-
+        if (!this.offices?.length) {
+            this.reloadScene();
+            return;
+        }
+        const clans = await WebRequestManager.instance.GetClanInfo();
+        if (clans == null) {
+            this.reloadScene();
+            return;
+        }
+        ServerMapManager.Set = clans;
         try {
             for (const office of this.offices) {
                 const clanData = clans.find(c => c.name === office.mapKey);
                 if (clanData) office.setData(clanData, this);
             }
+            this.currentOffice = this.resolveTargetOffice(userme);
+
+            if (LoadBundleController.instance) {
+                this.playerNode.active = true;
+                this.playerNode.worldPosition = this.currentOffice.officePoint.worldPosition.clone();
+                this.playerChat([]);
+            }
         } catch (error) {
+            this.reloadScene();
             console.error("Failed to load maps:", error);
-        }
-
-        this.currentOffice = this.resolveTargetOffice(userme);
-
-        if (LoadBundleController.instance) {
-            this.playerNode.active = true;
-            this.playerNode.worldPosition = this.currentOffice.officePoint.worldPosition.clone();
-            this.playerChat([]);
         }
     }
 
@@ -224,21 +243,21 @@ export class GameMapController extends Component {
             case !!savedKey && savedKey !== userClanName: {
                 targetOffice = this.offices.find(o => o.mapKey === savedKey) ?? null;
                 if (targetOffice) {
-                    break;
+                    return targetOffice;
                 }
             }
 
             case !!userClanName: {
                 targetOffice = this.offices.find(o => o.mapKey === userClanName) ?? null;
                 if (targetOffice) {
-                    break;
+                    return targetOffice;
                 }
             }
             default: {
                 targetOffice = this.offices[0];
+                return targetOffice;
             }
         }
-        return targetOffice!;
     }
 
     private playerChat(content: string[], isAutoShrink: boolean = true) {
@@ -254,21 +273,17 @@ export class GameMapController extends Component {
     }
 
     public async CheckLoadMap(autoLoadMap: boolean) {
-        await this.LoadDataMapServer();
-
         const userClan = UserMeManager.Get.clan;
         const hasOffices = this.offices && this.offices.length > 0;
-
-        if (userClan && hasOffices) {
+        if (userClan && hasOffices && autoLoadMap) {
             const officeLoad = this.offices.find(o => o.mapKey === userClan.name);
-
-            if (autoLoadMap && officeLoad) {
+            if (officeLoad) {
                 this.handleAutoLoadOffice(officeLoad);
                 localStorage.setItem(Constants.LAST_VISITED_CLAN, officeLoad.mapKey);
                 return;
             }
         }
-        await this.LoadMapUI(UserMeManager.Get, ServerMapManager.Get);
+        await this.LoadMapUI(UserMeManager.Get);
     }
 
     private handleAutoLoadOffice(officeLoad: any) {
@@ -313,28 +328,6 @@ export class GameMapController extends Component {
             .start();
     }
 
-    public async LoadDataMapServer(timeout: number = 5000, interval: number = 100): Promise<ClansData[]> {
-        return new Promise(async (resolve, reject) => {
-            try {
-                const clans = await WebRequestManager.instance.GetClanInfo();
-                ServerMapManager.Set = clans.result;
-                const startTime = Date.now();
-                while (ServerMapManager.Get === null) {
-                    if (Date.now() - startTime > timeout) {
-                        reject(new Error("⏳ Timeout: ServerMapManager vẫn chưa có dữ liệu!"));
-                        return;
-                    }
-                    await new Promise(resolve => setTimeout(resolve, interval));
-                }
-
-                resolve(ServerMapManager.Get);
-            } catch (error) {
-                console.error("❌ LoadMaps Error:", error);
-                reject(error);
-            }
-        });
-    }
-
     public shrinkBubbleChat(timeShrink: number) {
         if (this.tweenAction) {
             this.tweenAction.stop();
@@ -374,6 +367,10 @@ export class GameMapController extends Component {
                 this.shrinkBubbleChat(0.5);
             }, 4000);
         }
+    }
+
+    reloadScene() {
+        SceneManagerController.loadScene(SceneName.SCENE_GAME_MAP, null);
     }
 }
 

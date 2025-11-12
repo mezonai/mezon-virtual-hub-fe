@@ -27,6 +27,7 @@ import { PopupClanShop } from '../PopUp/PopupClanShop';
 import { PopupClanInventory } from '../PopUp/PopupClanInventory';
 import { FarmController } from '../Farm/FarmController';
 import { FarmSlotDTO, SlotActionType } from '../Farm/EnumPlant';
+import { LoadingManager } from '../PopUp/LoadingManager';
 
 @ccclass('ServerManager')
 export class ServerManager extends Component {
@@ -347,13 +348,13 @@ export class ServerManager extends Component {
         this.room.onMessage(MessageTypes.BATTE_ROOM_READY, async (data) => {
             if (data == null) return;
             const { roomId } = data;
-            WebRequestManager.instance.toggleLoading(true);
+            LoadingManager.getInstance().openLoading();
             UserManager.instance.playerJoinRoomBattle(data,
                 async () => {
                     await this.joinBattleRoom(roomId);
                 },
                 () => {
-                    WebRequestManager.instance.toggleLoading(false)
+                     LoadingManager.getInstance().closeLoading();
                 });
         });
 

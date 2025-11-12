@@ -17,7 +17,6 @@ const { ccclass, property } = _decorator;
 @ccclass("WebRequestManager")
 export class WebRequestManager extends Component {
     private static _instance: WebRequestManager = null;
-    @property({ type: Node }) loadingPanel: Node = null;
 
     public static get instance(): WebRequestManager {
         return WebRequestManager._instance
@@ -34,25 +33,22 @@ export class WebRequestManager extends Component {
     }
 
     private combineWithSlash(...params: string[]): string {
-        this.toggleLoading(true);
         return params.join('/');
     }
 
-    public toggleLoading(show) {
-        this.loadingPanel.active = show;
-    }
 
-    public async GetClanInfo(): Promise<ClansResponseDTO> {
+    public async GetClanInfo(): Promise<ClansData[]> {
         return new Promise((resolve, reject) => {
-            this.toggleLoading(true);
             APIManager.getData(APIConstant.CLANS, (data: any) => {
                 const clans: ClansResponseDTO = ConvetData.ConvertClans(data);
-                this.toggleLoading(false);
-                resolve(clans); // Trả về danh sách MapData
+                if(clans == null || clans.result == null){
+                    resolve(null);
+                    return;
+                }
+                resolve(clans.result); // Trả về danh sách MapData
             },
                 (error: string) => {
-                    this.toggleLoading(false);
-                    reject(error);
+                    resolve(null);
                 },
                 true
             );
@@ -522,6 +518,20 @@ export class WebRequestManager extends Component {
         });
     }
 
+    public updateProfileAsync(userData: any): Promise<boolean> {
+        return new Promise((resolve, reject) => {
+            this.updateProfile(
+                userData,
+                (response) => {                  
+                    resolve(true);
+                },
+                (error) => {
+                    resolve(false);
+                }
+            );
+        });
+    }
+
     public getGameConfig(successCallback, errorCallback) {
         APIManager.getData(this.combineWithSlash(APIConstant.CONFIG, APIConstant.GAME_CONFIG), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, false);
     }
@@ -782,7 +792,6 @@ export class WebRequestManager extends Component {
     ]
 
     private onSuccessHandler(response, onSuccess: (response: string) => void, onError, needShowPopupWhenError: boolean = true) {
-        this.toggleLoading(false);
         if (response.code < 400) {
             onSuccess(response);
         } else {
@@ -809,7 +818,6 @@ export class WebRequestManager extends Component {
 
     private onErrorHandler(response, onError) {
         console.error(response);
-        this.toggleLoading(false);
         let json = {
             code: 400,
             error_message: this.unexpectedErrorMessage[randomRangeInt(0, this.unexpectedErrorMessage.length)]
