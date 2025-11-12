@@ -4,8 +4,9 @@ import { LoadBundleController } from '../bundle/LoadBundleController';
 import { UILoginControll } from '../UILogin/UILoginControl';
 import { RandomlyMover } from '../utilities/RandomlyMover';
 import { EVENT_NAME } from '../network/APIConstant';
-import { LoadingScene } from '../GameMap/LoadingScene/LoadingScene';
 import { SceneManagerController } from '../utilities/SceneManagerController';
+import { SceneName } from '../utilities/SceneName';
+import { IntroScene } from '../GameMap/IntroScene/IntroScene';
 
 @ccclass('ProjectRoot')
 export class ProjectRoot extends Component {
@@ -14,7 +15,7 @@ export class ProjectRoot extends Component {
     @property({ type: RandomlyMover }) planeNotice: RandomlyMover = null;
     @property({ type: RichText }) progressText: RichText = null;
     @property({ type: RichText }) noticeText: RichText = null;
-    @property({ type: LoadingScene }) loadingScene: LoadingScene = null;
+    @property({ type: IntroScene }) introScene: IntroScene = null;
     private totalCoreNeedLoad = 1;
     private _loadedCore = 0;
     private initIntervalId = 0;
@@ -43,15 +44,16 @@ export class ProjectRoot extends Component {
     protected start() {
         this.init();
         const onLoaded = () => {
-            this.onSceneLoaded({ name: "GameMap" });
-            this.loadingScene.node.active = false;
+            this.onSceneLoaded({ name: SceneName.SCENE_GAME_MAP });
+            this.introScene.node.active = false;
         };
 
         const param = SceneManagerController.getSceneParam<{ params: any }>();
         if (param) {
+            console.log("Zo đay");
             onLoaded();
         } else {
-            this.loadingScene.setData(onLoaded);
+            this.introScene.setData(onLoaded);
         }
     }
 

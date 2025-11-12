@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, Vec3, tween, game, director, Label, Tween, randomRangeInt } from 'cc';
+import { _decorator, Component, Node, Vec3, tween, game, Label, Tween, randomRangeInt } from 'cc';
 import { Office } from "./Office";
 import { SceneManagerController } from '../utilities/SceneManagerController';
 import { SceneName } from '../utilities/SceneName';
@@ -20,33 +20,12 @@ const { ccclass, property } = _decorator;
 
 @ccclass('GameMapController')
 export class GameMapController extends Component {
-    private static _instance: GameMapController = null;
-    public static get instance(): GameMapController {
-        return this._instance
-    }
-
     @property({ type: RandomlyMover }) planeNotice: RandomlyMover = null;
     @property(Node) target: Node = null;
     @property(Office) offices: Office[] = [];
     @property({ type: Node }) playerNode: Node = null;
-    private _playerSkin: AnimationEventController = null;
-    private _playerAnim: AnimationController = null;
-
-    private get playerSkin() {
-        if (!this._playerSkin) {
-            this._playerSkin = this.getComponentInChildren(AnimationEventController);
-        }
-
-        return this._playerSkin;
-    }
-
-    private get playerAnim() {
-        if (!this._playerAnim) {
-            this._playerAnim = this.getComponentInChildren(AnimationController);
-        }
-
-        return this._playerAnim;
-    }
+    @property(AnimationEventController) private playerSkin: AnimationEventController = null;
+    @property(AnimationController) private playerAnim: AnimationController = null;
 
     /////Bubble Chat
     @property(Node) bubbleChat: Node = null;
@@ -57,35 +36,12 @@ export class GameMapController extends Component {
     private currentOffice: Office = null;
     public isBackMap: boolean = false;
 
-    onLoad() {
-        if (GameMapController._instance == null) {
-            GameMapController._instance = this;
-        }
-
-        director.addPersistRootNode(this.target);
-    }
-
     protected start(): void {
         this.playerNode.active = false;
-
-        game.on(EVENT_NAME.ON_OFFICE_SCENE_LOADED, () => {
-            this.onSceneLoaded();
-        })
-    }
-
-    private async onSceneLoaded() {
-        await this.waitForPlayerMove();
-
-        game.off(EVENT_NAME.ON_OFFICE_SCENE_LOADED);
-        director.removePersistRootNode(this.target);
-        this.target.destroy();
-    }
-
-    protected onDestroy(): void {
-        GameMapController._instance = null;
     }
 
     public async onClickGoToNextOffice(office: Office) {
+        console.log("this");
         if (office.officeBrach === OfficePosition.NONE) {
             Constants.showConfirm("Văn phòng đang chưa có sẵn", "Thông báo");
             return;
@@ -219,7 +175,7 @@ export class GameMapController extends Component {
         try {
             for (const office of this.offices) {
                 const clanData = clans.find(c => c.name === office.mapKey);
-                if (clanData) office.setData(clanData, this);
+                if (clanData) office.setData(clanData,this.onClickGoToNextOffice.bind(this));
             }
             this.currentOffice = this.resolveTargetOffice(userme);
 

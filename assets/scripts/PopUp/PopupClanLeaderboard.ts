@@ -6,6 +6,7 @@ import { ItemLeaderboardClan } from '../Clan/ItemLeaderboardClan';
 import { PaginationController } from '../utilities/PaginationController';
 import { ClansResponseDTO } from '../Interface/DataMapAPI';
 import { Constants } from '../utilities/Constants';
+import { LoadingManager } from './LoadingManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('PopupClanLeaderboard')
@@ -54,7 +55,9 @@ export class PopupClanLeaderboard extends BasePopup {
     }
 
     private async loadList(page: number, search?: string) {
-        this.listClan = await WebRequestManager.instance.getAllClansync(page, search);
+        try{
+            LoadingManager.getInstance().openLoading();
+            this.listClan = await WebRequestManager.instance.getAllClansync(page, search);
         this.svClanList.content.removeAllChildren();
         this._listClan = [];
         this.noMember.active = !this.listClan?.result || this.listClan.result.length === 0;
@@ -68,5 +71,12 @@ export class PopupClanLeaderboard extends BasePopup {
         }
         this.totalClan.string = `Tổng số văn phòng: ${this.listClan.pageInfo.total}`;
         this.pagination.setTotalPages(this.listClan.pageInfo.total_page || 1);
+        }catch{
+
+        }finally{
+            LoadingManager.getInstance().closeLoading();
+        }
+
+        
     }
 }

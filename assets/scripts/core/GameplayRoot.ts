@@ -59,7 +59,6 @@ export class GameplayRoot extends Component {
         }
         let component = this.node.getComponent(GameManager);
         component.init();
-        game.emit(EVENT_NAME.ON_OFFICE_SCENE_LOADED);
     }
 
     private initDataFromAPI() {

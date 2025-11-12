@@ -9,6 +9,7 @@ export class Tutorial extends Component {
     @property(Node) dialogueBox: Node = null;
     @property(Label) dialogueText: Label = null;
     @property([Button]) buttons: Button[] = [];
+    @property(GameMapController) gameMapController: GameMapController = null;
     private highlightIndexes: number[] = [0,1,2,3,4,5,6];
     private static _instance: Tutorial;
     public static get instance() {
@@ -24,7 +25,7 @@ export class Tutorial extends Component {
         this.characterNode.active = true;
         this.dialogueBox.active = true;
         this.dialogueText.string = "Chào mừng bạn đến với Mezon Vhub, hãy chọn văn phòng bạn muốn vào";
-        GameMapController.instance.CheckLoadMap(true);
+        this.gameMapController.CheckLoadMap(true);
         for (let i = 0; i < this.buttons.length; i++) {
             if (this.highlightIndexes.includes(i)) {
                 this.buttons[i].interactable = true;

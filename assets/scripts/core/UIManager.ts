@@ -15,39 +15,10 @@ export class UIManager extends Component {
     private static _instance: UIManager = null;
     @property({ type: Enum(UIID) }) defaultUI: UIID = UIID.Home;
     @property({ type: [Node] }) listPanel: Node[] = [];
-    @property({ type: Node }) popupNode: Node;
-    @property({ type: Node }) bigPopupNode: Node;
-    @property({ type: Node }) fadePopupNode: Node;
     @property({ type: Button }) outmapButton: Button;
     @property({ type: ToolSpawnPet }) toolcreatePet: ToolSpawnPet;
     @property({ type: PopupBattlePet }) batteScene: PopupBattlePet;
-    private _popup: UIPopup = null;
-    private _bigPopup: UIPopup = null;
-    private _fadePopup: UIPopup = null;
 
-    private get popup() {
-        if (this._popup == null) {
-            this._popup = this.popupNode.getComponent(UIPopup);
-        }
-
-        return this._popup;
-    }
-
-    private get bigPopup() {
-        if (this._bigPopup == null) {
-            this._bigPopup = this.bigPopupNode.getComponent(UIPopup);
-        }
-
-        return this._bigPopup;
-    }
-
-    private get fadePopup() {
-        if (this._fadePopup == null) {
-            this._fadePopup = this.fadePopupNode.getComponent(UIPopup);
-        }
-
-        return this._fadePopup;
-    }
 
     private _listPanel: UIIdentify[] = [];
 
@@ -98,23 +69,6 @@ export class UIManager extends Component {
         return false;
     }
 
-    public registCountDown(time: number, callbackCountDown, callBackDone = null) {
-        let id = -1;
-        callbackCountDown(Utilities.secondsToHMS(time), id);
-        id = setInterval(() => {
-            time--;
-            callbackCountDown(Utilities.secondsToHMS(time), id);
-
-            if (time <= 0) {
-                clearInterval(id);
-
-                if (callBackDone)
-                    callBackDone();
-            }
-
-        }, 1000);
-    }
-
     public showUI(id: UIID, pauseGame: boolean = true): Node {
         if (pauseGame) {
             this.node.emit(EVENT_NAME.ON_PAUSE_GAME);
@@ -147,42 +101,6 @@ export class UIManager extends Component {
             return tempPanel.node;
         }
     };
-
-    public FindUIIndetify(id: UIID): UIIdentify {
-        for (const panel of this._listPanel) {
-            if (panel.id == id) {
-                return panel;
-            }
-        }
-    };
-
-    public showYesNoPopup(title: string, content: string, yesCallback, noCallback = null, txt_Yes: string = "Yes", txt_No: string = "No", closeAfter: number = -1): void {
-        this.popup.showYesNoPopup(title, content, yesCallback, txt_Yes, txt_No, noCallback, closeAfter);
-    };
-
-    public showNoticePopup(title = "Chú Ý", content = "", callback = null) {
-        this.popup.showOkPopup(title, content, callback, "OK");
-    }
-
-    public showBigNoticePopup(title = "Chú Ý", content = "", callback = null) {
-        this.bigPopup.showOkPopup(title, content, callback, "OK");
-    }
-
-    public showMessageTimeout(content: string, closeAfter: number) {
-        this.fadePopup.showMessageTimeout(content, closeAfter);
-    }
-
-    public hideMessageTimeout() {
-        this.fadePopup.hide();
-    }
-
-    public HideUI(id: UIID) {
-        for (const panel of this._listPanel) {
-            if (panel.id == id) {
-                panel.hide();
-            }
-        }
-    }
 
     // TweenEasing = "linear" | "smooth" | "fade" | "constant" | "quadIn" | "quadOut" | "quadInOut" |
     //  "quadOutIn" | "cubicIn" | "cubicOut" | "cubicInOut" | "cubicOutIn" | "quartIn" | "quartOut" |
