@@ -44,7 +44,7 @@ export class FarmController extends Component {
     
     if (!UserMeManager.Get.clan || !UserMeManager.Get.clan.id || UserMeManager.Get.clan.id !== UserMeManager.CurrentOffice.idclan) {
       PopupManager.getInstance().closeAllPopups();
-      Constants.showConfirm("Bạn cần thuộc một văn phòng để trồng cây tại nông trại của văn phòng");
+      Constants.showConfirm("Bạn cần thuộc văn phòng để trồng cây tại nông trại của văn phòng");
       return;
     }
 

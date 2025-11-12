@@ -10,6 +10,7 @@ import { ClansData, ClansResponseDTO, MemberResponseDTO } from '../Interface/Dat
 import { PaginationController } from '../utilities/PaginationController';
 import { Label } from 'cc';
 import { EditBox } from 'cc';
+import { Constants } from '../utilities/Constants';
 const { ccclass, property } = _decorator;
 
 @ccclass('PopupClanMember')
@@ -41,10 +42,13 @@ export class PopupClanMember extends BasePopup {
         this.CheckShowMemberManager();
         this.onMemberChanged = param?.onMemberChanged;
 
+        this.searchInput.node.on('editing-return', async () => {
+            await this.searchClansIfChanged(this.searchInput.string);
+        });
+
         this.searchButton.addAsyncListener(async () => {
             this.searchButton.interactable = false;
-            this.currentSearch = this.searchInput.string.trim();
-            await this.loadList(1, this.currentSearch);
+            await this.searchClansIfChanged(this.searchInput.string);
             this.searchButton.interactable = true;
         });
 
@@ -65,6 +69,14 @@ export class PopupClanMember extends BasePopup {
             async (page: number) => await this.loadList(page), 1
         );
         this.loadList(1);
+    }
+
+    private async searchClansIfChanged(newSearch?: string) {
+        const result = Constants.getSearchIfChanged(this.currentSearch, newSearch);
+        if (result !== null) {
+            this.currentSearch = result;
+            await this.loadList(1, this.currentSearch);
+        }
     }
 
     CheckShowMemberManager() {

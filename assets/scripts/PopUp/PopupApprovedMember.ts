@@ -27,10 +27,13 @@ export class PopupApprovedMember extends Component {
     private popupClanMemberManager: PopupClanMemberManager;
 
     public async init(clansData: ClansData, popupClanMemberManager: PopupClanMemberManager) {
+        this.searchInput.node.on('editing-return', async () => {
+            await this.searchClansIfChanged(this.searchInput.string);
+        });
+
         this.searchButton.addAsyncListener(async () => {
             this.searchButton.interactable = false;
-            this.currentSearch = this.searchInput.string.trim();
-            await this.loadList(1, this.currentSearch);
+            await this.searchClansIfChanged(this.searchInput.string);
             this.searchButton.interactable = true;
         });
         this.clanDetail = clansData;
@@ -39,6 +42,14 @@ export class PopupApprovedMember extends Component {
             async (page: number) => await this.loadList(page), 1
         );
         this.loadList(1);
+    }
+
+    private async searchClansIfChanged(newSearch?: string) {
+        const result = Constants.getSearchIfChanged(this.currentSearch, newSearch);
+        if (result !== null) {
+            this.currentSearch = result;
+            await this.loadList(1, this.currentSearch);
+        }
     }
 
     public async loadList(page: number, search?: string) {

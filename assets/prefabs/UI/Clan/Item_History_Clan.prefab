@@ -25,6 +25,9 @@
     "_active": true,
     "_components": [
       {
+        "__id__": 8
+      },
+      {
         "__id__": 10
       },
       {
@@ -36,8 +39,8 @@
     },
     "_lpos": {
       "__type__": "cc.Vec3",
-      "x": 0,
-      "y": -5,
+      "x": 2,
+      "y": -3.7800000000000002,
       "z": 0
     },
     "_lrot": {
@@ -79,18 +82,15 @@
       },
       {
         "__id__": 5
-      },
-      {
-        "__id__": 7
       }
     ],
     "_prefab": {
-      "__id__": 9
+      "__id__": 7
     },
     "_lpos": {
       "__type__": "cc.Vec3",
-      "x": 2.1,
-      "y": -0.6,
+      "x": 0,
+      "y": 0,
       "z": 0
     },
     "_lrot": {
@@ -130,8 +130,8 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 147.983,
-      "height": 10
+      "width": 147,
+      "height": 7.56
     },
     "_anchorPoint": {
       "__type__": "cc.Vec2",
@@ -161,32 +161,29 @@
     "_dstBlendFactor": 4,
     "_color": {
       "__type__": "cc.Color",
-      "r": 255,
-      "g": 255,
-      "b": 255,
+      "r": 0,
+      "g": 0,
+      "b": 0,
       "a": 255
     },
     "_string": "",
     "_horizontalAlign": 0,
     "_verticalAlign": 1,
-    "_actualFontSize": 17,
-    "_fontSize": 4,
+    "_actualFontSize": 15.99609375,
+    "_fontSize": 3.5,
     "_fontFamily": "Arial",
-    "_lineHeight": 10.7,
-    "_overflow": 2,
+    "_lineHeight": 6,
+    "_overflow": 3,
     "_enableWrapText": true,
-    "_font": {
-      "__uuid__": "80b195e8-b21f-4337-ba2e-4ed924f9efd5",
-      "__expectedType__": "cc.TTFFont"
-    },
-    "_isSystemFontUsed": false,
+    "_font": null,
+    "_isSystemFontUsed": true,
     "_spacingX": 0,
     "_isItalic": false,
     "_isBold": false,
     "_isUnderline": false,
     "_underlineHeight": 2,
     "_cacheMode": 0,
-    "_enableOutline": true,
+    "_enableOutline": false,
     "_outlineColor": {
       "__type__": "cc.Color",
       "r": 0,
@@ -216,42 +213,6 @@
     "fileId": "fdVfItlyVMl6X0a2VYITsC"
   },
   {
-    "__type__": "cc.Widget",
-    "_name": "",
-    "_objFlags": 0,
-    "__editorExtras__": {},
-    "node": {
-      "__id__": 2
-    },
-    "_enabled": true,
-    "__prefab": {
-      "__id__": 8
-    },
-    "_alignFlags": 18,
-    "_target": null,
-    "_left": 75,
-    "_right": 52.293729456604254,
-    "_top": -131.73700000000005,
-    "_bottom": 0,
-    "_horizontalCenter": 2.1,
-    "_verticalCenter": -0.6,
-    "_isAbsLeft": true,
-    "_isAbsRight": true,
-    "_isAbsTop": true,
-    "_isAbsBottom": true,
-    "_isAbsHorizontalCenter": true,
-    "_isAbsVerticalCenter": true,
-    "_originalWidth": 1.499161973110465,
-    "_originalHeight": 0,
-    "_alignMode": 1,
-    "_lockFlags": 26,
-    "_id": ""
-  },
-  {
-    "__type__": "cc.CompPrefabInfo",
-    "fileId": "ae554ZKlJOwY522o2rkyU6"
-  },
-  {
     "__type__": "cc.PrefabInfo",
     "root": {
       "__id__": 1
@@ -274,12 +235,12 @@
     },
     "_enabled": true,
     "__prefab": {
-      "__id__": 11
+      "__id__": 9
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 142.483,
-      "height": 10
+      "width": 145,
+      "height": 7.56
     },
     "_anchorPoint": {
       "__type__": "cc.Vec2",
@@ -302,7 +263,7 @@
     },
     "_enabled": true,
     "__prefab": {
-      "__id__": 13
+      "__id__": 11
     },
     "textContent": {
       "__id__": 5
@@ -312,6 +273,44 @@
   {
     "__type__": "cc.CompPrefabInfo",
     "fileId": "d88+P2VzNGCaioUuMVuXVr"
+  },
+  {
+    "__type__": "cc.Layout",
+    "_name": "",
+    "_objFlags": 0,
+    "__editorExtras__": {},
+    "node": {
+      "__id__": 1
+    },
+    "_enabled": true,
+    "__prefab": {
+      "__id__": 13
+    },
+    "_resizeMode": 1,
+    "_layoutType": 2,
+    "_cellSize": {
+      "__type__": "cc.Size",
+      "width": 40,
+      "height": 40
+    },
+    "_startAxis": 0,
+    "_paddingLeft": 0,
+    "_paddingRight": 0,
+    "_paddingTop": 0,
+    "_paddingBottom": 0,
+    "_spacingX": 0,
+    "_spacingY": 0,
+    "_verticalDirection": 1,
+    "_horizontalDirection": 0,
+    "_constraint": 0,
+    "_constraintNum": 2,
+    "_affectedByScale": false,
+    "_isAlign": true,
+    "_id": ""
+  },
+  {
+    "__type__": "cc.CompPrefabInfo",
+    "fileId": "efTs23xc5JupxuTyb12iO/"
   },
   {
     "__type__": "cc.PrefabInfo",

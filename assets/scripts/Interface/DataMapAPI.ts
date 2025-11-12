@@ -183,6 +183,7 @@ export class ClanActivityItemDTO {
   amount?: number;
   time: string;
   createdAt: string;
+  officeName?: string; 
 }
 
 export class ClanActivityResponseDTO {
@@ -192,6 +193,8 @@ export class ClanActivityResponseDTO {
 
 export enum ClanActivityActionType {
     HARVEST = 'harvest',
+    HARVEST_INTRUDER = 'harvest_intruder',
+    HARVESTED_OTHER_FARM = 'harvest_other_farm',
     PURCHASE = 'purchase',
     FUND = 'fund',
     JOIN = 'join',

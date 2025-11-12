@@ -5,6 +5,7 @@ import { WebRequestManager } from '../network/WebRequestManager';
 import { ItemLeaderboardClan } from '../Clan/ItemLeaderboardClan';
 import { PaginationController } from '../utilities/PaginationController';
 import { ClansResponseDTO } from '../Interface/DataMapAPI';
+import { Constants } from '../utilities/Constants';
 const { ccclass, property } = _decorator;
 
 @ccclass('PopupClanLeaderboard')
@@ -29,10 +30,12 @@ export class PopupClanLeaderboard extends BasePopup {
             this.closeButton.interactable = true;
         });
 
+        this.searchInput.node.on('editing-return', async () => {
+            await this.searchClansIfChanged(this.searchInput.string);
+        });
         this.searchButton.addAsyncListener(async () => {
             this.searchButton.interactable = false;
-            this.currentSearch = this.searchInput.string.trim();
-            await this.loadList(1, this.currentSearch);
+            await this.searchClansIfChanged(this.searchInput.string);
             this.searchButton.interactable = true;
         });
 
@@ -42,12 +45,19 @@ export class PopupClanLeaderboard extends BasePopup {
         await this.loadList(1);
     }
 
+    private async searchClansIfChanged(newSearch?: string) {
+        const result = Constants.getSearchIfChanged(this.currentSearch, newSearch);
+        if (result !== null) {
+            this.currentSearch = result;
+            await this.loadList(1, this.currentSearch);
+        }
+    }
+
     private async loadList(page: number, search?: string) {
         this.listClan = await WebRequestManager.instance.getAllClansync(page, search);
         this.svClanList.content.removeAllChildren();
         this._listClan = [];
         this.noMember.active = !this.listClan?.result || this.listClan.result.length === 0;
-        if (!this.listClan || this.listClan.result.length === 0) return;
         for (const itemClan of this.listClan.result) {
             const node = instantiate(this.itemPrefab);
             node.setParent(this.svClanList.content);

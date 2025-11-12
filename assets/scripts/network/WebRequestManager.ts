@@ -219,6 +219,7 @@ export class WebRequestManager extends Component {
 
     public getAllClansync(page: number = 1, search ?: string, sortby: SortBy = SortBy.CREATED_AT, sortOrder: SortOrder = SortOrder.DESC, limit: number = 30): Promise<ClansResponseDTO> {
         return new Promise((resolve) => {
+            this.toggleLoading(true);
             WebRequestManager.instance.getAllClan(
                 page, sortby, sortOrder, limit,
                 (response) => {
@@ -235,6 +236,7 @@ export class WebRequestManager extends Component {
 
     public getAllClanRequestsync(page: number = 1, search ?: string, sortby: SortBy = SortBy.CREATED_AT, sortOrder: SortOrder = SortOrder.DESC, limit: number = 30): Promise<ClansResponseDTO> {
         return new Promise((resolve) => {
+            this.toggleLoading(true);
             WebRequestManager.instance.getAllClanRequest(
                 page, sortby, sortOrder, limit,
                 (response) => {
@@ -340,11 +342,11 @@ export class WebRequestManager extends Component {
 
     public getListMemberClanAsync(clanId: String, page: number = 1, search ?: string, sortOrder: SortOrder = SortOrder.DESC, sortby: SortBy = SortBy.USERNAME, limit: number = 30): Promise<MemberResponseDTO> {
         return new Promise((resolve, reject) => {
-           WebRequestManager.instance.getListMemberClan(
+            this.toggleLoading(true);
+            WebRequestManager.instance.getListMemberClan(
                 clanId, page, sortOrder, sortby,  limit,
                 (response) => {
                     const clans = ConvetData.ConvertMemberClan(response);
-                    console.log("DATA: ", clans);
                     resolve(clans);
                 },
                 (error) => {
@@ -357,7 +359,8 @@ export class WebRequestManager extends Component {
 
    public getClanFundContributorsAsync(clanId: String, page: number = 1, search ?: string, sortOrder: SortOrder = SortOrder.DESC, sortby: SortBy = SortBy.TOTAL_AMOUNT, limit: number = 30): Promise<ClanContributorsResponseDTO> {
         return new Promise((resolve, reject) => {
-           WebRequestManager.instance.getClanFundContributors(
+            this.toggleLoading(true);
+            WebRequestManager.instance.getClanFundContributors(
                 clanId, page, sortOrder, sortby,  limit,
                 (response) => {
                     const clans = ConvetData.convertContributorsClan(response);
@@ -373,6 +376,7 @@ export class WebRequestManager extends Component {
 
     public getListMemberClanPendingAsync(clanId: string, page: number = 1, search ?: string, sortby: SortBy = SortBy.CREATED_AT, sortOrder: SortOrder = SortOrder.DESC, limit: number = 30): Promise<ClanRequestResponseDTO> {
         return new Promise((resolve) => {
+            this.toggleLoading(true);
             WebRequestManager.instance.getListMemberClanPending(
                 clanId, page, sortby, sortOrder, limit,
                 (response) => {
@@ -389,6 +393,7 @@ export class WebRequestManager extends Component {
     
     public postApproveMembersAsync(clanId: string, target_user_id: string, is_approved: boolean): Promise<void> {
         return new Promise((resolve, reject) => {
+            this.toggleLoading(true);
             WebRequestManager.instance.patchApproveMembers(
                 clanId,
                 target_user_id,
@@ -405,6 +410,7 @@ export class WebRequestManager extends Component {
 
     public patchTransferLeaderShipAsync(clanId: string, target_user_id: string): Promise<void> {
         return new Promise((resolve, reject) => {
+            this.toggleLoading(true);
             WebRequestManager.instance.patchTransferLeaderShip(
                 clanId,
                 target_user_id,
@@ -420,6 +426,7 @@ export class WebRequestManager extends Component {
 
     public patchAssignViceLeaderAsync(clanId: string, target_user_id: string): Promise<void> {
         return new Promise((resolve, reject) => {
+            this.toggleLoading(true);
             WebRequestManager.instance.patchAssignViceLeader(
                 clanId,
                 target_user_id,
@@ -435,6 +442,7 @@ export class WebRequestManager extends Component {
 
     public patchRemoveViceLeaderAsync(clanId: string, target_user_id: string): Promise<void> {
         return new Promise((resolve, reject) => {
+            this.toggleLoading(true);
             WebRequestManager.instance.patchRemoveViceLeader(
                 clanId,
                 target_user_id,
@@ -450,6 +458,7 @@ export class WebRequestManager extends Component {
 
     public removeMemberAsync(clanId: string, target_user_id: string[]): Promise<void> {
         return new Promise((resolve, reject) => {
+            this.toggleLoading(true);
             WebRequestManager.instance.removeMembers(
                 clanId,
                 target_user_id,
@@ -509,6 +518,7 @@ export class WebRequestManager extends Component {
     
     public getClanActivityAsync(clanId: string, page: number = 1, sortby: SortBy = SortBy.CREATED_AT, sortOrder: SortOrder = SortOrder.DESC, limit: number = 30): Promise<ClanActivityResponseDTO> {
         return new Promise((resolve) => {
+            this.toggleLoading(true);
             WebRequestManager.instance.getClanActivity(
                 clanId, page, sortby, sortOrder, limit,
                 (response) => {
@@ -690,7 +700,7 @@ export class WebRequestManager extends Component {
     public getClanFundContributors(clan_id, page = 1, sortOrder: SortOrder, sortby: SortBy, limit = 30, successCallback, errorCallback, search?: string) {
         let url = `${APIConstant.CLAN_FUNDS}/${clan_id}/${APIConstant.CONTRIBUTORS}?`;
         if (search && search.trim() !== "") {
-            url += `&search=${encodeURIComponent(search.trim())}`;
+            url += `search=${encodeURIComponent(search.trim())}&`;
         }
         url += `page=${page}&order=${sortOrder.toString()}&sort_by=${sortby.toString()}&limit=${limit}`;
         APIManager.getData(url, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
@@ -703,7 +713,7 @@ export class WebRequestManager extends Component {
     public getListMemberClanPending(clan_id, page = 1,sortby: SortBy, sortOrder: SortOrder, limit = 30, successCallback, errorCallback, search?: string) {
         let url = `${APIConstant.CLANS}/${clan_id}/${APIConstant.CLAN_REQUESTS}/${APIConstant.PENDING}?`;
         if (search && search.trim() !== "") {
-            url += `&search=${encodeURIComponent(search.trim())}`;
+            url += `search=${encodeURIComponent(search.trim())}&`;
         }
         url += `page=${page}&order=${sortOrder.toString()}&sort_by=${sortby.toString()}&limit=${limit}`;
         APIManager.getData(url, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);

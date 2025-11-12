@@ -184,7 +184,7 @@ export class PopupClanDetailInfo extends BasePopup {
         this.nameViceLeader.string = ` ${clanData.vice_leader?.display_name ?? "Hiện chưa có"}`;
         this.total_Member.string = ` ${(clanData.member_count ?? 0).toString()} `;
         this._description = clanData.description;
-        this.description.string = `Mô tả: ${this._description ?? ""}`;
+        this.description.string = ` Mô tả: ${this._description ?? ""}`;
         this.avatarSprite.setAvatar(clanData.avatar_url ?? "avatar_1");
     }
 
@@ -193,7 +193,7 @@ export class PopupClanDetailInfo extends BasePopup {
         this.descriptionNotice = await WebRequestManager.instance.postUpdateNoticeAsync(this.clanDetail.id, description);
         const desc = this.descriptionNotice?.description?.trim();
         this._description = desc && desc.length > 0 ? desc : "";
-        this.description.string = `Mô tả: ${this._description}`;
+        this.description.string = ` Mô tả: ${this._description}`;
     }
 
 }

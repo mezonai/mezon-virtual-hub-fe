@@ -39,7 +39,6 @@ export class PopupClanHistory extends BasePopup {
         this.svActivityClan.content.removeAllChildren();
         this._clanActivity = [];
         this.noActivity.active = !this.clanActivity?.result || this.clanActivity.result.length === 0;
-        if (!this.clanActivity || this.clanActivity.result.length === 0) return;
         for (const itemClan of this.clanActivity.result) {
             const itemJoinClan = instantiate(this.itemPrefab);
             itemJoinClan.setParent(this.svActivityClan.content);
