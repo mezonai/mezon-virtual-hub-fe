@@ -5,6 +5,7 @@ import { ClanActivityResponseDTO, ClansData } from '../Interface/DataMapAPI';
 import { WebRequestManager } from '../network/WebRequestManager';
 import { PaginationController } from '../utilities/PaginationController';
 import { ItemHistoryClan } from '../Clan/ItemHistoryClan';
+import { LoadingManager } from './LoadingManager';
 
 const { ccclass, property } = _decorator;
 
@@ -35,19 +36,26 @@ export class PopupClanHistory extends BasePopup {
     }
 
     async loadList(page: number) {
-        this.clanActivity = await WebRequestManager.instance.getClanActivityAsync(this.clanDetail.id, page);
-        this.svActivityClan.content.removeAllChildren();
-        this._clanActivity = [];
-        this.noActivity.active = !this.clanActivity?.result || this.clanActivity.result.length === 0;
-        for (const itemClan of this.clanActivity.result) {
-            const itemJoinClan = instantiate(this.itemPrefab);
-            itemJoinClan.setParent(this.svActivityClan.content);
-            const itemComp = itemJoinClan.getComponent(ItemHistoryClan)!;
-            itemComp.setData(itemClan);
-            this._clanActivity.push(itemComp);
+        try {
+            LoadingManager.getInstance().openLoading();
+            this.clanActivity = await WebRequestManager.instance.getClanActivityAsync(this.clanDetail.id, page);
+            this.svActivityClan.content.removeAllChildren();
+            this._clanActivity = [];
+            this.noActivity.active = !this.clanActivity?.result || this.clanActivity.result.length === 0;
+            for (const itemClan of this.clanActivity.result) {
+                const itemJoinClan = instantiate(this.itemPrefab);
+                itemJoinClan.setParent(this.svActivityClan.content);
+                const itemComp = itemJoinClan.getComponent(ItemHistoryClan)!;
+                itemComp.setData(itemClan);
+                this._clanActivity.push(itemComp);
+            }
+            this.pagination.setTotalPages(this.clanActivity.pageInfo.total_page || 1);
+            this.UpdatePage();
+        } catch {
+
+        } finally {
+            LoadingManager.getInstance().closeLoading();
         }
-        this.pagination.setTotalPages(this.clanActivity.pageInfo.total_page || 1);
-        this.UpdatePage();
     }
 
     UpdatePage(){

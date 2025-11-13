@@ -11,6 +11,7 @@ import { PaginationController } from '../utilities/PaginationController';
 import { Label } from 'cc';
 import { EditBox } from 'cc';
 import { Constants } from '../utilities/Constants';
+import { LoadingManager } from './LoadingManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('PopupClanMember')
@@ -87,23 +88,30 @@ export class PopupClanMember extends BasePopup {
     }
 
     private async loadList(page: number, search?: string) {
-        this.listMember = await WebRequestManager.instance.getListMemberClanAsync(this.clanDetail.id, page, search);
+        try {
+            LoadingManager.getInstance().openLoading();
+            this.listMember = await WebRequestManager.instance.getListMemberClanAsync(this.clanDetail.id, page, search);
 
-        this.svMemberList.content.removeAllChildren();
-        this._listMember = [];
-        this.noMember.active = !this.listMember?.result || this.listMember.result.length === 0;
+            this.svMemberList.content.removeAllChildren();
+            this._listMember = [];
+            this.noMember.active = !this.listMember?.result || this.listMember.result.length === 0;
 
-        for (const itemMember of this.listMember.result) {
-            const itemNode = instantiate(this.itemPrefab);
-            itemNode.setParent(this.svMemberList.content);
+            for (const itemMember of this.listMember.result) {
+                const itemNode = instantiate(this.itemPrefab);
+                itemNode.setParent(this.svMemberList.content);
 
-            const itemComp = itemNode.getComponent(ItemMemberMain)!;
-            itemComp.setData(itemMember);
-            this._listMember.push(itemComp);
+                const itemComp = itemNode.getComponent(ItemMemberMain)!;
+                itemComp.setData(itemMember);
+                this._listMember.push(itemComp);
+            }
+
+            this.totalMember.string = `Tổng số thành viên: ${this.listMember.pageInfo.total}`;
+            this.pagination.setTotalPages(this.listMember.pageInfo.total_page || 1);
+        } catch {
+
+        } finally {
+            LoadingManager.getInstance().closeLoading();
         }
-
-        this.totalMember.string = `Tổng số thành viên: ${this.listMember.pageInfo.total}`;
-        this.pagination.setTotalPages(this.listMember.pageInfo.total_page || 1);
     }
 
 }

@@ -13,6 +13,7 @@ import { ServerManager } from '../core/ServerManager';
 import { RichText } from 'cc';
 import { PopupSelectionMini } from './PopupSelectionMini';
 import { EditBox } from 'cc';
+import { LoadingManager } from './LoadingManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('PopupClanFundMember')
@@ -92,18 +93,25 @@ export class PopupClanFundMember extends BasePopup {
     }
 
     async loadList(page: number, search?: string) {
-        this.listClanFundMember = await WebRequestManager.instance.getClanFundContributorsAsync(this.clanDetail.id, page, search);
-        this.svMemberList.content.removeAllChildren();
-        this._listClanFundMember = [];
-        this.noMember.active = !this.listClanFundMember?.result || this.listClanFundMember.result.length === 0;
-        for (const itemClan of this.listClanFundMember.result) {
-            const itemJoinClan = instantiate(this.itemPrefab);
-            itemJoinClan.setParent(this.svMemberList.content);
-            const itemComp = itemJoinClan.getComponent(ItemMemberFund)!;
-            itemComp.setData(itemClan);
-            this._listClanFundMember.push(itemComp);
+        try {
+            LoadingManager.getInstance().openLoading();
+            this.listClanFundMember = await WebRequestManager.instance.getClanFundContributorsAsync(this.clanDetail.id, page, search);
+            this.svMemberList.content.removeAllChildren();
+            this._listClanFundMember = [];
+            this.noMember.active = !this.listClanFundMember?.result || this.listClanFundMember.result.length === 0;
+            for (const itemClan of this.listClanFundMember.result) {
+                const itemJoinClan = instantiate(this.itemPrefab);
+                itemJoinClan.setParent(this.svMemberList.content);
+                const itemComp = itemJoinClan.getComponent(ItemMemberFund)!;
+                itemComp.setData(itemClan);
+                this._listClanFundMember.push(itemComp);
+            }
+            this.pagination.setTotalPages(this.listClanFundMember.pageInfo.total_page || 1);
+        } catch {
+
+        } finally {
+            LoadingManager.getInstance().closeLoading();
         }
-        this.pagination.setTotalPages(this.listClanFundMember.pageInfo.total_page || 1);
     }
 
     private async SendClanFund(data) {

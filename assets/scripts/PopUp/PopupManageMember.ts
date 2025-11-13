@@ -10,6 +10,7 @@ import { PopupSelectionMini, SelectionMiniParam } from './PopupSelectionMini';
 import { UserMeManager } from '../core/UserMeManager';
 import { PaginationController } from '../utilities/PaginationController';
 import { EditBox } from 'cc';
+import { LoadingManager } from './LoadingManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('PopupManageMember')
@@ -97,27 +98,35 @@ export class PopupManageMember extends Component {
     }
 
     public async loadList(page: number, search?: string) {
-        this.listMember = await WebRequestManager.instance.getListMemberClanAsync(this.clanDetail.id, page, search);
-        this.svMemberList.content.removeAllChildren();
-        this._listMember = [];
-        this.noMember.active = false;
-        if(!this.listMember?.result || this.listMember.result.length === 0){
-            this.noMember.active = true;
-            return;
-        }
-        
-        for (const itemOffice of this.listMember.result) {
-            const itemJoinGuild = instantiate(this.itemPrefab);
-            itemJoinGuild.setParent(this.svMemberList.content);
+        try {
+            LoadingManager.getInstance().openLoading();
+            this.listMember = await WebRequestManager.instance.getListMemberClanAsync(this.clanDetail.id, page, search);
+            this.svMemberList.content.removeAllChildren();
+            this._listMember = [];
+            this.noMember.active = false;
+            if (!this.listMember?.result || this.listMember.result.length === 0) {
+                this.noMember.active = true;
+                return;
+            }
 
-            const itemComp = itemJoinGuild.getComponent(ItemMemberManager)!;
-            itemComp.setData(itemOffice, (itemOffice, selected: boolean) => {
-                this.onSelectMember(itemOffice, selected);
-                this._listMember.push(itemComp);
-            });
-            this.totalMember.string = `Tổng số thành viên: ${this.listMember.pageInfo.total}`;
-            this.pagination.setTotalPages(this.listMember.pageInfo.total_page || 1);
+            for (const itemOffice of this.listMember.result) {
+                const itemJoinGuild = instantiate(this.itemPrefab);
+                itemJoinGuild.setParent(this.svMemberList.content);
+
+                const itemComp = itemJoinGuild.getComponent(ItemMemberManager)!;
+                itemComp.setData(itemOffice, (itemOffice, selected: boolean) => {
+                    this.onSelectMember(itemOffice, selected);
+                    this._listMember.push(itemComp);
+                });
+                this.totalMember.string = `Tổng số thành viên: ${this.listMember.pageInfo.total}`;
+                this.pagination.setTotalPages(this.listMember.pageInfo.total_page || 1);
+            }
+        } catch {
+
+        } finally {
+            LoadingManager.getInstance().closeLoading();
         }
+
     }
 
     private onSelectMember(member: UserClan, selected: boolean) {

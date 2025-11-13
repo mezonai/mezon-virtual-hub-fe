@@ -10,6 +10,7 @@ import { Label } from 'cc';
 import { EditBox } from 'cc';
 import { PopupSelectionMini } from './PopupSelectionMini';
 import { PopupClanDetailInfo } from './PopupClanDetailInfo';
+import { LoadingManager } from './LoadingManager';
 const { ccclass, property } = _decorator;
 @ccclass('PopupClanList')
 export class PopupClanList extends BasePopup {
@@ -60,11 +61,13 @@ export class PopupClanList extends BasePopup {
     }
 
     async loadList(page: number, search?: string) {
-        this.listClan = await WebRequestManager.instance.getAllClanRequestsync(page, search);
-        this.svClanList.content.removeAllChildren();
-        this._listClan = [];
-        this.noMember.active = !this.listClan?.result || this.listClan.result.length === 0;
-        for (const itemClan of this.listClan.result) {
+        try {
+            LoadingManager.getInstance().openLoading();
+            this.listClan = await WebRequestManager.instance.getAllClanRequestsync(page, search);
+            this.svClanList.content.removeAllChildren();
+            this._listClan = [];
+            this.noMember.active = !this.listClan?.result || this.listClan.result.length === 0;
+            for (const itemClan of this.listClan.result) {
                 const itemJoinClan = instantiate(this.itemPrefab);
                 itemJoinClan.setParent(this.svClanList.content);
                 const itemComp = itemJoinClan.getComponent(ItemJoinClan)!;
@@ -74,9 +77,14 @@ export class PopupClanList extends BasePopup {
                     async (clan) => await this.handleCancelRequest(clan, itemComp)
                 );
                 this._listClan.push(itemComp);
+            }
+            this.totalClan.string = `Tổng số văn phòng: ${this.listClan.pageInfo.total}`;
+            this.pagination.setTotalPages(this.listClan.pageInfo.total_page || 1);
+        } catch {
+
+        } finally {
+            LoadingManager.getInstance().closeLoading();
         }
-        this.totalClan.string =  `Tổng số văn phòng: ${this.listClan.pageInfo.total}`;
-        this.pagination.setTotalPages(this.listClan.pageInfo.total_page || 1);
     }
 
     async ShowOpenClanWhenAprrove(message: string){

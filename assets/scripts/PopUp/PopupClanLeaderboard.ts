@@ -58,19 +58,19 @@ export class PopupClanLeaderboard extends BasePopup {
         try{
             LoadingManager.getInstance().openLoading();
             this.listClan = await WebRequestManager.instance.getAllClansync(page, search);
-        this.svClanList.content.removeAllChildren();
-        this._listClan = [];
-        this.noMember.active = !this.listClan?.result || this.listClan.result.length === 0;
-        for (const itemClan of this.listClan.result) {
-            const node = instantiate(this.itemPrefab);
-            node.setParent(this.svClanList.content);
+            this.svClanList.content.removeAllChildren();
+            this._listClan = [];
+            this.noMember.active = !this.listClan?.result || this.listClan.result.length === 0;
+            for (const itemClan of this.listClan.result) {
+                const node = instantiate(this.itemPrefab);
+                node.setParent(this.svClanList.content);
 
-            const comp = node.getComponent(ItemLeaderboardClan)!;
-            comp.setData(itemClan);
-            this._listClan.push(comp);
-        }
-        this.totalClan.string = `Tổng số văn phòng: ${this.listClan.pageInfo.total}`;
-        this.pagination.setTotalPages(this.listClan.pageInfo.total_page || 1);
+                const comp = node.getComponent(ItemLeaderboardClan)!;
+                comp.setData(itemClan);
+                this._listClan.push(comp);
+            }
+            this.totalClan.string = `Tổng số văn phòng: ${this.listClan.pageInfo.total}`;
+            this.pagination.setTotalPages(this.listClan.pageInfo.total_page || 1);
         }catch{
 
         }finally{
