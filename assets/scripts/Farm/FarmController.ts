@@ -18,6 +18,10 @@ export class FarmController extends Component {
   private landSlots: FarmSlot[] = [];
   static instance: FarmController;
 
+  protected onDestroy(): void {
+     FarmController.instance = null;
+  }
+
   onLoad() {
     FarmController.instance = this;
   }
