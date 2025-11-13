@@ -591,6 +591,18 @@ export class ServerManager extends Component {
         this.room.onMessage(MessageTypes.ON_HARVEST_INTERRUPTED_FAILED, (data) => {
            Constants.showConfirm(`${data.message}`);
         });
+
+        this.room.onMessage(MessageTypes.ON_PLANT_TO_PLANT_FAILED, (data) => {
+           Constants.showConfirm(`${data.message}`);
+        });
+
+        this.room.onMessage(MessageTypes.ON_CATCH_BUG_FAILED, (data) => {
+           Constants.showConfirm(`${data.message}`);
+        });
+
+        this.room.onMessage(MessageTypes.ON_WATER_PLANT_FAILED, (data) => {
+           Constants.showConfirm(`${data.message}`);
+        });
     }
 
     public async joinBattleRoom(roomId: string): Promise<void> {
