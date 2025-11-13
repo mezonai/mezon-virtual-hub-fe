@@ -1,9 +1,7 @@
 import { _decorator, Component, Node ,Button,Enum} from 'cc';
 import { Region } from './Region';
 import { ClansData } from '../Interface/DataMapAPI';
-import { GameMapController } from './GameMapController';
 import { OfficePosition } from './OfficePosition';
-import { Tutorial } from '../tutorial/Tutorial';
 const { ccclass, property } = _decorator;
 
 @ccclass('Office')
@@ -24,26 +22,16 @@ export class Office extends Component {
     public mapKey: string = "";
 
     public clans: ClansData = null;
-    private gameMapController: GameMapController = null;
 
-    public setData(clans: ClansData, gameMapController) {
+    public setData(clans: ClansData, onClickOffice: (office: Office) => void) {
         this.node.active = true;
-        this.gameMapController = gameMapController;
         this.clans = clans;
-    }
-
-    protected start(): void {
         this.chooseOffButton.addAsyncListener(async () => {
+            if (!onClickOffice) return;
             this.chooseOffButton.interactable = false;
-            this.onChooseOffice();
+            onClickOffice(this);
             this.chooseOffButton.interactable = true;
         })
-    }
-
-    private onChooseOffice() {
-        if (this.gameMapController) {
-            this.gameMapController.onClickGoToNextOffice(this);
-        }
     }
 }
 

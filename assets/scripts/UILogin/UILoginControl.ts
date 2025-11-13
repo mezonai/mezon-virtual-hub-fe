@@ -13,6 +13,9 @@ import { PopupManager } from '../PopUp/PopupManager';
 import { PetDTO } from '../Model/PetDTO';
 import { Constants } from '../utilities/Constants';
 import { sys } from 'cc';
+import { LoadingManager } from '../PopUp/LoadingManager';
+import { SceneManagerController } from '../utilities/SceneManagerController';
+import { SceneName } from '../utilities/SceneName';
 
 const { ccclass, property } = _decorator;
 
@@ -48,6 +51,9 @@ export class UILoginControll extends Component {
 
     @property(Tutorial)
     tutorial: Tutorial = null;
+
+    @property(GameMapController)
+    gameMapController: GameMapController = null;
 
     private selectedCharacter: number = 0;
 
@@ -177,28 +183,32 @@ export class UILoginControll extends Component {
 
         this.login_Btn.interactable = true;
         APIConfig.token = response.data.accessToken;
-        this.getProfileData()
-        await WebRequestManager.instance.getMyPetAsync();
+        LoadingManager.getInstance().openLoading();
+        try {
+            const getInfoSuccess = await WebRequestManager.instance.getUserProfileAsync();
+            if (!getInfoSuccess) {
+                await SceneManagerController.loadSceneAsync(SceneName.SCENE_GAME_MAP, null);
+                return;
+            }           
+            const getDataMyPetSuccess = await WebRequestManager.instance.getMyPetAsync();
+            if (!getDataMyPetSuccess) {
+                await SceneManagerController.loadSceneAsync(SceneName.SCENE_GAME_MAP, null);
+                return;
+            }
+            this.setUI();
+        } catch {
+
+        }
+        finally {
+            LoadingManager.getInstance().closeLoading();
+        }
+
     }
 
-    private getProfileData() {
-        WebRequestManager.instance.getUserProfile(
-            (response) => this.onGetProfileSuccess(response),
-            (error) => this.onError(error)
-        );
-    }
-
-    private onGetProfileSuccess(respone) {
-        UserMeManager.Set = respone.data;
-        this.onGetMyPetData(null);
-        // WebRequestManager.instance.getMyPetData((respone) => { this.onGetMyPetData(respone) }, (error) => { this.onError(error) });
-    }
-
-    private onGetMyPetData(respone) {
-        // UserMeManager.Get.user.pets = respone.data;
+    private setUI() {
         this.setDefaultSkinSet();
 
-        if (UserMeManager.Get.user.gender == null) {
+        if (UserMeManager.Get.user.gender == null) {// The firstTime login
             this.loginPanel.active = true;
             this.usernameLabel.string = UserMeManager.Get.user.username;
         }
@@ -304,7 +314,7 @@ export class UILoginControll extends Component {
             this.tutorial.startTutorial();
             return;
         }
-        GameMapController.instance.CheckLoadMap(autoLoadMap);
+        this.gameMapController.CheckLoadMap(autoLoadMap);
     }
 
     updateAvatar() {

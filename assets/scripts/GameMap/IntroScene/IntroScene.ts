@@ -1,8 +1,8 @@
 import { _decorator, Button, Camera, Color, Component, Label, Node, Sprite, SpriteFrame, tween, Vec3 } from 'cc';
 const { ccclass, property } = _decorator;
 
-@ccclass('LoadingScene')
-export class LoadingScene extends Component {
+@ccclass('IntroScene')
+export class IntroScene extends Component {
     @property({ type: Node }) worldMap: Node = null;
     @property({ type: Node }) backgroundMap: Node = null;
     @property({ type: Sprite }) spriteBlur: Sprite = null;
