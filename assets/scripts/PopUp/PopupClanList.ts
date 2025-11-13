@@ -47,7 +47,7 @@ export class PopupClanList extends BasePopup {
         this.pagination.init(
             async (page: number) => await this.loadList(page), 1
         );
-        this.loadList(1);
+        await this.loadList(1);
         this.UpdatePage();
     }
     
@@ -122,7 +122,6 @@ export class PopupClanList extends BasePopup {
                 if (!popup?.node?.uuid) return;
                 await WebRequestManager.instance.postCancelJoinClanAsync(clan.id);
                 await itemComp.updateStatus(ClanStatus.NONE);
-                await PopupManager.getInstance().closePopup(popup.node.uuid);
 
             },
             onActionButtonRight: () => {
