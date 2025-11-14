@@ -51,5 +51,7 @@ export enum MessageTypes {
     ON_HARVEST_INTERRUPTED = 'onHarvestInterrupted',
     ON_HARVEST_INTERRUPTED_BY_OTHER = 'onHarvestInterruptedByOther',
     ON_HARVEST_INTERRUPTED_FAILED = 'onHarvestInterruptedFailed',
-    ON_HARVEST_STARTED_ONJOIN = 'onHarvestStartedOnJoin',
+    ON_HARVEST_PLAYER_JOIN = 'onHarvestPlayerJoin',
+    ON_CANCEL_HARVEST_PLAYER_LEFT = 'onCancelHarvestPlayerLeft',
+    
 }

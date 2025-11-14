@@ -505,7 +505,6 @@ export class ServerManager extends Component {
                 slot_index: value.slot_index,
                 currentPlant: plantValue,
             };
-            await PopupManager.getInstance().closeAllPopups();
             FarmController.instance.UpdateSlot(slotUI);
         });
 
@@ -529,7 +528,7 @@ export class ServerManager extends Component {
             FarmController.instance.UpdateSlotAction(data.slotId, SlotActionType.Harvest ,true);
         });
 
-        this.room.onMessage(MessageTypes.ON_HARVEST_STARTED_ONJOIN, (data) => {
+        this.room.onMessage(MessageTypes.ON_HARVEST_PLAYER_JOIN, (data) => {
           const slots = data.slots || [data];
             slots.forEach((slot) => {
                 const otherPlayer = UserManager.instance.getPlayerById(slot.sessionId);
@@ -538,6 +537,10 @@ export class ServerManager extends Component {
                     FarmController.instance.UpdateSlotAction(data.slotId, SlotActionType.Harvest, true);
                 }
             });
+        });
+
+        this.room.onMessage(MessageTypes.ON_CANCEL_HARVEST_PLAYER_LEFT, (data) => {
+            FarmController.instance.UpdateSlotAction(data.slotId, SlotActionType.Harvest, false);
         });
 
         this.room.onMessage(MessageTypes.ON_HARVEST_DENIED, (data) => {
