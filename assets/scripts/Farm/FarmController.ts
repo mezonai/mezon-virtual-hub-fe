@@ -59,22 +59,12 @@ export class FarmController extends Component {
     }
 
     const param: PopupChoosePlantParam = {
-      onChoose: (plant: PlantDataDTO) => {
-        this.plantToslot(slot.data.id, plant.id);
-      }
+      slotFarm: slot,
+      cland: inventory,
     };
     
     await UserManager.instance.GetMyClientPlayer.get_MoveAbility.StopMove();
-    const popup = await PopupManager.getInstance().openAnimPopup('PopupChoosePlant', PopupChoosePlant, param);
-    popup.InitItemInventory(inventory);
-  }
-  async plantToslot(farm_slot_id: string, plant_id: string) {
-    UserManager.instance.GetMyClientPlayer.get_MoveAbility.startMove();
-    const param: PlantToSlotPayload = {
-      farm_slot_id: farm_slot_id,
-      plant_id: plant_id
-    }
-    ServerManager.instance.sendPlantToSlot(param);
+    await PopupManager.getInstance().openAnimPopup('PopupChoosePlant', PopupChoosePlant, param);
   }
 
   private findSlotById(slotId: string): FarmSlot | null {
@@ -85,7 +75,6 @@ export class FarmController extends Component {
   public UpdateSlotAction(slotId: string, type: SlotActionType, isDone: boolean = false) {
     const slot = this.findSlotById(slotId);
     if (!slot) return;
-
     switch (type) {
       case SlotActionType.Water:
         slot.PlayWaterPlantAnim(isDone);

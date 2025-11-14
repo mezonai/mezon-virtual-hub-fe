@@ -81,8 +81,7 @@ export class PopupClanInventory extends BasePopup {
 
     CheckShowMemberManager() {
         const leaderId = this.clanDetail?.leader?.id;
-        const viceLeaderId = this.clanDetail?.vice_leader?.id;
-        const canManage = UserMeManager.Get.user.id === leaderId || UserMeManager.Get.user.id === viceLeaderId;
+        const canManage = UserMeManager.Get.user.id === leaderId;
         this.ShopClanButton.node.active = !!canManage;
     }
 
@@ -103,8 +102,8 @@ export class PopupClanInventory extends BasePopup {
             const plantItem = slotNode.getComponent(InventoryClanUIItem);
 
             if (plantItem) {
-                plantItem.initPlant(element, (item) => {
-                    this.showSlotDetail(item);
+                plantItem.initPlant(element, () => {
+                    this.showSlotDetail(element);
                 });
             }
 
@@ -123,19 +122,19 @@ export class PopupClanInventory extends BasePopup {
         firstItem.onItemClick();
     }
 
-    private showSlotDetail(item: InventoryClanUIItem) {
-        const sprite = this.iconItemUIHelper.getPlantIcon(item.clanWarehouseSlotDTO.plant.name);
+    private showSlotDetail(clanWarehouseSlotDTO: ClanWarehouseSlotDTO) {
+        const sprite = this.iconItemUIHelper.getPlantIcon(clanWarehouseSlotDTO.plant.name);
         if (sprite){
             this.iconItemUIHelper.icon.spriteFrame = sprite;
             this.iconSeed.spriteFrame = sprite;
         } 
-        this.seedBags.node.active = !item.clanWarehouseSlotDTO.is_harvested;
-        this.iconItemUIHelper.node.active = item.clanWarehouseSlotDTO.is_harvested;
-        this.descriptionrt.string = `${item.clanWarehouseSlotDTO.plant.description}`;
-        this.plantNamert.string = `<outline color=#222222 width=1> ${Constants.getPlantName(item.clanWarehouseSlotDTO.plant.name)}</outline>`;
-        this.growTimert.string = `<outline color=#222222 width=1> ${item.clanWarehouseSlotDTO.plant.grow_time} s</outline>`;
-        this.harvestScorert.string = `<outline color=#222222 width=1> ${item.clanWarehouseSlotDTO.plant.harvest_point}</outline>`;
-        this.priceBuyrt.string = `<outline color=#222222 width=1> ${item.clanWarehouseSlotDTO.plant.buy_price}</outline>`;
+        this.seedBags.node.active = !clanWarehouseSlotDTO.is_harvested;
+        this.iconItemUIHelper.node.active = clanWarehouseSlotDTO.is_harvested;
+        this.descriptionrt.string = `${clanWarehouseSlotDTO.plant.description}`;
+        this.plantNamert.string = `<outline color=#222222 width=1> ${Constants.getPlantName(clanWarehouseSlotDTO.plant.name)}</outline>`;
+        this.growTimert.string = `<outline color=#222222 width=1> ${clanWarehouseSlotDTO.plant.grow_time} s</outline>`;
+        this.harvestScorert.string = `<outline color=#222222 width=1> ${clanWarehouseSlotDTO.plant.harvest_point}</outline>`;
+        this.priceBuyrt.string = `<outline color=#222222 width=1> ${clanWarehouseSlotDTO.plant.buy_price}</outline>`;
     }
 }
 

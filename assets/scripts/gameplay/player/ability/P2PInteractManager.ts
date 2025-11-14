@@ -45,14 +45,16 @@ export class P2PInteractManager extends Ability {
     }
 
     onTouchStart(event) {
-        if (this.playerController.isInBattle || UserMeManager.CurrentOffice.roomEnds == RoomType.FARM) {
+        if (this.playerController.isInBattle) {
             return;
         }
-
+      
         if (this.playerController.playerInteractFarm.isHarvesting) {
             this.playerController.playerInteractFarm.OnActionInterruptHarvest();
             return;
         }
+
+        if(UserMeManager.CurrentOffice.roomEnds == RoomType.FARM) return;
 
         if (this.CanShowUI) {
             if (Date.now() - this.lastActionTime > this.interactDelay) {

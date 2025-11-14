@@ -14,11 +14,9 @@ export class InventoryClanUIItem extends Component {
     @property({ type: Toggle }) toggle: Toggle = null;
     @property({ type: Label }) amountLabel: Label;
 
-    public onClick?: (item: InventoryClanUIItem) => void;
-    public clanWarehouseSlotDTO: ClanWarehouseSlotDTO = null;
+    public onClick?: () => void;
 
-    public initPlant(clanWarehouseSlotDTO: ClanWarehouseSlotDTO, callback?: (item: InventoryClanUIItem) => void) {
-        this.clanWarehouseSlotDTO = clanWarehouseSlotDTO;
+    public initPlant(clanWarehouseSlotDTO: ClanWarehouseSlotDTO, callback?: () => void) {
         this.onClick = callback;
         if (clanWarehouseSlotDTO.plant) {
             const sprite =  this.iconItemUIHelperPlant.getPlantIcon(clanWarehouseSlotDTO.plant?.name);
@@ -41,8 +39,7 @@ export class InventoryClanUIItem extends Component {
     }
 
     onItemClick() {
-        if (this.onClick) {
-            this.onClick(this);
-        }
+        if (!this?.node || !this.onClick) return;
+        this.onClick();
     }
 }

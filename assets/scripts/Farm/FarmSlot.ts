@@ -101,7 +101,7 @@ export class FarmSlot extends Component {
   }
 
   private canInteractSlot(): boolean {
-    return !!UserMeManager.Get.clan?.id;
+    return !!UserMeManager.Get.clan?.id && UserMeManager.CurrentOffice.idclan == UserMeManager.Get.clan?.id;
   }
 
   public waterPlant() {
