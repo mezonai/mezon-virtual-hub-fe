@@ -481,19 +481,32 @@ export class ServerManager extends Component {
             FarmController.instance.InitFarmSlot(data.slots);
         });
 
-        this.room.onMessage(MessageTypes.ON_SLOT_UPDATE, async (data) => {
-            if (!data || !data.slot) {
-                return;
-            }
-            await PopupManager.getInstance().closeAllPopups();
-            FarmController.instance.UpdateSlot(data.slot);
+        this.room.state.farmSlotState.onAdd((farmSlotState, key) => {
+            const plantValue = farmSlotState.currentPlant
+                ? farmSlotState.currentPlant.toJSON()
+                : null;
+
+            const slotUI: FarmSlotDTO = {
+                id: farmSlotState.id,
+                slot_index: farmSlotState.slot_index,
+                currentPlant: plantValue,
+            };
+            FarmController.instance.UpdateSlot(slotUI);
         });
 
-        this.room.onMessage(MessageTypes.ON_SLOT_UPDATE_RT, (data) => {
-            if (!data || !data.slots) return;
-            data.slots.forEach(slotData => {
-                FarmController.instance.UpdateSlot(slotData);
-            });
+        this.room.state.farmSlotState.onChange(async (value, key) => {
+            console.log(`[FE] FarmSlotState changed for slotId=${key}`, value.toJSON());
+            const plantValue = value.currentPlant
+                ? value.currentPlant.toJSON()
+                : null;
+
+            const slotUI: FarmSlotDTO = {
+                id: key,
+                slot_index: value.slot_index,
+                currentPlant: plantValue,
+            };
+            await PopupManager.getInstance().closeAllPopups();
+            FarmController.instance.UpdateSlot(slotUI);
         });
 
         this.room.onMessage(MessageTypes.ON_WATER_PLANT, async (data) => {
