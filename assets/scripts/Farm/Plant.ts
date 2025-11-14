@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, Label, tween, Vec3 } from 'cc';
+import { _decorator, Component, Node, Label, game, Game , tween, Vec3 } from 'cc';
 import { PlantData, PlantState } from './EnumPlant';
 import Utilities from '../utilities/Utilities';
 import { SpriteFrame } from 'cc';
@@ -32,14 +32,31 @@ export class Plant extends Component {
 
   public data: PlantData = null!;
   private growthTime: number = 0;
+  private lastTickTime: number = 0;
   private elapsed: number = 0;
+
+  onDestroy() {
+    game.off(Game.EVENT_SHOW, this.onAppShow, this);
+  }
+  onLoad() {
+    game.on(Game.EVENT_SHOW, this.onAppShow, this);
+  }
+
+  private onAppShow() {
+    if (this.data == null || this.growthTime <= 0) return;// update time plant
+    this.unschedule(this.onTick);
+    const remaningPause = this.timeRemaning(Date.now());
+    this.growthTime -= remaningPause;
+    this.updateVisual(this.data.stage);
+    this.schedule(this.onTick, 1);
+  }
 
   public setup(data: PlantData) {
     if(!data) return;
     this.data = data;
     this.growthTime = data.grow_time_remain || 0;
+    this.lastTickTime = Date.now(); 
     this.updateVisual(data.stage);
-
     this.schedule(this.onTick, 1);
   }
 
@@ -58,15 +75,25 @@ export class Plant extends Component {
     this.plantIcon.node.active = true;
   }
 
+  timeRemaning(now: number): number {
+    const remainingTime = (now - this.lastTickTime) / 1000;
+     this.lastTickTime = now;
+    return remainingTime
+  }
+
   private onTick() {
     if (!this.data) return;
-    this.elapsed += 1;
-    this.growthTime -= 1;
+    const now = Date.now();
+    const remaningTime = this.timeRemaning(now);
+  
+    this.elapsed += remaningTime;
+    this.growthTime -= remaningTime;
     if (this.growthTime <= 0) {
-      this.updateHarvest();
-      return;
+        this.updateHarvest();
+        return;
     }
-    this.updateVisual(this.data.stage);   
+
+    this.updateVisual(this.data.stage);    
   }
 
   public updateStatusWater(isNeedWater: boolean){
