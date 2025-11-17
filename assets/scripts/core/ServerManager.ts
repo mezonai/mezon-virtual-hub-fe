@@ -573,6 +573,7 @@ export class ServerManager extends Component {
             if (otherPlayer) {
                 otherPlayer.playerInteractFarm.showHarvestingComplete();
                 otherPlayer.zoomBubbleChat(`${data.playerName} đã thu hoạch xong!`);
+                FarmController.instance.UpdateSlotAction(data.slotId, SlotActionType.Harvest, false);
             }
         });
 
@@ -586,6 +587,7 @@ export class ServerManager extends Component {
             const otherPlayer = UserManager.instance.getPlayerById(data.interruptedPlayer);
             if (otherPlayer) {
                 otherPlayer.playerInteractFarm.showHarvestingComplete();
+                FarmController.instance.UpdateSlotAction(data.slotId, SlotActionType.Harvest, false);
             }
         });
 
@@ -601,6 +603,7 @@ export class ServerManager extends Component {
             const otherPlayer = UserManager.instance.getPlayerById(data.sessionId);
             if (otherPlayer) {
                 otherPlayer.playerInteractFarm.showHarvestingComplete();
+                FarmController.instance.UpdateSlotAction(data.slotId, SlotActionType.Harvest, false);
             }
         });
 
