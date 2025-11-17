@@ -505,19 +505,18 @@ export class ServerManager extends Component {
                 slot_index: value.slot_index,
                 currentPlant: plantValue,
             };
-            await PopupManager.getInstance().closeAllPopups();
             FarmController.instance.UpdateSlot(slotUI);
         });
 
         this.room.onMessage(MessageTypes.ON_WATER_PLANT, async (data) => {
             await PopupManager.getInstance().closeAllPopups();
-            FarmController.instance.UpdateSlotAction(data.slotId, SlotActionType.Water);
+            FarmController.instance.UpdateSlotAction(data.slotId, SlotActionType.Water, true);
             //Constants.showConfirm(data.message);
         });
 
         this.room.onMessage(MessageTypes.ON_CATCH_BUG, async (data) => {
             await PopupManager.getInstance().closeAllPopups();
-            FarmController.instance.UpdateSlotAction(data.slotId, SlotActionType.CatchBug);
+            FarmController.instance.UpdateSlotAction(data.slotId, SlotActionType.CatchBug, true);
            // Constants.showConfirm(data.message);
         });
 
@@ -529,7 +528,7 @@ export class ServerManager extends Component {
             FarmController.instance.UpdateSlotAction(data.slotId, SlotActionType.Harvest ,true);
         });
 
-        this.room.onMessage(MessageTypes.ON_HARVEST_STARTED_ONJOIN, (data) => {
+        this.room.onMessage(MessageTypes.ON_HARVEST_PLAYER_JOIN, (data) => {
           const slots = data.slots || [data];
             slots.forEach((slot) => {
                 const otherPlayer = UserManager.instance.getPlayerById(slot.sessionId);
@@ -538,6 +537,10 @@ export class ServerManager extends Component {
                     FarmController.instance.UpdateSlotAction(data.slotId, SlotActionType.Harvest, true);
                 }
             });
+        });
+
+        this.room.onMessage(MessageTypes.ON_CANCEL_HARVEST_PLAYER_LEFT, (data) => {
+            FarmController.instance.UpdateSlotAction(data.slotId, SlotActionType.Harvest, false);
         });
 
         this.room.onMessage(MessageTypes.ON_HARVEST_DENIED, (data) => {
@@ -599,6 +602,20 @@ export class ServerManager extends Component {
             if (otherPlayer) {
                 otherPlayer.playerInteractFarm.showHarvestingComplete();
             }
+        });
+
+        this.room.onMessage(MessageTypes.ON_PLANT_TO_PLANT_FAILED, (data) => {
+           Constants.showConfirm(`${data.message}`);
+        });
+
+        this.room.onMessage(MessageTypes.ON_WATER_PLANT_FAILED, (data) => {
+           Constants.showConfirm(`${data.message}`);
+           FarmController.instance.UpdateSlotAction(data.slotId, SlotActionType.Water);
+        });
+
+        this.room.onMessage(MessageTypes.ON_CATCH_BUG_FAILED, (data) => {
+           Constants.showConfirm(`${data.message}`);
+           FarmController.instance.UpdateSlotAction(data.slotId, SlotActionType.CatchBug);
         });
 
         this.room.onMessage(MessageTypes.ON_HARVEST_INTERRUPTED_FAILED, (data) => {

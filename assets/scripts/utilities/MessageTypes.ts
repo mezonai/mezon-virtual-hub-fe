@@ -44,6 +44,9 @@ export enum MessageTypes {
     ON_SLOT_UPDATE_RT = 'onSlotUpdateRT',
     ON_WATER_PLANT = 'onWaterPlant',
     ON_CATCH_BUG = 'onCatchBug',
+    ON_PLANT_TO_PLANT_FAILED = 'onPlantToPlantFailed',
+    ON_WATER_PLANT_FAILED = 'onWaterPlantFailed',
+    ON_CATCH_BUG_FAILED = 'onCatchBugFailed',
     ON_HARVEST_STARTED = 'onHarvestStarted',
     ON_HARVEST_COMPLETE = 'onHarvestComplete',
     ON_HARVEST_DENIED = 'onHarvestDenied',
@@ -51,5 +54,7 @@ export enum MessageTypes {
     ON_HARVEST_INTERRUPTED = 'onHarvestInterrupted',
     ON_HARVEST_INTERRUPTED_BY_OTHER = 'onHarvestInterruptedByOther',
     ON_HARVEST_INTERRUPTED_FAILED = 'onHarvestInterruptedFailed',
-    ON_HARVEST_STARTED_ONJOIN = 'onHarvestStartedOnJoin',
+    ON_HARVEST_PLAYER_JOIN = 'onHarvestPlayerJoin',
+    ON_CANCEL_HARVEST_PLAYER_LEFT = 'onCancelHarvestPlayerLeft',
+    
 }
