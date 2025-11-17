@@ -510,13 +510,13 @@ export class ServerManager extends Component {
 
         this.room.onMessage(MessageTypes.ON_WATER_PLANT, async (data) => {
             await PopupManager.getInstance().closeAllPopups();
-            FarmController.instance.UpdateSlotAction(data.slotId, SlotActionType.Water);
+            FarmController.instance.UpdateSlotAction(data.slotId, SlotActionType.Water, true);
             //Constants.showConfirm(data.message);
         });
 
         this.room.onMessage(MessageTypes.ON_CATCH_BUG, async (data) => {
             await PopupManager.getInstance().closeAllPopups();
-            FarmController.instance.UpdateSlotAction(data.slotId, SlotActionType.CatchBug);
+            FarmController.instance.UpdateSlotAction(data.slotId, SlotActionType.CatchBug, true);
            // Constants.showConfirm(data.message);
         });
 
@@ -602,6 +602,20 @@ export class ServerManager extends Component {
             if (otherPlayer) {
                 otherPlayer.playerInteractFarm.showHarvestingComplete();
             }
+        });
+
+        this.room.onMessage(MessageTypes.ON_PLANT_TO_PLANT_FAILED, (data) => {
+           Constants.showConfirm(`${data.message}`);
+        });
+
+        this.room.onMessage(MessageTypes.ON_WATER_PLANT_FAILED, (data) => {
+           Constants.showConfirm(`${data.message}`);
+           FarmController.instance.UpdateSlotAction(data.slotId, SlotActionType.Water);
+        });
+
+        this.room.onMessage(MessageTypes.ON_CATCH_BUG_FAILED, (data) => {
+           Constants.showConfirm(`${data.message}`);
+           FarmController.instance.UpdateSlotAction(data.slotId, SlotActionType.CatchBug);
         });
 
         this.room.onMessage(MessageTypes.ON_HARVEST_INTERRUPTED_FAILED, (data) => {

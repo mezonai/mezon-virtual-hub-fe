@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, Sprite, Prefab, instantiate, Button } from "cc";
+import { _decorator, Component, Node, Sprite, Prefab, instantiate, Button,tween } from "cc";
 import { Plant } from "./Plant";
 import { FarmSlotDTO, PlantData, PlantState, PlantToSlotPayload } from "./EnumPlant";
 import { FarmController } from "./FarmController";
@@ -115,7 +115,6 @@ export class FarmSlot extends Component {
       this.interactAction.active = false;
       return;
     }
-    this.PlayWaterPlantAnim(true);
     const param: PlantToSlotPayload = {
       farm_slot_id: this.data.id,
     }
@@ -134,7 +133,6 @@ export class FarmSlot extends Component {
       this.interactAction.active = false;
       return;
     }
-    this.PlayCatchBugAnim(true);
     const param: PlantToSlotPayload = {
       farm_slot_id: this.data.id,
     }
@@ -173,10 +171,20 @@ export class FarmSlot extends Component {
 
   public PlayWaterPlantAnim(isShow: boolean) {
     this.waterPlantAnim.active = isShow;
+    if (isShow)
+      tween(this.waterPlantAnim)
+        .delay(2)
+        .call(() => (this.waterPlantAnim.active = false))
+        .start();
   }
 
   public PlayCatchBugAnim(isShow: boolean) {
     this.catchBugAnim.active = isShow;
+    if (isShow)
+      tween(this.catchBugAnim)
+        .delay(2)
+        .call(() => (this.catchBugAnim.active = false))
+        .start();
   }
 
 }
