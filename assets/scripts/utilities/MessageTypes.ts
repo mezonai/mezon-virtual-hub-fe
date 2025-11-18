@@ -50,6 +50,7 @@ export enum MessageTypes {
     ON_HARVEST_STARTED = 'onHarvestStarted',
     ON_HARVEST_COMPLETE = 'onHarvestComplete',
     ON_HARVEST_DENIED = 'onHarvestDenied',
+    ON_PLANT_DEATH = 'onPlantDeath',
     ON_HARVEST_FAILED = 'onHarvestFailed',
     ON_HARVEST_INTERRUPTED = 'onHarvestInterrupted',
     ON_HARVEST_INTERRUPTED_BY_OTHER = 'onHarvestInterruptedByOther',
