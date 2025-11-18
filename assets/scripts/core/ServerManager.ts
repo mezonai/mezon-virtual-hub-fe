@@ -495,7 +495,6 @@ export class ServerManager extends Component {
         });
 
         this.room.state.farmSlotState.onChange(async (value, key) => {
-            console.log(`[FE] FarmSlotState changed for slotId=${key}`, value.toJSON());
             const plantValue = value.currentPlant
                 ? value.currentPlant.toJSON()
                 : null;
@@ -569,11 +568,14 @@ export class ServerManager extends Component {
                 }
                 return;
             }
-            const otherPlayer = UserManager.instance.getPlayerById(data.sessionId);
-            if (otherPlayer) {
-                otherPlayer.playerInteractFarm.showHarvestingComplete();
-                otherPlayer.zoomBubbleChat(`${data.playerName} đã thu hoạch xong!`);
-                FarmController.instance.UpdateSlotAction(data.slotId, SlotActionType.Harvest, false);
+            else
+            {
+                const otherPlayer = UserManager.instance.getPlayerById(data.sessionId);
+                if (otherPlayer) {
+                    otherPlayer.playerInteractFarm.showHarvestingComplete();
+                    otherPlayer.zoomBubbleChat(`${data.playerName} đã thu hoạch xong!`);
+                    FarmController.instance.UpdateSlotAction(data.slotId, SlotActionType.Harvest, false);
+                }
             }
         });
 
@@ -582,7 +584,6 @@ export class ServerManager extends Component {
             if (isMe) {
                 Constants.showConfirm(`Bạn đã phá thu hoạch của ${data.interruptedPlayerName} thành công!\n` +
                     `Lượt phá còn lại: ${data.selfHarvestInterrupt.remaining}/${data.selfHarvestInterrupt.max}`);
-                return;
             }
             const otherPlayer = UserManager.instance.getPlayerById(data.interruptedPlayer);
             if (otherPlayer) {
@@ -599,12 +600,12 @@ export class ServerManager extends Component {
             UserManager.instance.GetMyClientPlayer.get_MoveAbility.startMove();
             GameManager.instance.playerHubController.showBlockInteractHarvest(false);
             UserManager.instance.GetMyClientPlayer.playerInteractFarm.showHarvestingComplete();
-            FarmController.instance.UpdateSlotAction(data.slotId, SlotActionType.Harvest, false);
+            
             const otherPlayer = UserManager.instance.getPlayerById(data.sessionId);
             if (otherPlayer) {
                 otherPlayer.playerInteractFarm.showHarvestingComplete();
-                FarmController.instance.UpdateSlotAction(data.slotId, SlotActionType.Harvest, false);
             }
+            FarmController.instance.UpdateSlotAction(data.slotId, SlotActionType.Harvest, false);
         });
 
         this.room.onMessage(MessageTypes.ON_PLANT_TO_PLANT_FAILED, (data) => {
@@ -624,6 +625,15 @@ export class ServerManager extends Component {
         this.room.onMessage(MessageTypes.ON_HARVEST_INTERRUPTED_FAILED, (data) => {
            Constants.showConfirm(`${data.message}`);
         });
+
+        this.room.onMessage(MessageTypes.ON_PLANT_DEATH, (data) => {
+            const harvestPlayer = UserManager.instance.getPlayerById(data.harverstId);
+            const interruptedPlayer = UserManager.instance.getPlayerById(data.interruptedId);
+            if(harvestPlayer || interruptedPlayer){
+                Constants.showConfirm(`${data.message}`);
+            }
+        });
+        
     }
 
     public async joinBattleRoom(roomId: string): Promise<void> {
