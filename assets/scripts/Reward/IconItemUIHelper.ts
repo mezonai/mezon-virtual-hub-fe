@@ -132,6 +132,8 @@ export class IconItemUIHelper extends Component {
             await this.setIconByItem(reward.item);
         } else if (reward.type === RewardType.PLANT && reward.item) {
             await this.applyPlantIcon(reward.item.name);
+        } else if (reward.type === RewardType.FOOD && reward.food) {
+            await this.applyFoodIcon(reward.food);
         }
     }
 
