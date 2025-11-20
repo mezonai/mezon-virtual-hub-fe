@@ -27,7 +27,6 @@ export class PopupClanInventory extends BasePopup {
 
     @property(RichText) harvertCountrt: RichText = null;
     @property(RichText) harvertInterrupCountrt: RichText = null;
-    @property(RichText) timeResetHarvest: RichText = null;
     @property(Sprite) seedBags: Sprite = null;
     @property({type: IconItemUIHelper }) iconItemUIHelper: IconItemUIHelper = null;
     @property(Sprite) iconSeed: Sprite = null;
@@ -76,7 +75,6 @@ export class PopupClanInventory extends BasePopup {
         this.harvestCountDTO = await WebRequestManager.instance.getHarvestCountsAsync(this.clanDetail.id);
         this.setCountLabel(this.harvertCountrt, this.harvestCountDTO.harvest_count_use, this.harvestCountDTO.harvest_count);
         this.setCountLabel(this.harvertInterrupCountrt, this.harvestCountDTO.harvest_interrupt_count_use, this.harvestCountDTO.harvest_interrupt_count);
-        this.timeResetHarvest.string = `<outline color=#222222 width=1> Đặt lại số lần thu hoạch đã dùng hàng ngày</outline>`;
     }
 
     CheckShowMemberManager() {
