@@ -1,7 +1,7 @@
 
 import { FarmDTO, FarmSlotDTO, PlantState, ClanWarehouseSlotDTO, PlantDataDTO, PlantData, HarvestCountDTO } from "../Farm/EnumPlant";
 import { ClansData, PageInfo, ClansResponseDTO, MemberResponseDTO, UserClan, ClanContributorDTO, ClanContributorsResponseDTO, ClanFundResponseDTO, ClanFund, ClanRequestResponseDTO, MemberClanRequestDTO, ClanStatus, ClanActivityItemDTO, ClanActivityResponseDTO, RequestToJoinDTO } from "../Interface/DataMapAPI";
-import { Food, InventoryDTO, Item, PetReward, QuestType, RewardItemDTO, RewardNewbieDTO, RewardType, StatsConfigDTO } from "../Model/Item";
+import { EventRewardDTO, EventType, Food, InventoryDTO, Item, PetReward, QuestType, RewardItemDTO, RewardNewbieDTO, RewardType, StatsConfigDTO } from "../Model/Item";
 import { AnimalElementString, AnimalRarity, Element, PetBattleInfo, PetDTO, PlayerBattle, SkillBattleInfo, Species, TypeSkill } from "../Model/PetDTO";
 
 export default class ConvetData {
@@ -117,7 +117,7 @@ export default class ConvetData {
             gender: user.gender ?? null,
             clan_role: user.clan_role ?? null,
             total_score: user.total_score ?? 0,
-            weekly_score:  user.weekly_score ?? 0,
+            weekly_score: user.weekly_score ?? 0,
             rank: user.rank ?? 0,
         }));
 
@@ -204,12 +204,13 @@ export default class ConvetData {
     }
 
     public static convertHarvestCountDTO(apiData: any): HarvestCountDTO {
-    return {
-        harvest_count: apiData.harvest_count,
-        harvest_count_use: apiData.harvest_count_use,
-        harvest_interrupt_count: apiData.harvest_interrupt_count,
-        harvest_interrupt_count_use: apiData.harvest_interrupt_count_use
-    };}
+        return {
+            harvest_count: apiData.harvest_count,
+            harvest_count_use: apiData.harvest_count_use,
+            harvest_interrupt_count: apiData.harvest_interrupt_count,
+            harvest_interrupt_count_use: apiData.harvest_interrupt_count_use
+        };
+    }
 
     public static ConvertWarehouseSlots(warehouses: any[]): ClanWarehouseSlotDTO[] {
         return (warehouses || []).map(w => ({
@@ -461,6 +462,7 @@ export default class ConvetData {
         return data.map(item => this.ConvertRewardNewbie(item));
     }
 
+
     public static ConvertRewardNewbie(data: any): RewardNewbieDTO {
         if (data == null) return null;
         const rewardNewbie = new RewardNewbieDTO();
@@ -474,6 +476,14 @@ export default class ConvetData {
         rewardNewbie.quest_type = this.mapServerQuestTypeToClient(data.quest_type);
         rewardNewbie.rewards = this.ConvertReward(data.rewards);
         return rewardNewbie;
+    }
+
+    public static ConvertEventReward(data: any): EventRewardDTO {       
+        if (data == null) return null;      
+         const eventReward = new EventRewardDTO();
+        eventReward.eventType = EventType.EVENT_LOGIN_PLANT;
+        eventReward.rewards = this.ConvertRewardNewbieList(data.data);
+        return eventReward;
     }
 
     public static parseFood(foodData: any): Food {

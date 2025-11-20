@@ -50,7 +50,6 @@ export class ProjectRoot extends Component {
 
         const param = SceneManagerController.getSceneParam<{ params: any }>();
         if (param) {
-            console.log("Zo đay");
             onLoaded();
         } else {
             this.introScene.setData(onLoaded);

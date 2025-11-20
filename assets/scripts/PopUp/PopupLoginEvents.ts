@@ -5,21 +5,22 @@ import { RewardLoginItem } from '../Reward/RewardLoginItem';
 import { Button } from 'cc';
 import { Label } from 'cc';
 import { PopupManager } from './PopupManager';
-import { RewardNewbieDTO } from '../Model/Item';
+import { EventRewardDTO, EventType, RewardNewbieDTO } from '../Model/Item';
 import { Constants } from '../utilities/Constants';
 import { WebRequestManager } from '../network/WebRequestManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('PopupLoginEvents')
 export class PopupLoginEvents extends BasePopup {
-    @property({ type: [ItemRewardEvent] }) itemRewardEvents: RewardLoginItem[] = [];
+    @property({ type: [ItemRewardEvent] }) itemRewardEvents: ItemRewardEvent[] = [];
     @property({ type: [Node] }) backgroundEvent: Node[] = [];
     @property({ type: Button }) closeButton: Button = null;
     @property({ type: Label }) remainingLabel: Label = null;
+    eventType: EventType = EventType.EVENT_LOGIN_CLAN;
     private countdownId: any = null;
 
     public async init(param?: PopupLoginEventsParam) {
-        if (param == null) {
+        if (param == null || param.rewardEvents == null || param.rewardEvents.rewards == null) {
             this.clearCountDown();
             await PopupManager.getInstance().closePopup(this.node.uuid);
             return;
@@ -29,14 +30,16 @@ export class PopupLoginEvents extends BasePopup {
             this.clearCountDown();
             await PopupManager.getInstance().closePopup(this.node.uuid);
         })
-        this.setDataReward(param.rewardNewbieDTOs);
+        this.eventType = param.rewardEvents.eventType;
+        this.setDataReward(param.rewardEvents.rewards);
+        this.setColorBackground(this.eventType);
 
     }
 
-    setDataReward(rewardNewbieDTOs: RewardNewbieDTO[]) {
-        this.showCountDown(rewardNewbieDTOs);
-        rewardNewbieDTOs.forEach((dto, i) => {
-            this.itemRewardEvents[i].setData(dto, this.getNewbieReward.bind(this));
+    setDataReward(rewardEvents: RewardNewbieDTO[]) {
+        this.showCountDown(rewardEvents);
+        rewardEvents.forEach((dto, i) => {
+            this.itemRewardEvents[i].setData(dto, this.eventType, this.claimReward.bind(this));
         });
     }
 
@@ -70,12 +73,12 @@ export class PopupLoginEvents extends BasePopup {
         }
     };
 
-    async getNewbieReward(questId: string): Promise<boolean> {
+    async claimReward(questId: string): Promise<boolean> {
         const completed = await WebRequestManager.instance.claimRewardAsync(questId);
         if (!completed) return false;
-        const rewards = await WebRequestManager.instance.getRewardNewbieLoginAsync()
-        if (rewards != null && rewards.length > 0) {
-            this.setDataReward(rewards);
+        const rewards = await WebRequestManager.instance.getEventRewardAsync();
+        if (rewards != null && rewards.rewards.length > 0) {
+            this.setDataReward(rewards.rewards);
         }
         return true
     }
@@ -84,8 +87,15 @@ export class PopupLoginEvents extends BasePopup {
         Constants.clearCountDown(this.countdownId);
         this.countdownId = null;
     }
+
+    setColorBackground(eventType: EventType) {
+        const index = eventType == EventType.EVENT_LOGIN_PET ? 0 : eventType == EventType.EVENT_LOGIN_PLANT ? 1 : 0;
+        this.backgroundEvent.forEach((element, i) => {
+            element.active = i == index;
+        });
+    }
 }
 export interface PopupLoginEventsParam {
-    rewardNewbieDTOs: RewardNewbieDTO[];
+    rewardEvents: EventRewardDTO;
 }
 

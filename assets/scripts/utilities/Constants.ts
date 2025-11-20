@@ -6,13 +6,13 @@ import { ClanRole, ClansData } from "../Interface/DataMapAPI";
 import { FoodType, InventoryType, ItemType, RewardItemDTO, RewardType } from "../Model/Item";
 import { ConfirmParam, ConfirmPopup } from "../PopUp/ConfirmPopup";
 import { PopupManager } from "../PopUp/PopupManager";
-import { RewardNewType } from "../PopUp/PopupReward";
 import Utilities from "./Utilities";
 import { assetManager } from "cc";
 import { ImageAsset } from "cc";
 import { Texture2D } from "cc";
 import { SpriteFrame } from "cc";
 import { Vec3 } from "cc";
+import { Species } from "../Model/PetDTO";
 
 export class Constants {
 
@@ -25,8 +25,8 @@ export class Constants {
     public static TUTORIAL_CACTH_PET = "tutorialCatchPet";
     public static NOTICE_TRANSFER_DIAMOND = "dont_show_buy_notice";
     public static SHOW_DAILY_QUEST_FIRST_DAY = "show_daily_quest_first_day";
-    public static LAST_VISITED_CLAN ="last_visited_clan";
-    public static TUTORIAL_COMPLETE:string ="tutorial_completed";
+    public static LAST_VISITED_CLAN = "last_visited_clan";
+    public static TUTORIAL_COMPLETE: string = "tutorial_completed";
     public static POSX_PLAYER_INIT = 912;
     public static POSY_PLAYER_INIT = -261;
 
@@ -139,24 +139,6 @@ export class Constants {
         });
     }
 
-    public static mapRewardType(item: RewardItemDTO): RewardNewType {
-        switch (item.type) {
-            case RewardType.GOLD:
-                return RewardNewType.GOLD;
-            case RewardType.DIAMOND:
-                return RewardNewType.DIAMOND;
-            case RewardType.FOOD:
-                switch (item.food.type) {
-                    case FoodType.NORMAL: return RewardNewType.NORMAL_FOOD;
-                    case FoodType.PREMIUM: return RewardNewType.PREMIUM_FOOD;
-                    case FoodType.ULTRA_PREMIUM: return RewardNewType.ULTRA_PREMIUM_FOOD;
-                    default: return RewardNewType.NORMAL_FOOD;
-                }
-            default:
-                return RewardNewType.GOLD; // fallback
-        }
-    }
-
     public static registCountDown(time: number, callbackCountDown: (timeText: string) => void, callBackDone?: () => void): number {
         callbackCountDown(Utilities.secondsToHMS(time));
 
@@ -178,7 +160,7 @@ export class Constants {
             clearInterval(id);
         }
     }
-  
+
     private static _tabMap: Map<string, string> = new Map([
         [ItemType.HAIR, 'Tóc'],
         [ItemType.FACE, 'Mặt'],
@@ -207,7 +189,7 @@ export class Constants {
             title: title,
         };
         PopupManager.getInstance().openPopup("ConfirmPopup", ConfirmPopup, param);
-    }    
+    }
 
     public static loadAvatar(sprite: Sprite, url: string, scaleFactor: number = 62.13): void {
         if (!sprite || !url) return;
@@ -297,5 +279,29 @@ export class Constants {
         const searchKey = newSearch?.trim() ?? '';
         if (searchKey === currentSearch) return null;
         return searchKey;
+    }
+
+    public static getNameItem(reward: RewardItemDTO): string {
+        switch (reward.type) {
+            case RewardType.PET:
+                if (reward.pet == null) return "";
+                return Species[reward.pet.species];
+            case RewardType.ITEM:
+                if (reward.item == null) return "";
+                return reward.item.name;
+            case RewardType.GOLD:
+                return "Vàng";
+            case RewardType.DIAMOND:
+                return "Kim cương";
+            case RewardType.FOOD:
+                switch (reward.food.type) {
+                    case FoodType.NORMAL: return "Thức ăn sơ cấp";
+                    case FoodType.PREMIUM: return "Thức ăn cao cấp";
+                    case FoodType.ULTRA_PREMIUM: return "Thức ăn siêu cao cấp";
+                    default: "";
+                }
+            default:
+                return "";// fallback
+        }
     }
 }
