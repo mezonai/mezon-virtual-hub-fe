@@ -11,7 +11,8 @@ import { PetBattleResult } from '../animal/PetBattleResult';
 import { WebRequestManager } from '../network/WebRequestManager';
 import ConvetData from '../core/ConvertData';
 import { Constants } from '../utilities/Constants';
-import { PopupReward, PopupRewardParam, RewardNewType, RewardStatus } from './PopupReward';
+import { PopupReward, PopupRewardParam, RewardStatus } from './PopupReward';
+import { RewardItemDTO, RewardType } from '../Model/Item';
 const { ccclass, property } = _decorator;
 
 export enum StatusBattle {
@@ -54,11 +55,13 @@ export class PopupWinLoseBattle extends BasePopup {
         });
     }
     async showPopupReward(param: WinLoseBattleParam) {
+        const reward = new RewardItemDTO();
+        reward.type = RewardType.DIAMOND;
+        reward.quantity = param.dimondChallenge;
         const paramPopup: PopupRewardParam = {
-            rewardType: RewardNewType.DIAMOND,
-            quantity: param.dimondChallenge,
             status: param.statusBattle == StatusBattle.WIN ? RewardStatus.GAIN : RewardStatus.LOSS,
             content: param.statusBattle == StatusBattle.WIN ? "Chúc mừng bạn đã chiến thắng" : " Chia buồn cùng bạn",
+            reward: reward
         };
         const popup = await PopupManager.getInstance().openPopup('PopupReward', PopupReward, paramPopup);
         await PopupManager.getInstance().waitCloseAsync((await popup).node.uuid);

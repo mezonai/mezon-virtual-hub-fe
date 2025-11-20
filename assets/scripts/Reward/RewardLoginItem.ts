@@ -7,7 +7,7 @@ import { FoodType, ItemType, QuestType, RewardItemDTO, RewardNewbieDTO, RewardTy
 import { Color } from 'cc';
 import { Species } from '../Model/PetDTO';
 import { WebRequestManager } from '../network/WebRequestManager';
-import { PopupReward, PopupRewardParam, RewardNewType, RewardStatus } from '../PopUp/PopupReward';
+import { PopupReward, PopupRewardParam, RewardStatus } from '../PopUp/PopupReward';
 import { Constants } from '../utilities/Constants';
 import { PopupManager } from '../PopUp/PopupManager';
 import { PopupGetPet, PopupGetPetParam } from '../PopUp/PopupGetPet';
@@ -62,15 +62,12 @@ export class RewardLoginItem extends Component {
             await PopupManager.getInstance().openPopup('PopupGetPet', PopupGetPet, param);
             return;
         }
-        const type = Constants.mapRewardType(reward);
-        const name = type == RewardNewType.NORMAL_FOOD ? "Thức ăn sơ cấp" : type == RewardNewType.PREMIUM_FOOD ? "Thức ăn cao cấp"
-            : type == RewardNewType.ULTRA_PREMIUM_FOOD ? "Thức ăn siêu cao cấp" : type == RewardNewType.GOLD ? "Vàng" : "Kim cương";
+        const name = Constants.getNameItem(reward);
         const content = `Chúc mừng bạn nhận thành công ${name}`;
         const paramPopup: PopupRewardParam = {
-            rewardType: type,
-            quantity: reward.quantity,
             status: RewardStatus.GAIN,
             content: content,
+            reward: reward
         };
         await PopupManager.getInstance().openPopup('PopupReward', PopupReward, paramPopup);
     }
