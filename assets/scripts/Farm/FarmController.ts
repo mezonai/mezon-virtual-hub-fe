@@ -52,7 +52,7 @@ export class FarmController extends Component {
       return;
     }
 
-    const inventory = await WebRequestManager.instance.getClanWarehousesAsync(UserMeManager.CurrentOffice.idclan);
+    const inventory = await WebRequestManager.instance.getClanWarehousesAsync(UserMeManager.Get.clan.id);
     if (!inventory || inventory.length === 0) {
       Constants.showConfirm("Hiện tại bạn không có cây nào trong kho để trồng.");
       return;
