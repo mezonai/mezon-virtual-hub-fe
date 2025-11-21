@@ -65,7 +65,7 @@ export class WebRequestManager extends Component {
                     );
 
                     if (GameManager.instance) {
-                        GameManager.instance.playerHubController.showNoticeDailyReward(hasAvailableReward);
+                        GameManager.instance.playerHubController.showNoticeLoginNewbie(hasAvailableReward);
                     }
 
                     resolve(rewardData);
@@ -82,6 +82,13 @@ export class WebRequestManager extends Component {
             WebRequestManager.instance.getEventReward(
                 (response) => {
                     const rewardData = ConvetData.ConvertEventReward(response.data);
+                    const hasAvailableReward = rewardData?.rewards.some(
+                        (reward: RewardNewbieDTO) => !reward.is_claimed && reward.is_available
+                    );
+
+                    if (GameManager.instance) {
+                        GameManager.instance.playerHubController.showNoticeLoginEvent(hasAvailableReward);
+                    }
                     resolve(rewardData);
                 },
                 (error) => {

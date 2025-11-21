@@ -75,6 +75,7 @@ export class RewardNewbieDTO {
 
 export class EventRewardDTO {
     public rewards: RewardNewbieDTO[];
+    public isShowFirstDay: boolean = false;
     public eventType: EventType;
 }
 

@@ -9,22 +9,26 @@ import { PopupOwnedAnimals } from '../PopUp/PopupOwnedAnimals';
 import { PopupClanList } from '../PopUp/PopupClanList';
 import { PopupClanDetailInfo } from '../PopUp/PopupClanDetailInfo';
 import { UserMeManager } from '../core/UserMeManager';
+import { Vec3 } from 'cc';
+import { Tween } from 'cc';
+import { tween } from 'cc';
+import { LoginEventController } from '../gameplay/LoginEvent/LoginEventController';
 
 const { ccclass, property } = _decorator;
 
 @ccclass('PlayerHubController')
 export class PlayerHubController extends Component {
+    @property(LoginEventController) private loginEventController: LoginEventController = null;
     @property(Button) private btn_UIInventory: Button = null!;
     @property(Button) private btn_UISetting: Button = null!;
     @property(Button) private btn_UIMission: Button = null!;
     @property(Button) private showOwnedButton: Button;
-    @property(Button) private btn_UIDailyReward: Button = null!;
     @property(Button) private btn_UIGuildReward: Button = null!;
     @property(Node) private redDotNoticeMission: Node = null!;
-    @property(Node) private redDotDailyReward: Node = null!;
     @property(Node) private blockInteractHarvest: Node = null!;
 
     onLoad() {
+        this.loginEventController.setData();
         this.btn_UIInventory.addAsyncListener(async () => {
             this.btn_UIInventory.interactable = false;
             await PopupManager.getInstance().openAnimPopup("UIInventory", InventoryManager);
@@ -47,39 +51,44 @@ export class PlayerHubController extends Component {
         });
         this.btn_UIGuildReward.addAsyncListener(async () => {
             this.btn_UIGuildReward.interactable = false;
-            if(UserMeManager.Get.clan){
+            if (UserMeManager.Get.clan) {
                 await PopupManager.getInstance().openAnimPopup('UI_ClanDetailInfo', PopupClanDetailInfo);
             }
-            else{
+            else {
                 await PopupManager.getInstance().openAnimPopup('UI_ClanList', PopupClanList);
             }
             this.btn_UIGuildReward.interactable = true;
         });
-        this.btn_UIDailyReward.addAsyncListener(async () => {
-            this.btn_UIDailyReward.interactable = false;
-            const rewards = await WebRequestManager.instance.getRewardNewbieLoginAsync()
-            if (rewards != null && rewards.length > 0) {
-                const param: PopupLoginQuestParam = {
-                    rewardNewbieDTOs: rewards,
-                };
-                await PopupManager.getInstance().openPopup('PopupLoginQuest', PopupLoginQuest, param);
-            }
-            this.btn_UIDailyReward.interactable = true;
-        });
+    }
+
+    onClickButtonA() {
+
     }
 
     onMissionNotice(isShow: boolean) {
         this.redDotNoticeMission.active = isShow;
     }
 
-    showNoticeDailyReward(isShow: boolean) {
-        this.redDotDailyReward.active = isShow;
+    showNoticeLoginNewbie(isShow: boolean) {
+        if (this.loginEventController == null) return;
+        this.loginEventController.showNoticeLoginNewbieReward(isShow);
     }
 
-    showUIDailyReward(isShow: boolean){
-        this.btn_UIDailyReward.node.active = isShow;
+    showNoticeLoginEvent(isShow: boolean) {
+        if (this.loginEventController == null) return;
+        this.loginEventController.showNoticeLoginEventReward(isShow);
     }
-    
+
+    showButtonLoginNewbie(isShow: boolean) {
+        if (this.loginEventController == null) return;
+        this.loginEventController.showButtonLoginNewbie(isShow);
+    }
+
+    showButtonLoginEvent(isShow: boolean) {
+        if (this.loginEventController == null) return;
+        this.loginEventController.showButtonLoginEvent(isShow);
+    }
+
     public showBlockInteractHarvest(isBlock: boolean) {
         this.blockInteractHarvest.active = isBlock;
     }

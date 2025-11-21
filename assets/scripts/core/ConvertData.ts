@@ -478,11 +478,13 @@ export default class ConvetData {
         return rewardNewbie;
     }
 
-    public static ConvertEventReward(data: any): EventRewardDTO {       
-        if (data == null) return null;      
-         const eventReward = new EventRewardDTO();
-        eventReward.eventType = EventType.EVENT_LOGIN_PLANT;
+    public static ConvertEventReward(data: any): EventRewardDTO {
+        if (data == null) return null;
+        const eventReward = new EventRewardDTO();
+        eventReward.eventType = data.event_type as EventType;
+        eventReward.isShowFirstDay = data.show_event_auto;
         eventReward.rewards = this.ConvertRewardNewbieList(data.data);
+        console.log("eventReward: ", eventReward);
         return eventReward;
     }
 

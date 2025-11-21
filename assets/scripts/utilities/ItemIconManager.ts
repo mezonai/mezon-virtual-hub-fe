@@ -44,8 +44,6 @@ export class ItemIconManager extends Component {
 
     private getIconValue(itemType: RewardType): SpriteFrame {
         const index = itemType == RewardType.DIAMOND ? 0 : 1;
-        console.log("Index", index);
-        console.log("this.iconRewards", this.iconRewards);
         return this.iconRewards[index];
     }
 
