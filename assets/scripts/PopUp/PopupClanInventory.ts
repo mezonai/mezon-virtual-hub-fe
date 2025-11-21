@@ -84,7 +84,7 @@ export class PopupClanInventory extends BasePopup {
     }
 
     public async GetClanWareHouse() {
-        this.clanWarehouseSlot = await WebRequestManager.instance.getClanWarehousesAsync(UserMeManager.CurrentOffice.idclan);
+        this.clanWarehouseSlot = await WebRequestManager.instance.getClanWarehousesAsync(this.clanDetail.id);
         this.noItemPanel.active = !this.clanWarehouseSlot || this.clanWarehouseSlot.length === 0;
         if (!this.clanWarehouseSlot || this.clanWarehouseSlot.length === 0) return;
         this.detailMain.active = true;
