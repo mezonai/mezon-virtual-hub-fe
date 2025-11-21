@@ -11,6 +11,8 @@ import { Constants } from '../utilities/Constants';
 import { BuyItemPayload, InventoryType, PurchaseMethod, RewardType } from '../Model/Item';
 import { UserMeManager } from '../core/UserMeManager';
 import { ServerManager } from '../core/ServerManager';
+import { Sprite } from 'cc';
+import { ItemIconManager } from '../utilities/ItemIconManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('PopupClanShop')
@@ -26,6 +28,7 @@ export class PopupClanShop extends BasePopup {
     @property(Prefab) itemPrefab: Prefab = null!;
     @property(ScrollView) svShopClan: ScrollView = null!;
     @property({ type: IconItemUIHelper }) iconItemUIHelper: IconItemUIHelper = null;
+    @property({ type: Sprite }) sprite: IconItemUIHelper = null;
 
     private clanDetail: ClansData;
     private plantDataDTO: PlantDataDTO[] = [];
@@ -112,7 +115,7 @@ export class PopupClanShop extends BasePopup {
             this.isOpenPopUp = true;
             const param: PopupBuyQuantityItemParam = {
                 selectedItemPrice: this.selectingUIItem.plant.buy_price,
-                spriteMoneyValue: this.iconItemUIHelper.getMoneyIcon(RewardType.GOLD),
+                spriteMoneyValue: ItemIconManager.getInstance().getIconPurchaseMethod(RewardType.GOLD),
                 textButtonLeft: "Thôi",
                 textButtonRight: "Mua",
                 onActionButtonLeft: () => {

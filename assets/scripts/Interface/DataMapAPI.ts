@@ -141,6 +141,7 @@ export class ClanFundPayload {
 export interface ClanFundItemDTO {
     type: string;
     amount: number;
+    spent_amount:number
 }
 
 export interface ClanFundResponseDTO {
