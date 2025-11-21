@@ -79,8 +79,11 @@ export class GameManager extends Component {
 
     async getNewbieReward() {
         const rewards = await WebRequestManager.instance.getRewardNewbieLoginAsync();
-        if (!rewards || rewards.length === 0) return;
-        GameManager.instance.playerHubController.showUIDailyReward(true);
+        if (!rewards || rewards.length === 0) {
+            GameManager.instance.playerHubController.showButtonLoginNewbie(false);
+            return;
+        }
+        GameManager.instance.playerHubController.showButtonLoginNewbie(true);
         const today = new Date().toISOString().split('T')[0]; // yyyy-mm-dd
         const lastLogged = localStorage.getItem(Constants.SHOW_DAILY_QUEST_FIRST_DAY);
         if (lastLogged !== today) {
@@ -100,7 +103,12 @@ export class GameManager extends Component {
 
     async getEventReward() {
         const eventReward = await WebRequestManager.instance.getEventRewardAsync();
-        if (!eventReward || eventReward.rewards.length == 0) return;
+        if (!eventReward || eventReward.rewards.length == 0) {
+            GameManager.instance.playerHubController.showButtonLoginEvent(false);
+            return;
+        }
+        if (!eventReward.isShowFirstDay) return;// ko show nhưng có event nên ko tắt nút
+        GameManager.instance.playerHubController.showButtonLoginEvent(true);
         const param: PopupLoginEventsParam = {
             rewardEvents: eventReward,
         };
