@@ -484,7 +484,6 @@ export default class ConvetData {
         eventReward.eventType = data.event_type as EventType;
         eventReward.isShowFirstDay = data.show_event_auto;
         eventReward.rewards = this.ConvertRewardNewbieList(data.data);
-        console.log("eventReward: ", eventReward);
         return eventReward;
     }
 
