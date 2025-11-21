@@ -1,8 +1,11 @@
 import { SpriteFrame } from 'cc';
 import { director } from 'cc';
 import { _decorator, Component, Node } from 'cc';
-import { FoodType, Item, ItemCode, ItemType, RewardItemDTO, RewardType } from '../Model/Item';
+import { Food, FoodType, Item, ItemCode, ItemType, RewardItemDTO, RewardType } from '../Model/Item';
 import { Species } from '../Model/PetDTO';
+import { LocalItemDataConfig } from '../Model/LocalItemConfig';
+import { ResourceManager } from '../core/ResourceManager';
+import { LoadBundleController } from '../bundle/LoadBundleController';
 const { ccclass, property } = _decorator;
 
 @ccclass('ItemIconManager')
@@ -29,7 +32,7 @@ export class ItemIconManager extends Component {
     getIconReward(reward: RewardItemDTO): SpriteFrame {
         switch (reward.type) {
             case RewardType.ITEM:
-                return this.getIconCard(reward.item);
+                return this.getIconItem(reward.item);
             case RewardType.FOOD:
                 return this.getIconFood(reward.food.type);
             case RewardType.GOLD:
@@ -42,6 +45,26 @@ export class ItemIconManager extends Component {
         }
     }
 
+    getIconFoodDto(food: Food): SpriteFrame {
+        return this.getIconFood(food.type);
+    }
+
+    async getIconItemDto(item: Item): Promise<SpriteFrame> {
+        if (item == null) return this.defaultIcon;
+        if (item.type === ItemType.PET_CARD) {
+            const index = item.item_code == ItemCode.RARITY_CARD_RARE ? 0 : item.item_code == ItemCode.RARITY_CARD_EPIC ? 1 : 2;
+            return this.iconCardRewards[index];
+        }
+        else{
+            const localData = this.getLocalData(item);
+            return this.getSkinSprite(localData, item);
+        }
+    }
+
+    getIconPurchaseMethod(itemType: RewardType): SpriteFrame {
+        return this.getIconValue(itemType);
+    }
+    
     private getIconValue(itemType: RewardType): SpriteFrame {
         const index = itemType == RewardType.DIAMOND ? 0 : 1;
         return this.iconRewards[index];
@@ -59,7 +82,7 @@ export class ItemIconManager extends Component {
         return found || this.iconPetRewards[0];
     }
 
-    private getIconCard(item: Item): SpriteFrame {
+    private getIconItem(item: Item): SpriteFrame {
         if (item == null) return this.defaultIcon;
         if (item.type === ItemType.PET_CARD) {
             const index = item.item_code == ItemCode.RARITY_CARD_RARE ? 0 : item.item_code == ItemCode.RARITY_CARD_EPIC ? 1 : 2;
@@ -68,6 +91,29 @@ export class ItemIconManager extends Component {
         return this.defaultIcon;
     }
 
+    private async loadSkinIcon(bundleName: string, bundlePath: string) {
+        const bundleData = { bundleName, bundlePath };
+        return await LoadBundleController.instance.spriteBundleLoader.getBundleData(bundleData);
+    }
+
+    private getLocalData(item: Item) {
+        if (!item) return null;
+        return ResourceManager.instance.getLocalSkinById(item.id, item.type);
+    }
+
+    private async getSkinSprite(localData: LocalItemDataConfig, item: Item): Promise<SpriteFrame> {
+        if (!localData) return null;
+
+        if (!item.iconSF || item.iconSF.length === 0) {
+            item.iconSF = [];
+            for (const icon of localData.icons) {
+                const spriteFrame = await this.loadSkinIcon(localData.bundleName, icon);
+                item.iconSF.push(spriteFrame);
+            }
+        }
+        item.mappingLocalData = localData;
+        return item.iconSF[0];
+    }
 }
 
 

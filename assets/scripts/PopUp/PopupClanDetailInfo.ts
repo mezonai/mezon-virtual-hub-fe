@@ -8,7 +8,7 @@ import { PopupClanLeaderboard } from './PopupClanLeaderboard';
 import { PopupClanFundMember, PopupClanFundMemberParam } from './PopupClanFundMember';
 import { PopupClanInventory, PopupClanInventoryParam } from './PopupClanInventory';
 import { AvatarIconHelper } from '../Clan/AvatarIconHelper';
-import { ClanDescriptionDTO, ClansData } from '../Interface/DataMapAPI';
+import { ClanDescriptionDTO, ClanFundResponseDTO, ClansData } from '../Interface/DataMapAPI';
 import { UserMeManager } from '../core/UserMeManager';
 import { PopupSelectionMini } from './PopupSelectionMini';
 import { Constants } from '../utilities/Constants';
@@ -36,6 +36,7 @@ export class PopupClanDetailInfo extends BasePopup {
 
     private clanDetail: ClansData;
     private clanFund: number;
+    private clanFundUsed: number;
     private descriptionNotice: ClanDescriptionDTO;
     private _description:string;
 
@@ -59,7 +60,7 @@ export class PopupClanDetailInfo extends BasePopup {
                 clanDetail: this.clanDetail,
                 onUpdateFund: (newFund: number) => {
                     this.clanFund = newFund;
-                    this.setDataDundClan(newFund);
+                    this.setDataFundClan(newFund);
                 }
             }
             await PopupManager.getInstance().openAnimPopup("UI_ClanInventory", PopupClanInventory, param);
@@ -68,13 +69,18 @@ export class PopupClanDetailInfo extends BasePopup {
 
         this.contributeBtn.addAsyncListener(async () => {
             this.contributeBtn.interactable = false;
+            const value = await WebRequestManager.instance.getClanFundAsync(this.clanDetail.id);
+            const newFund = value?.funds.find(f => f.type === "gold")?.amount ?? 0;
+            const newSpent = value?.funds.find(f => f.type === "gold")?.spent_amount ?? 0;
+
             const param: PopupClanFundMemberParam =
             {
                 clanDetail: this.clanDetail,
-                clanFund: this.clanFund,
+                clanFund: newFund,
+                clanFundUsed: newSpent,
                 onUpdateFund: (newFund: number) => {
                     this.clanFund = newFund;
-                    this.totalClanFund.string = `<outline color=#222222 width=1>${newFund}</outline>`;
+                    this.setDataFundClan(newFund);
                 }
             }
             await PopupManager.getInstance().openAnimPopup("UI_ClanFundMember", PopupClanFundMember, param);
@@ -167,15 +173,15 @@ export class PopupClanDetailInfo extends BasePopup {
 
     async getMyClan() {
         this.clanDetail = await WebRequestManager.instance.getClanDetailAsync(UserMeManager.Get.clan.id);
-
         const value = await WebRequestManager.instance.getClanFundAsync(UserMeManager.Get.clan.id);
         this.clanFund = value?.funds.find(f => f.type === "gold")?.amount ?? 0;
-        this.setDataDundClan(this.clanFund);
+        this.clanFundUsed = value?.funds.find(f => f.type === "gold")?.spent_amount ?? 0;
+        this.setDataFundClan(this.clanFund);
         this.setDataMyClanInfo(this.clanDetail);
     }
 
-    public setDataDundClan(value: Number){
-         this.totalClanFund.string = ` <outline color=#222222 width=1> ${value}</outline>`;
+    public setDataFundClan(value: Number){
+        this.totalClanFund.string = ` <outline color=#222222 width=1> ${value}</outline>`;
     }
 
     setDataMyClanInfo(clanData: ClansData) {

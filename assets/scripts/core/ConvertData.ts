@@ -100,6 +100,7 @@ export default class ConvetData {
                 ? d.funds.map((f: any) => ({
                     type: f.type,
                     amount: Number(f.amount ?? 0),
+                    spent_amount: Number(f.spent_amount ?? 0),
                 }))
                 : [],
         };
