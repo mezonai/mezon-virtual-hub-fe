@@ -11,6 +11,7 @@ import { FoodType, RewardNewbieDTO, RewardType } from '../Model/Item';
 import { PopupLoginQuest, PopupLoginQuestParam } from '../PopUp/PopupLoginQuest';
 import { PlayerHubController } from '../ui/PlayerHubController';
 import { PopupLoginEvents, PopupLoginEventsParam } from '../PopUp/PopupLoginEvents';
+import { PopupTutorialFarm, PopupTutorialFarmParam } from '../PopUp/PopupTutorialFarm';
 
 const { ccclass, property } = _decorator;
 
@@ -52,15 +53,27 @@ export class GameManager extends Component {
         if (localStorage.getItem(Constants.TUTORIAL_CACTH_PET) === null) {
             const param: PopupTutorialCatchPetParam = {
                 onActionCompleted: async () => {
+                    await this.tuturialFarm();
                     await runRewards();
                 },
             };
             await PopupManager.getInstance().openPopup("PopupTutorialCatchPet", PopupTutorialCatchPet, param);
             return;
         }
-        await runRewards();
-    }
+        const param: PopupTutorialFarmParam = {
+        };
 
+        await runRewards();
+
+    }
+    async tuturialFarm() {
+        if (localStorage.getItem(Constants.TUTORIAL_FARM) !== null) return;
+        const param: PopupTutorialFarmParam = {
+        };
+        const popup = await PopupManager.getInstance().openPopup("PopupTutorialFarm", PopupTutorialFarm, param);
+        await PopupManager.getInstance().waitCloseAsync(popup.node.uuid);
+
+    }
     async getReward() {
         const rewardItems = await WebRequestManager.instance.postGetRewardAsync();
         if (rewardItems.length <= 0) return;
