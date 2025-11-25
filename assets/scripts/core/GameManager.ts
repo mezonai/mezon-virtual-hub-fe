@@ -12,6 +12,7 @@ import { PopupLoginQuest, PopupLoginQuestParam } from '../PopUp/PopupLoginQuest'
 import { PlayerHubController } from '../ui/PlayerHubController';
 import { PopupLoginEvents, PopupLoginEventsParam } from '../PopUp/PopupLoginEvents';
 import { PopupTutorialFarm, PopupTutorialFarmParam } from '../PopUp/PopupTutorialFarm';
+import { UserManager } from './UserManager';
 
 const { ccclass, property } = _decorator;
 
@@ -31,10 +32,18 @@ export class GameManager extends Component {
         }
     }
 
-    public init() {
+    public async init() {
         this.uiMission.getMissionEventData();
         this.resetNoticeTrandferDiamon();
-        this.tutorialCacthPet();
+        const runRewards = async () => {
+
+            await this.getEventReward();
+            await this.getNewbieReward();
+            await this.getReward();
+        };
+        await this.tutorialCacthPet();
+        await this.tuturialFarm();
+        await runRewards();
     }
 
     resetNoticeTrandferDiamon() {
@@ -45,34 +54,24 @@ export class GameManager extends Component {
 
     async tutorialCacthPet() {
         await WebRequestManager.instance.checkUnclaimedQuest();
-        const runRewards = async () => {
-            await this.getEventReward();
-            await this.getNewbieReward();
-            await this.getReward();
-        };
         if (localStorage.getItem(Constants.TUTORIAL_CACTH_PET) === null) {
             const param: PopupTutorialCatchPetParam = {
                 onActionCompleted: async () => {
-                    await this.tuturialFarm();
-                    await runRewards();
                 },
             };
-            await PopupManager.getInstance().openPopup("PopupTutorialCatchPet", PopupTutorialCatchPet, param);
-            return;
+            const popup = await PopupManager.getInstance().openPopup("PopupTutorialCatchPet", PopupTutorialCatchPet, param);
+            await PopupManager.getInstance().waitCloseAsync(popup.node.uuid);
         }
-        const param: PopupTutorialFarmParam = {
-        };
-
-        await runRewards();
-
     }
     async tuturialFarm() {
         if (localStorage.getItem(Constants.TUTORIAL_FARM) !== null) return;
         const param: PopupTutorialFarmParam = {
         };
         const popup = await PopupManager.getInstance().openPopup("PopupTutorialFarm", PopupTutorialFarm, param);
+        await Constants.waitUntil(() => UserManager.instance != null && UserManager.instance.GetMyClientPlayer != null && UserManager.instance.GetMyClientPlayer.get_MoveAbility != null);
+        UserManager.instance.GetMyClientPlayer.get_MoveAbility.StopMove();
         await PopupManager.getInstance().waitCloseAsync(popup.node.uuid);
-
+        UserManager.instance.GetMyClientPlayer.get_MoveAbility.startMove();
     }
     async getReward() {
         const rewardItems = await WebRequestManager.instance.postGetRewardAsync();
