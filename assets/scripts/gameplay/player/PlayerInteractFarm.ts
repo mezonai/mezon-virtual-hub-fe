@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, Sprite, Label, tween, Tween} from 'cc';
+import { _decorator, Component, Node, Sprite, Label, tween, Tween } from 'cc';
 import { PopupManager } from '../../PopUp/PopupManager';
 import { PopupSelectionMini, SelectionMiniParam } from '../../PopUp/PopupSelectionMini';
 import { ServerManager } from '../../core/ServerManager';
@@ -14,34 +14,45 @@ export class PlayerInteractFarm extends Component {
     public isHarvesting: boolean;
     public currentHarvestSlotId: string | null = null;
 
+
     public showHarvestingBar(endTime?: number, slotId?: string) {
         if (!slotId || !this.harvestProgressBar || !this.harvestFillSprite) return;
         this.currentHarvestSlotId = slotId;
         this.isHarvesting = true;
-        const now = Date.now();
-        const duration = endTime ? Math.max(endTime - now, 0) : 10000;
-        if (duration <= 0) {
-            this.hideHarvestingBar();
-            return;
-        }
+        this.playAnimHarvest(endTime)
+    }
+    public playAnimHarvest(endTime?: number): Promise<void> {
+        return new Promise((resolve) => {
+            const now = Date.now();
+            const duration = endTime ? Math.max(endTime - now, 0) : 10000;
 
-        this.harvestProgressBar.active = true;
-        this.harvestFillSprite.fillRange = 0;
-        let lastPercent = -1;
-        this.harvestTween = tween(this.harvestFillSprite)
-            .to(duration / 1000, { fillRange: 1 }, {
-                onUpdate: (target: Sprite) => {
-                    const percent = Math.floor(target.fillRange * 100);
-                    if (percent !== lastPercent) {
-                        lastPercent = percent;
-                        this.contentBubbleChat.string = `Thu hoạch:${percent}%`;
-                    }
-                },
-            })
-            .call(() => {
+            if (duration <= 0) {
                 this.hideHarvestingBar();
-            })
-            .start();
+                resolve();
+                return;
+            }
+
+            this.harvestProgressBar.active = true;
+            this.harvestFillSprite.fillRange = 0;
+
+            let lastPercent = -1;
+
+            this.harvestTween = tween(this.harvestFillSprite)
+                .to(duration / 1000, { fillRange: 1 }, {
+                    onUpdate: (target: Sprite) => {
+                        const percent = Math.floor(target.fillRange * 100);
+                        if (percent !== lastPercent) {
+                            lastPercent = percent;
+                            this.contentBubbleChat.string = `Thu hoạch:${percent}%`;
+                        }
+                    },
+                })
+                .call(() => {
+                    this.hideHarvestingBar();
+                    resolve(); // ⭐ Promise hoàn thành
+                })
+                .start();
+        });
     }
 
     public showHarvestingComplete() {
@@ -62,7 +73,7 @@ export class PlayerInteractFarm extends Component {
     }
 
     public OnActionInterruptHarvest() {
-        if(!this.currentHarvestSlotId) return;
+        if (!this.currentHarvestSlotId) return;
         const param: SelectionMiniParam = {
             title: "Chú ý",
             content: `Bạn có chắc chắn muốn phá người chơi đang thu hoạch`,
@@ -76,7 +87,7 @@ export class PlayerInteractFarm extends Component {
                 }
                 ServerManager.instance.sendInterruptHarvest(data)
             },
-            onActionButtonRight: () => {},
+            onActionButtonRight: () => { },
         };
         PopupManager.getInstance().openAnimPopup("PopupSelectionMini", PopupSelectionMini, param);
     }

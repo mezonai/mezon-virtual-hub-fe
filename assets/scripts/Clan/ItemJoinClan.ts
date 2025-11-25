@@ -27,7 +27,7 @@ export class ItemJoinClan extends Component {
         this.nameOfficeLabel.string = data.name;
         this.memberLabel.string = `${data.member_count === 0 ? '--' : data.member_count.toString()}`;
         this.totalScoreLabel.string = data.score === 0 ? '--' : data.score.toString();
-        
+
         const status = data.join_status ?? ClanStatus.NONE;
         this.updateStatus(status);
         this.joinButton.addAsyncListener(async () => {
@@ -61,6 +61,10 @@ export class ItemJoinClan extends Component {
 
     public updateStatus(status: ClanStatus) {
         this.clanDetail.join_status = status;
+        this.updateUIByStatus(status);
+    }
+
+    public updateUIByStatus(status: ClanStatus) {
         this.joinLabel.string = (status === ClanStatus.PENDING)
             ? "<outline color=#222222 width=1>  Chờ duyệt </outline>"
             : "<outline color=#222222 width=1>  Gia Nhập </outline>";

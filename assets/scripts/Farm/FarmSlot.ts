@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, Sprite, Prefab, instantiate, Button,tween } from "cc";
+import { _decorator, Component, Node, Sprite, Prefab, instantiate, Button, tween } from "cc";
 import { Plant } from "./Plant";
 import { FarmSlotDTO, PlantData, PlantState, PlantToSlotPayload } from "./EnumPlant";
 import { FarmController } from "./FarmController";
@@ -15,18 +15,34 @@ export class FarmSlot extends Component {
   @property(Sprite) landSprite: Sprite = null!;
   @property(Prefab) plantPrefab: Prefab = null!;
   @property(Node) plantParent: Node = null!;
-  @property(Node) interactAction: Node = null!;
+  @property(Node) public interactAction: Node = null!;
   @property(Node) waterPlantAnim: Node = null!;
   @property(Node) catchBugAnim: Node = null!;
   @property(Node) harvestAnim: Node = null!;
-  @property(Button) waterPlantBtn: Button = null!;
-  @property(Button) catchBugBTn: Button = null!;
-  @property(Button) harvestBtn: Button = null!;
+  @property(Button) public waterPlantBtn: Button = null!;
+  @property(Button) public catchBugBTn: Button = null!;
+  @property(Button) public harvestBtn: Button = null!;
 
   public data: FarmSlotDTO = null!;
   public plant: Plant | null = null;
 
-  start(): void {
+  public setup(data: FarmSlotDTO) {
+    this.data = data;
+
+    if (this.hasPlant(data.currentPlant)) {
+      if (this.plant) {
+        this.plant.unscheduleAllCallbacks();
+        this.plant.setup(data.currentPlant);
+      } else {
+        this.spawnPlant(data.currentPlant);
+      }
+    }
+    else {
+      this.plantParent.removeAllChildren();
+      this.plant = null;
+      this.resetInteractButtons();
+    }
+
     this.waterPlantBtn.addAsyncListener(async () => {
       this.waterPlantBtn.interactable = false;
       await this.waterPlant();
@@ -44,29 +60,11 @@ export class FarmSlot extends Component {
     });
   }
 
-  public setup(data: FarmSlotDTO) {
-    this.data = data;
-    
-    if (this.hasPlant(data.currentPlant)) {
-      if (this.plant) {
-        this.plant.unscheduleAllCallbacks();
-        this.plant.setup(data.currentPlant);
-      } else {
-        this.spawnPlant(data.currentPlant);
-      }
-    }
-    else {
-      this.plantParent.removeAllChildren();
-      this.plant = null;
-      this.resetInteractButtons();
-    }
-  }
-
   private hasPlant(plantData: PlantData | null | undefined): boolean {
     return !!plantData && plantData.id && plantData.id.trim() !== "";
   }
 
-  private spawnPlant(plantData: PlantData) {
+  public spawnPlant(plantData: PlantData) {
     const prefab = instantiate(this.plantPrefab);
     prefab.setParent(this.plantParent);
     const plant = prefab.getComponent(Plant)!;
@@ -149,7 +147,7 @@ export class FarmSlot extends Component {
     const param: PlantToSlotPayload = {
       farm_slot_id: this.data.id,
     }
-   
+
     UserManager.instance.GetMyClientPlayer.get_MoveAbility.StopMove();
     GameManager.instance.playerHubController.showBlockInteractHarvest(true);
     ServerManager.instance.sendHarvest(param);
@@ -169,22 +167,30 @@ export class FarmSlot extends Component {
     this.harvestAnim.active = isShow;
   }
 
-  public PlayWaterPlantAnim(isShow: boolean) {
-    this.waterPlantAnim.active = isShow;
-    if (isShow)
-      tween(this.waterPlantAnim)
-        .delay(2)
-        .call(() => (this.waterPlantAnim.active = false))
-        .start();
+  public  PlayWaterPlantAnim(isShow: boolean) {
+    return this.playAnimWithDelay(this.waterPlantAnim, isShow);
   }
 
   public PlayCatchBugAnim(isShow: boolean) {
-    this.catchBugAnim.active = isShow;
-    if (isShow)
-      tween(this.catchBugAnim)
-        .delay(2)
-        .call(() => (this.catchBugAnim.active = false))
-        .start();
+    return this.playAnimWithDelay(this.catchBugAnim, isShow);
   }
 
+  private playAnimWithDelay(node: Node, isShow: boolean, delaySec: number = 2): Promise<void> {
+    return new Promise((resolve) => {
+      node.active = isShow;
+
+      if (!isShow) {
+        resolve();
+        return;
+      }
+
+      tween(node)
+        .delay(delaySec)
+        .call(() => {
+          node.active = false;
+          resolve();
+        })
+        .start();
+    });
+  }
 }
