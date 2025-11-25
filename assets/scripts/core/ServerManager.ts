@@ -562,10 +562,13 @@ export class ServerManager extends Component {
                     myPlayer.playerInteractFarm.showHarvestingComplete();
                     FarmController.instance.UpdateSlotAction(data.slotId, SlotActionType.Harvest, false);
                     myPlayer.zoomBubbleChat("Mình đã thu hoạch xong!");
-                    if (data.remainingHarvest) {
-                        Constants.showConfirm(`Lượt thu hoạch còn lại của bạn là: ${data.remainingHarvest}/${data.maxHarvest} trong hôm nay`);
-                    }
-                }
+                    Constants.showConfirm(`Điểm thu hoạch gốc: ${data?.basePoint ?? 'Không rõ'}\n` + 
+                        `Điểm chăm sóc: ${data?.careBonus ?? 'Không rõ'} %\n` +
+                        `Điểm văn phòng: ${data?.clanMultiplier ?? 'Không rõ'} \n` +
+                        `Tổng điểm văn phòng: ${data?.totalScore ?? 'Không rõ'}\n` +
+                        `Lượt thu hoạch còn lại: ${data?.remainingHarvest ?? 'Không rõ'}/${data?.maxHarvest ?? 'Không rõ'} trong hôm nay
+                    `);
+}
                 return;
             }
             else
