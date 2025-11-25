@@ -25,13 +25,13 @@ export class ItemHistoryClan extends Component {
                 text = ` - ${data.userName} mua ${data.quantity ?? 0} x ${Constants.getPlantName(data.itemName).toLowerCase()  || 'vật phẩm'} lúc ${data.time}`;
                 break;
             case ClanActivityActionType.FUND:
-                text = ` - ${data.userName} nộp ${data.amount ?? 0} vào quỹ clan lúc ${data.time}`;
+                text = ` - ${data.userName} nộp ${data.amount ?? 0} vào quỹ văn phòng lúc ${data.time}`;
                 break;
             case ClanActivityActionType.JOIN:
-                text = ` - ${data.userName} đã tham gia clan lúc ${data.time}`;
+                text = ` - ${data.userName} đã tham gia văn phòng lúc ${data.time}`;
                 break;
             case ClanActivityActionType.LEAVE:
-                text = ` - ${data.userName} đã rời clan lúc ${data.time}`;
+                text = ` - ${data.userName} đã rời văn phòng lúc ${data.time}`;
                 break;
             default:
                 text = ` - ${data.userName} thực hiện ${data.actionType} lúc ${data.time}`;

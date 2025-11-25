@@ -140,6 +140,7 @@ export class PopupClanDetailInfo extends BasePopup {
                     const res = await WebRequestManager.instance.postLeaveClanAsync(UserMeManager.Get.clan.id);
                     if (res && !res.clan) {
                         await Promise.all([
+                            WebRequestManager.instance.getUserProfileAsync(),
                             PopupManager.getInstance().closePopup(this.node.uuid),
                             PopupManager.getInstance().closePopup(panel.node.uuid),
                         ]);

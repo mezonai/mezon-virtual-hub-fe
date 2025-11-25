@@ -85,7 +85,7 @@ export class FarmSlot extends Component {
       this.interactAction.active = false;
       return;
     }
-
+    if (!this.checkCanInteract()) return;
     if (!need_water && !has_bug && !can_harvest) {
       Constants.showConfirm("Ô đất này đã có cây, không thể trồng thêm.");
       this.resetInteractButtons();
@@ -98,16 +98,19 @@ export class FarmSlot extends Component {
     this.harvestBtn.node.active = can_harvest;
   }
 
-  private canInteractSlot(): boolean {
-    return !!UserMeManager.Get.clan?.id;
+  private checkCanInteract(): boolean {
+    if (!UserMeManager.Get.clan?.id) {
+      Constants.showConfirm(
+        "Bạn cần thuộc một văn phòng bất kì để có thể tương tác với nông trại tại các văn phòng"
+      );
+      this.interactAction.active = false;
+      return false;
+    }
+    return true;
   }
 
   public waterPlant() {
-    if (!this.canInteractSlot()) {
-      Constants.showConfirm("Bạn cần thuộc một văn phòng bất kì để có thể thu hoạch cây trồng tại các văn phòng");
-      this.interactAction.active = false;
-      return;
-    }
+    if (!this.checkCanInteract()) return;
     this.interactAction.active = false;
     if (!this.plant || this.plant.data.stage === PlantState.HARVESTABLE || !this.plant.data.need_water) {
       this.interactAction.active = false;
@@ -120,11 +123,7 @@ export class FarmSlot extends Component {
   }
 
   public catchBug() {
-    if (!this.canInteractSlot()) {
-      Constants.showConfirm("Bạn cần thuộc một văn phòng bất kì để có thể thu hoạch cây trồng tại các văn phòng");
-      this.interactAction.active = false;
-      return;
-    }
+    if (!this.checkCanInteract()) return;
     this.interactAction.active = false;
 
     if (!this.plant || this.plant.data.stage === PlantState.HARVESTABLE || !this.plant.data.has_bug) {
@@ -138,11 +137,7 @@ export class FarmSlot extends Component {
   }
 
   public harvest() {
-    if (!this.canInteractSlot()) {
-      Constants.showConfirm("Bạn cần thuộc một văn phòng bất kì để có thể thu hoạch cây trồng tại các văn phòng");
-      this.interactAction.active = false;
-      return;
-    }
+    if (!this.checkCanInteract()) return;
     this.interactAction.active = false;
     const param: PlantToSlotPayload = {
       farm_slot_id: this.data.id,

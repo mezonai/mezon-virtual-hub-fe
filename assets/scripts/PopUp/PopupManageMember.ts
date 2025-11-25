@@ -156,6 +156,7 @@ export class PopupManageMember extends Component {
             textButtonCenter: "",
             onActionButtonLeft: async () => {
                 if (!popup?.node?.uuid) return;
+                await WebRequestManager.instance.getUserProfileAsync();
                 await WebRequestManager.instance.patchTransferLeaderShipAsync(this.clanDetail.id, target.id);
                 await Promise.all([
                     this.onMemberChanged?.(),
