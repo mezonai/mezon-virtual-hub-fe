@@ -28,6 +28,7 @@ import { PopupClanInventory } from '../PopUp/PopupClanInventory';
 import { FarmController } from '../Farm/FarmController';
 import { FarmSlotDTO, SlotActionType } from '../Farm/EnumPlant';
 import { LoadingManager } from '../PopUp/LoadingManager';
+import { PopupHarvestReceive, PopupHarvestReceiveParam } from '../PopUp/PopupHarvestReceive';
 
 @ccclass('ServerManager')
 export class ServerManager extends Component {
@@ -562,12 +563,15 @@ export class ServerManager extends Component {
                     myPlayer.playerInteractFarm.showHarvestingComplete();
                     FarmController.instance.UpdateSlotAction(data.slotId, SlotActionType.Harvest, false);
                     myPlayer.zoomBubbleChat("Mình đã thu hoạch xong!");
-                    const effectColor = data?.totalEffectPercent < 0 ? '#FF0000' : '#FFFFFF';
-                    const plantText = data?.totalEffectPercent > 0 ? ' Cây chăm tốt ' : ' Cây chăm tệ ';
-                    Constants.showConfirm(`Tổng điểm thu hoạch \n\n`+
-                        `<outline color=#CE6B00><size=7> ${data?.totalScore ?? 'Không rõ'}</size></outline>\n\n`+
-                        `${plantText}(<outline color =${effectColor}><size=5>${data?.totalEffectPercent < 0 ? '' : '+'}${data?.totalEffectPercent} %</size></outline>)\n`+
-                        `Lượt thu hoạch còn lại: ${data?.remainingHarvest ?? 'Không rõ'}/${data?.maxHarvest ?? 'Không rõ'} trong hôm nay`);
+                    const param: PopupHarvestReceiveParam =
+                    {
+                        baseScore: data.baseScore, 
+                        totalScore: data.totalScore, 
+                        bonusPercent: data.bonusPercent, 
+                        remainingHarvest: data.remainingHarvest, 
+                        maxHarvest: data.maxHarvest, 
+                    }
+                    PopupManager.getInstance().openAnimPopup("PopupHarvestReceive", PopupHarvestReceive, param);
                     return;
                 }
                 else {
