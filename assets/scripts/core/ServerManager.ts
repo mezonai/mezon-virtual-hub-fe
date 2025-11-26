@@ -28,6 +28,7 @@ import { PopupClanInventory } from '../PopUp/PopupClanInventory';
 import { FarmController } from '../Farm/FarmController';
 import { FarmSlotDTO, SlotActionType } from '../Farm/EnumPlant';
 import { LoadingManager } from '../PopUp/LoadingManager';
+import { PopupHarvestReceive, PopupHarvestReceiveParam } from '../PopUp/PopupHarvestReceive';
 
 @ccclass('ServerManager')
 export class ServerManager extends Component {
@@ -562,19 +563,24 @@ export class ServerManager extends Component {
                     myPlayer.playerInteractFarm.showHarvestingComplete();
                     FarmController.instance.UpdateSlotAction(data.slotId, SlotActionType.Harvest, false);
                     myPlayer.zoomBubbleChat("Mình đã thu hoạch xong!");
-                    if (data.remainingHarvest) {
-                        Constants.showConfirm(`Lượt thu hoạch còn lại của bạn là: ${data.remainingHarvest}/${data.maxHarvest} trong hôm nay`);
+                    const param: PopupHarvestReceiveParam =
+                    {
+                        baseScore: data.baseScore, 
+                        totalScore: data.totalScore, 
+                        bonusPercent: data.bonusPercent, 
+                        remainingHarvest: data.remainingHarvest, 
+                        maxHarvest: data.maxHarvest, 
                     }
+                    PopupManager.getInstance().openAnimPopup("PopupHarvestReceive", PopupHarvestReceive, param);
+                    return;
                 }
-                return;
-            }
-            else
-            {
-                const otherPlayer = UserManager.instance.getPlayerById(data.sessionId);
-                if (otherPlayer) {
-                    otherPlayer.playerInteractFarm.showHarvestingComplete();
-                    otherPlayer.zoomBubbleChat(`${data.playerName} đã thu hoạch xong!`);
-                    FarmController.instance.UpdateSlotAction(data.slotId, SlotActionType.Harvest, false);
+                else {
+                    const otherPlayer = UserManager.instance.getPlayerById(data.sessionId);
+                    if (otherPlayer) {
+                        otherPlayer.playerInteractFarm.showHarvestingComplete();
+                        otherPlayer.zoomBubbleChat(`${data.playerName} đã thu hoạch xong!`);
+                        FarmController.instance.UpdateSlotAction(data.slotId, SlotActionType.Harvest, false);
+                    }
                 }
             }
         });
