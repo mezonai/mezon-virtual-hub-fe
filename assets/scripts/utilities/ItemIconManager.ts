@@ -29,7 +29,7 @@ export class ItemIconManager extends Component {
         director.addPersistRootNode(this.node); // Giữ lại khi đổi Scene
     }
 
-    getIconReward(reward: RewardItemDTO): SpriteFrame {
+   async getIconReward(reward: RewardItemDTO): Promise<SpriteFrame> {
         switch (reward.type) {
             case RewardType.ITEM:
                 return this.getIconItem(reward.item);
@@ -82,8 +82,11 @@ export class ItemIconManager extends Component {
         return found || this.iconPetRewards[0];
     }
 
-    private getIconItem(item: Item): SpriteFrame {
+    private async getIconItem(item: Item): Promise<SpriteFrame> {
         if (item == null) return this.defaultIcon;
+        if (item.type !== ItemType.PET_CARD) {
+          return await this.getIconItemDto(item);
+        } 
         if (item.type === ItemType.PET_CARD) {
             const index = item.item_code == ItemCode.RARITY_CARD_RARE ? 0 : item.item_code == ItemCode.RARITY_CARD_EPIC ? 1 : 2;
             return this.iconCardRewards[index];
