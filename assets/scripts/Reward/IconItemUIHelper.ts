@@ -44,7 +44,7 @@ export class IconItemUIHelper extends Component {
 
     public async setIconByReward(reward: RewardItemDTO) {
         if (!reward || !ItemIconManager.getInstance()) return;
-        this.icon.spriteFrame = ItemIconManager.getInstance().getIconReward(reward);
+        this.icon.spriteFrame = await ItemIconManager.getInstance().getIconReward(reward);
     }
 
     public async setIconByPurchaseMethod(method: PurchaseMethod) {

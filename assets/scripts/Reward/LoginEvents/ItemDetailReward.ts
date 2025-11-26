@@ -12,8 +12,8 @@ export class ItemDetailReward extends Component {
     @property({ type: RichText }) quantity: RichText = null;
     @property({ type: Sprite }) icon: Sprite = null;
 
-    setDataDetail(reward: RewardItemDTO) {
-        this.icon.spriteFrame = ItemIconManager.getInstance().getIconReward(reward);
+    async setDataDetail(reward: RewardItemDTO) {
+        this.icon.spriteFrame = await ItemIconManager.getInstance().getIconReward(reward);
         this.quantity.string = `<outline color=#6D4B29 width=1> ${reward.quantity} </outline>`;
     }
 }
