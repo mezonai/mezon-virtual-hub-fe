@@ -43,7 +43,6 @@ export class GameManager extends Component {
         };
         await this.tutorialCacthPet();
         await this.tuturialFarm();
-        await new Promise((resolve) => setTimeout(resolve, 1000));
         await runRewards();
     }
 
