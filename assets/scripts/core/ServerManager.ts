@@ -562,22 +562,21 @@ export class ServerManager extends Component {
                     myPlayer.playerInteractFarm.showHarvestingComplete();
                     FarmController.instance.UpdateSlotAction(data.slotId, SlotActionType.Harvest, false);
                     myPlayer.zoomBubbleChat("Mình đã thu hoạch xong!");
-                    Constants.showConfirm(`Điểm thu hoạch gốc: ${data?.basePoint ?? 'Không rõ'}\n` + 
-                        `Điểm chăm sóc: ${data?.careBonus ?? 'Không rõ'} %\n` +
-                        `Điểm văn phòng: ${data?.clanMultiplier ?? 'Không rõ'} \n` +
-                        `Tổng điểm văn phòng: ${data?.totalScore ?? 'Không rõ'}\n` +
-                        `Lượt thu hoạch còn lại: ${data?.remainingHarvest ?? 'Không rõ'}/${data?.maxHarvest ?? 'Không rõ'} trong hôm nay
-                    `);
-}
-                return;
-            }
-            else
-            {
-                const otherPlayer = UserManager.instance.getPlayerById(data.sessionId);
-                if (otherPlayer) {
-                    otherPlayer.playerInteractFarm.showHarvestingComplete();
-                    otherPlayer.zoomBubbleChat(`${data.playerName} đã thu hoạch xong!`);
-                    FarmController.instance.UpdateSlotAction(data.slotId, SlotActionType.Harvest, false);
+                    const effectColor = data?.totalEffectPercent < 0 ? '#FF0000' : '#FFFFFF';
+                    const plantText = data?.totalEffectPercent > 0 ? ' Cây chăm tốt ' : ' Cây chăm tệ ';
+                    Constants.showConfirm(`Tổng điểm thu hoạch \n\n`+
+                        `<outline color=#CE6B00><size=7> ${data?.totalScore ?? 'Không rõ'}</size></outline>\n\n`+
+                        `${plantText}(<outline color =${effectColor}><size=5>${data?.totalEffectPercent < 0 ? '' : '+'}${data?.totalEffectPercent} %</size></outline>)\n`+
+                        `Lượt thu hoạch còn lại: ${data?.remainingHarvest ?? 'Không rõ'}/${data?.maxHarvest ?? 'Không rõ'} trong hôm nay`);
+                    return;
+                }
+                else {
+                    const otherPlayer = UserManager.instance.getPlayerById(data.sessionId);
+                    if (otherPlayer) {
+                        otherPlayer.playerInteractFarm.showHarvestingComplete();
+                        otherPlayer.zoomBubbleChat(`${data.playerName} đã thu hoạch xong!`);
+                        FarmController.instance.UpdateSlotAction(data.slotId, SlotActionType.Harvest, false);
+                    }
                 }
             }
         });
