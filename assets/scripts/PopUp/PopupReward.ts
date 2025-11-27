@@ -33,7 +33,7 @@ export class PopupReward extends BasePopup {
 
     async showReward(param: PopupRewardParam) {
         this.title.string = param.status === RewardStatus.GAIN ? "Nhận Quà" : "Thông Báo";
-        this.icon.spriteFrame = ItemIconManager.getInstance().getIconReward(param.reward);
+        this.icon.spriteFrame = await ItemIconManager.getInstance().getIconReward(param.reward);
 
         // 3. Content
         this.contentReward.string = param.content;

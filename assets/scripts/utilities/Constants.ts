@@ -255,13 +255,13 @@ export class Constants {
 
     public static getOfficeName(englishName: string): string {
         const nameMap: Record<string, string> = {
-            "Ha Noi 1 Farm": "nông trại Hà Nội 1",
-            "Ha Noi 2 Farm": "nông trại Hà Nội 2",
-            "Ha Noi 3 Farm": "nông trại Hà Nội 3",
-            "Vinh Farm": "nông trại Vinh",
-            "Da Nang Farm": "nông trại Đà Nẵng",
-            "Quy Nhon Farm": "nông trại Quy Nhơn",
-            "Sai Gon Farm": "nông trại Sài Gòn",
+            "Ha Noi 1 Farm": "Hà Nội 1",
+            "Ha Noi 2 Farm": "Hà Nội 2",
+            "Ha Noi 3 Farm": "Hà Nội 3",
+            "Vinh Farm": "Vinh",
+            "Da Nang Farm": "Đà Nẵng",
+            "Quy Nhon Farm": "Quy Nhơn",
+            "Sai Gon Farm": "Sài Gòn",
         };
 
         const normalized = englishName.trim().toLowerCase();
