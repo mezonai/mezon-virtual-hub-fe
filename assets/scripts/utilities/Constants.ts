@@ -211,9 +211,6 @@ export class Constants {
 
             const spriteFrame = new SpriteFrame();
             spriteFrame.texture = texture;
-
-            let scaleValue = scaleFactor / spriteFrame.width;
-            sprite.node.scale = new Vec3(scaleValue, scaleValue, scaleValue);
             sprite.spriteFrame = spriteFrame;
         });
     }
