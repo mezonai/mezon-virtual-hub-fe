@@ -6,7 +6,6 @@ const { ccclass, property } = _decorator;
 
 @ccclass("PopupHarvestReceive")
 export class PopupHarvestReceive extends BasePopup {
-  @property(RichText) baseScore: RichText = null!;
   @property(RichText) totalGoldReceive: RichText = null!;
   @property(RichText) totalScore: RichText = null!;
   @property(RichText) bonusPercent: RichText = null!;
@@ -25,11 +24,12 @@ export class PopupHarvestReceive extends BasePopup {
       return;
     }
     const effectColor = param?.bonusPercent < 0 ? '#FF0000' : '#00b661ff';
-    this.baseScore.string = `Điểm thu hoạch cây:<outline color=#FFFF><color=#CE6B00><size = 5> ${param?.baseScore ?? 'Không rõ'}</size></color></outline>`;
-    this.bonusPercent.string = `<outline color =#FFFF><color =${effectColor}>${param?.bonusPercent < 0 ? '' : '+'}${param?.bonusPercent} %</color></outline>`;
-    this.totalScore.string = `Tổng điểm: <outline color=#FFFF><color=#0C9EFF><size = 8>${param?.totalScore ?? 'Không rõ'}</size></color></outline>`;
-    this.totalGoldReceive.string = `<outline color=#CE6B00><color=#FFF500><size = 7> ${param?.totalScore ?? 'Không rõ'}</size></color></outline>`;
-    this.remainingHarvest.string = `Lượt thu hoạch còn lại: ${param?.remainingHarvest ?? 'Không rõ'}/${param?.maxHarvest ?? 'Không rõ'} trong hôm nay`;
+    const effectColorHarvest = param?.remainingHarvest < 10 ? '#FF0000' : '#00b661ff';
+    this.iconBonusPercent.node.active = param?.bonusPercent != 0;
+    this.bonusPercent.string = `Điểm thu hoạch cây:<outline color=#FFFF><color=#CE6B00> ${param?.baseScore ?? 'Không rõ'}</size></color></outline> <outline color =#FFFF><color =${effectColor}> ${param?.bonusPercent < 0 ? '' : '+'}${param?.bonusPercent} %</size></color></outline>`;
+    this.totalScore.string = `Tổng điểm: <outline color=#FFFF><color=#0C9EFF> ${param?.totalScore ?? 'Không rõ'}</size></color></outline>`;
+    this.totalGoldReceive.string = `Vàng nhận được: <outline color=#CE6B00><color=#FFF500> ${param?.totalScore ?? 'Không rõ'}</size></color></outline>`;
+    this.remainingHarvest.string = `Lượt thu hoạch còn lại: <outline color=#FFFF><color=${effectColorHarvest}> ${param?.remainingHarvest ?? 'Không rõ'}/${param?.maxHarvest ?? 'Không rõ'}</color>`;
     this.effectColors = param?.bonusPercent < 0
       ? new Color().fromHEX('#FF0000')
       : new Color().fromHEX('#00b661ff');
