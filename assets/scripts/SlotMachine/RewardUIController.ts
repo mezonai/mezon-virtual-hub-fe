@@ -5,6 +5,7 @@ import { RewardItem } from './RewardItem';
 import { RewardFloatingText } from './RewardFloatingText';
 import { AudioType, SoundManager } from '../core/SoundManager';
 import { BasePopup } from '../PopUp/BasePopup';
+import { AnimalRarity, Species } from '../Model/PetDTO';
 const { ccclass, property } = _decorator;
 
 @ccclass('RewardUIController')
@@ -128,6 +129,7 @@ export class RewardUIController extends BasePopup {
     }
 
     ShowTextFly(reward?: RewardItemDTO) {
+        console.log("reward: ", reward);
         const rewardTextNode = instantiate(this.rewardTextPrefab);
         rewardTextNode.setParent(this.container);
 
@@ -150,6 +152,12 @@ export class RewardUIController extends BasePopup {
                 }
                 else if (reward.type === RewardType.FOOD && reward.food) {
                     const itemName = `${reward.food?.name} x ${reward.quantity} `;
+                    message = `Bạn nhận được ${itemName}`;
+                    this.isCoin = false;
+                }
+                else if (reward.type === RewardType.PET && reward.pet) {
+                    const speciesName = Species[reward.pet?.species].charAt(0).toLowerCase() + Species[reward.pet?.species].slice(1);
+                    const itemName = `${speciesName} - ${reward.pet?.rarity} x ${reward.quantity} `;
                     message = `Bạn nhận được ${itemName}`;
                     this.isCoin = false;
                 }
