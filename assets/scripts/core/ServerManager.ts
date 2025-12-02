@@ -211,6 +211,22 @@ export class ServerManager extends Component {
                     PopupManager.getInstance().openAnimPopup("PopupSelectionMini", PopupSelectionMini, param);
                 }
             }
+
+            if (code == 4444) {
+                if (UIManager.Instance) {
+                    const param: SelectionMiniParam = {
+                        title: "Chú Ý",
+                        content: "Tài Khoản Đã Được Đăng Nhập Ở Nơi Khác",
+                        textButtonLeft: "",
+                        textButtonRight: "",
+                        textButtonCenter: "OK",
+                        onActionButtonCenter: () => {
+                            window.location.replace("about:blank");
+                        },
+                    };
+                    PopupManager.getInstance().openAnimPopup("PopupSelectionMini", PopupSelectionMini, param);
+                }
+            }
         });
 
         this.room.onMessage("chat", (buffer: ArrayBuffer) => {
@@ -355,7 +371,7 @@ export class ServerManager extends Component {
                     await this.joinBattleRoom(roomId);
                 },
                 () => {
-                     LoadingManager.getInstance().closeLoading();
+                    LoadingManager.getInstance().closeLoading();
                 });
         });
 
@@ -517,7 +533,7 @@ export class ServerManager extends Component {
         this.room.onMessage(MessageTypes.ON_CATCH_BUG, async (data) => {
             await PopupManager.getInstance().closeAllPopups();
             FarmController.instance.UpdateSlotAction(data.slotId, SlotActionType.CatchBug, true);
-           // Constants.showConfirm(data.message);
+            // Constants.showConfirm(data.message);
         });
 
         this.room.onMessage(MessageTypes.ON_HARVEST_STARTED, (data) => {
@@ -525,11 +541,11 @@ export class ServerManager extends Component {
             if (!player) return;
 
             player.playerInteractFarm.showHarvestingBar(data.endTime, data.slotId);
-            FarmController.instance.UpdateSlotAction(data.slotId, SlotActionType.Harvest ,true);
+            FarmController.instance.UpdateSlotAction(data.slotId, SlotActionType.Harvest, true);
         });
 
         this.room.onMessage(MessageTypes.ON_HARVEST_PLAYER_JOIN, (data) => {
-          const slots = data.slots || [data];
+            const slots = data.slots || [data];
             slots.forEach((slot) => {
                 const otherPlayer = UserManager.instance.getPlayerById(slot.sessionId);
                 if (otherPlayer) {
@@ -565,11 +581,11 @@ export class ServerManager extends Component {
                     myPlayer.zoomBubbleChat("Mình đã thu hoạch xong!");
                     const param: PopupHarvestReceiveParam =
                     {
-                        baseScore: data.baseScore, 
-                        totalScore: data.totalScore, 
-                        bonusPercent: data.bonusPercent, 
-                        remainingHarvest: data.remainingHarvest, 
-                        maxHarvest: data.maxHarvest, 
+                        baseScore: data.baseScore,
+                        totalScore: data.totalScore,
+                        bonusPercent: data.bonusPercent,
+                        remainingHarvest: data.remainingHarvest,
+                        maxHarvest: data.maxHarvest,
                     }
                     PopupManager.getInstance().openAnimPopup("PopupHarvestReceive", PopupHarvestReceive, param);
                     return;
@@ -606,7 +622,7 @@ export class ServerManager extends Component {
             UserManager.instance.GetMyClientPlayer.get_MoveAbility.startMove();
             GameManager.instance.playerHubController.showBlockInteractHarvest(false);
             UserManager.instance.GetMyClientPlayer.playerInteractFarm.showHarvestingComplete();
-            
+
             const otherPlayer = UserManager.instance.getPlayerById(data.sessionId);
             if (otherPlayer) {
                 otherPlayer.playerInteractFarm.showHarvestingComplete();
@@ -615,31 +631,31 @@ export class ServerManager extends Component {
         });
 
         this.room.onMessage(MessageTypes.ON_PLANT_TO_PLANT_FAILED, (data) => {
-           Constants.showConfirm(`${data.message}`);
+            Constants.showConfirm(`${data.message}`);
         });
 
         this.room.onMessage(MessageTypes.ON_WATER_PLANT_FAILED, (data) => {
-           Constants.showConfirm(`${data.message}`);
-           FarmController.instance.UpdateSlotAction(data.slotId, SlotActionType.Water);
+            Constants.showConfirm(`${data.message}`);
+            FarmController.instance.UpdateSlotAction(data.slotId, SlotActionType.Water);
         });
 
         this.room.onMessage(MessageTypes.ON_CATCH_BUG_FAILED, (data) => {
-           Constants.showConfirm(`${data.message}`);
-           FarmController.instance.UpdateSlotAction(data.slotId, SlotActionType.CatchBug);
+            Constants.showConfirm(`${data.message}`);
+            FarmController.instance.UpdateSlotAction(data.slotId, SlotActionType.CatchBug);
         });
 
         this.room.onMessage(MessageTypes.ON_HARVEST_INTERRUPTED_FAILED, (data) => {
-           Constants.showConfirm(`${data.message}`);
+            Constants.showConfirm(`${data.message}`);
         });
 
         this.room.onMessage(MessageTypes.ON_PLANT_DEATH, (data) => {
             const harvestPlayer = UserManager.instance.getPlayerById(data.harverstId);
             const interruptedPlayer = UserManager.instance.getPlayerById(data.interruptedId);
-            if(harvestPlayer || interruptedPlayer){
+            if (harvestPlayer || interruptedPlayer) {
                 Constants.showConfirm(`${data.message}`);
             }
         });
-        
+
     }
 
     public async joinBattleRoom(roomId: string): Promise<void> {
@@ -830,7 +846,7 @@ export class ServerManager extends Component {
     }
 
     public sendHarvest(sendData) {
-      this.room.send('startHarvest', sendData);
+        this.room.send('startHarvest', sendData);
     }
 
     sendInterruptHarvest(sendData) {
