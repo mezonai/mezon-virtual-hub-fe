@@ -175,7 +175,7 @@ export class UILoginControll extends Component {
         queryString = queryString.replace(/\?/g, "&");
         const params = new URLSearchParams(queryString);
         // Lấy nguyên chuỗi data, không decode
-        return params.get("data");
+        return encodeURIComponent(params.get("data"));
     }
 
     private handleUserHashInfo = (type: string, data: any) => {
