@@ -6,6 +6,7 @@ import { Sprite } from 'cc';
 import { Enum } from 'cc';
 import { UITransform } from 'cc';
 import { Vec2 } from 'cc';
+import { ServerManager } from '../core/ServerManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('PlantStageData')
@@ -35,24 +36,16 @@ export class Plant extends Component {
   private lastTickTime: number = 0;
   private elapsed: number = 0;
 
-  onDestroy() {
-    game.off(Game.EVENT_SHOW, this.onAppShow, this);
-  }
-  onLoad() {
-    game.on(Game.EVENT_SHOW, this.onAppShow, this);
+  public getLastTickTime(): number{
+    return this.lastTickTime;
   }
 
-  private onAppShow() {
-    if (this.data == null || this.growthTime <= 0) return;// update time plant
-    this.unschedule(this.onTick);
-    const remaningPause = this.timeRemaning(Date.now());
-    this.growthTime -= remaningPause;
-    this.updateVisual(this.data.stage);
-    this.schedule(this.onTick, 1);
+  public getGrowthTime(): number{
+    return this.growthTime;
   }
 
   public setup(data: PlantData) {
-    if(!data) return;
+    if (!data) return;
     this.data = data;
     this.growthTime = data.grow_time_remain || 0;
     this.lastTickTime = Date.now(); 
