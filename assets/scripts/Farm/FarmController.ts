@@ -1,4 +1,4 @@
-import { _decorator, Component, Prefab, Node, instantiate } from 'cc';
+import { _decorator, Component, Prefab, Node, instantiate, game, Game } from 'cc';
 import { PopupManager } from '../PopUp/PopupManager';
 import { PopupChoosePlant, PopupChoosePlantParam } from '../PopUp/PopupChoosePlant';
 import { FarmSlot } from './FarmSlot';
@@ -18,12 +18,29 @@ export class FarmController extends Component {
   private landSlots: FarmSlot[] = [];
   static instance: FarmController;
 
-  protected onDestroy(): void {
+  onDestroy(): void {
      FarmController.instance = null;
+     game.off(Game.EVENT_SHOW, this.onAppResume, this);
   }
 
   onLoad() {
     FarmController.instance = this;
+    game.on(Game.EVENT_SHOW, this.onAppResume, this);
+  }
+
+  private onAppResume() {
+    const now = Date.now();
+
+    const hasUpdatedPlant = this.landSlots.some(slot => {
+      const plant = slot.plant;
+      if (!plant) return false;
+      const elapsed = (now - plant.getLastTickTime()) / 1000;
+      return elapsed > 0 && plant.getGrowthTime() > 0;
+    });
+
+    if (hasUpdatedPlant) {
+      ServerManager.instance.sendUpdateSlot();
+    }
   }
 
   public InitFarmSlot(data: FarmSlotDTO[]) {
