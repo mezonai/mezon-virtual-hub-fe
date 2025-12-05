@@ -1,0 +1,42 @@
+
+vec2 move2d(vec2 uv, vec2 dir)
+{
+  return uv + dir;
+}
+
+vec2 scale2d(vec2 uv, vec2 pivot, vec2 offset)
+{
+  offset = 1.0 / offset;
+  mat2 scaleMat = mat2(offset.x, 0,
+                       0, offset.y);
+  
+  vec2 scale = scaleMat * (uv - pivot);
+  scale += pivot;
+
+  return scale;
+}
+
+vec2 rotate2d(vec2 uv, vec2 pivot, float radian)
+{
+  mat2 rotateMat = mat2(cos(radian), -sin(radian),
+                        sin(radian), cos(radian));
+
+  vec2 rotate = rotateMat * (uv - pivot);
+  rotate += pivot;
+
+  return rotate;
+}
+
+#define pi 3.14159265359
+vec2 rotate2d_angle(vec2 uv, vec2 pivot, float angle)
+{
+  angle = angle * pi / 180.0;
+
+  mat2 rotateMat = mat2(cos(angle), -sin(angle),
+                        sin(angle), cos(angle));
+
+  vec2 rotate = rotateMat * (uv - pivot);
+  rotate += pivot;
+
+  return rotate;
+}

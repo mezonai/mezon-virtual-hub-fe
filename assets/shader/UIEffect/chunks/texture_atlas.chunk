@@ -1,0 +1,21 @@
+
+  #include <./common/transform>
+
+  vec4 texture_clamp(sampler2D tex, vec2 uv, vec4 limit)
+  {
+    if (uv.x < limit.x || uv.x > limit.y) return vec4(0.0);
+    if (uv.y < limit.z || uv.y > limit.w) return vec4(0.0);
+
+    return texture(tex, uv);
+  }
+  
+  vec4 texture_clamp_scale(sampler2D tex, vec2 uv, vec4 uv_rect, vec2 scale)
+  {
+    // Scale handle
+    uv = scale2d(uv, 
+      vec2((uv_rect.x+uv_rect.y)/2.0, (uv_rect.z+uv_rect.w)/2.0), 
+      vec2(scale));
+
+    // after claim
+    return texture_clamp(tex, uv, uv_rect);
+  }

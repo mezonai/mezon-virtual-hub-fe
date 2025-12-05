@@ -1,0 +1,68 @@
+// Effect Syntax Guide: https://docs.cocos.com/creator/manual/zh/shader/index.html
+
+CCEffect %{
+  techniques:
+  - name: opaque
+    passes:
+    - vert: legacy/main-functions/general-vs:vert # builtin header
+      frag: unlit-fs:frag
+      properties: &props
+        displayName: {value: 0.0, editor: {displayName: display name}}
+        color:      { value: [1, 1, 1, 1], editor: { type: color }}
+        mainTexture:    { value: white }
+        parentProp: {value: 0.0, editor: {parent: IS_PARENT}}
+        range: {value: 0.5, range: [0.0, 1.0]}
+        slide: {value: 1, editor: {type: slide, min: 0.0, max: 1.0, step: 0.01}}
+        target_xyz: {value: [1, 1, 1], target: target.xyz}
+        target_w: {value: 1, target: target.w}
+        tex: {value: grey, editor: {type: sampler2D}}
+        tooltip: {value: 1.0, editor: {tooltip: This is tooltip.}}
+        visible: {value: 0.5, editor: {visible: false}}
+  - name: transparent
+    passes:
+    - vert: general-vs:vert # builtin header
+      frag: unlit-fs:frag
+      blendState:
+        targets:
+        - blend: true
+          blendSrc: src_alpha
+          blendDst: one_minus_src_alpha
+          blendSrcAlpha: src_alpha
+          blendDstAlpha: one_minus_src_alpha
+      properties: *props
+}%
+
+CCProgram unlit-fs %{
+  precision highp float;
+  #include <legacy/output>
+  #include <legacy/fog-fs>
+
+  uniform Constant {
+    vec4 color;
+    vec4 target;
+    float slide;
+    float range;
+    float parentProp;
+    float tooltip;
+    float visible;
+    float displayName;
+  };
+
+  in vec2 v_uv;
+  in vec3 v_position;
+
+  uniform sampler2D mainTexture;
+  uniform sampler2D tex;
+
+  #if CC_RECEIVE_SHADOW
+  #endif
+
+  #if IS_PARENT
+  #endif
+
+  vec4 frag () {
+    vec4 col = color * texture(mainTexture, v_uv);
+    CC_APPLY_FOG(col, v_position);
+    return CCFragOutput(col);
+  }
+}%

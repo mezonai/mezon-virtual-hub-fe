@@ -45,8 +45,6 @@ export class sprite_shinyEffect extends Sprite {
             let vMax = (rect.y + rect.height) / atlasHeight;
 
             this.material.setProperty('u_uv', v4(uMin, uMax, vMin, vMax));
-
-            console.log(`UV of ${value.name} in ${this.node.name} is updated`);
         }
     }
     //#endregion
