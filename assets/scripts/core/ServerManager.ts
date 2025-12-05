@@ -938,4 +938,8 @@ export class ServerManager extends Component {
         this.room.send(MessageTypes.NOT_ENOUGH_SKILL_PET_BATTLE, data);
     }
 
+    public sendUpdateSlot() {
+        this.room.send("UpdateSlots")
+    }
+
 }
