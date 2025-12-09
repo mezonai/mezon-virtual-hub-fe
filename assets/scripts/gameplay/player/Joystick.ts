@@ -1,5 +1,4 @@
 import {_decorator, EventTarget, Component,Node,Enum,UIOpacity, UITransform, EventTouch,Vec3,Vec2, Size, CCInteger, Input, sys} from "cc";
-import { PlayerController } from "./PlayerController";
 const { ccclass, property } = _decorator;
 export const instance = new EventTarget();
 export const SET_JOYSTICK_TYPE = "SET_JOYSTICK_TYPE";
