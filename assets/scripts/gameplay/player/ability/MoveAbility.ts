@@ -54,6 +54,16 @@ export class MoveAbility extends Ability {
         playerController.CanUpdateAnim = true;
     }
 
+    protected onDestroy(): void {
+        keyboardInstance.off(EVENT_NAME.ON_PRESS_KEYBOARD, this.setKeydown, this);
+        keyboardInstance.off(EVENT_NAME.ON_RELEASE_KEYBOARD, this.setKeyUp, this);
+    }
+
+    protected onDisable(): void {
+        keyboardInstance.off(EVENT_NAME.ON_PRESS_KEYBOARD, this.setKeydown, this);
+        keyboardInstance.off(EVENT_NAME.ON_RELEASE_KEYBOARD, this.setKeyUp, this);
+    }
+
     onJoystickMove(event, data: JoystickDataType) {
         if (!this.isMyClient) return;
         this.joystickVec = data.moveVec.clone();
