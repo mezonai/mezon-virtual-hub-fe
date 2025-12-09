@@ -1,0 +1,121 @@
+// Copyright (c) 2017-2020 Xiamen Yaji Software Co., Ltd.
+
+CCEffect %{
+  techniques:
+  - name: glow
+    passes:
+    - vert: glow-vs:vert
+      frag: glow-fs:frag
+      blendState:
+        targets:
+        - blend: true
+          blendSrc: src_alpha
+          blendDst: one_minus_src_alpha
+          blendDstAlpha: one_minus_src_alpha
+      properties:
+        mainTexture: {value: white, editor: {type: texture2D}}
+        glowColor: {value: [1, 1, 0.5, 1], editor: {type: color}}
+        glowStrength: {value: 1.0, editor: {slide: true, range: [0.0, 10.0], step: 0.1}}
+        glowRadius: {value: 0.1, editor: {slide: true, range: [0.0, 1.0], step: 0.01}}
+}%
+
+CCProgram glow-vs %{
+  precision highp float; 
+  #include <builtin/uniforms/cc-global>
+  #include <builtin/uniforms/cc-local>
+
+  in vec3 a_position;
+  in vec2 a_texCoord;
+  out vec2 v_uv;
+
+  vec4 vert() {
+    v_uv = a_texCoord;
+    return cc_matViewProj * vec4(a_position, 1.0);
+  } 
+
+}% 
+
+CCProgram glow-fs %{
+  precision highp float;
+  #include <builtin/uniforms/cc-global> 
+  // #include <../chunks/glow.chunk> 
+
+  in vec2 v_uv;
+  uniform sampler2D mainTexture;
+  
+  uniform ubo {
+    vec4 glowColor;
+    float glowStrength; 
+    float glowRadius;
+  };
+
+
+vec2 scale2d(in vec2 _uv, in vec2 _pivot, in vec2 _scale)
+{
+    _scale = 1.0/_scale;
+
+    mat2 scaleMat = mat2(_scale.x, 0.0, 
+                        0.0, _scale.y);
+
+    vec2 scale = scaleMat * (_uv - _pivot);
+    scale += _pivot;
+
+    return scale;
+}
+
+#define e 2.718281828459045
+#define pi 3.141592653589793
+#define stDev 0.8089642
+// #define stDev 1.5
+// #define stDev 5.0
+// #define stDev 10.0
+
+vec2 textureSize = vec2(360, 280);
+
+float getWeight(float x, float y)
+{
+  return (1.0 / (2.0 * pi * pow(stDev, 2.0)))*pow(1.0 / e, (pow(x, 2.0) + pow(y, 2.0)))/(2.0 * pow(stDev, 2.0));
+}
+
+  vec4 frag() {
+
+    const float size = floor(stDev * 6.0 + 1.0);
+    const float halfSize = floor(size / 2.0);
+
+    float totalWeight = getWeight(0.0, 0.0);
+
+    for (float x = 1.0; x <= halfSize; x++)
+    {
+      totalWeight += getWeight(x, 0.0) * 2.0;
+    }
+
+    for (float y = 1.0; y <= halfSize; y++)
+    {
+      totalWeight += getWeight(0.0, y) * 2.0;
+    }
+
+    for (float x = 1.0; x <= halfSize; x++)
+    {
+      for (float y = 1.0; y <= halfSize; y++)
+      {
+        totalWeight += getWeight(x, y) * 4.0;
+      }
+    }
+
+    vec4 finalColor = vec4(0.0);
+
+    float onePxWidth = 1.0 / textureSize.x;
+    float onePxHeight = 1.0 / textureSize.y;
+
+    for (float x = -halfSize; x <= halfSize; x++)
+    {
+      for (float y = -halfSize; y <= halfSize; y++)
+      {
+        float weight = getWeight(x, y) / totalWeight;
+        finalColor += texture(mainTexture, v_uv + vec2(onePxWidth * x, onePxHeight * y)) * weight;
+      }
+    }
+ 
+    return finalColor;  
+  }
+}%

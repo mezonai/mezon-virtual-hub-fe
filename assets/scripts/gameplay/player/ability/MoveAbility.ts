@@ -7,6 +7,8 @@ import { Constants } from '../../../utilities/Constants';
 import { PlayerInput } from '../input/PlayerInput';
 import { Ability } from './Ability';
 import { sys } from 'cc';
+import { keyboardInstance } from '../input/KeyBoardInput';
+import { EVENT_NAME } from '../../../network/APIConstant';
 
 enum InputMethod {
     KEYBOARD,
@@ -27,16 +29,6 @@ export class MoveAbility extends Ability {
     public originMoveSpeed: number = 300;
     private joystickVec: Vec3 = new Vec3();
 
-    protected onDestroy(): void {
-        input.off(Input.EventType.KEY_DOWN, this.onKeyDown, this);
-        input.off(Input.EventType.KEY_UP, this.onKeyUp, this);
-    }
-
-    protected onDisable(): void {
-        input.off(Input.EventType.KEY_DOWN, this.onKeyDown, this);
-        input.off(Input.EventType.KEY_UP, this.onKeyUp, this);
-    }
-
     protected start(): void {
         this.originMoveSpeed = this.moveSpeed;
     }
@@ -49,18 +41,27 @@ export class MoveAbility extends Ability {
             this.playerInputs.forEach(input => {
                 input.init();
             });
-            if (!sys.isMobile) {
-                input.on(Input.EventType.KEY_DOWN, this.onKeyDown, this);
-                input.on(Input.EventType.KEY_UP, this.onKeyUp, this);
-            }
-            else {
+            if (sys.isMobile) {
                 instance.on(Input.EventType.TOUCH_MOVE, this.onJoystickMove, this);
                 instance.on(Input.EventType.TOUCH_END, this.onJoystickEnd, this);
+            } else {
+                keyboardInstance.on(EVENT_NAME.ON_PRESS_KEYBOARD, this.setKeydown, this);
+                keyboardInstance.on(EVENT_NAME.ON_RELEASE_KEYBOARD, this.setKeyUp, this);
             }
         }
 
         this.moveSpeed = this.originMoveSpeed;
         playerController.CanUpdateAnim = true;
+    }
+
+    protected onDestroy(): void {
+        keyboardInstance.off(EVENT_NAME.ON_PRESS_KEYBOARD, this.setKeydown, this);
+        keyboardInstance.off(EVENT_NAME.ON_RELEASE_KEYBOARD, this.setKeyUp, this);
+    }
+
+    protected onDisable(): void {
+        keyboardInstance.off(EVENT_NAME.ON_PRESS_KEYBOARD, this.setKeydown, this);
+        keyboardInstance.off(EVENT_NAME.ON_RELEASE_KEYBOARD, this.setKeyUp, this);
     }
 
     onJoystickMove(event, data: JoystickDataType) {
@@ -79,8 +80,7 @@ export class MoveAbility extends Ability {
         this.updateAction("idle");
     }
 
-    onKeyDown(event: EventKeyboard) {
-        if (!this.isMyClient) return;
+    setKeydown(event: EventKeyboard) {
         this.lastPressedKey = event.keyCode;
         switch (event.keyCode) {
             case KeyCode.KEY_C: this.updateAction("kneel", true); break;
@@ -90,7 +90,7 @@ export class MoveAbility extends Ability {
         }
     }
 
-    onKeyUp(event: EventKeyboard) {
+    setKeyUp(event: EventKeyboard) {
         if (event.keyCode == KeyCode.ENTER) return;
         if (this.lastPressedKey === event.keyCode) {
             this.lastPressedKey = null;

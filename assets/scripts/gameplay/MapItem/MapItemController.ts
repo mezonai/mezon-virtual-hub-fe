@@ -38,7 +38,7 @@ export class MapItemController extends Interactable {
             ServerManager.instance.node.on(EVENT_NAME.ON_PLAYER_ADDED, (playerId) => {
                 this.onPlayerAdded(playerId);
             });
-        } 
+        }
     }
 
     private onPlayerAdded(playerId: string) {
@@ -58,7 +58,7 @@ export class MapItemController extends Interactable {
         if (this.currentPlayer != null) {
             return;
         }
-        
+
         ServerManager.instance.playerUseItem(this.myID, UserManager.instance.GetMyClientPlayer.myID);
     }
 
@@ -103,7 +103,7 @@ export class MapItemController extends Interactable {
     protected override async handleBeginContact(selfCollider: Collider2D, otherCollider: Collider2D, contact: IPhysics2DContact | null) {
         if (this.canShowPopup()) {
             this.noticePopup = await PopupManager.getInstance().openPopup('InteracterLabel', InteracterLabel, {
-                keyBoard: String.fromCharCode(this.interactKey),
+                keyBoard: this.interactKey,
                 action: InteractMessageMapping[this.type + MapItemAction.NOTICE]
             });
         }

@@ -28,7 +28,7 @@ export class InteractTeleport extends Interactable {
     }
     protected override async handleBeginContact(selfCollider: Collider2D, otherCollider: Collider2D, contact: IPhysics2DContact | null) {
         this.noticePopup = await PopupManager.getInstance().openPopup('InteracterLabel', InteracterLabel, {
-            keyBoard: String.fromCharCode(this.interactKey),
+            keyBoard: this.interactKey,
             action: this.getRoomNameTeleport(this.roomTypeTeleport),
         });
     }
