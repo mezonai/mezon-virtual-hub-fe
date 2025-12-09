@@ -25,7 +25,7 @@ export class InteractableSlotMachine extends MapItemController {
 
     protected async handleBeginContact(selfCollider: Collider2D, otherCollider: Collider2D, contact: IPhysics2DContact | null) {
         this.noticePopup = await PopupManager.getInstance().openPopup('InteracterLabel', InteracterLabel, {
-            keyBoard: String.fromCharCode(this.interactKey),
+            keyBoard: this.interactKey,
             action: "Để Quay Xổ Số May Mắn",
         });
     }

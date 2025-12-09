@@ -83,7 +83,7 @@ export class InteractableDoor extends Interactable {
             'InteracterLabel',
             InteracterLabel,
             {
-                keyBoard: String.fromCharCode(this.interactKey),
+                keyBoard: this.interactKey,
                 action: this.isOpen ? 'Để Đóng Cửa' : 'Để Mở Cửa',
             }
         );
