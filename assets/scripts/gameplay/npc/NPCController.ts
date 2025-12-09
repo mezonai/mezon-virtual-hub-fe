@@ -180,21 +180,21 @@ export class NPCController extends Component {
     }
 
     private checkCanDisplay() {
-        if (UserMeManager.Get?.map?.map_key == null) return true;
+        if (UserMeManager.Get?.clan?.id == null) return true;
 
         if (this.type == NPC_TYPE.JOKE) {
             return randomRange(0, 1) <= 0.5;
         }
 
-        switch (UserMeManager.Get.map.map_key) {
-            case "hn1":
-            case "hn3":
-            case "dn":
+        switch (UserMeManager.Get.clan.name) {
+            case "Ha Noi 1":
+            case "Ha Noi 3":
+            case "Da Nang":
                 return this.type == NPC_TYPE.FACT;
-            case "hn2":
-            case "vinh":
-            case "sg":
-            case "qn":
+            case "Ha Noi 2":
+            case "Vinh":
+            case "Sai Gon":
+            case "Quy Nhon":
                 return this.type == NPC_TYPE.MATH;
         }
 
