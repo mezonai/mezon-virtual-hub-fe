@@ -2,6 +2,7 @@ import { _decorator, Component, Label, Node, Sprite, SpriteFrame, Toggle, tween,
 import { Food, InventoryDTO, InventoryType, Item, ItemType, PurchaseMethod, RewardItemDTO } from '../../../Model/Item';
 import { AudioType, SoundManager } from '../../../core/SoundManager';
 import { IconItemUIHelper } from '../../../Reward/IconItemUIHelper';
+import { PlantData } from '../../../Farm/EnumPlant';
 const { ccclass, property } = _decorator;
 
 @ccclass('BaseInventoryUIITem')
@@ -12,7 +13,7 @@ export class BaseInventoryUIITem extends Component {
     @property({ type: [SpriteFrame] }) stasFrame: SpriteFrame[] = [];
     @property({ type: Toggle }) toggle: Toggle = null;
     @property({ type: Label }) amountLabel: Label;
-    public onClick?: (uiItem: this, data: Item | Food) => void;
+    public onClick?: (uiItem: this, data: Item | Food ) => void;
     protected lastTriggerTime = 0;
     public data: Item = null;
     public dataFood: Food = null;
@@ -88,11 +89,11 @@ export class BaseInventoryUIITem extends Component {
         this.iconItemUIHelper.setIconByPurchaseMethod(purchaseMethod);
     }
 
-    public setScaleByItemType (itemType?: ItemType, sizeSpecial = 0.16, sizeDefault = 0.3){
+    public setScaleByItemType (itemType?: ItemType, sizeSpecial = 0.16, sizeDefault = 0.25){
         this.iconItemUIHelper.setSizeIconByItemType(itemType, sizeSpecial, sizeDefault);
     }
 
-    public setScaleByRewardType (rewardItemDTO: RewardItemDTO, sizeSpecial = 0.16, sizeDefault = 0.3){
+    public setScaleByRewardType (rewardItemDTO: RewardItemDTO, sizeSpecial = 0.16, sizeDefault = 0.25){
         this.iconItemUIHelper.setSizeIconByRewardType(rewardItemDTO, sizeSpecial, sizeDefault);
     }
 }

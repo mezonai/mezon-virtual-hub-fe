@@ -13,7 +13,6 @@ import { Constants } from "../../utilities/Constants";
 import {
     PopupReward,
     PopupRewardParam,
-    RewardNewType,
     RewardStatus,
 } from "../../PopUp/PopupReward";
 const { ccclass, property } = _decorator;
@@ -108,23 +107,12 @@ export class ItemMissionDetail extends Component {
             );
             return;
         }
-        const type = Constants.mapRewardType(reward);
-        const name =
-            type == RewardNewType.NORMAL_FOOD
-                ? "Thức ăn sơ cấp"
-                : type == RewardNewType.PREMIUM_FOOD
-                    ? "Thức ăn cao cấp"
-                    : type == RewardNewType.ULTRA_PREMIUM_FOOD
-                        ? "Thức ăn siêu cao cấp"
-                        : type == RewardNewType.GOLD
-                            ? "Vàng"
-                            : "Kim cương";
+        const name = Constants.getNameItem(reward);          
         const content = `Chúc mừng bạn nhận thành công ${name}`;
         const paramPopup: PopupRewardParam = {
-            rewardType: type,
-            quantity: reward.quantity,
             status: RewardStatus.GAIN,
             content: content,
+            reward
         };
         await PopupManager.getInstance().openPopup(
             "PopupReward",

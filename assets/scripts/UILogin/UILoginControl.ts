@@ -11,6 +11,11 @@ import { Tutorial } from '../tutorial/Tutorial';
 import { PopupSelectionMini, SelectionMiniParam } from '../PopUp/PopupSelectionMini';
 import { PopupManager } from '../PopUp/PopupManager';
 import { PetDTO } from '../Model/PetDTO';
+import { Constants } from '../utilities/Constants';
+import { sys } from 'cc';
+import { LoadingManager } from '../PopUp/LoadingManager';
+import { SceneManagerController } from '../utilities/SceneManagerController';
+import { SceneName } from '../utilities/SceneName';
 
 const { ccclass, property } = _decorator;
 
@@ -46,6 +51,9 @@ export class UILoginControll extends Component {
 
     @property(Tutorial)
     tutorial: Tutorial = null;
+
+    @property(GameMapController)
+    gameMapController: GameMapController = null;
 
     private selectedCharacter: number = 0;
 
@@ -121,28 +129,34 @@ export class UILoginControll extends Component {
     }
 
     private loginMezon() {
+        let appData = "";
         if (window.Mezon) {
+            //const url = ;
             const webView = window.Mezon.WebView;
             window.Mezon.WebView.postEvent(MezonWebViewEvent.Ping, {
                 message: "Hello Mezon!"
             }, null);
             webView.onEvent(MezonAppEvent.CurrentUserInfo, this.handleCurrentUserInfo);
-            webView.onEvent(MezonAppEvent.UserHashInfo, this.handleUserHashInfo);
+            appData = this.getMezonDataString(window.location.href);
+            //webView.onEvent(MezonAppEvent.UserHashInfo, this.handleUserHashInfo);
         }
         else {
-            let appData = "query_id=abOflweIXFgCSfZlNEjH7pXI&user=%7B%22id%22%3A%221831510401251020800%22%2C%22username%22%3A%22toan.nguyenthanh%22%2C%22display_name%22%3A%22toan.nguyenthanh%22%2C%22avatar_url%22%3A%22https%3A%2F%2Fcdn.mezon.vn%2F1779484504377790464%2F1840678703248445440%2F1831510401251020800%2F4371000005003.jpg%22%2C%22mezon_id%22%3A%22toan.nguyenthanh%40ncc.asia%22%7D&auth_date=1742783975&signature=ZWViZTM4YWExZmY4YzBiZDUxMjY5NmRhYWQ1ZTM0ODU4MjhjOTc0NTZjODU4MWUyYmMwNTQ4NDU1Yjk5MDA5MQ%3D%3D&hash=851b8cf3bab1c960c47fd4ab2b1d90fafbb9eef96aea419bb76600b29d0554ce";
-            //let appData = "query_id=nc_MQN20O8mX90ud_04Irlxk&user=%7B%22id%22%3A%221838774373004087296%22%2C%22username%22%3A%22tam.canhlechi%22%2C%22display_name%22%3A%22tam.canhlechi%22%2C%22avatar_url%22%3A%22https%3A%2F%2Fcdn.mezon.vn%2F1779484504377790464%2F1833340253138587648%2F1838774373004087300%2F622_undefined461398087_2594678774067461_1520915077734667936_n.jpg%22%2C%22mezon_id%22%3A%22tam.canhlechi%40ncc.asia%22%7D&auth_date=1742551789&signature=NjYzYTc1MjYxM2M2NzBmNjNmNjRkOTUyNDI0NzQyZDk1ODZlMDFmZGRlNmEwNTdhODVmYTJkZjBhZWEyOWJlMg%3D%3D&hash=d9b1515435ebeccce5f3549c3383504282aa164d135828ec029c503721ecdd91";
-            // let appData = "query_id=MqHtm6OFCCOL6569eLMbDiYJ&user=%7B%22id%22%3A%221833329094238932992%22%2C%22username%22%3A%22an.nguyentranthy%22%2C%22display_name%22%3A%22an.nguyentranthy%22%2C%22avatar_url%22%3A%22https%3A%2F%2Fcdn.mezon.vn%2F1779484504377790464%2F1840660683964813312%2F1833329094238933000%2F1739841664950_undefinedB612_20210211_164318_228.jpg%22%2C%22mezon_id%22%3A%22an.nguyentranthy%40ncc.asia%22%7D&auth_date=1742474029&signature=ZDMxZTYxOGNmNDRiNTYwMWMxM2E5ZGY1Yzg5OTRkODQwYTU5MWMxYjA4MzlmMGNlZjQ2MzFjYWY1ZmFkYmE0OQ%3D%3D&hash=9bb67b37acf3a64769d071d0433ebcff670f525b2c5d74e5ddf20ba2955f37cc";
-            let loginData = {
-                "web_app_data": appData,
-            }
-            WebRequestManager.instance.login(
-                loginData,
-                (response) => this.onLoginSuccess(response),
-                (error) => this.onError(error)
-            );
+            appData = "query_id=abOflweIXFgCSfZlNEjH7pXI&user=%7B%22id%22%3A%221831510401251020800%22%2C%22username%22%3A%22toan.nguyenthanh%22%2C%22display_name%22%3A%22toan.nguyenthanh%22%2C%22avatar_url%22%3A%22https%3A%2F%2Fcdn.mezon.vn%2F1779484504377790464%2F1840678703248445440%2F1831510401251020800%2F4371000005003.jpg%22%2C%22mezon_id%22%3A%22toan.nguyenthanh%40ncc.asia%22%7D&auth_date=1742783975&signature=ZWViZTM4YWExZmY4YzBiZDUxMjY5NmRhYWQ1ZTM0ODU4MjhjOTc0NTZjODU4MWUyYmMwNTQ4NDU1Yjk5MDA5MQ%3D%3D&hash=851b8cf3bab1c960c47fd4ab2b1d90fafbb9eef96aea419bb76600b29d0554ce";
+            //appData = "query_id=nc_MQN20O8mX90ud_04Irlxk&user=%7B%22id%22%3A%221838774373004087296%22%2C%22username%22%3A%22tam.canhlechi%22%2C%22display_name%22%3A%22tam.canhlechi%22%2C%22avatar_url%22%3A%22https%3A%2F%2Fcdn.mezon.vn%2F1779484504377790464%2F1833340253138587648%2F1838774373004087300%2F622_undefined461398087_2594678774067461_1520915077734667936_n.jpg%22%2C%22mezon_id%22%3A%22tam.canhlechi%40ncc.asia%22%7D&auth_date=1742551789&signature=NjYzYTc1MjYxM2M2NzBmNjNmNjRkOTUyNDI0NzQyZDk1ODZlMDFmZGRlNmEwNTdhODVmYTJkZjBhZWEyOWJlMg%3D%3D&hash=d9b1515435ebeccce5f3549c3383504282aa164d135828ec029c503721ecdd91";
+            //  appData = "query_id=MqHtm6OFCCOL6569eLMbDiYJ&user=%7B%22id%22%3A%221833329094238932992%22%2C%22username%22%3A%22an.nguyentranthy%22%2C%22display_name%22%3A%22an.nguyentranthy%22%2C%22avatar_url%22%3A%22https%3A%2F%2Fcdn.mezon.vn%2F1779484504377790464%2F1840660683964813312%2F1833329094238933000%2F1739841664950_undefinedB612_20210211_164318_228.jpg%22%2C%22mezon_id%22%3A%22an.nguyentranthy%40ncc.asia%22%7D&auth_date=1742474029&signature=ZDMxZTYxOGNmNDRiNTYwMWMxM2E5ZGY1Yzg5OTRkODQwYTU5MWMxYjA4MzlmMGNlZjQ2MzFjYWY1ZmFkYmE0OQ%3D%3D&hash=9bb67b37acf3a64769d071d0433ebcff670f525b2c5d74e5ddf20ba2955f37cc";
         }
+        let loginData = {
+            "web_app_data": appData,
+        }
+        WebRequestManager.instance.login(
+            loginData,
+            (response) => this.onLoginSuccess(response),
+            (error) => this.onError(error)
+        );
     }
+
+
+
 
     private handleCurrentUserInfo = (type: string, data: any) => {
         this.onUsernameEntered(data.user.display_name);
@@ -153,6 +167,16 @@ export class UILoginControll extends Component {
             (response) => { }
         );
     };
+
+    getMezonDataString(href: string): string | null {
+        // Lấy phần query string sau '?' đầu tiên
+        let queryString = href.split("?").slice(1).join("&");
+        // Thay tất cả dấu '?' còn lại thành '&' (để URLSearchParams parse đúng)
+        queryString = queryString.replace(/\?/g, "&");
+        const params = new URLSearchParams(queryString);
+        // Lấy nguyên chuỗi data, không decode
+        return encodeURIComponent(params.get("data"));
+    }
 
     private handleUserHashInfo = (type: string, data: any) => {
         const loginData = {
@@ -175,28 +199,32 @@ export class UILoginControll extends Component {
 
         this.login_Btn.interactable = true;
         APIConfig.token = response.data.accessToken;
-        this.getProfileData()
-        await WebRequestManager.instance.getMyPetAsync();
+        LoadingManager.getInstance().openLoading();
+        try {
+            const getInfoSuccess = await WebRequestManager.instance.getUserProfileAsync();
+            if (!getInfoSuccess) {
+                await SceneManagerController.loadSceneAsync(SceneName.SCENE_GAME_MAP, null);
+                return;
+            }
+            const getDataMyPetSuccess = await WebRequestManager.instance.getMyPetAsync();
+            if (!getDataMyPetSuccess) {
+                await SceneManagerController.loadSceneAsync(SceneName.SCENE_GAME_MAP, null);
+                return;
+            }
+            this.setUI();
+        } catch {
+
+        }
+        finally {
+            LoadingManager.getInstance().closeLoading();
+        }
+
     }
 
-    private getProfileData() {
-        WebRequestManager.instance.getUserProfile(
-            (response) => this.onGetProfileSuccess(response),
-            (error) => this.onError(error)
-        );
-    }
-
-    private onGetProfileSuccess(respone) {
-        UserMeManager.Set = respone.data;
-        this.onGetMyPetData(null);
-        // WebRequestManager.instance.getMyPetData((respone) => { this.onGetMyPetData(respone) }, (error) => { this.onError(error) });
-    }
-
-    private onGetMyPetData(respone) {
-        // UserMeManager.Get.user.pets = respone.data;
+    private setUI() {
         this.setDefaultSkinSet();
 
-        if (UserMeManager.Get.user.gender == null) {
+        if (UserMeManager.Get.user.gender == null) {// The firstTime login
             this.loginPanel.active = true;
             this.usernameLabel.string = UserMeManager.Get.user.username;
         }
@@ -263,9 +291,8 @@ export class UILoginControll extends Component {
             textButtonCenter: "Ok",
             onActionButtonCenter: () => {
                 let data = {
-                    "map_id": null,
-                    "position_x": null,
-                    "position_y": null,
+                    "position_x": Constants.POSX_PLAYER_INIT,
+                    "position_y": Constants.POSY_PLAYER_INIT,
                     "display_name": this.usernameLabel.string,
                     "gender": this.genderLabel.string.toLowerCase() == "nam" ? "male" : "female",
                     "skin_set": ResourceManager.instance.LocalSkinConfig.male.defaultSet
@@ -299,10 +326,11 @@ export class UILoginControll extends Component {
     private closePanel(autoLoadMap: boolean = true, isFirstTime: boolean = false) {
         this.node.active = false;
         if (isFirstTime) {
+            sys.localStorage.setItem(Constants.TUTORIAL_COMPLETE, false);
             this.tutorial.startTutorial();
             return;
         }
-        GameMapController.instance.CheckLoadMap(autoLoadMap);
+        this.gameMapController.CheckLoadMap(autoLoadMap);
     }
 
     updateAvatar() {

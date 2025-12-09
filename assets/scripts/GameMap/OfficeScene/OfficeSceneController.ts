@@ -7,6 +7,8 @@ import { ServerManager } from '../../core/ServerManager';
 import { OfficePosition } from '../OfficePosition';
 import { MapManagerBase } from '../Map/MapManagerBase';
 import { ResourceManager } from '../../core/ResourceManager';
+import { UserMeManager } from '../../core/UserMeManager';
+import { RoomType } from '../RoomType';
 const { ccclass, property } = _decorator;
 
 @ccclass('OfficeSceneController')
@@ -35,14 +37,13 @@ export class OfficeSceneController extends Component {
     public async LoadData(): Promise<boolean> {
         const param = SceneManagerController.getSceneParam<OfficeSenenParameter>();
         if (param != null) {
-            let nameRoom = this.nameCode = param.nameRoomServer;
+            let nameRoom = this.convertNameRoom(param.idclan, param.roomEnds);
             let map = instantiate(this.mapOffice[this.getOffice(param.currentOffice, nameRoom)]);
             map.setParent(this.mapParent);
             let mapManager = map.getComponent("MapManagerBase") as MapManagerBase;
             if (mapManager) {
                 this.currentMap = mapManager;
-                console.log("MapManagerBase found:", mapManager);
-                mapManager.setCurrentOffice(param.currentOffice, param.roomStart);
+                mapManager.setCurrentOffice(param, param.currentOffice, param.roomStart);
             } else {
                 console.error("MapManagerBase not found on instantiated map!");
                 return false;
@@ -59,6 +60,8 @@ export class OfficeSceneController extends Component {
             });
 
         });
+        UserMeManager.CurrentOffice = param;
+        UserMeManager.CurrentRoomType = param.roomStart;
         return true;
     }
 
@@ -90,9 +93,37 @@ export class OfficeSceneController extends Component {
         else if (nameRoom.includes("-shop")) {
             return 0;
         }
+        else if(nameRoom.includes("-farm")){
+            return 9;
+        }
         else {
             return 1;
         }
+    }
+
+    convertNameRoom(idclan: string, roomType: RoomType): string {
+        let suffix = "";
+
+        switch (roomType) {
+            case RoomType.OFFICE:
+                suffix = "-office";
+                break;
+            case RoomType.SHOP1:
+            case RoomType.SHOP2:
+                suffix = "-shop1";
+                break;
+            case RoomType.FARM:
+                suffix = "-farm";
+                break;
+            case RoomType.MEETING:
+                suffix = "-office-meeting-room1";
+                break;
+            default:
+                suffix = "";
+                break;
+        }
+
+        return `${idclan}${suffix}`;
     }
 }
 

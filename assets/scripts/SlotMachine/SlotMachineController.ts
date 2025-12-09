@@ -15,6 +15,7 @@ import { UIPanelSliderEffect } from "../utilities/UIPanelSliderEffect";
 import { BasePopup } from "../PopUp/BasePopup";
 import { PopupManager } from "../PopUp/PopupManager";
 import { Constants } from "../utilities/Constants";
+import ConvetData from "../core/ConvertData";
 
 const { ccclass, property } = _decorator;
 
@@ -289,7 +290,7 @@ export class SlotMachineController extends BasePopup {
             UserMeManager.playerCoin = userGold;
         }
 
-        const rewardItems = this.parseRewardItem(rewardsData);
+        const rewardItems = ConvetData.ConvertReward(rewardsData);
         const hasReward = rewardItems.length > 0;
 
         this.rewardPopUp.show(hasReward, rewardItems);
@@ -307,52 +308,6 @@ export class SlotMachineController extends BasePopup {
                 RewardType.GOLD
             );
         }
-    }
-
-    private parseRewardItem(data: any): RewardItemDTO[] {
-        if (!Array.isArray(data)) return [];
-
-        return data
-            .filter((d: any) => d && typeof d === "object")
-            .map((entry: any) => {
-                const rewardItem = new RewardItemDTO();
-
-                switch (entry.type) {
-                    case RewardType.ITEM:
-                        rewardItem.type = RewardType.ITEM;
-                        rewardItem.item = this.parseItem(entry.item);
-                        rewardItem.quantity = 1;
-                        break;
-
-                    case RewardType.FOOD:
-                        rewardItem.type = RewardType.FOOD;
-                        rewardItem.food = this.parseFood(entry.food);
-                        rewardItem.quantity = 1;
-                        break;
-
-                    case RewardType.GOLD:
-                    default:
-                        rewardItem.type = RewardType.GOLD;
-                        rewardItem.quantity = entry.quantity ?? 0;
-                        break;
-                }
-
-                return rewardItem;
-            });
-    }
-
-    private parseFood(foodData: any): Food {
-        const food = new Food();
-        Object.assign(food, foodData);
-        return food;
-    }
-
-    private parseItem(itemData: any): Item {
-        const item = new Item();
-        Object.assign(item, itemData);
-        item.iconSF = [];
-        item.mappingLocalData = null;
-        return item;
     }
 
     private onError(error: any) {

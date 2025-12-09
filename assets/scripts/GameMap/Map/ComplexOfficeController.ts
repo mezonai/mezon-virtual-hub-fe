@@ -15,6 +15,9 @@ export class ComplexOfficeController extends MapManagerBase {
         else if (roomStart == RoomType.SHOP1){
             return new Vec3(555, -234, 0);
         }
+        else if(roomStart == RoomType.FARM){
+            return new Vec3(1570, -345, 0);
+        }
         else  return UserManager.instance.GetMyClientPlayer.node.position;    
     }
 }

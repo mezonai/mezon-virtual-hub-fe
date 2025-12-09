@@ -359,12 +359,32 @@ export default class Utilities {
         return result;
     }
 
+    static pad(n: number): string {
+        return n < 10 ? '0' + n : n.toString();
+    }
+
+    static secondsToHMSPlant(seconds: number): string {
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${this.pad(hours)}h: ${this.pad(minutes)}m: ${this.pad(secs)}s`;
+    }
+
     static addLeadingZeros(num: number): string {
         return num < 10 ? '0' + num : num.toString();
     }
 
     static getRandomValue(min, max) {
         return Math.random() * (max - min) + min;
+    }
+
+    static formatDateVN(isoString: string): string {
+        return new Date(isoString).toLocaleDateString('vi-VN', {
+            timeZone: 'Asia/Ho_Chi_Minh',
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        });
     }
 
 }

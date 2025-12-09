@@ -101,6 +101,10 @@ export class RewardUIController extends BasePopup {
                             uiItem.setRewardItem(reward);
                             break;
                         }
+                        case RewardType.PET: {
+                            uiItem.setRewardItem(reward);
+                            break;
+                        }
                         default: {
                             SoundManager.instance.playSound(AudioType.NoReward);
                             uiItem.setupEmpty?.();

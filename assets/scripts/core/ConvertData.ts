@@ -1,21 +1,299 @@
-import { MapData } from "../Interface/DataMapAPI";
-import { Food, InventoryDTO, Item, PetReward, QuestType, RewardItemDTO, RewardNewbieDTO, RewardType, StatsConfigDTO } from "../Model/Item";
+
+import { FarmDTO, FarmSlotDTO, PlantState, ClanWarehouseSlotDTO, PlantDataDTO, PlantData, HarvestCountDTO } from "../Farm/EnumPlant";
+import { ClansData, PageInfo, ClansResponseDTO, MemberResponseDTO, UserClan, ClanContributorDTO, ClanContributorsResponseDTO, ClanFundResponseDTO, ClanFund, ClanRequestResponseDTO, MemberClanRequestDTO, ClanStatus, ClanActivityItemDTO, ClanActivityResponseDTO, RequestToJoinDTO } from "../Interface/DataMapAPI";
+import { EventRewardDTO, EventType, Food, InventoryDTO, Item, PetReward, QuestType, RewardItemDTO, RewardNewbieDTO, RewardType, StatsConfigDTO } from "../Model/Item";
 import { AnimalElementString, AnimalRarity, Element, PetBattleInfo, PetDTO, PlayerBattle, SkillBattleInfo, Species, TypeSkill } from "../Model/PetDTO";
 
 export default class ConvetData {
-    public static ConvertMap(mapData: any): MapData[] {
-        if (!mapData?.data || !Array.isArray(mapData.data)) {
-            console.error("Dữ liệu API không hợp lệ:", mapData);
-            return [];
-        }
+    private static defaultPageInfo(): PageInfo {
+        return {
+            page: 1,
+            size: 0,
+            total: 0,
+            total_page: 0,
+            has_previous_page: false,
+            has_next_page: false
+        };
+    }
 
-        return mapData.data.map((mapItem: any) => ({
-            id: mapItem.id,
-            name: mapItem.name,
-            map_key: mapItem.map_key,
-            isLocked: mapItem.is_locked
+    private static extractPageInfo(data: any): PageInfo {
+        return {
+            page: data?.page ?? 1,
+            size: data?.size ?? 0,
+            total: data?.total ?? 0,
+            total_page: data?.total_page ?? 0,
+            has_previous_page: data?.has_previous_page ?? false,
+            has_next_page: data?.has_next_page ?? false
+        };
+    }
+
+    public static ConvertClans(apiData: any): ClansResponseDTO {
+        const data = apiData?.data;
+        if (!data || typeof data !== "object")
+            return { result: [], pageInfo: this.defaultPageInfo() };
+
+        const clans: ClansData[] = (Array.isArray(data.result) ? data.result : []).map((clan: any) => ({
+            id: clan.id ?? "",
+            name: clan.name ?? "",
+            fund: clan.fund ?? 0,
+            score: clan.score ?? 0,
+            max_members: clan.max_members ?? 0,
+            member_count: clan.member_count ?? 0,
+            join_status: clan.join_status ?? ClanStatus.NONE,
+            rank: clan.rank ?? 0,
+        }));
+
+        return { result: clans, pageInfo: this.extractPageInfo(data) };
+    }
+
+    public static ConvertClanDetail(apiData: any): ClansData | null {
+        const clanDT = apiData?.data ?? apiData;
+        if (!clanDT || typeof clanDT !== "object") return null;
+
+        const mapUser = (user: any): UserClan | null => user
+            ? {
+                id: user.id ?? "",
+                username: user.username ?? "",
+                display_name: user.display_name ?? "",
+                avatar_url: user.avatar_url ?? null,
+                gender: user.gender ?? null,
+                clan_role: user.clan_role ?? null,
+                total_score: user.total_score ?? 0,
+                weekly_score: user.weekly_score ?? 0,
+                rank: user.rank ?? 0,
+            }
+            : null;
+
+        const funds: ClanFund[] = Array.isArray(clanDT.funds)
+            ? clanDT.funds.map((f: any) => ({
+                id: f.id ?? "",
+                clan_id: f.clan_id ?? clanDT.id ?? "",
+                type: f.type ?? "",
+                amount: f.amount ?? 0,
+            }))
+            : [];
+
+        return {
+            id: clanDT.id ?? "",
+            name: clanDT.name ?? "",
+            fund: clanDT.fund ?? 0,
+            score: clanDT.score ?? 0,
+            description: clanDT.description ?? null,
+            member_count: clanDT.member_count ?? 0,
+            max_members: clanDT.max_members ?? 0,
+            leader: mapUser(clanDT.leader),
+            vice_leader: mapUser(clanDT.vice_leader),
+            join_status: clanDT.join_status ?? null,
+            rank: clanDT.rank ?? 0,
+            avatar_url: clanDT.avatar_url ?? null,
+            funds: funds,
+        };
+    }
+
+    public static convertClanFund(apiData: any): ClanFundResponseDTO | null {
+        if (!apiData?.data) return null;
+
+        const d = apiData.data;
+        return {
+            clan_id: d.clan_id,
+            funds: Array.isArray(d.funds)
+                ? d.funds.map((f: any) => ({
+                    type: f.type,
+                    amount: Number(f.amount ?? 0),
+                    spent_amount: Number(f.spent_amount ?? 0),
+                }))
+                : [],
+        };
+    }
+    public static ConvertMemberClan(apiData: any): MemberResponseDTO {
+        const data = apiData?.data;
+        if (!data || typeof data !== "object")
+            return { result: [], pageInfo: this.defaultPageInfo() };
+
+        const members: UserClan[] = (Array.isArray(data.result) ? data.result : []).map((user: any) => ({
+            id: user.id ?? "",
+            username: user.username ?? "",
+            display_name: user.display_name ?? "",
+            avatar_url: user.avatar_url ?? null,
+            gender: user.gender ?? null,
+            clan_role: user.clan_role ?? null,
+            total_score: user.total_score ?? 0,
+            weekly_score: user.weekly_score ?? 0,
+            rank: user.rank ?? 0,
+        }));
+
+        return { result: members, pageInfo: this.extractPageInfo(data) };
+    }
+
+    public static convertContributorsClan(apiData: any): ClanContributorsResponseDTO {
+        const data = apiData?.data;
+        if (!data || typeof data !== 'object') {
+            return { result: [], pageInfo: this.defaultPageInfo() };
+        }
+        const contributors: ClanContributorDTO[] = (Array.isArray(data.result) ? data.result : []).map(
+            (user: any) => ({
+                user_id: user.user_id ?? '',
+                username: user.username ?? '',
+                type: user.type ?? '',
+                total_amount: user.total_amount ?? 0,
+                avatar_url: user.avatar_url ?? null,
+                clan_role: user.clan_role ?? null,
+                rank: user.rank ?? 0,
+            }),
+        );
+
+        return { result: contributors, pageInfo: this.extractPageInfo(data) };
+    }
+
+    public static ConvertClanActivity(response: any): ClanActivityResponseDTO {
+        const data = response?.data ?? {};
+
+        const clanActivityItems: ClanActivityItemDTO[] = Array.isArray(data.result)
+            ? data.result.map((item: any) => ({
+                userName: item.userName ?? '',
+                actionType: item.actionType ?? '',
+                itemName: item.itemName,
+                quantity: item.quantity,
+                amount: item.amount,
+                time: item.time,
+                createdAt: item.created_at,
+                officeName: item.officeName
+            }))
+            : [];
+
+        return {
+            result: clanActivityItems,
+            pageInfo: data ? this.extractPageInfo(data) : this.defaultPageInfo()
+        };
+    }
+
+    public static ConvertClanRequests(apiData: any): ClanRequestResponseDTO {
+        const data = apiData?.data;
+        const requests: MemberClanRequestDTO[] = Array.isArray(data?.result)
+            ? data.result.map((member: any) => ({
+                id: member.id ?? "",
+                status: member.status ?? ClanStatus.PENDING,
+                created_at: member.created_at ?? "",
+                user: member.user ?? null,
+                clan: member.clan ?? null,
+            }))
+            : [];
+
+        return {
+            result: requests,
+            pageInfo: data ? this.extractPageInfo(data) : this.defaultPageInfo()
+        };
+    }
+
+    public static ConvertRequestToJoin(apiData: any): RequestToJoinDTO {
+        const inner = apiData;
+        return {
+            request: inner?.request,
+            canRequestAt: inner?.canRequestAt
+        }
+    }
+
+    public static ConvertPlants(plants: any[]): PlantDataDTO[] {
+        return (plants || []).map(p => ({
+            id: p.id,
+            name: p.name,
+            grow_time: p.grow_time,
+            harvest_point: p.harvest_point,
+            buy_price: p.buy_price,
+            description: p.description,
         }));
     }
+
+    public static convertHarvestCountDTO(apiData: any): HarvestCountDTO {
+        return {
+            harvest_count: apiData.harvest_count,
+            harvest_count_use: apiData.harvest_count_use,
+            harvest_interrupt_count: apiData.harvest_interrupt_count,
+            harvest_interrupt_count_use: apiData.harvest_interrupt_count_use
+        };
+    }
+
+    public static ConvertWarehouseSlots(warehouses: any[]): ClanWarehouseSlotDTO[] {
+        return (warehouses || []).map(w => ({
+            id: w.id,
+            farm_id: w.clan_id,
+            plant_id: w.item_id,
+            quantity: w.quantity,
+            is_harvested: w.is_harvested,
+            purchased_by: w.purchased_by || '',
+            plant: w.plant
+                ? {
+                    id: w.plant.id,
+                    name: w.plant.name,
+                    grow_time: w.plant.grow_time,
+                    harvest_point: w.plant.harvest_point,
+                    buy_price: w.plant.buy_price as PlantState,
+                    description: w.plant.description,
+                }
+                : undefined,
+        }));
+    }
+
+    public static ConvertWarehouseSlot(warehouse: any): ClanWarehouseSlotDTO {
+        return {
+            id: warehouse.id,
+            farm_id: warehouse.farm_id,
+            plant_id: warehouse.plant_id,
+            quantity: warehouse.quantity,
+            is_harvested: warehouse.is_harvested,
+            purchased_by: warehouse.purchased_by || '',
+            plant: warehouse.plant
+                ? {
+                    id: warehouse.plant.id,
+                    name: warehouse.plant.name,
+                    grow_time: warehouse.plant.grow_time,
+                    harvest_point: warehouse.plant.harvest_point,
+                    buy_price: warehouse.plant.buy_price as PlantState,
+                    description: warehouse.plant.description,
+                }
+                : undefined,
+        };
+    }
+
+    public static convertPlantData(slotPlant: any): PlantData | null {
+        if (!slotPlant) return null!;
+        return {
+            id: slotPlant.id,
+            plant_id: slotPlant.plant_id,
+            plant_name: slotPlant.plant_name,
+            planted_by: slotPlant.planted_by,
+            grow_time: slotPlant.grow_time,
+            grow_time_remain: slotPlant.grow_time_remain,
+            stage: slotPlant.stage as PlantState,
+            can_harvest: slotPlant.can_harvest,
+            need_water: slotPlant.need_water,
+            has_bug: slotPlant.has_bug,
+            harvest_at: slotPlant.harvest_at ? new Date(slotPlant.harvest_at) : null,
+        };
+    }
+
+    public static ConvertFarmSlot(slot: any): FarmSlotDTO {
+        return {
+            id: slot.id,
+            slot_index: slot.slot_index,
+            currentPlant: this.convertPlantData(slot.currentPlant),
+        };
+    }
+
+    public static ConvertFarmRequests(farmData: any): FarmDTO {
+        const parsed = typeof farmData === 'string' ? JSON.parse(farmData) : farmData;
+        const data = parsed.data || { slots: [], warehouseSlots: [], farm_id: '' };
+
+        const warehouseSlots = (data.warehouseSlots || []).map(this.ConvertWarehouseSlot);
+        const slots = (data.slots || []).map(this.ConvertFarmSlot);
+
+        return {
+            farm_id: data.farm_id,
+            warehouseSlots,
+            slots,
+        };
+    }
+
     public static ConvertPets(petData: string): PetDTO[] {
         const dataArray = JSON.parse(petData);
         return dataArray.map((data: any) => {
@@ -185,6 +463,7 @@ export default class ConvetData {
         return data.map(item => this.ConvertRewardNewbie(item));
     }
 
+
     public static ConvertRewardNewbie(data: any): RewardNewbieDTO {
         if (data == null) return null;
         const rewardNewbie = new RewardNewbieDTO();
@@ -198,6 +477,15 @@ export default class ConvetData {
         rewardNewbie.quest_type = this.mapServerQuestTypeToClient(data.quest_type);
         rewardNewbie.rewards = this.ConvertReward(data.rewards);
         return rewardNewbie;
+    }
+
+    public static ConvertEventReward(data: any): EventRewardDTO {
+        if (data == null) return null;
+        const eventReward = new EventRewardDTO();
+        eventReward.eventType = data.event_type as EventType;
+        eventReward.isShowFirstDay = data.show_event_auto;
+        eventReward.rewards = this.ConvertRewardNewbieList(data.data);
+        return eventReward;
     }
 
     public static parseFood(foodData: any): Food {
@@ -324,5 +612,4 @@ export default class ConvetData {
             return inventory;
         });
     }
-
 }

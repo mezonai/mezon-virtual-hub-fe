@@ -25,6 +25,24 @@ export class SceneManagerController {
         director.loadScene(sceneName);
     }
 
+    public static async loadSceneAsync(sceneName: string, param?: any): Promise<void> {
+        if (param != null) {
+            this.sceneParams = param;
+        }
+
+        return new Promise<void>((resolve, reject) => {
+            director.loadScene(sceneName, (error, scene) => {
+                if (error) {
+                    console.error(`Không thể load scene: ${sceneName}`, error);
+                    reject(error);
+                    return;
+                }
+                console.log(`Scene ${sceneName} đã load xong.`);
+                resolve();
+            });
+        });
+    }
+
     public static getSceneParam<T>(): T | null {
         const param = this.sceneParams as T;
         this.sceneParams = null;

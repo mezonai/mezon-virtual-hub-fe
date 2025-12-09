@@ -4,12 +4,15 @@ import { UIMission } from '../gameplay/Mission/UIMission';
 import { WebRequestManager } from '../network/WebRequestManager';
 import ConvetData from './ConvertData';
 import { PopupManager } from '../PopUp/PopupManager';
-import { PopupReward, PopupRewardParam, RewardNewType, RewardStatus } from '../PopUp/PopupReward';
+import { PopupReward, PopupRewardParam, RewardStatus } from '../PopUp/PopupReward';
 import { PopupTutorialCatchPet, PopupTutorialCatchPetParam } from '../PopUp/PopupTutorialCatchPet';
 import { Constants } from '../utilities/Constants';
 import { FoodType, RewardNewbieDTO, RewardType } from '../Model/Item';
 import { PopupLoginQuest, PopupLoginQuestParam } from '../PopUp/PopupLoginQuest';
 import { PlayerHubController } from '../ui/PlayerHubController';
+import { PopupLoginEvents, PopupLoginEventsParam } from '../PopUp/PopupLoginEvents';
+import { PopupTutorialFarm, PopupTutorialFarmParam } from '../PopUp/PopupTutorialFarm';
+import { UserManager } from './UserManager';
 
 const { ccclass, property } = _decorator;
 
@@ -29,10 +32,18 @@ export class GameManager extends Component {
         }
     }
 
-    public init() {
+    public async init() {
         this.uiMission.getMissionEventData();
         this.resetNoticeTrandferDiamon();
-        this.tutorialCacthPet();
+        const runRewards = async () => {
+
+            await this.getEventReward();
+            await this.getNewbieReward();
+            await this.getReward();
+        };
+        await this.tutorialCacthPet();
+        await this.tuturialFarm();
+        await runRewards();
     }
 
     resetNoticeTrandferDiamon() {
@@ -43,35 +54,35 @@ export class GameManager extends Component {
 
     async tutorialCacthPet() {
         await WebRequestManager.instance.checkUnclaimedQuest();
-        const runRewards = async () => {
-            await this.getNewbieReward();
-            await this.getReward();
-        };
         if (localStorage.getItem(Constants.TUTORIAL_CACTH_PET) === null) {
             const param: PopupTutorialCatchPetParam = {
                 onActionCompleted: async () => {
-                    await runRewards();
                 },
             };
-            await PopupManager.getInstance().openPopup("PopupTutorialCatchPet", PopupTutorialCatchPet, param);
-            return;
+            const popup = await PopupManager.getInstance().openPopup("PopupTutorialCatchPet", PopupTutorialCatchPet, param);
+            await PopupManager.getInstance().waitCloseAsync(popup.node.uuid);
         }
-        await runRewards();
     }
-
+    async tuturialFarm() {
+        if (localStorage.getItem(Constants.TUTORIAL_FARM) !== null) return;
+        const param: PopupTutorialFarmParam = {
+        };
+        const popup = await PopupManager.getInstance().openPopup("PopupTutorialFarm", PopupTutorialFarm, param);
+        await Constants.waitUntil(() => UserManager.instance != null && UserManager.instance.GetMyClientPlayer != null && UserManager.instance.GetMyClientPlayer.get_MoveAbility != null);
+        UserManager.instance.GetMyClientPlayer.get_MoveAbility.StopMove();
+        await PopupManager.getInstance().waitCloseAsync(popup.node.uuid);
+        UserManager.instance.GetMyClientPlayer.get_MoveAbility.startMove();
+    }
     async getReward() {
         const rewardItems = await WebRequestManager.instance.postGetRewardAsync();
         if (rewardItems.length <= 0) return;
         for (let i = 0; i < rewardItems.length; i++) {
-            const type = Constants.mapRewardType(rewardItems[i]);
-            const name = type == RewardNewType.NORMAL_FOOD ? "Thức ăn sơ cấp" : type == RewardNewType.PREMIUM_FOOD ? "Thức ăn cao cấp"
-                : type == RewardNewType.ULTRA_PREMIUM_FOOD ? "Thức ăn siêu cao cấp" : type == RewardNewType.GOLD ? "Vàng" : "Kim cương";
+            const name = Constants.getNameItem(rewardItems[i]);
             const content = `Chúc mừng bạn nhận thành công \n ${name}`;
             const param: PopupRewardParam = {
-                rewardType: type,
-                quantity: rewardItems[i].quantity,
                 status: RewardStatus.GAIN,
                 content: content,
+                reward: rewardItems[i]
             };
             const popup = await PopupManager.getInstance().openPopup('PopupReward', PopupReward, param);
             await PopupManager.getInstance().waitCloseAsync(popup.node.uuid);
@@ -80,8 +91,11 @@ export class GameManager extends Component {
 
     async getNewbieReward() {
         const rewards = await WebRequestManager.instance.getRewardNewbieLoginAsync();
-        if (!rewards || rewards.length === 0) return;
-        GameManager.instance.playerHubController.showUIDailyReward(true);
+        if (!rewards || rewards.length === 0) {
+            GameManager.instance.playerHubController.showButtonLoginNewbie(false);
+            return;
+        }
+        GameManager.instance.playerHubController.showButtonLoginNewbie(true);
         const today = new Date().toISOString().split('T')[0]; // yyyy-mm-dd
         const lastLogged = localStorage.getItem(Constants.SHOW_DAILY_QUEST_FIRST_DAY);
         if (lastLogged !== today) {
@@ -97,6 +111,27 @@ export class GameManager extends Component {
             localStorage.setItem(Constants.SHOW_DAILY_QUEST_FIRST_DAY, today);
             await PopupManager.getInstance().waitCloseAsync(popup.node.uuid);
         }
+    }
+
+    async getEventReward() {
+        const eventReward = await WebRequestManager.instance.getEventRewardAsync();
+        if (!eventReward || eventReward.rewards.length == 0) {
+            GameManager.instance.playerHubController.showButtonLoginEvent(false);
+            return;
+        }
+        if (!eventReward.isShowFirstDay) return;// ko show nhưng có event nên ko tắt nút
+        GameManager.instance.playerHubController.showButtonLoginEvent(true);
+        const param: PopupLoginEventsParam = {
+            rewardEvents: eventReward,
+        };
+
+        const popup = await PopupManager.getInstance().openPopup(
+            "PopupLoginEvents",
+            PopupLoginEvents,
+            param
+        );
+        await PopupManager.getInstance().waitCloseAsync(popup.node.uuid);
+
     }
 
     protected onDestroy(): void {

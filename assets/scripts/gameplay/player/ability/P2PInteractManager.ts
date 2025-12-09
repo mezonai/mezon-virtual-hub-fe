@@ -1,11 +1,13 @@
 import { _decorator, CCFloat, Node, tween, Vec3 } from 'cc';
 import { Ability } from './Ability';
 import { ActionType, PlayerInteractAction } from './PlayerInteractAction';
-import { UIManager } from '../../../core/UIManager';
 import { RPSGame } from './RPSGame';
-import { PetCombat } from './PetCombat';
 import { PopupManager } from '../../../PopUp/PopupManager';
 import { MessageTimeoutParam, PopupMessageTimeout } from '../../../PopUp/PopupMessageTimeout';
+import { UserManager } from '../../../core/UserManager';
+import { UserMeManager } from '../../../core/UserMeManager';
+import { OfficePosition } from '../../../GameMap/OfficePosition';
+import { RoomType } from '../../../GameMap/RoomType';
 const { ccclass, property } = _decorator;
 
 @ccclass('P2PInteractManager')
@@ -46,6 +48,14 @@ export class P2PInteractManager extends Ability {
         if (this.playerController.isInBattle) {
             return;
         }
+      
+        if (this.playerController.playerInteractFarm.isHarvesting) {
+            this.playerController.playerInteractFarm.OnActionInterruptHarvest();
+            return;
+        }
+
+        if(UserMeManager.CurrentOffice.roomEnds == RoomType.FARM) return;
+
         if (this.CanShowUI) {
             if (Date.now() - this.lastActionTime > this.interactDelay) {
                 this.lastActionTime = Date.now()

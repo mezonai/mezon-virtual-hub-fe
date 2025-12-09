@@ -9,6 +9,7 @@ import { OfficeSceneController } from '../GameMap/OfficeScene/OfficeSceneControl
 import { EVENT_NAME } from '../network/APIConstant';
 import { UserMeManager } from './UserMeManager';
 import { Constants } from '../utilities/Constants';
+import { LoadingManager } from '../PopUp/LoadingManager';
 
 @ccclass('GameplayRoot')
 export class GameplayRoot extends Component {
@@ -24,7 +25,7 @@ export class GameplayRoot extends Component {
 
         if (value == this.totalCoreNeedLoad) {
             this.initGameComponent();
-            WebRequestManager.instance.toggleLoading(false);
+            LoadingManager.getInstance().closeLoading();
         }
     }
 
@@ -45,7 +46,7 @@ export class GameplayRoot extends Component {
 
     private async init() {
         this.loadedCore = 0;
-        WebRequestManager.instance.toggleLoading(true);
+        LoadingManager.getInstance().openLoading();
         UIManager.Instance.init();
         await UserManager.instance.init();
         await this.loadMapUntilSuccess();
@@ -58,7 +59,6 @@ export class GameplayRoot extends Component {
         }
         let component = this.node.getComponent(GameManager);
         component.init();
-        game.emit(EVENT_NAME.ON_OFFICE_SCENE_LOADED);
     }
 
     private initDataFromAPI() {

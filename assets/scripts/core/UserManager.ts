@@ -258,12 +258,12 @@ export class UserManager extends Component {
             data: playersBattle,
             enviromentBattle: enviormentType,
             onActionClose: () => {
-                UserManager.instance.GetMyClientPlayer.moveAbility.startMove();
+                UserManager.instance.GetMyClientPlayer.get_MoveAbility.startMove();
             },
         };
         if (UIManager.Instance == null) return;
         if (UserManager.instance) {
-            UserManager.instance.GetMyClientPlayer.moveAbility.StopMove();
+            UserManager.instance.GetMyClientPlayer.get_MoveAbility.StopMove();
         }
         PopupManager.getInstance().closeAllPopups();
         UIManager.Instance.batteScene.setData(param);

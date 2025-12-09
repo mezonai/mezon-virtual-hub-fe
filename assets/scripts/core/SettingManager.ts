@@ -65,8 +65,8 @@ export class SettingManager extends BasePopup {
         this.isMutedSound = this.currentSoundVolume === 0;
         this.isMutedMusic = this.currentMusicVolume === 0;
 
-        this.savedSoundVolume = this.isMutedSound ? 0.5 : this.currentSoundVolume;
-        this.savedMusicVolume = this.isMutedMusic ? 0.5 : this.currentMusicVolume;
+        this.savedSoundVolume = this.isMutedSound ? 0 : this.currentSoundVolume;
+        this.savedMusicVolume = this.isMutedMusic ? 0 : this.currentMusicVolume;
 
         this.soundSlider.progress = this.currentSoundVolume;
         this.musicSlider.progress = this.currentMusicVolume;
@@ -126,10 +126,7 @@ export class SettingManager extends BasePopup {
 
     private onSoundButtonToggle() {
         this.isMutedSound = !this.isMutedSound;
-
-        if (this.isMutedSound) {
-            this.currentSoundVolume = 0;
-        }
+        this.currentSoundVolume = this.isMutedSound ? 0 : this.savedSoundVolume;
         this.soundSlider.progress = this.currentSoundVolume;
         this.soundCustomSlider.updateSliderHandleAndFill(this.currentSoundVolume);
         SoundManager.instance.setSfxVolume(this.currentSoundVolume);
@@ -139,10 +136,8 @@ export class SettingManager extends BasePopup {
 
     private onMusicButtonToggle() {
         this.isMutedMusic = !this.isMutedMusic;
+        this.currentMusicVolume = this.isMutedMusic ? 0 : this.savedMusicVolume;
 
-        if (this.isMutedMusic) {
-            this.currentMusicVolume = 0;
-        }
         this.musicSlider.progress = this.currentMusicVolume;
         this.musicCustomSlider.updateSliderHandleAndFill(this.currentMusicVolume);
         SoundManager.instance.setBgmVolume(this.currentMusicVolume);

@@ -4,7 +4,7 @@ export default class APIConstant {
     static USER: string = "user";
     static LOGIN: string = "mezon-login";
     static AUTH: string = "auth";
-    static MAP: string = "map";
+    static CLANS: string = "clans";
     static INVENTORY: string = "inventory";
     static BUY = "buy";
     static ITEM = "item";
@@ -27,7 +27,29 @@ export default class APIConstant {
     static CHECK_UNCLAIMED_QUEST = "check-unclaimed-quest";
     static UPGRADE_STAR_PET = "merge";
     static UPGRADE_RARITY_PET = "upgrade-rarity";
-    static ITEM_TYPE = "item-type";    
+    static ITEM_TYPE = "item-type";
+    static USERS = "users";
+    static REQUEST_JOIN = "request-join";
+    static LEAVE = "leave";
+    static CLAN_FUNDS = "clan-funds";
+    static CONTRIBUTORS = "contributors";
+    static DESCRIPTION = "description";
+    static CLAN_REQUESTS = "clan-requests";
+    static PENDING = "pending";
+    static APPROVE = "approve";
+    static CANCEL_JOIN = "cancel-join";
+    static MEMBERS = "members";
+    static TRANSFER_LEADERSHIP = "transfer-leadership";
+    static ASSIGN_VICE_LEADER = "assign-vice-leader";
+    static REMOVE_VICE_LEADER = "remove-vice-leader";
+    static FARM_SLOT = "farm-slots";
+    static CLANWAREHOUSE = "Clan-Warehouses";
+    static PLANT = "plants";
+    static BUY_ITEM_CLAN = "buy-items-clan";
+    static USER_CLAN_STATS = "user-clan-stats";
+    static HARVEST_COUNTS = "harvest-counts";
+    static CLAN_ACTIVITYS = "clan-activitys";
+    static LOGIN_EVENT_7DAYS = "login-event-7-days";
 }
 
 export class APIConfig {
@@ -49,7 +71,6 @@ export class EVENT_NAME {
     static ON_BUY_TOKEN = "ON_BUY_TOKEN";
     static ON_WITHDRAW_TOKEN = "ON_WITHDRAW_TOKEN";
     static ON_CHANGE_DIAMOND_TO_COIN = "ON_CHANGE_DIAMOND_TO_COIN";
-    static ON_OFFICE_SCENE_LOADED = "ON_OFFICE_SCENE_LOADED";
     static RELOAD_SCENE = "RELOAD_SCENE";
     static ON_PLAYER_ADDED = "ON_PLAYER_ADDED";
     static ON_SEND_GAME_COIN = "ON_SEND_GAME_COIN";

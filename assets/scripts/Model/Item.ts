@@ -1,6 +1,7 @@
 import { _decorator, SpriteFrame } from "cc";
 import { LocalItemDataConfig } from "./LocalItemConfig";
 import { AnimalRarity, PetDTO, Species, Element } from "./PetDTO";
+import { Enum } from "cc";
 
 export class BaseInventoryDTO {
 
@@ -72,9 +73,21 @@ export class RewardNewbieDTO {
     public rewards: RewardItemDTO[] = [];
 }
 
+export class EventRewardDTO {
+    public rewards: RewardNewbieDTO[];
+    public isShowFirstDay: boolean = false;
+    public eventType: EventType;
+}
+
 export interface RewardResponse {
     rewards: RewardItemDTO[];
     user_gold: number;
+}
+
+export enum EventType {
+    EVENT_LOGIN_PLANT = 'event_login_plant',
+    EVENT_LOGIN_PET = 'event_login_pet',
+    EVENT_LOGIN_CLAN = 'event_login_clan',
 }
 
 export enum RewardType {
@@ -83,6 +96,7 @@ export enum RewardType {
     DIAMOND = 'diamond',
     FOOD = 'food',
     PET = 'pet',
+    PLANT = 'plant',
 }
 
 export enum ItemType {
@@ -96,11 +110,13 @@ export enum ItemType {
     GLASSES = 'glasses',
     PET_CARD = 'pet_card',
     PET_FOOD = 'pet_food',
+    ITEM_CLAN = 'item_clan',
 }
 
 export enum InventoryType {
     ITEM = 'item',
     FOOD = 'food',
+    PLANT = 'plant'
 }
 
 export enum FoodType {
@@ -177,12 +193,13 @@ export interface StatsConfigDTO {
 }
 
 export enum ItemCode {
-  RARITY_CARD_RARE = 'rarity_card_rare',
-  RARITY_CARD_EPIC = 'rarity_card_epic',
-  RARITY_CARD_LEGENDARY = 'rarity_card_legendary',
+    RARITY_CARD_RARE = 'rarity_card_rare',
+    RARITY_CARD_EPIC = 'rarity_card_epic',
+    RARITY_CARD_LEGENDARY = 'rarity_card_legendary',
 }
 
 export interface BuyItemPayload {
+    clanId?: string | number;
     itemId: string | number;
     quantity: number;
     type: string;

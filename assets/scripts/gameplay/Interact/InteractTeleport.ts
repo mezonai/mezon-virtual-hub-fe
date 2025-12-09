@@ -21,7 +21,7 @@ export class InteractTeleport extends Interactable {
     officeChange: OfficePosition = OfficePosition.NONE;// Office sẽ đến. None = không thay đổi Office
     @property({ type: Enum(RoomType) })
     roomTypeTeleport: RoomType = RoomType.NONE;// Room sẽ được dịch chuyển đến
-    currentOffice: OfficePosition
+    currentOffice: OfficeSenenParameter;
     protected async interact(playerSessionId: string) {
         if (!this.isPlayerNearby) return;
         await this.moveTeleport();
@@ -39,12 +39,14 @@ export class InteractTeleport extends Interactable {
         }
         switch (roomType) {
             case RoomType.OFFICE:
-                return `Để Dịch Chuyển Đến Văn Phòng ${Constants.convertNameOffice(this.currentOffice)}`;;
+                return `Để Dịch Chuyển Đến Văn Phòng ${Constants.convertNameOffice(this.currentOffice.currentOffice)}`;;
             case RoomType.COMPLEXNCC:
                 return "Để Dịch Chuyển Đến Khu Phức Hợp";
             case RoomType.SHOP1:
             case RoomType.SHOP2:
                 return "Để Dịch Chuyển Đến Cửa hàng";
+            case RoomType.FARM:
+                return "Để Dịch Chuyển Đến Nông Trại";
             case RoomType.NONE:
                 return "";
             default:
@@ -54,6 +56,11 @@ export class InteractTeleport extends Interactable {
 
     moveTeleport() {
         if (!UserManager.instance.GetMyClientPlayer) return;
+        if (!this.currentOffice) {
+            this.currentOffice = UserMeManager.CurrentOffice;
+        }
+        UserMeManager.CurrentOffice = this.currentOffice;
+        UserMeManager.CurrentRoomType = this.currentRoomType;
         UserManager.instance.GetMyClientPlayer.leaveRoom(() => {
             this.teleport();
         });
@@ -65,8 +72,8 @@ export class InteractTeleport extends Interactable {
             SceneManagerController.loadScene(SceneName.SCENE_GAME_MAP, param)
             return;
         }
-        if (this.officeChange == OfficePosition.NONE || this.officeChange == this.currentOffice) {
-            this.loadOfficeMap(this.currentOffice);
+        if (this.officeChange == OfficePosition.NONE || this.officeChange == this.currentOffice.currentOffice) {
+            this.loadOfficeMap(this.currentOffice.currentOffice);
         }
         else {
             this.updateUserDataUserClient();
@@ -74,12 +81,11 @@ export class InteractTeleport extends Interactable {
     }
 
     private updateUserDataUserClient() {
-        UserMeManager.SetMap = Constants.GetMapData(this.officeChange);
+        UserMeManager.SetClan = Constants.GetMapData(this.officeChange);
         let userMe = UserMeManager.Get;
         let userData = {
-            "map_id": userMe.map.id,
-            "position_x": null,
-            "position_y": null,
+            "position_x": Constants.POSX_PLAYER_INIT,
+            "position_y": Constants.POSY_PLAYER_INIT,
             "display_name": userMe.user.display_name != "" ? userMe.user.display_name : userMe.user.username,
             "gender": userMe.user.gender,
             "skin_set": UserMeManager.Get.user.skin_set
@@ -102,7 +108,9 @@ export class InteractTeleport extends Interactable {
     }
 
     private loadOfficeMap(officeMoved: OfficePosition) {
-        const param = new OfficeSenenParameter(officeMoved, this.currentRoomType, this.roomTypeTeleport, Constants.convertNameRoom(officeMoved, this.roomTypeTeleport));
+        const previousOffice = UserMeManager.CurrentOffice;
+        const previousRoomType = UserMeManager.CurrentRoomType;
+        const param = new OfficeSenenParameter(previousOffice.currentOffice, previousRoomType, this.roomTypeTeleport, Constants.convertNameRoom(previousOffice.currentOffice, this.roomTypeTeleport), UserMeManager.CurrentOffice.idclan);
         SceneManagerController.loadScene(SceneName.SCENE_OFFICE, param)
     }
 }

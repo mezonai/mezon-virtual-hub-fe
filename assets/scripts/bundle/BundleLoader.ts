@@ -4,6 +4,7 @@ import { DBController } from './DBController';
 import { UIManager } from '../core/UIManager';
 import { WebRequestManager } from '../network/WebRequestManager';
 import { Constants } from '../utilities/Constants';
+import { LoadingManager } from '../PopUp/LoadingManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('BundleLoader')
@@ -119,36 +120,29 @@ export abstract class BundleLoader extends Component {
         }
     }
 
-    private toggleLoading(active) {
-        if (WebRequestManager.instance) {
-            WebRequestManager.instance.toggleLoading(active);
-        }
-    }
-
     public async getBundleData(loadData) {
         try {
-            this.toggleLoading(true);
+            LoadingManager.getInstance().openLoading();
             let data = this.assetDictionary[loadData.bundlePath];
             if (data != null) {
-                this.toggleLoading(false);
                 return data;
             }
             else {
                 let bundle = this.getBundleForData(loadData.bundleName);
                 if (bundle != null) {
                     await this.init([bundle], this.availableBundles, (bundleName, progress) => { })
-                    this.toggleLoading(false);
                     return this.assetDictionary[loadData.bundlePath];
                 }
                 else {
-                    this.toggleLoading(false);
                     return null;
                 }
             }
         }
         catch(e) {
-            this.toggleLoading(false);
             //console.error(e);
+        }
+        finally{
+            LoadingManager.getInstance().closeLoading();
         }
     }
 

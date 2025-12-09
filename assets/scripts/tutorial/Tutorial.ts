@@ -9,8 +9,8 @@ export class Tutorial extends Component {
     @property(Node) dialogueBox: Node = null;
     @property(Label) dialogueText: Label = null;
     @property([Button]) buttons: Button[] = [];
+    @property(GameMapController) gameMapController: GameMapController = null;
     private highlightIndexes: number[] = [0,1,2,3,4,5,6];
-    public static tutorial_completed:string ="TUTORIAL_COMPLETE";
     private static _instance: Tutorial;
     public static get instance() {
         return Tutorial._instance;
@@ -21,10 +21,11 @@ export class Tutorial extends Component {
         this.dialogueBox.active = false;
     }
 
-    public startTutorial(autoLoadMap: boolean = true) {
+    public startTutorial() {
         this.characterNode.active = true;
         this.dialogueBox.active = true;
-        this.dialogueText.string = "Chào mừng bạn đến với Mezon Vhub, hãy chọn văn phòng bạn muốn tham gia?";
+        this.dialogueText.string = "Chào mừng bạn đến với Mezon Vhub, hãy chọn văn phòng bạn muốn vào";
+        this.gameMapController.CheckLoadMap(true);
         for (let i = 0; i < this.buttons.length; i++) {
             if (this.highlightIndexes.includes(i)) {
                 this.buttons[i].interactable = true;
@@ -33,24 +34,19 @@ export class Tutorial extends Component {
                 this.buttons[i].interactable = false;
                 this.dimButton(this.buttons[i].node);
             }
-
             this.buttons[i].node.on(Button.EventType.CLICK, () => this.onChooseOffice(), this);
         }
     }
 
     private onChooseOffice() {
-
         this.dialogueBox.active = false;
         this.characterNode.active = false;
-
         new Tween(this.node)
             .to(0.5, { scale: new Vec3(0, 0, 0) }, { easing: "quadOut" })
             .call(() => {
                 this.node.scale = new Vec3(1, 1, 1);
             })
             .start();
-        sys.localStorage.setItem(Tutorial.tutorial_completed, false);
-        GameMapController.instance.CheckLoadMap(true);
     }
 
     highlightButton(buttonNode: Node) {

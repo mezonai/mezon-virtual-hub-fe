@@ -5,6 +5,7 @@ import { UserMeManager } from '../core/UserMeManager';
 import { EVENT_NAME } from '../network/APIConstant';
 import { UserDataResponse } from '../Interface/DataMapAPI';
 import { BasePopup } from '../PopUp/BasePopup';
+import { Constants } from '../utilities/Constants';
 
 const { ccclass, property } = _decorator;
 
@@ -34,30 +35,8 @@ export class BaseProfileManager extends BasePopup {
     protected updateProfile(data: any) {
     }
 
-    private scaleFacor: number = 62.13;
     protected loadAvatar(url: string) {
-        if (!this.sprite_Avatar || !url) return;
-
-        assetManager.loadRemote(url, { ext: '.png' }, (err, imageAsset) => {
-            if (err) {
-                console.log("Failed to load image:", err);
-                return;
-            }
-
-            if (!(imageAsset instanceof ImageAsset)) {
-                console.log("Loaded asset is not an ImageAsset!");
-                return;
-            }
-            const texture = new Texture2D();
-            texture.image = imageAsset;
-
-            const spriteFrame = new SpriteFrame();
-            spriteFrame.texture = texture;
-            let scaleValue = this.scaleFacor / spriteFrame.width;
-            this.sprite_Avatar.node.scale = new Vec3(scaleValue, scaleValue, scaleValue);
-            this.sprite_Avatar.spriteFrame = spriteFrame;
-        });
-
+       Constants.loadAvatar(this.sprite_Avatar, url);
     }
 
     protected capitalizeWords(text: string): string {
