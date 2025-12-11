@@ -16,7 +16,7 @@ export class UIMobileManager extends Component {
 
     onLoad() {
         this.node.active = sys.isMobile
-        if (sys.isMobile) return;
+        if (!sys.isMobile) return;
         if (UIMobileManager._instance == null) {
             UIMobileManager._instance = this;
         }
