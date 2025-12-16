@@ -9,6 +9,7 @@ import Utilities from '../../../utilities/Utilities';
 import { BasePopup } from '../../../PopUp/BasePopup';
 import { instantiate } from 'cc';
 import { LocalItemDataConfig } from '../../../Model/LocalItemConfig';
+import { ResourceManager } from '../../../core/ResourceManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('BaseInventoryManager')
@@ -135,7 +136,8 @@ export class BaseInventoryManager extends BasePopup {
     }
 
     protected getLocalData(item): LocalItemDataConfig {
-        return null;
+        if (item.item.gender != "not specified" && item.item.gender != UserMeManager.Get.user.gender) return null;
+        return ResourceManager.instance.getLocalSkinById(item.item.id, item.item.type);
     }
 
     protected async registUIItemData(itemNode: Node, item: BaseInventoryDTO, onClick?: (uiItem: InventoryUIITem, data: any) => void) {

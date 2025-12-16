@@ -13,6 +13,9 @@ export class BundleLoadData {
         new BundleData("", "SkinBundle4", "1", "Sprite", 1),
         new BundleData("", "SkinBundle5", "1", "Sprite", 1),
         new BundleData("", "SkinBundle6", "1", "Sprite", 1),
+        new BundleData("", "SkinBundle7", "1", "Sprite", 1),
+        new BundleData("", "SkinBundle8", "1", "Sprite", 1),
+        new BundleData("", "SkinBundle9", "1", "Sprite", 1),
     ];
 }
 

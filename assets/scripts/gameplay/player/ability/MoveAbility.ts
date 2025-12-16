@@ -180,24 +180,6 @@ export class MoveAbility extends Ability {
         this.node.setWorldPosition(newPosition);
     }
 
-    // public updateAction(actionName = "move", keepAction = false) {
-    //     if (this.playerController.CanUpdateAnim) {
-    //         this.animationController.play(actionName, keepAction);
-    //     }
-    //     else {
-    //         this.animationController.play("idle", keepAction);
-    //     }
-
-    //     const moveData = this.encodeMoveData(
-    //         this.lastPosition.x,
-    //         this.lastPosition.y,
-    //         this.currentDirection.x,
-    //         this.animationController.getCurrentAnim
-    //     );
-    //     this.room.send("move", moveData);
-
-    // }
-
     public updateAction(actionName = "move", keepAction = false) {
         this.lastPosition.x = Math.round(this.node.position.x);
         this.lastPosition.y = Math.round(this.node.position.y);
