@@ -586,8 +586,8 @@ export class ServerManager extends Component {
                         baseScore: data.baseScore,
                         totalScore: data.totalScore,
                         bonusPercent: data.bonusPercent,
-                        remainingHarvest: data.remainingHarvest,
-                        maxHarvest: data.maxHarvest,
+                        // remainingHarvest: data.remainingHarvest,
+                        // maxHarvest: data.maxHarvest,
                     };
 
                     PopupManager.getInstance().openAnimPopup("PopupHarvestReceive", PopupHarvestReceive, param);

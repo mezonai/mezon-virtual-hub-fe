@@ -157,9 +157,11 @@ export class PopupClanDetailInfo extends BasePopup {
 
     async updateDescription() {
         const leaderId = this.clanDetail?.leader?.id;
-        const viceLeaderId = this.clanDetail?.vice_leader?.id;
+        const isViceLeader = this.clanDetail?.vice_leaders?.some(
+            (v) => v.id === UserMeManager.Get.user.id,
+        );
 
-        if (UserMeManager.Get.user.id === leaderId || UserMeManager.Get.user.id === viceLeaderId) {
+        if (UserMeManager.Get.user.id === leaderId || isViceLeader) {
             const param: PopupOfficeNoticeParam = {
                 send: async (message: string) => {
                     await this.callApiPostNotice(message);
@@ -188,7 +190,7 @@ export class PopupClanDetailInfo extends BasePopup {
     setDataMyClanInfo(clanData: ClansData) {
         this.branch.string = ` ${clanData.name ?? ""}`;
         this.nameLeader.string = ` ${clanData.leader?.display_name ?? "Hiện chưa có"}`;
-        this.nameViceLeader.string = ` ${clanData.vice_leader?.display_name ?? "Hiện chưa có"}`;
+        //this.nameViceLeader.string = ` ${clanData.vice_leader?.display_name ?? "Hiện chưa có"}`;
         this.total_Member.string = ` ${(clanData.member_count ?? 0).toString()} `;
         this._description = clanData.description;
         this.description.string = ` Mô tả: ${this._description ?? ""}`;

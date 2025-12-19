@@ -38,6 +38,8 @@ export class Constants {
     public static readonly RESET_TIME = 10 * 1000; // 10s
     public static readonly MUTE_TIME = 60 * 1000;  // 1'
     public static readonly MAX_CHAT = 3;
+    public static readonly MAX_VICE_LEADER = 5;
+
     public static convertKeyOffice(positionTarget: OfficePosition): string {
         switch (positionTarget) {
             case OfficePosition.HANOI1:

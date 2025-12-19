@@ -1,9 +1,9 @@
-import { _decorator, Component, Node, Button, Prefab,ScrollView,instantiate } from 'cc';
+import { _decorator, Component, Node, Button, Prefab, ScrollView, instantiate } from 'cc';
 import { PopupManager } from './PopupManager';
 import { ItemMemberManager } from '../Clan/ItemMemberManager';
 import { Label } from 'cc';
 import { PopupClanMemberManager } from './PopupClanMemberManager';
-import { ClansData, MemberResponseDTO, RemoveMembersPayload, UserClan } from '../Interface/DataMapAPI';
+import { AssignViceLeadersDto, ClanRole, ClansData, MemberResponseDTO, RemoveMembersPayload, UserClan } from '../Interface/DataMapAPI';
 import { WebRequestManager } from '../network/WebRequestManager';
 import { Constants } from '../utilities/Constants';
 import { PopupSelectionMini, SelectionMiniParam } from './PopupSelectionMini';
@@ -32,9 +32,9 @@ export class PopupManageMember extends Component {
     private _listMember: ItemMemberManager[] = [];
     private clanDetail: ClansData;
     private memberSelected: Map<string, UserClan> = new Map();
-    
+
     private popupClanMemberManager: PopupClanMemberManager;
-    private  onMemberChanged?: () => void;
+    private onMemberChanged?: () => void;
 
     public init(clansData: ClansData, popupClanMemberManager: PopupClanMemberManager, param?: { onMemberChanged?: () => void }): void {
         this.tranferBtn.addAsyncListener(async () => {
@@ -88,8 +88,9 @@ export class PopupManageMember extends Component {
 
     private checkShowMemberManager() {
         const isLeader = UserMeManager.Get.user.id === this.clanDetail?.leader?.id;
-        const isViceLeader = UserMeManager.Get.user.id === this.clanDetail?.vice_leader?.id;
-
+        const isViceLeader = this.clanDetail?.vice_leaders?.some(
+            (v) => v.id === UserMeManager.Get.user.id,
+        );
         this.tranferBtn.node.active = isLeader;
         this.promoteBtn.node.active = isLeader;
         this.demoteBtn.node.active = isLeader;
@@ -101,11 +102,11 @@ export class PopupManageMember extends Component {
         this.svMemberList.content.removeAllChildren();
         this._listMember = [];
         this.noMember.active = false;
-        if(!this.listMember?.result || this.listMember.result.length === 0){
+        if (!this.listMember?.result || this.listMember.result.length === 0) {
             this.noMember.active = true;
             return;
         }
-        
+
         for (const itemOffice of this.listMember.result) {
             const itemJoinGuild = instantiate(this.itemPrefab);
             itemJoinGuild.setParent(this.svMemberList.content);
@@ -131,7 +132,7 @@ export class PopupManageMember extends Component {
         this.selectedCountLabel.string = `Đã chọn: ${count} thành viên`;
     }
 
-    private validateSingleSelection(actionName: string, target :UserClan = null): boolean {
+    private validateSingleSelection(actionName: string, target: UserClan = null): boolean {
         const count = this.memberSelected.size;
         if (count === 0) {
             Constants.showConfirm(`Vui lòng thành viên bất kì để "${actionName}"!`);
@@ -158,10 +159,9 @@ export class PopupManageMember extends Component {
                 if (!popup?.node?.uuid) return;
                 await WebRequestManager.instance.getUserProfileAsync();
                 await WebRequestManager.instance.patchTransferLeaderShipAsync(this.clanDetail.id, target.id);
+                this.clanDetail = await WebRequestManager.instance.getClanDetailAsync(this.clanDetail.id);
                 await Promise.all([
-                    this.onMemberChanged?.(),
-                    this.loadList(1),
-                    this.memberSelected.clear(),
+                    this.refreshAfterAction(),
                     PopupManager.getInstance().closePopup(popup.node.uuid),
                 ]);
             },
@@ -174,60 +174,76 @@ export class PopupManageMember extends Component {
     }
 
     private async onPromoteMembers() {
-       const [target] = Array.from(this.memberSelected.values());
-        if (!this.validateSingleSelection("Thăng Chức Vụ", target)) return;
-        if (!this.validatePromote(target)) return;
+        const targets = this.validateMultiPromote();
+        if (!targets) return;
 
         const popup = await PopupManager.getInstance().openAnimPopup(
-            "PopupSelectionMini", PopupSelectionMini, {
-            content: "Bạn có muốn thăng chức Phó Giám Đốc cho người này không?",
-            textButtonLeft: "Có",
-            textButtonRight: "Không",
-            textButtonCenter: "",
-            onActionButtonLeft: async () => {
-                if (!popup?.node?.uuid) return;
-                await WebRequestManager.instance.patchAssignViceLeaderAsync(this.clanDetail.id, target.id);
-                await Promise.all([
-                    this.onMemberChanged?.(),
-                    this.loadList(1),
-                    this.memberSelected.clear(),
-                    PopupManager.getInstance().closePopup(popup.node.uuid),
-                ]);
-            },
-            onActionButtonRight: () => {
-                if (popup?.node?.uuid) {
+            "PopupSelectionMini",
+            PopupSelectionMini,
+            {
+                content: `Bạn có muốn thăng chức Phó Giám Đốc cho ${targets.length} thành viên không?`,
+                textButtonLeft: "Có",
+                textButtonRight: "Không",
+                textButtonCenter: "",
+                onActionButtonLeft: async () => {
+                    if (!popup?.node?.uuid) return;
+
+                    const targetUserIds = targets.map(u => u.id);
+                    const payload: AssignViceLeadersDto = {
+                        targetUserIds
+                    };
+
+                    await WebRequestManager.instance.patchAssignViceLeadersAsync(
+                        this.clanDetail.id,
+                        payload,
+                    );
+                    this.clanDetail = await WebRequestManager.instance.getClanDetailAsync(this.clanDetail.id);
+                    await Promise.all([
+                        this.refreshAfterAction(),
+                        PopupManager.getInstance().closePopup(popup.node.uuid),
+                    ]);
+                },
+                onActionButtonRight: () => {
                     PopupManager.getInstance().closePopup(popup.node.uuid);
-                }
+                },
             },
-        });
+        );
     }
 
     private async onDemoteMembers() {
-        const [target] = Array.from(this.memberSelected.values());
-        if (!this.validateSingleSelection("Hủy Chức Vụ", target)) return;
-        if (!this.validateDemote(target)) return;
+        const targets = Array.from(this.memberSelected.values());
+        if (!this.validateDemoteMultiple(targets)) return;
         const popup = await PopupManager.getInstance().openAnimPopup(
-            "PopupSelectionMini", PopupSelectionMini, {
-            content: "Bạn có muốn hủy chức Phó Giám Đốc của người này không?",
-            textButtonLeft: "Có",
-            textButtonRight: "Không",
-            textButtonCenter: "",
-            onActionButtonLeft: async () => {
-                if (!popup?.node?.uuid) return;
-                await WebRequestManager.instance.patchRemoveViceLeaderAsync(this.clanDetail.id, target.id);
-                await Promise.all([
-                    this.onMemberChanged?.(),
-                    this.loadList(1),
-                    this.memberSelected.clear(),
-                    PopupManager.getInstance().closePopup(popup.node.uuid),
-                ]);
-            },
-            onActionButtonRight: () => {
-                if (popup?.node?.uuid) {
-                    PopupManager.getInstance().closePopup(popup.node.uuid);
-                }
-            },
-        });
+            "PopupSelectionMini",
+            PopupSelectionMini,
+            {
+                content: `Bạn có muốn hủy chức Phó Giám Đốc của ${targets.length} người đã chọn không?`,
+                textButtonLeft: "Có",
+                textButtonRight: "Không",
+                textButtonCenter: "",
+                onActionButtonLeft: async () => {
+                    if (!popup?.node?.uuid) return;
+
+                    const targetUserIds = targets.map(u => u.id);
+
+                    await WebRequestManager.instance.patchRemoveViceLeadersAsync(
+                        this.clanDetail.id,
+                        { targetUserIds }
+                    );
+                    this.clanDetail = await WebRequestManager.instance.getClanDetailAsync(this.clanDetail.id);
+
+                    await Promise.all([
+                        this.refreshAfterAction(),
+                        PopupManager.getInstance().closePopup(popup.node.uuid),
+                    ]);
+                },
+                onActionButtonRight: () => {
+                    if (popup?.node?.uuid) {
+                        PopupManager.getInstance().closePopup(popup.node.uuid);
+                    }
+                },
+            }
+        );
     }
 
     private async onRemoveMembers() {
@@ -253,11 +269,8 @@ export class PopupManageMember extends Component {
                 onActionButtonLeft: async () => {
                     if (!popup?.node?.uuid) return;
                     await WebRequestManager.instance.removeMemberAsync(this.clanDetail.id, ids);
-
                     await Promise.all([
-                        this.onMemberChanged?.(),
-                        this.loadList(1),
-                        this.memberSelected.clear(),
+                        this.refreshAfterAction(),
                         PopupManager.getInstance().closePopup(popup.node.uuid),
                     ]);
                 },
@@ -268,10 +281,18 @@ export class PopupManageMember extends Component {
         );
     }
 
-    private validateTransfer(target: UserClan): boolean {
-        const userMe = UserMeManager.Get.user;
+    private async refreshAfterAction() {
+        this.clanDetail = await WebRequestManager.instance.getClanDetailAsync(
+            this.clanDetail.id
+        );
+        this.onMemberChanged?.(),
+        this.checkShowMemberManager();
+        await this.loadList(1);
+        this.memberSelected.clear();
+    }
 
-        if (target.id === userMe.id) {
+    private validateTransfer(target: UserClan): boolean {
+        if (target.id === UserMeManager.Get.user.id) {
             Constants.showConfirm("Bạn không thể tự chuyển chức cho chính mình!");
             return false;
         }
@@ -286,29 +307,65 @@ export class PopupManageMember extends Component {
         return true;
     }
 
-    private validatePromote(target: UserClan): boolean {
-        const leaderId = this.clanDetail?.leader?.id;
-        const viceId = this.clanDetail?.vice_leader?.id;
+    private validateMultiPromote(): UserClan[] | null {
+        const targets = Array.from(this.memberSelected.values());
 
-        if (target.id === leaderId) {
+        if (targets.length === 0) {
+            Constants.showConfirm("Vui lòng chọn ít nhất 1 thành viên!");
+            return null;
+        }
+
+        const currentViceCount = this.clanDetail?.vice_leaders?.length ?? 0;
+        if (currentViceCount >= Constants.MAX_VICE_LEADER) {
+            Constants.showConfirm(
+                "Văn phòng đã có đủ số Phó Giám Đốc!"
+            );
+            return null;
+        }
+
+        if (currentViceCount + targets.length > Constants.MAX_VICE_LEADER) {
+            const remain =
+                Constants.MAX_VICE_LEADER - currentViceCount;
+
+            Constants.showConfirm(
+                `Chỉ có thể thăng chức tối đa ${remain} thành viên nữa!`
+            );
+            return null;
+        }
+
+        const hasLeader = targets.some(
+            (u) => u.clan_role === ClanRole.LEADER
+        );
+        if (hasLeader) {
             Constants.showConfirm("Không thể thăng chức cho Giám đốc!");
-            return false;
-        }
-        if (viceId && viceId !== target.id) {
-            Constants.showConfirm("Đã có Phó Giám đốc! Hãy hủy chức Phó hiện tại trước khi thăng người mới.");
-            return false;
-        }
-        if (target.clan_role === 'vice_leader') {
-            Constants.showConfirm("Người này đã là Phó Giám đốc!");
-            return false;
+            return null;
         }
 
-        return true;
+        const hasVice = targets.some(
+            (u) => u.clan_role === ClanRole.VICE_LEADER
+        );
+        if (hasVice) {
+            Constants.showConfirm("Có thành viên đã là Phó Giám Đốc!");
+            return null;
+        }
+
+        return targets;
     }
 
-    private validateDemote(target: UserClan): boolean {
-        if (target.clan_role !== 'vice_leader') {
-            Constants.showConfirm("Người này không phải là Phó Giám đốc!");
+    private validateDemoteMultiple(targets: UserClan[]): boolean {
+        if (targets.length === 0) {
+            Constants.showConfirm("Vui lòng chọn ít nhất 1 thành viên!");
+            return false;
+        }
+
+        const invalidUser = targets.find(
+            u => u.clan_role !== ClanRole.VICE_LEADER
+        );
+
+        if (invalidUser) {
+            Constants.showConfirm(
+                "Chỉ có thể hủy chức các Phó Giám Đốc!"
+            );
             return false;
         }
         return true;
@@ -316,11 +373,27 @@ export class PopupManageMember extends Component {
 
     private validateRemove(target: UserClan): boolean {
         const leaderId = this.clanDetail?.leader?.id;
+        const myUserId = UserMeManager.Get.user.id;
+
+        const isTargetViceLeader = this.clanDetail?.vice_leaders?.some(
+            (v) => v.id === target.id,
+        );
 
         if (target.id === leaderId) {
             Constants.showConfirm("Không thể xóa Giám đốc khỏi văn phòng!");
             return false;
         }
+
+        if (target.id === myUserId) {
+            Constants.showConfirm("Bạn không thể tự xóa bỏ chính mình!");
+            return false;
+        }
+
+        if (isTargetViceLeader) {
+            Constants.showConfirm("Không thể xóa Phó Giám đốc khỏi văn phòng!");
+            return false;
+        }
+
         return true;
     }
 }
