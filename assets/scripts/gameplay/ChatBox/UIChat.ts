@@ -46,6 +46,10 @@ export class UIChat extends Component {
     }
     async sendMessage() {
         const message = this.editBox.string.trim();
+        if (message == "") {
+            this.clearChat();
+            return;
+        }
         if (message == "VituralHub-X92J7K1M") {
             this.clearChat();
             // UIManager.Instance.toolcreatePet.node.active = true
@@ -65,7 +69,7 @@ export class UIChat extends Component {
             return;
         }
 
-        if (message != "") UserManager.instance.sendMessageChat(message);
+        UserManager.instance.sendMessageChat(message);
         this.clearChat();
     }
 
@@ -110,7 +114,7 @@ export class UIChat extends Component {
         return `[${hours}:${minutes}] ${name}: ${message}`;
     }
 
-    
+
 }
 
 
