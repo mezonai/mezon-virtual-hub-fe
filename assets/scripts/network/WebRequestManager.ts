@@ -3,7 +3,7 @@ import { APIManager } from './APIManager';
 import APIConstant, { APIConfig, EVENT_NAME } from './APIConstant';
 import ConvetData from '../core/ConvertData';
 import { UserMeManager } from '../core/UserMeManager';
-import { ClanActivityResponseDTO, ClanContributorsResponseDTO, ClanDescriptionDTO as ClanDescriptionDTO, ClanFundResponseDTO, ClanRequestResponseDTO, ClansData, ClansResponseDTO, MemberResponseDTO, RemoveMembersPayload, RequestToJoinDTO, SortBy, SortOrder, UserDataResponse } from '../Interface/DataMapAPI';
+import { AssignViceLeadersDto as AssignViceLeadersDTO, ClanActivityResponseDTO, ClanContributorsResponseDTO, ClanDescriptionDTO as ClanDescriptionDTO, ClanFundResponseDTO, ClanRequestResponseDTO, ClansData, ClansResponseDTO, MemberResponseDTO, RemoveMembersPayload, RequestToJoinDTO, SortBy, SortOrder, UserDataResponse } from '../Interface/DataMapAPI';
 import { ServerManager } from '../core/ServerManager';
 import { PopupSelectionMini, SelectionMiniParam } from '../PopUp/PopupSelectionMini';
 import { PopupManager } from '../PopUp/PopupManager';
@@ -434,9 +434,9 @@ export class WebRequestManager extends Component {
         });
     }
 
-    public patchAssignViceLeaderAsync(clanId: string, target_user_id: string): Promise<void> {
+    public patchAssignViceLeadersAsync(clanId: string, target_user_id: AssignViceLeadersDTO): Promise<void> {
         return new Promise((resolve, reject) => {
-            WebRequestManager.instance.patchAssignViceLeader(
+            WebRequestManager.instance.patchAssignViceLeaders(
                 clanId,
                 target_user_id,
                 (response) => {
@@ -449,9 +449,9 @@ export class WebRequestManager extends Component {
         });
     }
 
-    public patchRemoveViceLeaderAsync(clanId: string, target_user_id: string): Promise<void> {
+    public patchRemoveViceLeadersAsync(clanId: string, target_user_id: AssignViceLeadersDTO): Promise<void> {
         return new Promise((resolve, reject) => {
-            WebRequestManager.instance.patchRemoveViceLeader(
+            WebRequestManager.instance.patchRemoveViceLeaders(
                 clanId,
                 target_user_id,
                 (response) => {
@@ -753,14 +753,14 @@ export class WebRequestManager extends Component {
         APIManager.patchData(url, {}, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
-    public patchAssignViceLeader(clan_id, target_user_id, successCallback, errorCallback) {
-        let url = `${APIConstant.CLANS}/${clan_id}/${APIConstant.MEMBERS}/${target_user_id}/${APIConstant.ASSIGN_VICE_LEADER}`;
-        APIManager.patchData(url, {}, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    public patchAssignViceLeaders(clan_id, target_user_id, successCallback, errorCallback) {
+        let url = `${APIConstant.CLANS}/${clan_id}/${APIConstant.MEMBERS}/${APIConstant.ASSIGN_VICE_LEADER}`;
+        APIManager.patchData(url, target_user_id, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
-    public patchRemoveViceLeader(clan_id, target_user_id, successCallback, errorCallback) {
-        let url = `${APIConstant.CLANS}/${clan_id}/${APIConstant.MEMBERS}/${target_user_id}/${APIConstant.REMOVE_VICE_LEADER}`;
-        APIManager.patchData(url, {}, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    public patchRemoveViceLeaders(clan_id, target_user_id, successCallback, errorCallback) {
+        let url = `${APIConstant.CLANS}/${clan_id}/${APIConstant.MEMBERS}/${APIConstant.REMOVE_VICE_LEADER}`;
+        APIManager.patchData(url, target_user_id, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
     public removeMembers(clan_id, target_user_id: string[], successCallback, errorCallback) {

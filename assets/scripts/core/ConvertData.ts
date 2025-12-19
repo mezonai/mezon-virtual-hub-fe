@@ -64,6 +64,12 @@ export default class ConvetData {
             }
             : null;
 
+        const viceLeaders: UserClan[] = Array.isArray(clanDT.vice_leaders)
+            ? clanDT.vice_leaders
+                .map(mapUser)
+                .filter((u): u is UserClan => !!u)
+            : [];
+
         const funds: ClanFund[] = Array.isArray(clanDT.funds)
             ? clanDT.funds.map((f: any) => ({
                 id: f.id ?? "",
@@ -82,7 +88,7 @@ export default class ConvetData {
             member_count: clanDT.member_count ?? 0,
             max_members: clanDT.max_members ?? 0,
             leader: mapUser(clanDT.leader),
-            vice_leader: mapUser(clanDT.vice_leader),
+            vice_leaders: viceLeaders,
             join_status: clanDT.join_status ?? null,
             rank: clanDT.rank ?? 0,
             avatar_url: clanDT.avatar_url ?? null,

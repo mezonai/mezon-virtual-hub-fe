@@ -81,8 +81,10 @@ export class PopupClanMember extends BasePopup {
 
     CheckShowMemberManager() {
         const leaderId = this.clanDetail?.leader?.id;
-        const viceLeaderId = this.clanDetail?.vice_leader?.id;
-        const canManage = UserMeManager.Get.user.id === leaderId || UserMeManager.Get.user.id === viceLeaderId;
+        const isViceLeader = this.clanDetail?.vice_leaders?.some(
+            (v) => v.id === UserMeManager.Get.user.id,
+        );
+        const canManage = UserMeManager.Get.user.id === leaderId || isViceLeader;
         this.memberManageButton.node.active = !!canManage;
     }
 
