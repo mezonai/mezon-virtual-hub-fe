@@ -5,6 +5,9 @@ import { UIManager } from '../../core/UIManager';
 import { PopupGetPet, PopupGetPetParam } from '../../PopUp/PopupGetPet';
 import { PopupManager } from '../../PopUp/PopupManager';
 import { PetDTO, SkillCode } from '../../Model/PetDTO';
+import { Constants } from '../../utilities/Constants';
+import { BasePopup } from '../../PopUp/BasePopup';
+import { ConfirmParam, ConfirmPopup } from '../../PopUp/ConfirmPopup';
 
 const { ccclass, property } = _decorator;
 
@@ -18,7 +21,10 @@ export class UIChat extends Component {
     @property({ type: Node }) scrollBar: Node = null;
     @property({ type: Node }) backgroundUI: Node = null;
     @property({ type: [Color] }) chatColor: Color[] = [];
+    ////
+
     private maxItemCanShow: 50;
+    private popupSpam: BasePopup = null;
     isShowUI(isShow: boolean) {
         this.backgroundUI.active = isShow;
         this.scrollBar.active = isShow;
@@ -27,6 +33,10 @@ export class UIChat extends Component {
         this.isShowUI(false);
         this.buttonSend.node.on(Button.EventType.CLICK, () => this.sendMessage(), this);
         this.editBox.node.on("editing-return", () => this.sendMessage(), this);
+        this.registerKey();
+    }
+
+    registerKey() {
         input.on(Input.EventType.KEY_DOWN, ((event) => {
             if (event.keyCode === KeyCode.ENTER) {
                 this.isShowUI(true);
@@ -34,18 +44,36 @@ export class UIChat extends Component {
             }
         }), this);
     }
-
-    sendMessage() {
+    async sendMessage() {
         const message = this.editBox.string.trim();
+        if (message == "") {
+            this.clearChat();
+            return;
+        }
         if (message == "VituralHub-X92J7K1M") {
-            this.editBox.blur();
-            this.editBox.string = "";
-            game.canvas.focus();
-            this.isShowUI(false);
+            this.clearChat();
             // UIManager.Instance.toolcreatePet.node.active = true
             return;
         }
-        if (message != "") UserManager.instance.sendMessageChat(message);
+        if (!Constants.canSendChat()) {
+            if (this.popupSpam != null && this.popupSpam.node != null) {
+                await PopupManager.getInstance().closePopup(this.popupSpam.node.uuid);
+            }
+            this.clearChat();
+            const timeRemaning = Math.ceil((Constants.muteUntil - Date.now()) / 1000);
+            const param: ConfirmParam = {
+                message: `Bạn chat quá nhiều , vui lòng thử lại sau ${timeRemaning}s`,
+                title: "Thông Báo",
+            };
+            this.popupSpam = await PopupManager.getInstance().openPopup("ConfirmPopup", ConfirmPopup, param);
+            return;
+        }
+
+        UserManager.instance.sendMessageChat(message);
+        this.clearChat();
+    }
+
+    clearChat() {
         this.editBox.blur();
         this.editBox.string = "";
         game.canvas.focus();
@@ -85,6 +113,8 @@ export class UIChat extends Component {
         const minutes = ('0' + now.getMinutes()).slice(-2);
         return `[${hours}:${minutes}] ${name}: ${message}`;
     }
+
+
 }
 
 

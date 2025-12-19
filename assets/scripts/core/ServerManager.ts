@@ -570,39 +570,42 @@ export class ServerManager extends Component {
         });
 
         this.room.onMessage(MessageTypes.ON_HARVEST_COMPLETE, (data) => {
-            const isMe = data.sessionId === UserManager.instance.GetMyClientPlayer?.myID;
-            if (isMe) {
-                UserManager.instance.GetMyClientPlayer.get_MoveAbility.startMove();
-                GameManager.instance.playerHubController.showBlockInteractHarvest(false);
-                const myPlayer = UserManager.instance.GetMyClientPlayer;
-                if (myPlayer) {
-                    myPlayer.playerInteractFarm.showHarvestingComplete();
-                    FarmController.instance.UpdateSlotAction(data.slotId, SlotActionType.Harvest, false);
-                    myPlayer.zoomBubbleChat("Mình đã thu hoạch xong!");
-                    const param: PopupHarvestReceiveParam =
-                    {
+            const myPlayer = UserManager.instance.GetMyClientPlayer;
+            const isClient = data.sessionId === myPlayer?.myID;
+            try {
+                const playerHarvest = isClient ? myPlayer : UserManager.instance.getPlayerById(data.sessionId);
+                if (!playerHarvest) return;
+                playerHarvest.playerInteractFarm.showHarvestingComplete();
+                FarmController.instance.UpdateSlotAction(
+                    data.slotId,
+                    SlotActionType.Harvest,
+                    false
+                );
+                if (isClient) {
+                    const param: PopupHarvestReceiveParam = {
                         baseScore: data.baseScore,
                         totalScore: data.totalScore,
                         bonusPercent: data.bonusPercent,
-                        remainingHarvest: data.remainingHarvest,
-                        maxHarvest: data.maxHarvest,
-                    }
+                        // remainingHarvest: data.remainingHarvest,
+                        // maxHarvest: data.maxHarvest,
+                    };
+
                     PopupManager.getInstance().openAnimPopup("PopupHarvestReceive", PopupHarvestReceive, param);
-                    return;
                 }
-                else {
-                    const otherPlayer = UserManager.instance.getPlayerById(data.sessionId);
-                    if (otherPlayer) {
-                        otherPlayer.playerInteractFarm.showHarvestingComplete();
-                        otherPlayer.zoomBubbleChat(`${data.playerName} đã thu hoạch xong!`);
-                        FarmController.instance.UpdateSlotAction(data.slotId, SlotActionType.Harvest, false);
-                    }
+
+            } catch (err) {
+                console.error("[ON_HARVEST_COMPLETE] Error:", err, data);
+            } finally {
+                if (isClient && myPlayer) {
+                    myPlayer.get_MoveAbility.startMove();
+                    GameManager.instance.playerHubController.showBlockInteractHarvest(false);
                 }
             }
         });
 
         this.room.onMessage(MessageTypes.ON_HARVEST_INTERRUPTED, (data) => {
             const isMe = data.sessionId === UserManager.instance.GetMyClientPlayer?.myID;
+            console.log("ON_HARVEST_INTERRUPTED: ", isMe);
             if (isMe) {
                 Constants.showConfirm(`Bạn đã phá thu hoạch của ${data.interruptedPlayerName} thành công!\n` +
                     `Lượt phá còn lại: ${data.selfHarvestInterrupt.remaining}/${data.selfHarvestInterrupt.max}`);
