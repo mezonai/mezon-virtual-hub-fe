@@ -21,10 +21,10 @@ export class KeyBoardInput extends PlayerInput {
     }
 
     setKeyPress(event: EventKeyboard, active: boolean) {
-        if (event.keyCode == KeyCode.KEY_W || event.keyCode == KeyCode.KEY_S || event.keyCode == KeyCode.KEY_A
-            || event.keyCode == KeyCode.KEY_D || event.keyCode == KeyCode.ARROW_UP || event.keyCode == KeyCode.ARROW_DOWN
-            || event.keyCode == KeyCode.ARROW_LEFT || event.keyCode == KeyCode.ARROW_RIGHT
-        ) return;
+        // if (event.keyCode == KeyCode.KEY_W || event.keyCode == KeyCode.KEY_S || event.keyCode == KeyCode.KEY_A
+        //     || event.keyCode == KeyCode.KEY_D || event.keyCode == KeyCode.ARROW_UP || event.keyCode == KeyCode.ARROW_DOWN
+        //     || event.keyCode == KeyCode.ARROW_LEFT || event.keyCode == KeyCode.ARROW_RIGHT
+        // ) return;
         if (active) {
             keyboardInstance.emit(EVENT_NAME.ON_PRESS_KEYBOARD, event);
         }
