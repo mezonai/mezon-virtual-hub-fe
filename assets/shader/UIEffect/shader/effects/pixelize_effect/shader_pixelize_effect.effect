@@ -1,0 +1,165 @@
+// Effect Syntax Guide: https://docs.cocos.com/creator/manual/zh/shader/index.html
+
+CCEffect %{
+  techniques:
+  - passes: 
+    - vert: sprite-vs:vert
+      frag: sprite-fs:frag
+      blendState:
+        targets:
+        - blend: true
+          blendSrc: src_alpha
+          blendDst: one_minus_src_alpha
+          blendDstAlpha: one_minus_src_alpha
+      rasterizerSate:
+        cullMode: none
+      properties: &prop
+        mainTexture: {value: white}
+        u_active: {value: 1.0, editor: {min: 0.0, max: 1.0, step: 1.0}}
+        u_uvRect: {value: [0.0, 1.0, 0.0, 1.0]}
+        u_tile: {value: 16.0, editor: {type: slider, min: 1.0, max: 100., step: 1.0}}
+        u_tileMultiplier: {value: 1.01}
+        u_alphaTile: {value: 16.0, editor: {type: slider, min: 1.0, max: 100., step: 1.0}}
+}%
+
+CCProgram  sprite-vs %{
+  precision mediump float;
+  #include <builtin/uniforms/cc-global>
+
+  in vec3 a_position;
+  in vec2 a_texCoord;
+  in vec4 a_color;
+
+  out vec4 v_color;
+  out vec2 v_uv;
+
+  vec4 vert() {
+    vec4 pos = vec4(a_position, 1.0);
+    pos = cc_matViewProj * pos;
+
+    v_uv = a_texCoord;
+    v_color = a_color;
+
+    return pos;
+  }
+}%
+
+CCProgram sprite-fs %{
+  precision mediump float;
+  #include <builtin/uniforms/cc-global>
+  #include <builtin/internal/embedded-alpha>
+  #include <builtin/internal/alpha-test>
+
+  in vec4 v_color;
+  in vec2 v_uv;
+
+  uniform sampler2D mainTexture;
+
+  uniform Constant {
+    vec4 u_uvRect;
+    float u_active;
+    float u_tile;
+    float u_tileMultiplier;
+    float u_alphaTile;
+  };
+
+  #if USE_SPRITE_TEXTURE
+  #pragma builtin(local)
+  layout (set = 2, binding = 12) uniform sampler2D cc_spriteTexture;
+  #endif
+
+  // vec4 round(vec4 value) {
+  //   return mix(floor(value), ceil(value), step(0.5, value));
+  // } 
+  // vec3 round(vec3 value) {
+  //   return mix(floor(value), ceil(value), step(0.5, value));
+  // }
+  float round(float value) {
+    return mix(floor(value), ceil(value), step(0.5, value));
+  }
+
+  float remapUV(float value, vec2 from, vec2 to) {
+    return (value - from.x) / (from.y - from.x) * (to.y - to.x) + to.x;
+  }
+  vec2 convertAtlasUV(vec2 uv, vec4 uvRect)
+  {
+    uv.x = remapUV(uv.x, uvRect.xy, vec2(0.0, 1.0)); 
+    uv.y = remapUV(uv.y, uvRect.zw, vec2(0.0, 1.0));
+    return uv;
+  }
+
+//////////
+// ATLAS HANDLE
+//========
+
+  vec2 scale2d(vec2 uv, vec2 pivot, vec2 offset)
+  {
+    offset = 1.0 / offset;
+    mat2 scaleMat = mat2(offset.x, 0,
+                        0, offset.y);
+    
+    vec2 scale = scaleMat * (uv - pivot);
+    scale += pivot;
+
+    return scale;
+  }
+
+  vec4 texture_clamp(sampler2D tex, vec2 uv, vec4 uv_rect)
+  {
+    if (uv.x < uv_rect.x || uv.x > uv_rect.y) return vec4(0.0);
+    if (uv.y < uv_rect.z || uv.y > uv_rect.w) return vec4(0.0);
+
+    return texture(tex, uv);
+  }
+
+  vec4 texture_clamp_scale(sampler2D tex, vec2 uv, vec4 uv_rect, vec2 scale)
+  {
+    // Scale handle
+    uv = scale2d(uv, 
+      vec2((uv_rect.x+uv_rect.y)/2.0, (uv_rect.z+uv_rect.w)/2.0), 
+      vec2(scale));
+
+    // after claim
+    return texture_clamp(tex, uv, uv_rect);
+  }
+
+//==============
+
+  vec4 frag() {
+    vec4 o = vec4(1.0);
+    vec2 uv = vec2(1.0);
+
+    #if USE_SPRITE_TEXTURE
+      uv = convertAtlasUV(v_uv, u_uvRect);
+    #else
+      uv = v_uv;
+    #endif
+
+    vec2 tile = vec2(u_tile * u_tileMultiplier);
+    vec2 i_uv = ceil(v_uv * tile);
+    vec2 p_uv = i_uv / tile;
+    
+    vec2 offset = vec2(-v_uv / tile);;
+    // p_uv += offset;
+
+    if (u_active < 0.5) {
+      p_uv = v_uv;
+    }
+
+    #if USE_SPRITE_TEXTURE
+      // o = texture_clamp_scale(cc_spriteTexture, p_uv, u_uvRect, vec2(0.9));
+      o = texture(cc_spriteTexture, p_uv);
+    #else
+      o = texture(mainTexture, p_uv);
+    #endif
+
+    if (u_active > 0.5) {
+      o.a = round(o.a*u_alphaTile)/u_alphaTile;
+    }
+    
+    o *= v_color;
+
+    ALPHA_TEST(o);
+    return o; 
+  }
+}%

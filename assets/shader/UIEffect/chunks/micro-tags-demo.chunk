@@ -1,0 +1,15 @@
+  
+  // OPTION TYPE
+  #pragma define-meta LAYERS options([1, 5, 2]) // 1 5 2
+  #if LAYERS == 1
+  #elif LAYERS == 2
+  #else
+  #endif
+
+
+  // RANGE TYPE
+  #pragma define-meta LAYERS range([1, 3]) // 1 2 3
+  #if LAYERS == 1
+  #elif LAYERS == 2
+  #else
+  #endif
