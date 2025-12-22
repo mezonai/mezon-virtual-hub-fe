@@ -577,7 +577,18 @@ export default class ConvetData {
                     },
                     none: data.percent.spinRewards?.none ?? 0,
                 }
-            }
+            },
+            farmLimit: {
+                plant: {
+                    enabledLimit: data.farmLimit?.plant?.enabledLimit ?? false,
+                    maxHarvest: data.farmLimit?.plant?.maxHarvest ?? -1,
+                },
+                harvest: {
+                    enabledLimit: data.farmLimit?.harvest?.enabledLimit ?? false,
+                    maxHarvest: data.farmLimit?.harvest?.maxHarvest ?? -1,
+                    maxInterrupt: data.farmLimit?.harvest?.maxInterrupt ?? -1,
+                },
+            },
         }
     }
 

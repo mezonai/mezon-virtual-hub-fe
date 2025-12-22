@@ -36,9 +36,10 @@ export class Constants {
     public static muteUntil = 0;
 
     public static readonly RESET_TIME = 10 * 1000; // 10s
-    public static readonly MUTE_TIME = 60 * 1000;  // 1'
+    public static readonly MUTE_TIME = 15 * 1000;  // 15s
     public static readonly MAX_CHAT = 3;
     public static readonly MAX_VICE_LEADER = 5;
+    public static readonly HARVEST_UNLIMITED = -1;
 
     public static convertKeyOffice(positionTarget: OfficePosition): string {
         switch (positionTarget) {

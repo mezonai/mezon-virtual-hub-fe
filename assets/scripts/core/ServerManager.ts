@@ -560,7 +560,7 @@ export class ServerManager extends Component {
         });
 
         this.room.onMessage(MessageTypes.ON_HARVEST_DENIED, (data) => {
-            if (data.remaining) {
+            if (this.ShowLimitHarvestPlant(data.max, data.remaining)) {
                 Constants.showConfirm(`${data.message}\nLượt thu hoạch còn lại của bạn là: ${data.remaining}/${data.max}`);
             }
             Constants.showConfirm(`${data.message}`);
@@ -586,8 +586,8 @@ export class ServerManager extends Component {
                         baseScore: data.baseScore,
                         totalScore: data.totalScore,
                         bonusPercent: data.bonusPercent,
-                        // remainingHarvest: data.remainingHarvest,
-                        // maxHarvest: data.maxHarvest,
+                        remainingHarvest: data.remainingHarvest,
+                        maxHarvest: data.maxHarvest,
                     };
 
                     PopupManager.getInstance().openAnimPopup("PopupHarvestReceive", PopupHarvestReceive, param);
@@ -605,11 +605,14 @@ export class ServerManager extends Component {
 
         this.room.onMessage(MessageTypes.ON_HARVEST_INTERRUPTED, (data) => {
             const isMe = data.sessionId === UserManager.instance.GetMyClientPlayer?.myID;
-            console.log("ON_HARVEST_INTERRUPTED: ", isMe);
             if (isMe) {
-                Constants.showConfirm(`Bạn đã phá thu hoạch của ${data.interruptedPlayerName} thành công!\n` +
-                    `Lượt phá còn lại: ${data.selfHarvestInterrupt.remaining}/${data.selfHarvestInterrupt.max}`);
+                let message = `Bạn đã phá thu hoạch của ${data.interruptedPlayerName} thành công!`;
+                if (this.ShowLimitHarvestPlant(data.selfHarvestInterrupt.max, data.selfHarvestInterrupt.remaining)) {
+                    message += `\nLượt phá còn lại: ${data.selfHarvestInterrupt.remaining}/${data.selfHarvestInterrupt.max}`;
+                }
+                Constants.showConfirm(message);
             }
+
             const otherPlayer = UserManager.instance.getPlayerById(data.interruptedPlayer);
             if (otherPlayer) {
                 otherPlayer.playerInteractFarm.showHarvestingComplete();
@@ -618,10 +621,14 @@ export class ServerManager extends Component {
         });
 
         this.room.onMessage(MessageTypes.ON_HARVEST_INTERRUPTED_BY_OTHER, (data) => {
-            Constants.showConfirm(
-                `Bạn bị phá bởi ${data.interruptedByName}!\n` +
-                `Lượt thu hoạch của bạn còn lại: ${data.selfHarvest.remaining}/${data.selfHarvest.max}\n` +
-                `Lượt thu hoạch còn lại của cây: ${data.plantHarvest.remaining}/${data.plantHarvest.max}`);
+            let message = `Bạn bị phá thu hoạch bởi ${data.interruptedByName}!`;
+            if (this.ShowLimitHarvestPlant(data.selfHarvest.max, data.selfHarvest.remaining)) {
+            message += `\nLượt thu hoạch của bạn còn lại: ${data.selfHarvest.remaining}/${data.selfHarvest.max}`;
+            }
+            if (this.ShowLimitHarvestPlant(data.plantHarvest.max, data.plantHarvest.remaining)) {
+            message += `\nLượt thu hoạch còn lại của cây: ${data.plantHarvest.remaining}/${data.plantHarvest.max}`;
+            }
+            Constants.showConfirm(message);
             UserManager.instance.GetMyClientPlayer.get_MoveAbility.startMove();
             GameManager.instance.playerHubController.showBlockInteractHarvest(false);
             UserManager.instance.GetMyClientPlayer.playerInteractFarm.showHarvestingComplete();
@@ -659,6 +666,10 @@ export class ServerManager extends Component {
             }
         });
 
+    }
+
+    private ShowLimitHarvestPlant(max?: number, remaining?: number): boolean {
+        return max !== Constants.HARVEST_UNLIMITED && remaining != Constants.HARVEST_UNLIMITED;
     }
 
     public async joinBattleRoom(roomId: string): Promise<void> {

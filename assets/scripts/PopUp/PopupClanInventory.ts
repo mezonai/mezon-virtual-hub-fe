@@ -9,6 +9,7 @@ import { IconItemUIHelper } from '../Reward/IconItemUIHelper';
 import { PopupClanShop } from './PopupClanShop';
 import { InventoryClanUIItem } from '../Clan/InventoryClanUIItem';
 import { Constants } from '../utilities/Constants';
+import { StatsConfigDTO } from '../Model/Item';
 const { ccclass, property } = _decorator;
 
 @ccclass('PopupClanInventory')
@@ -30,12 +31,13 @@ export class PopupClanInventory extends BasePopup {
     @property(Sprite) seedBags: Sprite = null;
     @property({type: IconItemUIHelper }) iconItemUIHelper: IconItemUIHelper = null;
     @property(Sprite) iconSeed: Sprite = null;
+    @property(Node) limitHarvestNode: Node = null;
 
     private clanDetail: ClansData;
     private clanWarehouseSlot: ClanWarehouseSlotDTO[];
     private _clanWarehouseSlot: InventoryClanUIItem[];
     private timeoutLoadSlot: number = 50;
-    
+    getConfigRate: StatsConfigDTO;
     private harvestCountDTO: HarvestCountDTO;
 
     public init(param?: PopupClanInventoryParam): void {
@@ -72,9 +74,11 @@ export class PopupClanInventory extends BasePopup {
     };
 
     async GetHarvestCounts(){
+        this.getConfigRate = await WebRequestManager.instance.getConfigRateAsync();
         this.harvestCountDTO = await WebRequestManager.instance.getHarvestCountsAsync(this.clanDetail.id);
-        this.setCountLabel(this.harvertCountrt, this.harvestCountDTO.harvest_count_use, this.harvestCountDTO.harvest_count);
-        this.setCountLabel(this.harvertInterrupCountrt, this.harvestCountDTO.harvest_interrupt_count_use, this.harvestCountDTO.harvest_interrupt_count);
+        this.limitHarvestNode.active = this.getConfigRate.farmLimit.harvest.enabledLimit;
+        this.setCountLabel(this.harvertCountrt, this.harvestCountDTO.harvest_count_use, this.getConfigRate.farmLimit.harvest.maxHarvest);
+        this.setCountLabel(this.harvertInterrupCountrt, this.harvestCountDTO.harvest_interrupt_count_use, this.getConfigRate.farmLimit.harvest.maxInterrupt);
     }
 
     CheckShowMemberManager() {
