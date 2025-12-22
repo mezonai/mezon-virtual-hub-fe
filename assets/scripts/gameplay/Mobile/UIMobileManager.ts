@@ -10,6 +10,8 @@ export class UIMobileManager extends Component {
     private static _instance: UIMobileManager;
     @property({ type: Button }) buttonA: Button = null;
     @property({ type: Button }) buttonB: Button = null;
+    @property({ type: Button }) buttonChat: Button = null;
+    @property({ type: Button }) buttonAnim: Button = null;
     public static get instance() {
         return UIMobileManager._instance;
     }
@@ -25,6 +27,13 @@ export class UIMobileManager extends Component {
         });
         this.buttonB.addAsyncListener(async () => {
             this.node.emit(EVENT_NAME.ON_CLICK_BUTTON_B_MOBILE);
+        });
+
+        this.buttonChat.addAsyncListener(async () => {
+            this.node.emit(EVENT_NAME.ON_CLICK_BUTTON_CHAT_MOBILE);
+        });
+        this.buttonAnim.addAsyncListener(async () => {
+            this.node.emit(EVENT_NAME.ON_CLICK_BUTTON_CHANGE_ANIM_MOBILE);
         });
     }
     removeListnerButtonInteract() {
