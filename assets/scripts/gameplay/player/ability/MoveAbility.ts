@@ -9,6 +9,7 @@ import { Ability } from './Ability';
 import { sys } from 'cc';
 import { keyboardInstance } from '../input/KeyBoardInput';
 import { EVENT_NAME } from '../../../network/APIConstant';
+import { UIMobileManager } from '../../Mobile/UIMobileManager';
 
 enum InputMethod {
     KEYBOARD,
@@ -28,12 +29,14 @@ export class MoveAbility extends Ability {
     private canMove: boolean = true;
     public originMoveSpeed: number = 300;
     private joystickVec: Vec3 = new Vec3();
-
+    //Mobile
+    private animNames: string[] = ["kneel", "lie", "happy", "sit"];
+    private currentAnimIndex: number = 0;
     protected start(): void {
         this.originMoveSpeed = this.moveSpeed;
     }
 
-    public override init(sessionId, playerController, room) {
+    public override async init(sessionId, playerController, room) {
         super.init(sessionId, playerController, room);
         this.lastPosition = this.node.position.clone();
         this.setColliderDetectOffset(1);
@@ -44,6 +47,16 @@ export class MoveAbility extends Ability {
             if (sys.isMobile) {
                 instance.on(Input.EventType.TOUCH_MOVE, this.onJoystickMove, this);
                 instance.on(Input.EventType.TOUCH_END, this.onJoystickEnd, this);
+                await Constants.waitUntil(() => UIMobileManager.instance != null);
+                UIMobileManager.instance?.node.on(EVENT_NAME.ON_CLICK_BUTTON_CHANGE_ANIM_MOBILE,
+                    () => {
+                        const animName = this.animNames[this.currentAnimIndex];
+                        this.updateAction(animName, true);
+                        this.currentAnimIndex++;
+                        if (this.currentAnimIndex >= this.animNames.length) {
+                            this.currentAnimIndex = 0;
+                        }
+                    }, this);
             } else {
                 keyboardInstance.on(EVENT_NAME.ON_PRESS_KEYBOARD, this.setKeydown, this);
                 keyboardInstance.on(EVENT_NAME.ON_RELEASE_KEYBOARD, this.setKeyUp, this);
