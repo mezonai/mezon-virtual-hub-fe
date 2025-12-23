@@ -13,6 +13,7 @@ import { UserMeManager } from '../core/UserMeManager';
 import { ServerManager } from '../core/ServerManager';
 import { Sprite } from 'cc';
 import { ItemIconManager } from '../utilities/ItemIconManager';
+import { LoadingManager } from './LoadingManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('PopupClanShop')
@@ -62,8 +63,15 @@ export class PopupClanShop extends BasePopup {
     }
 
     async initList() {
-        this.plantDataDTO = await WebRequestManager.instance.getShopPlantAsync();
-        this.loadFromServer(this.plantDataDTO);
+        try {
+            LoadingManager.getInstance().openLoading();
+            this.plantDataDTO = await WebRequestManager.instance.getShopPlantAsync();
+            this.loadFromServer(this.plantDataDTO);
+        } catch {
+
+        } finally {
+            LoadingManager.getInstance().closeLoading();
+        }
     }
 
     public loadFromServer(data: PlantDataDTO[]) {
