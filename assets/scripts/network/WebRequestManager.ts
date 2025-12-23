@@ -770,7 +770,7 @@ export class WebRequestManager extends Component {
     }
 
     public getClanWarehouses(clan_id, successCallback, errorCallback) {
-        APIManager.getData(this.combineWithSlash(APIConstant.CLANWAREHOUSE, clan_id), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+        APIManager.getData(this.combineWithSlash(APIConstant.CLANS ,clan_id, APIConstant.CLANWAREHOUSE), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
     //Farm
