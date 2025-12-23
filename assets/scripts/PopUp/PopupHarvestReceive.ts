@@ -29,7 +29,7 @@ export class PopupHarvestReceive extends BasePopup {
 
     const effectColor = param?.bonusPercent < 0 ? '#FF0000' : '#00b661ff';
     this.iconBonusPercent.node.active = param?.bonusPercent != 0;
-    this.bonusPercent.string = `Điểm thu hoạch cây:<outline color=#FFFF><color=#CE6B00> ${param?.baseScore ?? 'Không rõ'}</size></color></outline> <outline color =#FFFF><color =${effectColor}> ${param?.bonusPercent < 0 ? '' : '+'}${param?.bonusPercent} %</size></color></outline>`;
+    this.bonusPercent.string = `Điểm thu hoạch cây:<outline color=#FFFF><color=#CE6B00> ${param?.baseScore ?? 'Không rõ'}</size></color></outline> <outline color =#FFFF><color =${effectColor}>${param?.bonusPercent < 0 ? '' : '+'}${param?.bonusPercent}%</size></color></outline>`;
     if (this.iconBonusPercent) {
       this.iconBonusPercent.color = param?.bonusPercent < 0 ? new Color().fromHEX('#FF0000') : new Color().fromHEX('#00b661ff');
       this.iconBonusPercent.node.eulerAngles = new Vec3(0, 0, param?.bonusPercent < 0 ? 0 : 180);
