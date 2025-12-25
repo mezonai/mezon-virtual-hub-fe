@@ -10,6 +10,7 @@ import { Vec3 } from 'cc';
 import { ResourceManager } from '../core/ResourceManager';
 import { Tween } from 'cc';
 import { PopupManager } from '../PopUp/PopupManager';
+import { Button } from 'cc';
 const { ccclass, property } = _decorator;
 
 @ccclass('TutorialBase')
@@ -20,7 +21,8 @@ export abstract class TutorialBase extends BasePopup {
     @property({ type: Node }) tutorialPlayer: Node = null;
     @property({ type: Node }) selectionNode: Node = null;
     @property({ type: Node }) iconSelection: Node = null;
-
+    @property({ type: Button }) buttonSkip: Button = null
+    public _onActionCompleted: (() => void) | null = null;
 
     public async closePopup() {
         await PopupManager.getInstance().closePopup(this.node.uuid);
@@ -166,6 +168,19 @@ export abstract class TutorialBase extends BasePopup {
                 })
                 .start();
         });
+    }
+
+    cancelTutorial() {
+        this._onActionCompleted?.();
+        this.cancelTween();
+        this.closePopup();
+    }
+
+    cancelTween() {
+        Tween.stopAllByTarget(this.iconSelection);
+        Tween.stopAllByTarget(this.selectionNode);
+        Tween.stopAllByTarget(this.talkAnimation);
+        Tween.stopAllByTarget(this.tutorialPlayer);
     }
 }
 

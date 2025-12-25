@@ -26,14 +26,14 @@ export class UIChat extends Component {
     @property({ type: Node }) backgroundUI: Node = null;
     @property({ type: [Color] }) chatColor: Color[] = [];
     @property({ type: Widget }) positionChat: Widget = null;
-    private positionChatMobile = 360;
+    private positionChatMobile = 400;
     private positionChatNoMobile = 53;
     private isShowUIByMobile: boolean = false;
     ////
 
     private maxItemCanShow: 50;
     private popupSpam: BasePopup = null;
-   
+
     async onLoad() {
         this.isShowUIByMobile = false;
         this.positionChat.bottom = sys.isMobile ? this.positionChatMobile : this.positionChatNoMobile;
@@ -139,7 +139,7 @@ export class UIChat extends Component {
         return `[${hours}:${minutes}] ${name}: ${message}`;
     }
 
-     isShowUI(isShow: boolean) {
+    isShowUI(isShow: boolean) {
         this.backgroundUI.active = isShow;
         this.scrollBar.active = isShow;
     }
