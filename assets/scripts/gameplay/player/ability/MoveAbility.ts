@@ -10,6 +10,7 @@ import { sys } from 'cc';
 import { keyboardInstance } from '../input/KeyBoardInput';
 import { EVENT_NAME } from '../../../network/APIConstant';
 import { UIMobileManager } from '../../Mobile/UIMobileManager';
+import { GameManager } from '../../../core/GameManager';
 
 enum InputMethod {
     KEYBOARD,
@@ -294,6 +295,10 @@ export class MoveAbility extends Ability {
             }
             this.updateAction("idle");
         }
+    }
+
+    isMyPlayerCanMove() {
+        return this.isMyClient && this.canMove;
     }
 
     public StopMove() {
