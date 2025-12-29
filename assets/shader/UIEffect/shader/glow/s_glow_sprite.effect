@@ -1,0 +1,271 @@
+// Copyright (c) 2017-2020 Xiamen Yaji Software Co., Ltd.
+
+CCEffect %{
+  techniques:
+  - name: glow
+    passes:
+    - vert: glow-vs:vert
+      frag: glow-fs:frag
+      blendState:
+        targets:
+        - blend: true
+          blendSrc: src_alpha
+          blendDst: one_minus_src_alpha
+          blendDstAlpha: one_minus_src_alpha
+      properties:
+        mainTexture: {value: white, editor: {type: texture2D}}
+        u_uvRect: {value: [0.0, 1.0, 0.0, 1.0]}
+        u_glowColor: {value: [1, 1, 0.5, 1], editor: {type: color}}
+        u_strength: {value: 1.0, editor: {slide: true, range: [0.0, 3.0], step: 0.1}}
+        u_radius: {value: 0.1, editor: {slide: true, range: [0.0, 1.0], step: 0.01}}
+        u_radiusMultiplier: {value: 1.0, editor: {slide: true, range: [-100.0, 100.0], step: 0.1}}
+        u_scale: {value: 1.0, editor: {slide: true, range: [0.0, 1.0], step: 0.01}}
+        u_resolution: {value: [360.0, 280.0]}
+}%
+
+CCProgram glow-vs %{
+  precision highp float; 
+  #include <builtin/uniforms/cc-global>
+  #include <builtin/uniforms/cc-local>
+
+  in vec3 a_position;
+  in vec2 a_texCoord;
+  out vec2 v_uv;
+
+  vec4 vert() {
+    v_uv = a_texCoord;
+    return cc_matViewProj * vec4(a_position, 1.0);
+  } 
+
+}% 
+
+CCProgram glow-fs %{
+  precision highp float;
+  #include <builtin/uniforms/cc-global> 
+
+
+vec2 move2d(vec2 uv, vec2 dir)
+{
+  return uv + dir;
+}
+
+vec2 scale2d(vec2 uv, vec2 pivot, vec2 offset)
+{
+  offset = 1.0 / offset;
+  mat2 scaleMat = mat2(offset.x, 0,
+                       0, offset.y);
+  
+  vec2 scale = scaleMat * (uv - pivot);
+  scale += pivot;
+
+  return scale;
+}
+
+vec2 rotate2d(vec2 uv, vec2 pivot, float radian)
+{
+  mat2 rotateMat = mat2(cos(radian), -sin(radian),
+                        sin(radian), cos(radian));
+
+  vec2 rotate = rotateMat * (uv - pivot);
+  rotate += pivot;
+
+  return rotate;
+}
+
+#define pi 3.14159265359
+vec2 rotate2d_angle(vec2 uv, vec2 pivot, float angle)
+{
+  angle = angle * pi / 180.0;
+
+  mat2 rotateMat = mat2(cos(angle), -sin(angle),
+                        sin(angle), cos(angle));
+
+  vec2 rotate = rotateMat * (uv - pivot);
+  rotate += pivot;
+
+  return rotate;
+}
+    vec4 texture_clamp(sampler2D tex, vec2 uv, vec4 limit)
+  {
+    if (uv.x < limit.x || uv.x > limit.y) return vec4(0.0);
+    if (uv.y < limit.z || uv.y > limit.w) return vec4(0.0);
+
+    return texture(tex, uv);
+  }
+  
+  vec4 texture_clamp_scale(sampler2D tex, vec2 uv, vec4 uv_rect, vec2 scale)
+  {
+    // Scale handle
+    uv = scale2d(uv, 
+      vec2((uv_rect.x+uv_rect.y)/2.0, (uv_rect.z+uv_rect.w)/2.0), 
+      vec2(scale));
+
+    // after claim
+    return texture_clamp(tex, uv, uv_rect);
+  }
+
+  in vec2 v_uv;
+  uniform sampler2D mainTexture;
+  
+  uniform ubo {
+    vec4 u_glowColor;
+    vec4 u_uvRect;
+    vec2 u_resolution;
+    float u_scale;
+    float u_strength; 
+    float u_radius;
+    float u_radiusMultiplier;
+  };
+
+  #pragma define-meta GLOW_DIRECTION options([16, 14, 12, 10, 8, 4, 1])
+  #if GLOW_DIRECTION == 16
+    #define G_DIR 16
+  #elif GLOW_DIRECTION == 14
+    #define G_DIR 14
+  #elif GLOW_DIRECTION == 12
+    #define G_DIR 12
+  #elif GLOW_DIRECTION == 10
+    #define G_DIR 10
+  #elif GLOW_DIRECTION == 8
+    #define G_DIR 8
+  #elif GLOW_DIRECTION == 4
+    #define G_DIR 4
+  #elif GLOW_DIRECTION == 1
+    #define G_DIR 1
+  #endif
+
+  #pragma define-meta GLOW_QUALITY range([1, 4]) 
+  #if GLOW_QUALITY == 4
+    #define G_QUAL 4
+  #elif GLOW_QUALITY == 3
+    #define G_QUAL 3
+  #elif GLOW_QUALITY == 2
+    #define G_QUAL 2
+  #elif GLOW_QUALITY == 1
+    #define G_QUAL 1
+  #endif
+// #elif HAS_OUTLINE
+// #endif
+
+  struct GlowOffset 
+  {
+    vec4 color;
+    float strength;
+    float radius;
+    float radiusMultiplier;
+    vec2 scale;
+  };
+
+  vec4 gaussian_blur_based_glow(sampler2D tex, vec2 uv, vec4 uv_rect, vec2 resolution, GlowOffset offset)
+  {
+    const float PI_2 = 6.28318530718; 
+    vec4 glowColor = vec4(0.0);
+    // GAUSSIAN BLUR SETTINGS
+    #if HAS_GLOW
+      const float directions = float(G_DIR); // BLUR DIRECTIONS (Default 16.0 - More is better but slower)
+      const float quality = float(G_QUAL); // BLUR QUALITY (Default 4.0 - More is better but slower)
+    #elif HAS_OUTLINE
+      const float directions = float(G_DIR); // BLUR DIRECTIONS (Default 16.0 - More is better but slower)
+      const float quality = float(1.0); // BLUR QUALITY (Default 4.0 - More is better but slower)
+    #else
+      const float directions = 4.0; // BLUR DIRECTIONS (Default 16.0 - More is better but slower)
+      const float quality = 1.0; // BLUR QUALITY (Default 4.0 - More is better but slower)
+    #endif
+
+    // GAUSSIAN BLUR SETTINGS
+
+    vec2 radius = offset.radius/resolution;
+    for( float d=0.0; d<PI_2; d+=PI_2/directions)
+    {
+      vec2 dir = vec2(cos(d),sin(d));
+      for(float i=1.0/quality; i<=1.0; i+=1.0/quality)
+      {
+        #if HAS_GLOW
+          // glowColor += texture(tex, uv + dir*radius*i);		
+          glowColor += texture_clamp_scale(tex, uv + dir*radius*i, uv_rect, offset.scale);		
+        #elif HAS_OUTLINE
+          glowColor = max(glowColor, texture_clamp_scale(tex, uv + dir*radius*i, uv_rect, offset.scale));		
+          // glowColor = max(glowColor, texture(tex, uv + dir*radius*i));		
+        #endif
+      }
+    }
+
+    #if HAS_GLOW
+      glowColor /= quality*directions - ((directions/2.0)-1.0);
+    #endif
+
+    glowColor.xyz = offset.color.xyz;
+    glowColor.a *= offset.strength;
+
+    if (offset.strength > 2.0 && glowColor.a > 0.1) glowColor.a = 1.0;
+
+    return glowColor;
+  }
+
+  vec4 glow(sampler2D tex, vec2 uv, vec4 uv_rect, vec2 resolution, GlowOffset offset)
+  {
+    if (offset.radiusMultiplier > 0.0) {
+      offset.radius *= offset.radiusMultiplier;
+    } else {
+      offset.radius /= abs(offset.radiusMultiplier);
+    }
+
+
+    vec4 color = vec4(1.0);
+    color *= texture_clamp_scale(tex, uv, uv_rect, offset.scale);
+
+    vec4 glow = vec4(0.0);
+    glow = gaussian_blur_based_glow(tex, uv, uv_rect, resolution, offset);
+
+    return mix(glow, color, color.a);
+  }
+
+  // // EMISSION Default 0.3
+  // vec4 emission(sampler2D tex, vec2 uv, float size, vec2 resolution, vec4 glowColor, float emissionValue)
+  // {
+  //   vec4 glow = gaussian_blur_based_glow(tex, uv, size, resolution, glowColor); 
+  //   vec4 color = vec4(1.0);
+  //   color *= texture(tex, uv);
+  //   color.xyz += glow.xyz*emissionValue;
+
+  //   return mix(glow, color, color.a);
+  // }
+
+  #if USE_SPRITE_TEXTURE
+  #pragma builtin(local)
+  layout (set = 2, binding = 12) uniform sampler2D cc_spriteTexture;
+  #endif
+
+  float remapUV(float value, vec2 from, vec2 to) {
+    return (value - from.x) / (from.y - from.x) * (to.y - to.x) + to.x;
+  }
+
+  vec2 convertAtlasUV(vec2 uv, vec4 uvRect)
+  {
+    uv.x = remapUV(uv.x, uvRect.xy, vec2(0.0, 1.0)); 
+    uv.y = remapUV(uv.y, uvRect.zw, vec2(0.0, 1.0));
+    return uv;
+  }
+
+  vec4 frag() {
+
+    vec4 finalColor = vec4(1.0);
+
+    GlowOffset offset;
+    offset.color = u_glowColor;
+    offset.strength = u_strength;
+    offset.radius = u_radius;
+    offset.radiusMultiplier = u_radiusMultiplier;
+    offset.scale = vec2(u_scale);
+
+    vec2 uv = convertAtlasUV(v_uv, u_uvRect);
+
+    #if USE_SPRITE_TEXTURE
+      finalColor = glow(cc_spriteTexture, v_uv, u_uvRect, u_resolution, offset);
+    #else
+      finalColor = glow(mainTexture, uv, u_uvRect, u_resolution, offset);
+    #endif
+    
+    return finalColor;  
+  }
+}%

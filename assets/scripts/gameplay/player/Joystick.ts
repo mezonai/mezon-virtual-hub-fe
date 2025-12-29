@@ -1,7 +1,12 @@
-import {
-    _decorator, EventTarget, Component,Node,Enum,UIOpacity, UITransform,EventTouch,Vec3,Vec2, Size,CCInteger,input,Input,
-} from "cc";
+import { _decorator, EventTarget, Component, Node, Enum, UIOpacity, UITransform, EventTouch, Vec3, Vec2, Size, CCInteger, Input, sys } from "cc";
 import { PlayerController } from "./PlayerController";
+import { game } from "cc";
+import { Game } from "cc";
+import { director } from "cc";
+import { Director } from "cc";
+import { Constants } from "../../utilities/Constants";
+import { GameManager } from "../../core/GameManager";
+import { UserManager } from "../../core/UserManager";
 const { ccclass, property } = _decorator;
 export const instance = new EventTarget();
 export const SET_JOYSTICK_TYPE = "SET_JOYSTICK_TYPE";
@@ -53,41 +58,60 @@ export class Joystick extends Component {
 
     _stickPos = new Vec3();
     _touchLocation = new Vec2();
+    @property({ displayName: "Auto hide on PC" })
+    autoHideOnPC = true;
 
     @property({
         type: CCInteger,
         displayName: "Ring Radius",
     })
-    radius = 50;
+    radius = 15;
 
     onLoad() {
         if (!this.dot || !this.ring) {
             return;
         }
 
-        const uiTransform = this.ring.getComponent(UITransform);
-        const size = this.radius * 2;
-        const ringSize = new Size(size, size);
-        uiTransform?.setContentSize(ringSize);
-        this.ring
-            .getChildByName("bg")!
-            .getComponent(UITransform)
-            ?.setContentSize(ringSize);
-
         this._initTouchEvent();
-        // hide joystick when follow
         const uiOpacity = this.node.getComponent(UIOpacity);
         if (this.joystickType === JoystickType.FOLLOW && uiOpacity) {
             uiOpacity.opacity = 0;
         }
+        this.setJoystickEnabled(sys.isMobile || !this.autoHideOnPC);
+        game.on(Game.EVENT_SHOW, this._onAppResume, this);
+        game.on(Game.EVENT_HIDE, this._onAppPause, this);
     }
 
+    public setJoystickEnabled(enable: boolean) {
+        this.node.active = enable;
+
+        if (enable) {
+            this._initTouchEvent();
+        } else {
+            this._removeTouchEvent();
+            if (this.dot) this.dot.setPosition(new Vec3());
+            if (this.joystickType === JoystickType.FOLLOW) {
+                const uiOpacity = this.node.getComponent(UIOpacity);
+                if (uiOpacity) uiOpacity.opacity = 0;
+            }
+            instance.emit(Input.EventType.TOUCH_END, null, { speedType: SpeedType.STOP, moveVec: new Vec3() });
+        }
+    }
     onEnable() {
         instance.on(SET_JOYSTICK_TYPE, this._onSetJoystickType, this);
     }
 
     onDisable() {
         instance.off(SET_JOYSTICK_TYPE, this._onSetJoystickType, this);
+    }
+
+    private _onAppResume() {
+        this._initTouchEvent();
+        GameManager.instance.uiChat.editBox.focus();
+    }
+
+    private _onAppPause() {
+        this._removeTouchEvent();
     }
 
     _onSetJoystickType(type: JoystickType) {
@@ -106,8 +130,14 @@ export class Joystick extends Component {
         this.node.on(Input.EventType.TOUCH_CANCEL, this._touchEndEvent, this);
     }
 
+    private _removeTouchEvent() {
+        this.node.off(Input.EventType.TOUCH_START, this._touchStartEvent, this);
+        this.node.off(Input.EventType.TOUCH_MOVE, this._touchMoveEvent, this);
+        this.node.off(Input.EventType.TOUCH_END, this._touchEndEvent, this);
+        this.node.off(Input.EventType.TOUCH_CANCEL, this._touchEndEvent, this);
+    }
+
     public _touchStartEvent(event: EventTouch) {
-        
         if (!this.ring || !this.dot) return;
         instance.emit(Input.EventType.TOUCH_START, event);
 
@@ -133,7 +163,6 @@ export class Joystick extends Component {
     }
 
     public _touchMoveEvent(event: EventTouch) {
-        
         if (!this.dot || !this.ring) return;
         if (
             this.joystickType === JoystickType.FOLLOW &&
@@ -157,17 +186,14 @@ export class Joystick extends Component {
             speedType = SpeedType.FAST;
         }
 
-        instance.emit(Input.EventType.TOUCH_MOVE, event, {
+        instance.emit(Node.EventType.TOUCH_MOVE, event, {
             SpeedType,
-            moveVec: moveVec.normalize(),
-        });instance.emit(Input.EventType.TOUCH_MOVE, event, {
-            speedType,
             moveVec: moveVec.normalize(),
         });
     }
 
     public _touchEndEvent(event: EventTouch) {
-        
+
         if (!this.dot || !this.ring) return;
         this.dot.setPosition(new Vec3());
         if (this.joystickType === JoystickType.FOLLOW) {

@@ -190,6 +190,7 @@ export interface UpgradeRarityPercentDTO {
 export interface StatsConfigDTO {
     costs: SpinCostsDTO;
     percentConfig: PercentConfigDTO;
+    farmLimit: FarmLimitDTO;
 }
 
 export enum ItemCode {
@@ -203,4 +204,20 @@ export interface BuyItemPayload {
     itemId: string | number;
     quantity: number;
     type: string;
+}
+
+export interface FarmLimitPlantDTO {
+    enabledLimit: boolean;
+    maxHarvest: number;
+}
+
+export interface FarmLimitHarvestDTO {
+    enabledLimit: boolean;
+    maxHarvest: number;
+    maxInterrupt: number;
+}
+
+export interface FarmLimitDTO {
+    plant: FarmLimitPlantDTO;
+    harvest: FarmLimitHarvestDTO;
 }

@@ -9,6 +9,7 @@ import { Constants } from '../utilities/Constants';
 import { Label } from 'cc';
 import { PopupSelectionMini, SelectionMiniParam } from './PopupSelectionMini';
 import { PopupManager } from './PopupManager';
+import { LoadingManager } from './LoadingManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('PopupApprovedMember')
@@ -53,32 +54,39 @@ export class PopupApprovedMember extends Component {
     }
 
     public async loadList(page: number, search?: string) {
-        this.listMemberJoinClan = await WebRequestManager.instance.getListMemberClanPendingAsync(this.clanDetail.id, page, search);
-        this.svMemberList.content.removeAllChildren();
-        this._listMemberJoinClan = [];
-        this.noMember.active = false;
+        try {
+            LoadingManager.getInstance().openLoading();
+            this.listMemberJoinClan = await WebRequestManager.instance.getListMemberClanPendingAsync(this.clanDetail.id, page, search);
+            this.svMemberList.content.removeAllChildren();
+            this._listMemberJoinClan = [];
+            this.noMember.active = false;
 
-        const hasPending = Array.isArray(this.listMemberJoinClan?.result) && this.listMemberJoinClan.result.length > 0;
-        this.popupClanMemberManager.ShowNoticeApprove(hasPending);
+            const hasPending = Array.isArray(this.listMemberJoinClan?.result) && this.listMemberJoinClan.result.length > 0;
+            this.popupClanMemberManager.ShowNoticeApprove(hasPending);
 
-        if (!hasPending) {
-            this.noMember.active = true;
-            return;
+            if (!hasPending) {
+                this.noMember.active = true;
+                return;
+            }
+
+            for (const member of this.listMemberJoinClan.result) {
+                const itemNode = instantiate(this.itemPrefab);
+                itemNode.setParent(this.svMemberList.content);
+
+                const itemComp = itemNode.getComponent(ItemMemberJoinClan)!;
+                itemComp.setData(member, async (id, action) => {
+                    await this.handleMemberAction(id, action);
+                });
+                this._listMemberJoinClan.push(itemComp);
+            }
+
+            this.totalMember.string = `Tổng số thành viên: ${this.listMemberJoinClan.pageInfo.total}`;
+            this.pagination.setTotalPages(this.listMemberJoinClan.pageInfo.total_page || 1);
+        } catch {
+
+        } finally {
+            LoadingManager.getInstance().closeLoading();
         }
-
-        for (const member of this.listMemberJoinClan.result) {
-            const itemNode = instantiate(this.itemPrefab);
-            itemNode.setParent(this.svMemberList.content);
-
-            const itemComp = itemNode.getComponent(ItemMemberJoinClan)!;
-            itemComp.setData(member, async (id, action) => {
-                await this.handleMemberAction(id, action);
-            });
-            this._listMemberJoinClan.push(itemComp);
-        }
-
-        this.totalMember.string = `Tổng số thành viên: ${this.listMemberJoinClan.pageInfo.total}`;
-        this.pagination.setTotalPages(this.listMemberJoinClan.pageInfo.total_page || 1);
     }
 
     private async handleMemberAction(id: string, action: MemberAction) {

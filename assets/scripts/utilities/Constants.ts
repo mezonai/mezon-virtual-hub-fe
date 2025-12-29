@@ -30,6 +30,16 @@ export class Constants {
     public static TUTORIAL_COMPLETE: string = "tutorial_completed";
     public static POSX_PLAYER_INIT = 912;
     public static POSY_PLAYER_INIT = -261;
+    ///Chat 
+    public static lastChatTime = 0;
+    public static chatCount = 0;
+    public static muteUntil = 0;
+
+    public static readonly RESET_TIME = 10 * 1000; // 10s
+    public static readonly MUTE_TIME = 15 * 1000;  // 15s
+    public static readonly MAX_CHAT = 3;
+    public static readonly MAX_VICE_LEADER = 5;
+    public static readonly HARVEST_UNLIMITED = -1;
 
     public static convertKeyOffice(positionTarget: OfficePosition): string {
         switch (positionTarget) {
@@ -301,5 +311,29 @@ export class Constants {
             default:
                 return "";// fallback
         }
+    }
+
+    static canSendChat(): boolean {
+        const now = Date.now();
+        // đang bị mute
+        if (now < this.muteUntil) {
+            return false;
+        }
+
+        // nếu quá 10s không chat → reset
+        if (now - this.lastChatTime > this.RESET_TIME) {
+            this.chatCount = 0;
+        }
+
+        this.lastChatTime = now;
+
+        // đạt giới hạn → mute
+        if (this.chatCount >= this.MAX_CHAT) {
+            this.muteUntil = now + this.MUTE_TIME;
+            this.chatCount = 0;
+            return false;
+        }
+        this.chatCount++;
+        return true;
     }
 }

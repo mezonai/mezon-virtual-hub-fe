@@ -5,6 +5,10 @@ import { PopupManager } from '../../PopUp/PopupManager';
 import { BasePopup } from '../../PopUp/BasePopup';
 import { UserManager } from '../../core/UserManager';
 import { PlayerController } from '../player/PlayerController';
+import { sys } from 'cc';
+import { UIMobileManager } from '../Mobile/UIMobileManager';
+import { EVENT_NAME } from '../../network/APIConstant';
+import { KeyBoardInput, keyboardInstance } from '../player/input/KeyBoardInput';
 const { ccclass, property } = _decorator;
 
 @ccclass('Interactable')
@@ -12,21 +16,47 @@ export abstract class Interactable extends Component {
     @property(Collider2D)
     protected collider: Collider2D = null;
     @property({ type: Enum(KeyEnum) })
-    protected interactKey: KeyEnum = KeyEnum.E;
+    protected interactKey: KeyEnum = KeyEnum.E;//Gokart = F
     protected isPlayerNearby: boolean = false;
     protected noticePopup: BasePopup = null;
     protected collidingNodes: Set<Node> = new Set();
     protected nearbyPlayerNode: Node | null = null;
 
-    onLoad() {
+    async onLoad() {
         if (this.collider) {
             this.collider.on(Contact2DType.BEGIN_CONTACT, this.onBeginContact, this);
             this.collider.on(Contact2DType.END_CONTACT, this.onEndContact, this);
         } else {
             console.warn('Collider is not assigned in ' + this.node.name);
         }
+        if (!sys.isMobile) {
+            keyboardInstance.on(EVENT_NAME.ON_PRESS_KEYBOARD, this.onKeyDown, this);
+        }
+        else {
+            await Constants.waitUntil(() => UIMobileManager.instance != null);
+            UIMobileManager.instance?.node.on(
+                EVENT_NAME.ON_CLICK_BUTTON_A_MOBILE,
+                () => {
+                    if (this.interactKey == KeyEnum.F) return;
+                    this.pressInteract();
+                },
+                this
+            );
+            UIMobileManager.instance?.node.on(
+                EVENT_NAME.ON_CLICK_BUTTON_B_MOBILE,
+                () => {
+                    if (this.interactKey != KeyEnum.F) return;
+                    this.pressInteract();
+                },
+                this
+            );
+        }
+    }
 
-        input.on(Input.EventType.KEY_DOWN, this.onKeyDown, this);
+
+
+    onInteractMobile() {
+        this.pressInteract();
     }
 
     onDestroy() {
@@ -34,21 +64,39 @@ export abstract class Interactable extends Component {
             this.collider.off(Contact2DType.BEGIN_CONTACT, this.onBeginContact, this);
             this.collider.off(Contact2DType.END_CONTACT, this.onEndContact, this);
         }
+        if (!sys.isMobile) {
+            UIMobileManager.instance?.node.off(
+                EVENT_NAME.ON_CLICK_BUTTON_A_MOBILE,
+                this.onInteractMobile,
+                this
+            );
+            UIMobileManager.instance?.node.off(
+                EVENT_NAME.ON_CLICK_BUTTON_B_MOBILE,
+                this.onInteractMobile,
+                this
+            );
+        }
+        else {
+            keyboardInstance.off(EVENT_NAME.ON_PRESS_KEYBOARD, this.onKeyDown, this);
+        }
 
-        input.off(Input.EventType.KEY_UP, this.onKeyDown, this);
+    }
+
+    pressInteract() {
+        const myPlayer = UserManager.instance.GetMyClientPlayer;
+        if (this.isPlayerNearby && this.nearbyPlayerNode === myPlayer.node) {
+            this.interact(myPlayer.myID);
+        }
     }
 
     protected onKeyDown(event: EventKeyboard): boolean {
         if (event.keyCode.toString() === this.interactKey.toString()) {
-            const myPlayer = UserManager.instance.GetMyClientPlayer;
-            if (this.isPlayerNearby && this.nearbyPlayerNode === myPlayer.node) {
-                this.interact(myPlayer.myID);
-            }
+            this.pressInteract();
             return true;
         }
         return false;
     }
-    
+
 
     protected canBeginContact(other: Node) {
         return true;
@@ -57,28 +105,29 @@ export abstract class Interactable extends Component {
     protected onBeginContact(selfCollider: Collider2D, otherCollider: Collider2D, contact: IPhysics2DContact | null) {
         const otherNode = otherCollider.node;
         const myPlayer = UserManager.instance.GetMyClientPlayer;
-    
+
         if (this.collidingNodes.has(otherNode)) return;
         this.collidingNodes.add(otherNode);
         const otherPlayerId = this.getPlayerIdFromNode(otherNode);
         const myId = myPlayer.myID;
         if ((otherNode.layer & Constants.PLAYER_LAYER) !== 0 && otherPlayerId === myId) {
             this.isPlayerNearby = true;
+            console.log("onBeginContact");
             this.nearbyPlayerNode = otherNode;
             this.handleBeginContact(selfCollider, otherCollider, contact);
         }
     }
-    
+
     protected onEndContact(selfCollider: Collider2D, otherCollider: Collider2D, contact: IPhysics2DContact | null) {
         const otherNode = otherCollider.node;
         const myPlayer = UserManager.instance.GetMyClientPlayer;
         this.collidingNodes.delete(otherNode);
-    
+
         if ((otherNode.layer & Constants.PLAYER_LAYER) !== 0) {
             const otherPlayerId = this.getPlayerIdFromNode(otherNode);
             const myId = myPlayer.myID;
             const isSamePlayer = otherPlayerId === myId;
-    
+
             if (isSamePlayer) {
                 this.isPlayerNearby = false;
                 this.nearbyPlayerNode = null;
@@ -86,16 +135,16 @@ export abstract class Interactable extends Component {
             }
         }
     }
-    
+
     protected getPlayerIdFromNode(node: Node): string {
         const playerComp = node.getComponent(PlayerController) as any;
 
         return playerComp?.myID ?? "";
     }
-    
-    
+
+
     protected abstract interact(playerSessionId: string): void;
-    protected async handleBeginContact(selfCollider: Collider2D, otherCollider: Collider2D, contact: IPhysics2DContact | null) {}
+    protected async handleBeginContact(selfCollider: Collider2D, otherCollider: Collider2D, contact: IPhysics2DContact | null) { }
 
     protected async handleEndContact(selfCollider: Collider2D, otherCollider: Collider2D, contact: IPhysics2DContact | null) {
         if (this.noticePopup?.node != null) {

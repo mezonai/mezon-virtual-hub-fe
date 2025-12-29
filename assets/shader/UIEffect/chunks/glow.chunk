@@ -1,0 +1,95 @@
+
+  #pragma define-meta GLOW_DIRECTION options([16, 14, 12, 10, 8, 4, 1])
+  #if GLOW_DIRECTION == 16
+    #define G_DIR 16
+  #elif GLOW_DIRECTION == 14
+    #define G_DIR 14
+  #elif GLOW_DIRECTION == 12
+    #define G_DIR 12
+  #elif GLOW_DIRECTION == 10
+    #define G_DIR 10
+  #elif GLOW_DIRECTION == 8
+    #define G_DIR 8
+  #elif GLOW_DIRECTION == 4
+    #define G_DIR 4
+  #elif GLOW_DIRECTION == 1
+    #define G_DIR 1
+  #endif
+
+  #pragma define-meta GLOW_QUALITY range([1, 4]) 
+  #if GLOW_QUALITY == 4
+    #define G_QUAL 4
+  #elif GLOW_QUALITY == 3
+    #define G_QUAL 3
+  #elif GLOW_QUALITY == 2
+    #define G_QUAL 2
+  #elif GLOW_QUALITY == 1
+    #define G_QUAL 1
+  #endif
+// #elif HAS_OUTLINE
+// #endif
+
+  vec4 gaussian_blur_based_glow(sampler2D tex, vec2 uv, float size, vec2 resolution, vec4 color)
+  {
+    const float PI_2 = 6.28318530718; 
+    vec4 glowColor = vec4(0.0);
+    // GAUSSIAN BLUR SETTINGS
+    #if HAS_GLOW
+      const float directions = float(G_DIR); // BLUR DIRECTIONS (Default 16.0 - More is better but slower)
+      const float quality = float(G_QUAL); // BLUR QUALITY (Default 4.0 - More is better but slower)
+    #elif HAS_OUTLINE
+      const float directions = float(G_DIR); // BLUR DIRECTIONS (Default 16.0 - More is better but slower)
+      const float quality = float(1.0); // BLUR QUALITY (Default 4.0 - More is better but slower)
+    #else
+      const float directions = 4.0; // BLUR DIRECTIONS (Default 16.0 - More is better but slower)
+      const float quality = 1.0; // BLUR QUALITY (Default 4.0 - More is better but slower)
+    #endif
+
+    // GAUSSIAN BLUR SETTINGS
+
+    vec2 radius = size/resolution;
+    for( float d=0.0; d<PI_2; d+=PI_2/directions)
+    {
+      vec2 dir = vec2(cos(d),sin(d));
+      for(float i=1.0/quality; i<=1.0; i+=1.0/quality)
+      {
+        #if HAS_GLOW
+          glowColor += texture(tex, uv + dir*radius*i);		
+        #elif HAS_OUTLINE
+          glowColor = max(glowColor, texture(tex, uv + dir*radius*i));		
+        #endif
+      }
+    }
+
+  
+    #if HAS_GLOW
+      glowColor /= quality*directions - ((directions/2.0)-1.0);
+    #endif
+
+    glowColor.xyz = color.xyz;
+    glowColor.a *= glowStrength;
+
+    return glowColor;
+  }
+
+  vec4 glow(sampler2D tex, vec2 uv, float size, vec2 resolution, vec4 glowColor)
+  {
+    vec4 color = vec4(1.0);
+    color *= texture(tex, uv);
+
+    vec4 glow = vec4(0.0);
+    glow = gaussian_blur_based_glow(tex, uv, size, resolution, glowColor);
+
+    return mix(glow, color, color.a);
+  }
+
+  // EMISSION Default 0.3
+  vec4 emission(sampler2D tex, vec2 uv, float size, vec2 resolution, vec4 glowColor, float emissionValue)
+  {
+    vec4 glow = gaussian_blur_based_glow(tex, uv, size, resolution, glowColor); 
+    vec4 color = vec4(1.0);
+    color *= texture(tex, uv);
+    color.xyz += glow.xyz*emissionValue;
+
+    return mix(glow, color, color.a);
+  }

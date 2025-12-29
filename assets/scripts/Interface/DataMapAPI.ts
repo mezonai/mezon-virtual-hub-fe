@@ -45,7 +45,7 @@ export class ClansData {
     max_members?: number;
 
     leader?: UserClan | null;
-    vice_leader?: UserClan | null;
+    vice_leaders?: UserClan[] | null;
 
     //temp
     join_status?: ClanStatus;
@@ -205,6 +205,10 @@ export enum ClanActivityActionType {
 export interface RequestToJoinDTO {
   canRequestAt?: string;
   request?: MemberClanRequestDTO;
+}
+
+export interface AssignViceLeadersDto {
+  targetUserIds: string[];
 }
 
 
