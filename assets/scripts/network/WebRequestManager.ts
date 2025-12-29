@@ -3,7 +3,7 @@ import { APIManager } from './APIManager';
 import APIConstant, { APIConfig, EVENT_NAME } from './APIConstant';
 import ConvetData from '../core/ConvertData';
 import { UserMeManager } from '../core/UserMeManager';
-import { AssignViceLeadersDto as AssignViceLeadersDTO, ClanActivityResponseDTO, ClanContributorsResponseDTO, ClanDescriptionDTO as ClanDescriptionDTO, ClanFundResponseDTO, ClanRequestResponseDTO, ClansData, ClansResponseDTO, MemberResponseDTO, RemoveMembersPayload, RequestToJoinDTO, SortBy, SortOrder, UserDataResponse } from '../Interface/DataMapAPI';
+import { AssignViceLeadersDto as AssignViceLeadersDTO, ClanActivityResponseDTO, ClanContributorsResponseDTO, ClanDescriptionDTO as ClanDescriptionDTO, ClanFundResponseDTO, ClanRequestResponseDTO, ClansData, ClansResponseDTO, MemberResponseDTO, RemoveMembersPayload, RequestToJoinDTO, ScoreType, SortBy, SortOrder, UserDataResponse } from '../Interface/DataMapAPI';
 import { ServerManager } from '../core/ServerManager';
 import { PopupSelectionMini, SelectionMiniParam } from '../PopUp/PopupSelectionMini';
 import { PopupManager } from '../PopUp/PopupManager';
@@ -234,10 +234,10 @@ export class WebRequestManager extends Component {
         });
     }
 
-    public getAllClansync(page: number = 1, search?: string, sortby: SortBy = SortBy.CREATED_AT, sortOrder: SortOrder = SortOrder.DESC, limit: number = 30): Promise<ClansResponseDTO> {
+    public getAllClansync(isWeekly: boolean, page: number = 1, search?: string, sortby: SortBy = SortBy.CREATED_AT, sortOrder: SortOrder = SortOrder.DESC, limit: number = 30): Promise<ClansResponseDTO> {
         return new Promise((resolve) => {
             WebRequestManager.instance.getAllClan(
-                page, sortby, sortOrder, limit,
+               isWeekly, page, sortby, sortOrder, limit,
                 (response) => {
                     const clans = ConvetData.ConvertClans(response);
                     resolve(clans);
@@ -250,10 +250,10 @@ export class WebRequestManager extends Component {
         });
     }
 
-    public getAllClanRequestsync(page: number = 1, search?: string, sortby: SortBy = SortBy.CREATED_AT, sortOrder: SortOrder = SortOrder.DESC, limit: number = 30): Promise<ClansResponseDTO> {
+    public getAllClanRequestsync(isWeekly: boolean, page: number = 1, search?: string, sortby: SortBy = SortBy.CREATED_AT, sortOrder: SortOrder = SortOrder.DESC, limit: number = 30): Promise<ClansResponseDTO> {
         return new Promise((resolve) => {
             WebRequestManager.instance.getAllClanRequest(
-                page, sortby, sortOrder, limit,
+                isWeekly, page, sortby, sortOrder, limit,
                 (response) => {
                     const clans = ConvetData.ConvertClans(response);
                     resolve(clans);
@@ -355,10 +355,10 @@ export class WebRequestManager extends Component {
         });
     }
 
-    public getListMemberClanAsync(clanId: String, page: number = 1, search?: string, sortOrder: SortOrder = SortOrder.DESC, sortby: SortBy = SortBy.USERNAME, limit: number = 30): Promise<MemberResponseDTO> {
+    public getListMemberClanAsync(clanId: String, currentMode: string, page: number = 1, search?: string, sortOrder: SortOrder = SortOrder.DESC, sortby: SortBy = SortBy.CREATED_AT, limit: number = 30): Promise<MemberResponseDTO> {
         return new Promise((resolve, reject) => {
             WebRequestManager.instance.getListMemberClan(
-                clanId, page, sortOrder, sortby, limit,
+                clanId, currentMode, page, sortOrder, sortby, limit,
                 (response) => {
                     const clans = ConvetData.ConvertMemberClan(response);
                     resolve(clans);
@@ -676,16 +676,16 @@ export class WebRequestManager extends Component {
     }
 
     //Clan
-    public getAllClan(page = 1, sortby: SortBy, sortOrder: SortOrder, limit = 30, successCallback, errorCallback, search?: string) {
-        let url = `${APIConstant.CLANS}?page=${page}&sort_by=${sortby.toString()}&order=${sortOrder.toString()}&limit=${limit}`;
+    public getAllClan(isWeekly, page = 1, sortby: SortBy, sortOrder: SortOrder, limit = 30, successCallback, errorCallback, search?: string) {
+        let url = `${APIConstant.CLANS}?page=${page}&sort_by=${sortby.toString()}&order=${sortOrder.toString()}&limit=${limit}&isWeekly=${isWeekly}`;
         if (search && search.trim() !== "") {
             url += `&search=${encodeURIComponent(search.trim())}`;
         }
         APIManager.getData(url, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
-    public getAllClanRequest(page = 1, sortby: SortBy, sortOrder: SortOrder, limit = 30, successCallback, errorCallback, search?: string) {
-        let url = `${APIConstant.CLANS}/${APIConstant.CLAN_REQUESTS}?page=${page}&sort_by=${sortby.toString()}&order=${sortOrder.toString()}&limit=${limit}`;
+    public getAllClanRequest(isWeekly, page = 1, sortby: SortBy, sortOrder: SortOrder, limit = 30, successCallback, errorCallback, search?: string) {
+        let url = `${APIConstant.CLANS}/${APIConstant.CLAN_REQUESTS}?page=${page}&sort_by=${sortby.toString()}&order=${sortOrder.toString()}&limit=${limit}&isWeekly=${isWeekly}`;
         if (search && search.trim() !== "") {
             url += `&search=${encodeURIComponent(search.trim())}`;
         }
@@ -712,12 +712,12 @@ export class WebRequestManager extends Component {
         APIManager.postData(this.combineWithSlash(APIConstant.CLANS, clan_id, APIConstant.DESCRIPTION), data, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
-    public getListMemberClan(clan_id, page = 1, sortOrder: SortOrder, sortby: SortBy, limit = 30, successCallback, errorCallback, search?: string) {
+    public getListMemberClan(clan_id, currentMode, page = 1, sortOrder: SortOrder, sortby: SortBy, limit = 30, successCallback, errorCallback, search?: string) {
         let url = `${APIConstant.CLANS}/${clan_id}/${APIConstant.USERS}?`;
         if (search && search.trim() !== "") {
             url += `search=${encodeURIComponent(search.trim())}&`;
         }
-        url += `page=${page}&order=${sortOrder.toString()}&sort_by=${sortby.toString()}&limit=${limit}`;
+        url += `page=${page}&order=${sortOrder.toString()}&sort_by=${sortby.toString()}&limit=${limit}&score_type=${currentMode}`;
         APIManager.getData(url, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 

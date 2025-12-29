@@ -39,6 +39,7 @@ export class ClansData {
     id: string;
     name: string;
     score: number;
+    weekly_score: number;
     fund: number;
     description: string | null;
     member_count?: number;
@@ -68,8 +69,9 @@ export class UserClan {
     avatar_url: string | null;
     gender: string | null;
     clan_role: string | null;
-    total_score: number | null;
-    weekly_score: number | null;
+    score?: number | null;
+    total_score?: number | null;
+    weekly_score?: number | null;
     rank: number | null;
 }
 
@@ -130,6 +132,12 @@ export enum SortBy {
     CREATED_AT = "created_at",
     USERNAME = "username",
     TOTAL_AMOUNT = "total_amount"
+}
+
+export enum ScoreType {
+  TOTAL = 'total',
+  WEEKLY = 'weekly',
+  ALL = 'all',
 }
 
 export class ClanFundPayload {

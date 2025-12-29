@@ -669,7 +669,8 @@ export class ServerManager extends Component {
     }
 
     private ShowLimitHarvestPlant(max?: number, remaining?: number): boolean {
-        return max !== Constants.HARVEST_UNLIMITED && remaining != Constants.HARVEST_UNLIMITED;
+        if (max == null || remaining == null) return false;
+        return ( max !== Constants.HARVEST_UNLIMITED && remaining !== Constants.HARVEST_UNLIMITED);
     }
 
     public async joinBattleRoom(roomId: string): Promise<void> {
