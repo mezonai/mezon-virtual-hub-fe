@@ -10,6 +10,7 @@ import { PopupClanShop } from './PopupClanShop';
 import { InventoryClanUIItem } from '../Clan/InventoryClanUIItem';
 import { Constants } from '../utilities/Constants';
 import { StatsConfigDTO } from '../Model/Item';
+import { LoadingManager } from './LoadingManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('PopupClanInventory')
@@ -40,7 +41,7 @@ export class PopupClanInventory extends BasePopup {
     getConfigRate: StatsConfigDTO;
     private harvestCountDTO: HarvestCountDTO;
 
-    public init(param?: PopupClanInventoryParam): void {
+    public async init(param?: PopupClanInventoryParam) {
         this.closeButton.addAsyncListener(async () => {
             this.closeButton.interactable = false;
             await PopupManager.getInstance().closePopup(this.node.uuid);
@@ -61,9 +62,20 @@ export class PopupClanInventory extends BasePopup {
 
             this.ShopClanButton.interactable = true;
         });
-        this.GetHarvestCounts();
-        this.CheckShowMemberManager();
-        this.GetClanWareHouse();
+        await this.LoadInventoryUI();
+    }
+
+    private async LoadInventoryUI() {
+        try {
+            LoadingManager.getInstance().openLoading();
+            this.GetHarvestCounts();
+            this.CheckShowMemberManager();
+            this.GetClanWareHouse();
+        } catch {
+
+        } finally {
+            LoadingManager.getInstance().closeLoading();
+        }
     }
 
     setCountLabel = (label, used, max) => {

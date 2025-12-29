@@ -14,6 +14,7 @@ import { PopupSelectionMini } from './PopupSelectionMini';
 import { Constants } from '../utilities/Constants';
 import { isValid } from 'cc';
 import { PopupClanHistory, PopupClanHistoryParam } from './PopupClanHistory';
+import { LoadingManager } from './LoadingManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('PopupClanDetailInfo')
@@ -175,12 +176,19 @@ export class PopupClanDetailInfo extends BasePopup {
     }
 
     async getMyClan() {
-        this.clanDetail = await WebRequestManager.instance.getClanDetailAsync(UserMeManager.Get.clan.id);
-        const value = await WebRequestManager.instance.getClanFundAsync(UserMeManager.Get.clan.id);
-        this.clanFund = value?.funds.find(f => f.type === "gold")?.amount ?? 0;
-        this.clanFundUsed = value?.funds.find(f => f.type === "gold")?.spent_amount ?? 0;
-        this.setDataFundClan(this.clanFund);
-        this.setDataMyClanInfo(this.clanDetail);
+        try {
+            LoadingManager.getInstance().openLoading();
+            this.clanDetail = await WebRequestManager.instance.getClanDetailAsync(UserMeManager.Get.clan.id);
+            const value = await WebRequestManager.instance.getClanFundAsync(UserMeManager.Get.clan.id);
+            this.clanFund = value?.funds.find(f => f.type === "gold")?.amount ?? 0;
+            this.clanFundUsed = value?.funds.find(f => f.type === "gold")?.spent_amount ?? 0;
+            this.setDataFundClan(this.clanFund);
+            this.setDataMyClanInfo(this.clanDetail);
+        } catch {
+
+        } finally {
+            LoadingManager.getInstance().closeLoading();
+        }
     }
 
     public setDataFundClan(value: Number){
