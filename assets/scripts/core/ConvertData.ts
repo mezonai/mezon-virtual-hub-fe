@@ -36,7 +36,8 @@ export default class ConvetData {
             id: clan.id ?? "",
             name: clan.name ?? "",
             fund: clan.fund ?? 0,
-            score: clan.score ?? 0,
+            score: clan.score ?? null,
+            weekly_score: clan.weekly_score ?? null,
             max_members: clan.max_members ?? 0,
             member_count: clan.member_count ?? 0,
             join_status: clan.join_status ?? ClanStatus.NONE,
@@ -58,8 +59,9 @@ export default class ConvetData {
                 avatar_url: user.avatar_url ?? null,
                 gender: user.gender ?? null,
                 clan_role: user.clan_role ?? null,
-                total_score: user.total_score ?? 0,
-                weekly_score: user.weekly_score ?? 0,
+                score: user.score ?? null,
+                total_score: user.total_score ?? null,
+                weekly_score: user.weekly_score ?? null,
                 rank: user.rank ?? 0,
             }
             : null;
@@ -83,7 +85,8 @@ export default class ConvetData {
             id: clanDT.id ?? "",
             name: clanDT.name ?? "",
             fund: clanDT.fund ?? 0,
-            score: clanDT.score ?? 0,
+            score: clanDT.score ?? null,
+            weekly_score: clanDT.weekly_score ?? null,
             description: clanDT.description ?? null,
             member_count: clanDT.member_count ?? 0,
             max_members: clanDT.max_members ?? 0,
@@ -123,8 +126,9 @@ export default class ConvetData {
             avatar_url: user.avatar_url ?? null,
             gender: user.gender ?? null,
             clan_role: user.clan_role ?? null,
-            total_score: user.total_score ?? 0,
-            weekly_score: user.weekly_score ?? 0,
+            score: user.score  ?? null,
+            total_score: user.total_score ?? null,
+            weekly_score: user.weekly_score ?? null,
             rank: user.rank ?? 0,
         }));
 

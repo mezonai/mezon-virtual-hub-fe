@@ -21,7 +21,6 @@ export class PopupClanInventory extends BasePopup {
     @property(RichText) growTimert: RichText = null;
     @property(RichText) harvestScorert: RichText = null;
     @property(RichText) priceBuyrt: RichText = null;
-    @property(Button) ShopClanButton: Button = null;
     @property(Node) noItemPanel: Node = null;
     @property(Node) detailMain: Node = null;
     @property(Prefab) itemPrefab: Prefab = null!;
@@ -50,18 +49,6 @@ export class PopupClanInventory extends BasePopup {
         this.detailMain.active = false;
         if (!param) return;
         this.clanDetail = param.clanDetail;
-        this.ShopClanButton.addAsyncListener(async () => {
-            this.ShopClanButton.interactable = false;
-
-            await PopupManager.getInstance().openAnimPopup("UI_ClanShop", PopupClanShop, {
-                clanDetail: this.clanDetail,
-                onBuySuccess: async () => {
-                   this.GetClanWareHouse();
-                }
-            });
-
-            this.ShopClanButton.interactable = true;
-        });
         await this.LoadInventoryUI();
     }
 
@@ -69,7 +56,6 @@ export class PopupClanInventory extends BasePopup {
         try {
             LoadingManager.getInstance().openLoading();
             this.GetHarvestCounts();
-            this.CheckShowMemberManager();
             this.GetClanWareHouse();
         } catch {
 
@@ -91,15 +77,6 @@ export class PopupClanInventory extends BasePopup {
         this.limitHarvestNode.active = this.getConfigRate.farmLimit.harvest.enabledLimit;
         this.setCountLabel(this.harvertCountrt, this.harvestCountDTO.harvest_count_use, this.getConfigRate.farmLimit.harvest.maxHarvest);
         this.setCountLabel(this.harvertInterrupCountrt, this.harvestCountDTO.harvest_interrupt_count_use, this.getConfigRate.farmLimit.harvest.maxInterrupt);
-    }
-
-    CheckShowMemberManager() {
-        const leaderId = this.clanDetail?.leader?.id;
-        const isViceLeader = this.clanDetail?.vice_leaders?.some(
-            (v) => v.id === UserMeManager.Get.user.id,
-        );
-        const canManage = UserMeManager.Get.user.id === leaderId || isViceLeader;
-        this.ShopClanButton.node.active = !!canManage;
     }
 
     public async GetClanWareHouse() {
