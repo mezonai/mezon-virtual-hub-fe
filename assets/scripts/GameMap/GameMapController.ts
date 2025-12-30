@@ -44,7 +44,6 @@ export class GameMapController extends Component {
     }
 
     public async onClickGoToNextOffice(office: Office) {
-        console.log("this");
         if (office.officeBrach === OfficePosition.NONE) {
             Constants.showConfirm("Văn phòng đang chưa có sẵn", "Thông báo");
             return;
@@ -88,25 +87,20 @@ export class GameMapController extends Component {
     async playAnimMoveOffice(office: Office) {
         if (this.currentOffice.region == office.region) {
             if (this.currentOffice.clans.name == office.clans.name) {
-                this.waitForMove = false;
+                return;
             }
-            else {
-                await this.playerWalkToPosition(office.officePoint.worldPosition.clone());
-            }
+            await this.playerWalkToPosition(office.officePoint.worldPosition.clone());
+            return;
         }
-        else {
-            let startPoint: Node = this.currentOffice.officePoint;
-            let endNode: Node = office.officePoint;
-            await this.spawnFlightAndMove(startPoint.worldPosition, endNode.worldPosition);
-        }
+        let startPoint: Node = this.currentOffice.officePoint;
+        let endNode: Node = office.officePoint;
+        await this.spawnFlightAndMove(startPoint.worldPosition, endNode.worldPosition);
     }
 
-    private waitForMove = false;
     private playerWalkToPosition(target: Vec3): Promise<void> {
         return new Promise<void>((resolve) => {
             this.bubbleChat.active = false;
             this.playerAnim.play("move");
-            this.waitForMove = true;
 
             // Đảo hướng nhân vật
             this.playerNode.scale = new Vec3(
@@ -118,41 +112,16 @@ export class GameMapController extends Component {
             tween(this.playerNode)
                 .to(1, { worldPosition: target })
                 .call(() => {
-                    this.waitForMove = false;
                     resolve(); // ✅ Báo Promise hoàn thành
                 })
                 .start();
         });
     }
 
-
-    private async waitForPlayerMove(interval: number = 100): Promise<void> {
-        return new Promise((resolve) => {
-            const check = () => {
-                if (!this.waitForMove) {
-                    resolve();
-                } else {
-                    setTimeout(check, interval);
-                }
-            };
-            check();
-        });
-    }
-
-    private onError(error: any) {
-        console.error("Error occurred:", error);
-
-        if (error?.message) {
-            console.error("Error message:", error.message);
-        }
-    }
-
     async spawnFlightAndMove(start: Vec3, end: Vec3) {
         this.playerNode.active = false;
         this.planeNotice.node.worldPosition = start.clone();
-        this.waitForMove = true;
         await this.runTween(end);
-        this.waitForMove = false;
     }
 
     runTween(position: Vec3): Promise<void> {

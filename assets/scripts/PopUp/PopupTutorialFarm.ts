@@ -9,6 +9,7 @@ import { PlantData } from '../Farm/EnumPlant';
 import { Plant } from '../Farm/Plant';
 import { Constants } from '../utilities/Constants';
 import { PlayerInteractFarm } from '../gameplay/player/PlayerInteractFarm';
+import { Button } from 'cc';
 const { ccclass, property } = _decorator;
 
 @ccclass('PopupTutorialFarm')
@@ -30,6 +31,13 @@ export class PopupTutorialFarm extends TutorialBase {
             this.closePopup();
             return;
         }
+        if (param?.onActionCompleted) {
+            this._onActionCompleted = param.onActionCompleted;
+        }
+        this.buttonSkip.node.on(Button.EventType.CLICK, () => {
+            localStorage.setItem(Constants.TUTORIAL_FARM, 'true');
+            this.cancelTutorial();
+        }, this);
         this.loadBase();
         this.playTutorialJoinClan();
     }
@@ -68,7 +76,9 @@ export class PopupTutorialFarm extends TutorialBase {
         await this.waterPlant();
         await this.harvesPlant();
         localStorage.setItem(Constants.TUTORIAL_FARM, 'true');
+        this.cancelTutorial();
         this.closePopup();
+
     }
 
     showPopupChoosePlant(isShow: boolean) {
@@ -182,7 +192,7 @@ export class PopupTutorialFarm extends TutorialBase {
 
 }
 export interface PopupTutorialFarmParam {
-    //onActionCompleted?: () => void;
+    onActionCompleted?: () => void;
 }
 
 

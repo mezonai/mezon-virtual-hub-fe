@@ -1,9 +1,5 @@
 import { _decorator, Component, Sprite, SpriteFrame, Vec3 } from 'cc';
 import { Food, Item, ItemType, PurchaseMethod, RewardItemDTO, RewardType } from '../Model/Item';
-import { LoadBundleController } from '../bundle/LoadBundleController';
-import { LocalItemDataConfig } from '../Model/LocalItemConfig';
-import { ResourceManager } from '../core/ResourceManager';
-import { Species } from '../Model/PetDTO';
 import { ItemIconManager } from '../utilities/ItemIconManager';
 const { ccclass, property } = _decorator;
 

@@ -180,13 +180,13 @@ export class NPCController extends Component {
     }
 
     private checkCanDisplay() {
-        if (UserMeManager.Get?.map?.map_key == null) return true;
+        if (UserMeManager.CurrentOffice?.nameRoomServer == null) return true;
 
         if (this.type == NPC_TYPE.JOKE) {
             return randomRange(0, 1) <= 0.5;
         }
 
-        switch (UserMeManager.Get.map.map_key) {
+        switch (UserMeManager.CurrentOffice.nameRoomServer) {
             case "hn1":
             case "hn3":
             case "dn":

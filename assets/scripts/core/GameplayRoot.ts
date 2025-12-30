@@ -64,7 +64,7 @@ export class GameplayRoot extends Component {
     private initDataFromAPI() {
         WebRequestManager.instance.getAllItem((respone) => { this.onGetAllItem(respone) }, (error) => { this.onApiError(error); });
         WebRequestManager.instance.getAllItemFood((respone) => { this.onGetAllFood(respone) }, (error) => { this.onApiError(error); });
-        WebRequestManager.instance.getAllPetData(OfficeSceneController.instance.nameCode, (respone) => { this.onGetAllPetData(respone) }, (error) => { this.onApiError(error); });
+        WebRequestManager.instance.getAllPetData(UserMeManager.CurrentOffice.nameRoomServer, (respone) => { this.onGetAllPetData(respone) }, (error) => { this.onApiError(error); });
     }
 
     private onGetAllPetData(respone) {

@@ -9,6 +9,8 @@ import { IconItemUIHelper } from '../Reward/IconItemUIHelper';
 import { PopupClanShop } from './PopupClanShop';
 import { InventoryClanUIItem } from '../Clan/InventoryClanUIItem';
 import { Constants } from '../utilities/Constants';
+import { StatsConfigDTO } from '../Model/Item';
+import { LoadingManager } from './LoadingManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('PopupClanInventory')
@@ -30,15 +32,16 @@ export class PopupClanInventory extends BasePopup {
     @property(Sprite) seedBags: Sprite = null;
     @property({type: IconItemUIHelper }) iconItemUIHelper: IconItemUIHelper = null;
     @property(Sprite) iconSeed: Sprite = null;
+    @property(Node) limitHarvestNode: Node = null;
 
     private clanDetail: ClansData;
     private clanWarehouseSlot: ClanWarehouseSlotDTO[];
     private _clanWarehouseSlot: InventoryClanUIItem[];
     private timeoutLoadSlot: number = 50;
-    
+    getConfigRate: StatsConfigDTO;
     private harvestCountDTO: HarvestCountDTO;
 
-    public init(param?: PopupClanInventoryParam): void {
+    public async init(param?: PopupClanInventoryParam) {
         this.closeButton.addAsyncListener(async () => {
             this.closeButton.interactable = false;
             await PopupManager.getInstance().closePopup(this.node.uuid);
@@ -59,9 +62,20 @@ export class PopupClanInventory extends BasePopup {
 
             this.ShopClanButton.interactable = true;
         });
-        this.GetHarvestCounts();
-        this.CheckShowMemberManager();
-        this.GetClanWareHouse();
+        await this.LoadInventoryUI();
+    }
+
+    private async LoadInventoryUI() {
+        try {
+            LoadingManager.getInstance().openLoading();
+            this.GetHarvestCounts();
+            this.CheckShowMemberManager();
+            this.GetClanWareHouse();
+        } catch {
+
+        } finally {
+            LoadingManager.getInstance().closeLoading();
+        }
     }
 
     setCountLabel = (label, used, max) => {
@@ -72,14 +86,19 @@ export class PopupClanInventory extends BasePopup {
     };
 
     async GetHarvestCounts(){
+        this.getConfigRate = await WebRequestManager.instance.getConfigRateAsync();
         this.harvestCountDTO = await WebRequestManager.instance.getHarvestCountsAsync(this.clanDetail.id);
-        this.setCountLabel(this.harvertCountrt, this.harvestCountDTO.harvest_count_use, this.harvestCountDTO.harvest_count);
-        this.setCountLabel(this.harvertInterrupCountrt, this.harvestCountDTO.harvest_interrupt_count_use, this.harvestCountDTO.harvest_interrupt_count);
+        this.limitHarvestNode.active = this.getConfigRate.farmLimit.harvest.enabledLimit;
+        this.setCountLabel(this.harvertCountrt, this.harvestCountDTO.harvest_count_use, this.getConfigRate.farmLimit.harvest.maxHarvest);
+        this.setCountLabel(this.harvertInterrupCountrt, this.harvestCountDTO.harvest_interrupt_count_use, this.getConfigRate.farmLimit.harvest.maxInterrupt);
     }
 
     CheckShowMemberManager() {
         const leaderId = this.clanDetail?.leader?.id;
-        const canManage = UserMeManager.Get.user.id === leaderId;
+        const isViceLeader = this.clanDetail?.vice_leaders?.some(
+            (v) => v.id === UserMeManager.Get.user.id,
+        );
+        const canManage = UserMeManager.Get.user.id === leaderId || isViceLeader;
         this.ShopClanButton.node.active = !!canManage;
     }
 
