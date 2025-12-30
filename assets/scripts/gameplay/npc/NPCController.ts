@@ -180,21 +180,21 @@ export class NPCController extends Component {
     }
 
     private checkCanDisplay() {
-        if (UserMeManager.Get?.clan?.id == null) return true;
+        if (UserMeManager.CurrentOffice?.nameRoomServer == null) return true;
 
         if (this.type == NPC_TYPE.JOKE) {
             return randomRange(0, 1) <= 0.5;
         }
 
-        switch (UserMeManager.Get.clan.name) {
-            case "Ha Noi 1":
-            case "Ha Noi 3":
-            case "Da Nang":
+        switch (UserMeManager.CurrentOffice.nameRoomServer) {
+            case "hn1":
+            case "hn3":
+            case "dn":
                 return this.type == NPC_TYPE.FACT;
-            case "Ha Noi 2":
-            case "Vinh":
-            case "Sai Gon":
-            case "Quy Nhon":
+            case "hn2":
+            case "vinh":
+            case "sg":
+            case "qn":
                 return this.type == NPC_TYPE.MATH;
         }
 
