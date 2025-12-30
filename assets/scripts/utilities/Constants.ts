@@ -1,6 +1,6 @@
 ﻿import { Sprite } from "cc";
 import { ServerMapManager } from "../core/ServerMapManager";
-import { OfficePosition } from "../GameMap/OfficePosition";
+import { OfficePosition, Season } from "../GameMap/OfficePosition";
 import { RoomType } from "../GameMap/RoomType";
 import { ClanRole, ClansData } from "../Interface/DataMapAPI";
 import { FoodType, InventoryType, ItemType, RewardItemDTO, RewardType } from "../Model/Item";
@@ -30,6 +30,7 @@ export class Constants {
     public static TUTORIAL_COMPLETE: string = "tutorial_completed";
     public static POSX_PLAYER_INIT = 912;
     public static POSY_PLAYER_INIT = -261;
+    public static season: Season = Season.NONE;
 
     public static convertKeyOffice(positionTarget: OfficePosition): string {
         switch (positionTarget) {

@@ -12,10 +12,11 @@ import { ClansData, UserDataResponse } from '../Interface/DataMapAPI';
 import { RandomlyMover } from '../utilities/RandomlyMover';
 import { OfficeSenenParameter } from './OfficeScene/OfficeSenenParameter';
 import { RoomType } from './RoomType';
-import { OfficePosition } from './OfficePosition';
+import { OfficePosition, Season } from './OfficePosition';
 import { Constants } from '../utilities/Constants';
 import { ServerMapManager } from '../core/ServerMapManager';
 import { LoadingManager } from '../PopUp/LoadingManager';
+import { Enum } from 'cc';
 const { ccclass, property } = _decorator;
 
 @ccclass('GameMapController')
@@ -26,7 +27,7 @@ export class GameMapController extends Component {
     @property({ type: Node }) playerNode: Node = null;
     @property(AnimationEventController) private playerSkin: AnimationEventController = null;
     @property(AnimationController) private playerAnim: AnimationController = null;
-
+    @property({ type: Enum(Season) }) season: Season = Season.NONE;
     /////Bubble Chat
     @property(Node) bubbleChat: Node = null;
     @property(Label) contentBubbleChat: Label = null;
@@ -37,6 +38,8 @@ export class GameMapController extends Component {
     public isBackMap: boolean = false;
 
     protected start(): void {
+        Constants.season = this.season;
+        console.log("Set: " , Constants.season);
         this.playerNode.active = false;
     }
 
@@ -175,7 +178,7 @@ export class GameMapController extends Component {
         try {
             for (const office of this.offices) {
                 const clanData = clans.find(c => c.name === office.mapKey);
-                if (clanData) office.setData(clanData,this.onClickGoToNextOffice.bind(this));
+                if (clanData) office.setData(clanData, this.onClickGoToNextOffice.bind(this));
             }
             this.currentOffice = this.resolveTargetOffice(userme);
 
