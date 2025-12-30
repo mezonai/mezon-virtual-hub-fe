@@ -3,12 +3,11 @@ import { Constants } from '../utilities/Constants';
 import { ClanRole, UserClan } from '../Interface/DataMapAPI';
 const { ccclass, property } = _decorator;
 
-@ccclass('ItemMemberMain')
-export class ItemMemberMain extends Component {
+@ccclass('ItemMemberScore')
+export class ItemMemberScore extends Component {
     @property([SpriteFrame]) rankIcons: SpriteFrame[] = []; //0 = rank 1, 1 = rank 2, 2 = rank 3
     @property(Label) nameMemberLabel: Label = null!;
-    @property(Label) scoreWeeklyLabel: Label = null!;
-    @property(Label) totalScoreLabel: Label = null!;
+    @property(Label) scoreLabel: Label = null!;
     @property(Node) roleNode: Node = null!;
     @property(Label) roleLabel: Label = null!;
     @property(Label) rankLabel: Label = null!;
@@ -23,8 +22,7 @@ export class ItemMemberMain extends Component {
         Constants.loadAvatar(this.avatarSprite, data.avatar_url);
         this.nameMemberLabel.string = data.display_name;
         this.setRole(data.clan_role);
-        this.totalScoreLabel.string = (data.total_score === 0 || null) ? '--' : data.total_score.toString();
-        this.scoreWeeklyLabel.string = (data.weekly_score === 0 || null) ? '--' : data.weekly_score.toString();
+        this.scoreLabel.string = (data.score === 0 || null) ? '--' : data.score.toString();
         this.setRankIcon(data);
     }
 

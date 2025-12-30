@@ -15,11 +15,12 @@ export class ItemLeaderboardClan extends Component {
     @property(AvatarIconHelper) avatarSprite: AvatarIconHelper = null!;
     private officeData: ClansData = null!;
 
-    setData(data: ClansData) {
+    setData(data: ClansData, isWeekly: boolean) {
         this.officeData = data;
         this.nameOfficeLabel.string = data.name;
         this.memberLabel.string = `${data.member_count === 0 ? '--' : data.member_count.toString()}`;
-        this.totalScoreLabel.string = data.score === 0 ? '--' : data.score.toString();
+        const score = isWeekly ? data.weekly_score : data.score;
+        this.totalScoreLabel.string = score > 0 ? score.toString() : '--';
         this.setRankIcon(data);
         const avatar = data.avatar_url?.trim() || "avatar_1";
         this.avatarSprite.setAvatar(avatar);

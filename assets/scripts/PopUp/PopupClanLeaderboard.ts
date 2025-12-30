@@ -4,24 +4,30 @@ import { PopupManager } from './PopupManager';
 import { WebRequestManager } from '../network/WebRequestManager';
 import { ItemLeaderboardClan } from '../Clan/ItemLeaderboardClan';
 import { PaginationController } from '../utilities/PaginationController';
-import { ClansResponseDTO } from '../Interface/DataMapAPI';
+import { ClansResponseDTO, ScoreType } from '../Interface/DataMapAPI';
 import { Constants } from '../utilities/Constants';
 import { LoadingManager } from './LoadingManager';
+import { Toggle } from 'cc';
 const { ccclass, property } = _decorator;
 
 @ccclass('PopupClanLeaderboard')
 export class PopupClanLeaderboard extends BasePopup {
     @property(Button) closeButton: Button = null!;
     @property(Prefab) itemPrefab: Prefab = null!;
-    @property(ScrollView) svClanList: ScrollView = null!;
     @property(PaginationController) pagination: PaginationController = null!;
     @property(Node) noMember: Node = null!;
     @property(Label) totalClan: Label = null!;
     @property(EditBox) searchInput: EditBox = null!;
     @property(Button) searchButton: Button = null!;
+    @property(Toggle) tabWeekButton: Toggle = null!;
+    @property(Toggle) tabTotalButton: Toggle = null!;
+    private currentMode: ScoreType = ScoreType.WEEKLY;
+    @property(ScrollView) contentWeekly: ScrollView = null!;
+    @property(ScrollView) contentTotal: ScrollView = null!;
 
     private listClan: ClansResponseDTO;
-    private _listClan: ItemLeaderboardClan[] = [];
+    private weeklyListClan: ItemLeaderboardClan[] = [];
+    private totatListClan: ItemLeaderboardClan[] = [];
     private currentSearch: string = '';
 
     public async init(param?: any) {
@@ -39,10 +45,29 @@ export class PopupClanLeaderboard extends BasePopup {
             await this.searchClansIfChanged(this.searchInput.string);
             this.searchButton.interactable = true;
         });
+     
+        this.tabWeekButton.node.on(
+            Toggle.EventType.TOGGLE,
+            async (toggle: Toggle) => {
+                if (!toggle.isChecked) return;
+                await this.switchMode(ScoreType.WEEKLY);
+            },
+            this
+        );
+
+        this.tabTotalButton.node.on(
+            Toggle.EventType.TOGGLE,
+            async (toggle: Toggle) => {
+                if (!toggle.isChecked) return;
+                await this.switchMode(ScoreType.TOTAL);
+            },
+            this
+        );
 
         this.pagination.init(
             async (page: number) => await this.loadList(page, this.currentSearch), 1
         );
+        this.currentMode = ScoreType.WEEKLY;
         await this.loadList(1);
     }
 
@@ -54,29 +79,68 @@ export class PopupClanLeaderboard extends BasePopup {
         }
     }
 
+    private async switchMode(mode: ScoreType) {
+        if (this.currentMode === mode) return;
+
+        this.currentMode = mode;
+        this.updateTabVisibility();
+
+        await this.loadList(1, this.currentSearch);
+    }
+
+    private updateTabVisibility() {
+        this.contentWeekly.node.active = this.currentMode === ScoreType.WEEKLY;
+        this.contentTotal.node.active = this.currentMode === ScoreType.TOTAL;
+    }
+
+    private getSlotsByMode(mode: ScoreType): ItemLeaderboardClan[] {
+        return mode === ScoreType.WEEKLY
+            ? this.weeklyListClan
+            : this.totatListClan;
+    }
+
+    private getContentByMode(mode: ScoreType): ScrollView {
+        return mode === ScoreType.WEEKLY
+            ? this.contentWeekly
+            : this.contentTotal;
+    }
+
     private async loadList(page: number, search?: string) {
-        try{
+        try {
             LoadingManager.getInstance().openLoading();
-            this.listClan = await WebRequestManager.instance.getAllClansync(page, search);
-        this.svClanList.content.removeAllChildren();
-        this._listClan = [];
-        this.noMember.active = !this.listClan?.result || this.listClan.result.length === 0;
-        for (const itemClan of this.listClan.result) {
-            const node = instantiate(this.itemPrefab);
-            node.setParent(this.svClanList.content);
+            const isWeekly = this.currentMode === ScoreType.WEEKLY;
+            this.listClan = await WebRequestManager.instance.getAllClansync(isWeekly, page, search);
+            this.noMember.active = !this.listClan?.result || this.listClan.result.length === 0;
+            const slots = this.getSlotsByMode(this.currentMode);
+            const content = this.getContentByMode(this.currentMode).content;
+            const list = this.listClan.result ?? [];
 
-            const comp = node.getComponent(ItemLeaderboardClan)!;
-            comp.setData(itemClan);
-            this._listClan.push(comp);
-        }
-        this.totalClan.string = `Tổng số văn phòng: ${this.listClan.pageInfo.total}`;
-        this.pagination.setTotalPages(this.listClan.pageInfo.total_page || 1);
-        }catch{
+            for (let i = 0; i < list.length; i++) {
+                let slot: ItemLeaderboardClan;
 
-        }finally{
+                if (i < slots.length) {
+                    slot = slots[i];
+                } else {
+                    const node = instantiate(this.itemPrefab);
+                    node.setParent(content);
+                    slot = node.getComponent(ItemLeaderboardClan)!;
+                    slots.push(slot);
+                }
+
+                slot.node.active = true;
+                slot.setData(list[i], isWeekly);
+            }
+            for (let i = list.length; i < slots.length; i++) {
+                slots[i].node.active = false;
+            }
+            this.totalClan.string = `Tổng số văn phòng: ${this.listClan.pageInfo.total}`;
+            this.pagination.setTotalPages(this.listClan.pageInfo.total_page || 1);
+        } catch {
+
+        } finally {
             LoadingManager.getInstance().closeLoading();
         }
 
-        
+
     }
 }
