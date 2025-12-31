@@ -25,4 +25,9 @@ export enum SubMap  {
     OFFICE,
 }
 
+export enum Season {
+    NONE = 0,
+    LUNARNEWYEAR = 1,
+    CHIRISMAS = 2,
+}
 
