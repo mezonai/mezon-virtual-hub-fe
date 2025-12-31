@@ -29,6 +29,7 @@ import { FarmController } from '../Farm/FarmController';
 import { FarmSlotDTO, SlotActionType } from '../Farm/EnumPlant';
 import { LoadingManager } from '../PopUp/LoadingManager';
 import { PopupHarvestReceive, PopupHarvestReceiveParam } from '../PopUp/PopupHarvestReceive';
+import { ExchangeCoinController } from './ExchangeCoinController';
 
 @ccclass('ServerManager')
 export class ServerManager extends Component {
@@ -158,6 +159,14 @@ export class ServerManager extends Component {
 
         this.room.onMessage("onPlayerUpdateGold", (data) => {
             UserManager.instance.onPlayerRemoteUpdateGold(data);
+        });
+
+        this.room.onMessage("onSendTokenSuccess", (data) => {
+           ExchangeCoinController.instance.onSendTokenSuccess(data);
+        });
+
+         this.room.onMessage("onSendTokenFail", (data) => {
+           ExchangeCoinController.instance.onSendTokenFail(data);
         });
 
         this.room.onMessage("onPlayerUpdateDiamond", (data) => {
