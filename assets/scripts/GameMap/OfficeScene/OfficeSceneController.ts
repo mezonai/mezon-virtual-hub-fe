@@ -28,6 +28,7 @@ export class OfficeSceneController extends Component {
     mapParent: Node = null;
     @property currentMap: MapManagerBase = null;
     nameCode: string = "";
+    @property({ type: Node }) effectLunaNewYear: Node = null;
     protected onLoad(): void {
         if (OfficeSceneController._instance == null) {
             OfficeSceneController._instance = this;
@@ -72,8 +73,9 @@ export class OfficeSceneController extends Component {
         const isFarm = nameRoom.includes('-farm');
         const isOffice = nameRoom.includes('-office');
         const isLNY = Constants.season === Season.LUNARNEWYEAR;
-
+        this.effectLunaNewYear.active = false;
         if (isLNY && (isFarm || !isOffice)) {
+            this.effectLunaNewYear.active = true;
             return instantiate(
                 isFarm
                     ? this.mapLunarNewYear[1]
