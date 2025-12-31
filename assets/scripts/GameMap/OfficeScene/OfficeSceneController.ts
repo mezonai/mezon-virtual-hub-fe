@@ -70,11 +70,13 @@ export class OfficeSceneController extends Component {
     }
 
     private createMap(nameRoom: string, currentOffice: number) {
+
         const isFarm = nameRoom.includes('-farm');
         const isOffice = nameRoom.includes('-office');
+        const isShop = nameRoom.includes('-shop');
         const isLNY = Constants.season === Season.LUNARNEWYEAR;
         this.effectLunaNewYear.active = false;
-        if (isLNY && (isFarm || !isOffice)) {
+        if (isLNY && !isShop && !isOffice) {
             this.effectLunaNewYear.active = true;
             return instantiate(
                 isFarm
