@@ -31,13 +31,6 @@ export class ExchangeCoinController extends Component {
     }
 
     protected start(): void {
-        if (window.Mezon) {
-            window.Mezon.WebView.onEvent(MezonAppEvent.SendTokenSuccess, (e, t) => {
-                this.onSendTokenSuccess(e, t);
-            });
-            window.Mezon.WebView.onEvent(MezonAppEvent.SendTokenFail, this.onSendTokenFail);
-        }
-
         ServerManager.instance.node.on(EVENT_NAME.ON_BUY_TOKEN, (amount) => {
             this.postExchangeDiamond(amount);
         }, this)
@@ -70,27 +63,25 @@ export class ExchangeCoinController extends Component {
         }
     }
 
-    private onSendTokenSuccess(e, data) {
+    public onSendTokenSuccess(data) {
         SoundManager.instance.playSound(AudioType.ReceiveReward);
-        if (this.amount > 0 && UserMeManager.Get) {
+        if (data.amountChange > 0 && UserMeManager.Get) {
             const param: SelectionMiniParam = {
                 title: "Thông báo",
-                content: `<color=#FF0000>${Utilities.convertBigNumberToStr(this.amount)} Diamond</color> được cộng vào tài khoản`,
+                content: `<color=#FF0000>${Utilities.convertBigNumberToStr(data.amountChange)} Diamond</color> được cộng vào tài khoản`,
                 textButtonLeft: "",
                 textButtonRight: "",
                 textButtonCenter: "OK",
                 onActionButtonCenter: () => {
-                    UserMeManager.playerDiamond += this.amount;
-                    this.amount = -1;
+                    UserMeManager.playerDiamond = data.userDiamond;
                 },
             };
             PopupManager.getInstance().openAnimPopup("PopupSelectionMini", PopupSelectionMini, param);
         }
     }
 
-    private onSendTokenFail(data) {
-        this.amount = -1;
-        Constants.showConfirm("Không thể nạp Diamond", "Chú Ý");
+    public onSendTokenFail(data) {
+        Constants.showConfirm(data.reason, "Chú Ý");
         SoundManager.instance.playSound(AudioType.NoReward);
     }
 

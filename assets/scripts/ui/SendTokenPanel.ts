@@ -5,6 +5,11 @@ import { BasePopup } from '../PopUp/BasePopup';
 import { PopupManager } from '../PopUp/PopupManager';
 import { Constants } from '../utilities/Constants';
 import { AudioType, SoundManager } from '../core/SoundManager';
+import { WebRequestManager } from '../network/WebRequestManager';
+import { Sprite } from 'cc';
+import { ImageAsset } from 'cc';
+import { Texture2D } from 'cc';
+import { SpriteFrame } from 'cc';
 const { ccclass, property } = _decorator;
 
 export enum SendActionType {
@@ -29,6 +34,8 @@ export class SendTokenPanel extends BasePopup {
     @property({ type: Toggle }) noticeToggle: Toggle = null;
 
     @property({ type: Button }) closeUIBtn: Button = null;
+    @property({ type: Sprite }) qrSprite: Sprite = null;
+    
 
     private sendValue: number = 0;
     private cb = null;
@@ -74,6 +81,36 @@ export class SendTokenPanel extends BasePopup {
         }, this);
 
         this.closeUIBtn.node.on("click", this.closeUIBtnClick, this);
+        WebRequestManager.instance.getQRMezon((respone) => { this.onGetAllItem(respone) }, (error) => { this.onApiError(error); });
+    }
+
+    private onGetAllItem(respone) {
+        this.showImageFromBase64(this.qrSprite, respone.data.qr_base64);
+    }
+    showImageFromBase64(sprite: Sprite, base64: string) {
+        if (!sprite || !base64) return;
+
+        const img = new Image();
+        img.src = base64;
+
+        img.onload = () => {
+            const imageAsset = new ImageAsset(img);
+
+            const texture = new Texture2D();
+            texture.image = imageAsset;
+
+            const spriteFrame = new SpriteFrame();
+            spriteFrame.texture = texture;
+
+            sprite.spriteFrame = spriteFrame;
+        };
+
+        img.onerror = (err) => {
+            console.error('[Base64Image] Load failed', err);
+        };
+    }
+    private onApiError(error) {
+        Constants.showConfirm(error.error_message, "Waning");
     }
 
     private HandleCallback(param: SendTokenParam) {

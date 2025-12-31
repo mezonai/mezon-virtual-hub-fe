@@ -50,6 +50,7 @@ export default class APIConstant {
     static HARVEST_COUNTS = "harvest-counts";
     static CLAN_ACTIVITYS = "clan-activitys";
     static LOGIN_EVENT_7DAYS = "login-event-7-days";
+    static QR_MEZON = "mezon";
 }
 
 export class APIConfig {
