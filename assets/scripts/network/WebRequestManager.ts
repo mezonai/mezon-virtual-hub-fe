@@ -355,10 +355,10 @@ export class WebRequestManager extends Component {
         });
     }
 
-    public getListMemberClanAsync(clanId: String, currentMode: string, page: number = 1, search?: string, sortOrder: SortOrder = SortOrder.DESC, sortby: SortBy = SortBy.CREATED_AT, limit: number = 30): Promise<MemberResponseDTO> {
+    public getListMemberClanAsync(clanId: String, isWeekly, page: number = 1, search?: string, sortOrder: SortOrder = SortOrder.DESC, sortby: SortBy = SortBy.CREATED_AT, limit: number = 30): Promise<MemberResponseDTO> {
         return new Promise((resolve, reject) => {
             WebRequestManager.instance.getListMemberClan(
-                clanId, currentMode, page, sortOrder, sortby, limit,
+                clanId, isWeekly , page, sortOrder, sortby, limit,
                 (response) => {
                     const clans = ConvetData.ConvertMemberClan(response);
                     resolve(clans);
@@ -716,12 +716,12 @@ export class WebRequestManager extends Component {
         APIManager.postData(this.combineWithSlash(APIConstant.CLANS, clan_id, APIConstant.DESCRIPTION), data, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
-    public getListMemberClan(clan_id, currentMode, page = 1, sortOrder: SortOrder, sortby: SortBy, limit = 30, successCallback, errorCallback, search?: string) {
+    public getListMemberClan(clan_id, isWeekly, page = 1, sortOrder: SortOrder, sortby: SortBy, limit = 30, successCallback, errorCallback, search?: string) {
         let url = `${APIConstant.CLANS}/${clan_id}/${APIConstant.USERS}?`;
         if (search && search.trim() !== "") {
             url += `search=${encodeURIComponent(search.trim())}&`;
         }
-        url += `page=${page}&order=${sortOrder.toString()}&sort_by=${sortby.toString()}&limit=${limit}&score_type=${currentMode}`;
+        url += `page=${page}&order=${sortOrder.toString()}&sort_by=${sortby.toString()}&limit=${limit}&isWeekly=${isWeekly}`;
         APIManager.getData(url, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 

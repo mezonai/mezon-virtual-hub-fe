@@ -146,7 +146,8 @@ export class PopupClanMember extends BasePopup {
     private async loadList(page: number, search?: string) {
         try {
             LoadingManager.getInstance().openLoading();
-            this.listMember = await WebRequestManager.instance.getListMemberClanAsync(this.clanDetail.id, this.currentMode.toString(), page, search);
+            const isWeekly = this.currentMode === ScoreType.WEEKLY;
+            this.listMember = await WebRequestManager.instance.getListMemberClanAsync(this.clanDetail.id, isWeekly, page, search);
             this.noMember.active = !this.listMember?.result || this.listMember.result.length === 0;
 
             const slots = this.getSlotsByMode(this.currentMode);
@@ -166,7 +167,7 @@ export class PopupClanMember extends BasePopup {
                 }
 
                 slot.node.active = true;
-                slot.setData(list[i]);
+                slot.setData(list[i], isWeekly);
             }
             for (let i = list.length; i < slots.length; i++) {
                 slots[i].node.active = false;

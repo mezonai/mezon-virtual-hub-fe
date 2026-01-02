@@ -101,7 +101,7 @@ export class PopupManageMember extends Component {
     public async loadList(page: number, search?: string) {
         try {
             LoadingManager.getInstance().openLoading();
-            this.listMember = await WebRequestManager.instance.getListMemberClanAsync(this.clanDetail.id, ScoreType.ALL, page, search);
+            this.listMember = await WebRequestManager.instance.getListMemberClanAsync(this.clanDetail.id, false, page, search);
             this.svMemberList.content.removeAllChildren();
             this._listMember = [];
             this.noMember.active = false;
