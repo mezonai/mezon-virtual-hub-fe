@@ -1,6 +1,6 @@
 import { _decorator, Component, Node, Sprite, Button, SpriteFrame, RichText, Label } from 'cc';
 import { Constants } from '../utilities/Constants';
-import { ClanRole, UserClan } from '../Interface/DataMapAPI';
+import { ClanRole, ScoreType, UserClan } from '../Interface/DataMapAPI';
 const { ccclass, property } = _decorator;
 
 @ccclass('ItemMemberScore')
@@ -17,12 +17,13 @@ export class ItemMemberScore extends Component {
     
     private memberData: UserClan = null!;
 
-    setData(data: UserClan) {
+    setData(data: UserClan, isWeekly:boolean) {
         this.memberData = data;
         Constants.loadAvatar(this.avatarSprite, data.avatar_url);
         this.nameMemberLabel.string = data.display_name;
         this.setRole(data.clan_role);
-        this.scoreLabel.string = (data.score === 0 || null) ? '--' : data.score.toString();
+        const score = isWeekly ? data.weekly_score : data.total_score;
+        this.scoreLabel.string = score == null || score === 0 ? '--' : score.toString();
         this.setRankIcon(data);
     }
 
