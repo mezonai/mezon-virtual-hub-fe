@@ -35,6 +35,7 @@ export class SendTokenPanel extends BasePopup {
 
     @property({ type: Button }) closeUIBtn: Button = null;
     @property({ type: Sprite }) qrSprite: Sprite = null;
+    @property({ type: Node }) qrNode: Node = null;
     
 
     private sendValue: number = 0;
@@ -62,7 +63,7 @@ export class SendTokenPanel extends BasePopup {
 
         this.sendButton.on(Node.EventType.TOUCH_START, () => {
             SoundManager.instance.playSound(AudioType.Button);
-            this.send(true, SendActionType.Buy);
+            this.send(true, SendActionType.Gift);
         }, this);
 
         this.withdrawButton.on(Node.EventType.TOUCH_START, () => {
@@ -120,7 +121,7 @@ export class SendTokenPanel extends BasePopup {
             const handlerMap = {
                 onActionClose: (cb: any) => this._onActionClose = cb,
                 onActionSendDiamond: (cb: any) => this.setSendDimondCallback(cb),
-                onActionBuyDiamond: (cb: any) => this.setBuyDimondCallback(cb),
+                // onActionBuyDiamond: (cb: any) => this.setBuyDimondCallback(cb),
                 onActionWithdrawDiamond: (cb: any) => this.setWithdrawDimondCallback(cb),
                 onActionChangeDiamondToCoin: (cb: any) => this.setChangeDiamondToCoinCallback(cb),
             };
@@ -139,11 +140,13 @@ export class SendTokenPanel extends BasePopup {
     }
 
     public setSendDimondCallback(callback: (amount: number) => void) {
+        this.withdrawButton.active = false;
+        this.changeButton.active = false;
+        this.qrNode.active = false;
+        this.sendButton.active = true;
         this.isBuy = false;
         this.isWithdraw = false;
         this.isExchange = false;
-        this.withdrawButton.active = false;
-        this.changeButton.active = false;
         this.title.string = "Tặng Quà";
         this.sendButtonTitle.string = "Gửi";
         this.cbBuy = callback;
@@ -151,18 +154,27 @@ export class SendTokenPanel extends BasePopup {
     }
 
     public setBuyDimondCallback(callback: (amount: number) => void) {
+        this.qrNode.active = true;
+        this.sendButton.active = false;
+        this.withdrawButton.active = true;
+        this.changeButton.active = true;
+        this.sendButton.active = true;
         this.isBuy = true;
         this.isWithdraw = false;
         this.isExchange = false;
         this.title.string = "Nạp/Rút/Đổi Diamond";
         this.sendButtonTitle.string = "Nạp";
-        this.withdrawButton.active = true;
-        this.changeButton.active = true;
         this.cbBuy = callback;
         this.noticePopup.node.active = false;
+        this.qrNode.active = true;
     }
 
     public setWithdrawDimondCallback(callback: (amount: number) => void) {
+        this.qrNode.active = true;
+        this.sendButton.active = false;
+        this.withdrawButton.active = true;
+        this.changeButton.active = true;
+        this.sendButton.active = true;
         this.isBuy = false;
         this.isWithdraw = true;
         this.isExchange = false;
@@ -173,13 +185,20 @@ export class SendTokenPanel extends BasePopup {
     }
 
     public setChangeDiamondToCoinCallback(callback: (amount: number) => void) {
+        this.sendButton.active = false;
+        this.withdrawButton.active = true;
+        this.changeButton.active = true;
+        this.qrNode.active = true;
+        this.sendButton.active = true;
         this.isBuy = false;
+        this.sendButton.active = false;
         this.isWithdraw = false;
         this.isExchange = true;
         this.title.string = "Nạp/Rút/Đổi Diamond";
         this.sendButtonTitle.string = "Nạp";
         this.cbChange = callback;
         this.noticePopup.node.active = false;
+        this.qrNode.active = true;
     }
 
     protected onDisable(): void {
@@ -241,9 +260,9 @@ export class SendTokenPanel extends BasePopup {
         }
 
         switch (type) {
-            case SendActionType.Buy:
-                this.cbBuy?.(this.sendValue);
-                break;
+            // case SendActionType.Buy:
+            //     this.cbBuy?.(this.sendValue);
+            //     break;
             case SendActionType.Withdraw:
                 this.cbWithdraw?.(this.sendValue);
                 break;
@@ -264,7 +283,7 @@ export class SendTokenPanel extends BasePopup {
 export interface SendTokenParam {
     onActionClose?: () => void;
     onActionSendDiamond?: (value: number) => void;
-    onActionBuyDiamond?: (value: number) => void;
+    //onActionBuyDiamond?: (value: number) => void;
     onActionWithdrawDiamond?: (value: number) => void;
     onActionChangeDiamondToCoin?: (value: number) => void;
 }

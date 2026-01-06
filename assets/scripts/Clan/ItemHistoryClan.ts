@@ -39,6 +39,29 @@ export class ItemHistoryClan extends Component {
             case ClanActivityActionType.LEAVE:
                 text = `- ${data.userName} đã rời văn phòng lúc ${data.time}`;
                 break;
+            
+            case ClanActivityActionType.WEEKLY_RANKING_MEMBER_1:
+                text = `- ${data.userName} đạt hạng Nhất bảng xếp hạng tuần thành viên năng động tại văn phòng ${Constants.getOfficeName(data.officeName)} lúc ${data.time}`;
+                break;
+            case ClanActivityActionType.WEEKLY_RANKING_MEMBER_2:
+                text = `- ${data.userName} đạt hạng Nhì bảng xếp hạng tuần thành viên năng động tại văn phòng ${Constants.getOfficeName(data.officeName)} lúc ${data.time}`;
+                break;
+            case ClanActivityActionType.WEEKLY_RANKING_MEMBER_3:
+                text = `- ${data.userName} đạt hạng Ba bảng xếp hạng tuần thành viên năng động tại văn phòng ${Constants.getOfficeName(data.officeName)} lúc ${data.time}`;
+                break;
+            case ClanActivityActionType.WEEKLY_RANKING_MEMBER_TOP_10:
+                text = `- ${data.userName} Thuộc 10 người năng động đứng đầu bảng xếp hạng tuần tại văn phòng ${Constants.getOfficeName(data.officeName)} lúc ${data.time}`;
+                break;
+
+            case ClanActivityActionType.WEEKLY_RANKING_CLAN_1:
+                text = `-  Văn phòng ${Constants.getOfficeName(data.officeName)} đạt hạng Nhất bảng xếp hạng tuần ${data.time}`;
+                break;
+             case ClanActivityActionType.WEEKLY_RANKING_CLAN_2:
+                text = `-  Văn phòng ${Constants.getOfficeName(data.officeName)} đạt hạng Nhì bảng xếp hạng tuần ${data.time}`;
+                break;
+             case ClanActivityActionType.WEEKLY_RANKING_CLAN_3:
+                text = `-  Văn phòng ${Constants.getOfficeName(data.officeName)} đạt hạng Ba bảng xếp hạng tuần ${data.time}`;
+                break;
 
             default:
                 text = `- ${data.userName} thực hiện ${data.actionType} lúc ${data.time}`;

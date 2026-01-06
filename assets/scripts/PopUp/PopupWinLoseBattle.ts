@@ -56,8 +56,8 @@ export class PopupWinLoseBattle extends BasePopup {
     }
     async showPopupReward(param: WinLoseBattleParam) {
         const reward = new RewardItemDTO();
-        reward.type = RewardType.DIAMOND;
-        reward.quantity = param.dimondChallenge;
+        reward.type = param.isDiamond ? RewardType.DIAMOND : RewardType.GOLD ;
+        reward.quantity = param.currentValue;
         const paramPopup: PopupRewardParam = {
             status: param.statusBattle == StatusBattle.WIN ? RewardStatus.GAIN : RewardStatus.LOSS,
             content: param.statusBattle == StatusBattle.WIN ? "Chúc mừng bạn đã chiến thắng" : " Chia buồn cùng bạn",
@@ -98,7 +98,8 @@ export interface WinLoseBattleParam {
     petsDataBeforeUpdate: PetBattleInfo[];
     petsDataAfterUpdate: PetDTO[];
     statusBattle: StatusBattle;
-    dimondChallenge: number;
+    currentValue: number;
     expAddedPerPet: number;
+    isDiamond: boolean;
 }
 
