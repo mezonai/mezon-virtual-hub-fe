@@ -1,4 +1,4 @@
-import { _decorator, Button, EditBox } from 'cc';
+import { _decorator, Button, EditBox, Toggle, RichText } from 'cc';
 import { BasePopup } from './BasePopup';
 import { PopupManager } from './PopupManager';
 import { PopupSelection, SelectionParam } from './PopupSelection';
@@ -12,9 +12,13 @@ export class PopupPetBetChallenge extends BasePopup {
     @property({ type: EditBox }) editBoxChallenge: EditBox = null;
     @property({ type: Button }) closeButton: Button = null
     @property({ type: Button }) ChallengeButton: Button = null
-    minDimond: number = 1000;
-    maxDimond: number = 100000;
+    @property({ type: Toggle }) toggleDiamond: Toggle = null;
+    @property({ type: Toggle }) toggleGold: Toggle = null;
+    @property({ type: RichText }) title: RichText = null;
+    minValue: number = 1000;
+    maxValue: number = 100000;
 
+    private isDiamond : boolean;
     public async init(param?: PopupPetBetChallengeParam) {
         if (!param) {
             await PopupManager.getInstance().closePopup(this.node?.uuid);
@@ -23,27 +27,46 @@ export class PopupPetBetChallenge extends BasePopup {
         this.closeButton.addAsyncListener(async () => {
             await this.showSelectionPopup("Bạn muốn hủy việc thách đấu ?")
         })
+        this.title.string = param.title || 'Thách đấu';
+        this.toggleDiamond.isChecked = true;
+        this.toggleGold.isChecked = false;
+        this.isDiamond = true;
+
+        this.toggleGold.node.on(Toggle.EventType.TOGGLE, () => {
+            this.updateBetType();
+        });
+
+        this.toggleDiamond.node.on(Toggle.EventType.TOGGLE, () => {
+            this.updateBetType();
+        });
+
         this.ChallengeButton.addAsyncListener(async () => {
             const value = this.editBoxChallenge.string;
             if (Constants.isNullOrWhiteSpace(value)) {
-                await  Constants.showConfirm(`Bạn cần nhập số diamond để thách đấu`, "Thông báo");
-                return;
-            }
-            const diamondChallenge = Number(value);
-            const diamondUser = UserMeManager.playerDiamond;
-
-            if (diamondChallenge < this.minDimond || diamondChallenge > this.maxDimond) {
-                await Constants.showConfirm(`Số diamond thách đấu phải lớn hơn <color=#FF0000> ${Utilities.convertBigNumberToStr(this.minDimond)} diamond</color> và nhỏ hơn <color=#FF0000> ${Utilities.convertBigNumberToStr(this.maxDimond)} diamond</color>`, "Thông báo");
+                await Constants.showConfirm(`Bạn cần nhập số ${this.isDiamond ? 'diamond' : 'gold'} để thách đấu`, "Thông báo");
                 return;
             }
 
-            if (diamondChallenge > diamondUser) {
-                await Constants.showConfirm(`Bạn không đủ diamond để thách đấu`, "Thông báo");
+            const currentValue = Number(value);
+            const userValue  = this.isDiamond ? UserMeManager.playerDiamond: UserMeManager.playerCoin;
+
+            if (currentValue < this.minValue || currentValue > this.maxValue) {
+                await Constants.showConfirm(`Số ${this.isDiamond ? 'diamond' : 'gold'} thách đấu phải lớn hơn <color=#FF0000> ${Utilities.convertBigNumberToStr(this.minValue)} diamond</color> và nhỏ hơn <color=#FF0000> ${Utilities.convertBigNumberToStr(this.maxValue)} diamond</color>`, "Thông báo");
                 return;
             }
-            if (param.onActionChallenge) await param.onActionChallenge(diamondChallenge);
+
+            if (currentValue > userValue) {
+                await Constants.showConfirm(`Bạn không đủ ${this.isDiamond ? 'diamond' : 'gold'} để thách đấu`, "Thông báo");
+                return;
+            }
+            if (param.onActionChallenge) await param.onActionChallenge(currentValue, this.isDiamond);
             await this.closePopup();
         })
+    }
+
+    private updateBetType() {
+        this.isDiamond = this.toggleDiamond.isChecked;
+        console.log("updateBetType: ", this.isDiamond)
     }
 
     initPopup() {
@@ -70,7 +93,8 @@ export class PopupPetBetChallenge extends BasePopup {
 
 }
 export interface PopupPetBetChallengeParam {
-    onActionChallenge?: (diamondChallenge: number) => Promise<void>;
+    title: string;
+    onActionChallenge?: (diamondChallenge: number, isDiamond:boolean) => Promise<void>;
     onActionClose?: () => Promise<void>;
 }
 

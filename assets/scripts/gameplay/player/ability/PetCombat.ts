@@ -25,12 +25,16 @@ export class PetCombat extends PlayerInteractAction {
         super.invite();
 
         const paramConfirmPopup: PopupPetBetChallengeParam = {
-            onActionChallenge: async (amount) => {
+            title:'Thách Đấu đánh Pet',
+            onActionChallenge: async (amount, isDiamond) => {
+                console.log("this.isDiamond: ", isDiamond);
                 this.room.send("p2pAction", {
                     targetClientId: this.playerController.myID,
                     action: this.actionType.toString(),
-                    amount: amount
+                    amount: amount,
+                    isDiamond: isDiamond,
                 });
+                
             }
         };
         await PopupManager.getInstance().openPopup("PopupPetBetChallenge", PopupPetBetChallenge, paramConfirmPopup);
@@ -39,10 +43,11 @@ export class PetCombat extends PlayerInteractAction {
 
     public onBeingInvited(data) {
         if (!this.canBattle(data)) return;
-        const { amount } = data;
+        const { amount, isDiamond } = data;
+        console.log("this.isDiamondas : ", JSON.stringify(data));
         const param: SelectionTimeOutParam = {
             title: "Thông báo",
-            content: `${data.fromName} mời bạn chơi đấu pet. Phí <color=#FF0000> ${amount} diamond</color>`,
+            content: `${data.fromName} mời bạn chơi đấu pet. Phí <color=#FF0000> ${amount} ${isDiamond ? 'Diamond' : 'Gold'}</color>`,
             textButtonLeft: "Chơi",
             textButtonRight: "Thôi",
             textButtonCenter: "",
@@ -113,6 +118,7 @@ export class PetCombat extends PlayerInteractAction {
             targetClientId: data.from,
             action: data.action,
             amount: data.amount,
+            isDiamond: data.isDiamond,
         }
         this.room.send("p2pCombatActionAccept", sendData);
         this.onStartAction(data);

@@ -31,7 +31,7 @@ export class SendGameCoin extends PlayerInteractAction {
     }
 
     public onBeingInvited(data) {
-        const { fromName, amount, currentDiamond } = data;
+        const { fromName, amount, currentValue } = data;
         const param: SelectionMiniParam = {
             title: "Thông báo",
             content: `Nhận <color=#FF0000> ${amount} Diamond</color> từ ${fromName}`,
@@ -39,7 +39,7 @@ export class SendGameCoin extends PlayerInteractAction {
             textButtonRight: "",
             textButtonCenter: "OK",
             onActionButtonCenter: () => {
-                UserMeManager.playerDiamond = currentDiamond;
+                UserMeManager.playerDiamond = currentValue;
             },
         };
         PopupManager.getInstance().openAnimPopup("PopupSelectionMini", PopupSelectionMini, param);
@@ -60,7 +60,8 @@ export class SendGameCoin extends PlayerInteractAction {
         let sendData = {
             targetClientId: this.playerController.myID,
             action: this.actionType.toString(),
-            amount: data
+            amount: data,
+            isDiamond: true,
         }
         this.room.send("p2pAction", sendData);
     }
@@ -79,7 +80,7 @@ export class SendGameCoin extends PlayerInteractAction {
 
     public actionResult(data) {
         super.actionResult(data);
-        const { toName, amount, currentDiamond } = data;
+        const { toName, amount, currentValue } = data;
         SoundManager.instance.playSound(AudioType.ReceiveReward);
         const param: SelectionMiniParam = {
             title: "Thông báo",
@@ -88,7 +89,7 @@ export class SendGameCoin extends PlayerInteractAction {
             textButtonRight: "",
             textButtonCenter: "OK",
             onActionButtonCenter: () => {
-                UserMeManager.playerDiamond = currentDiamond;
+                UserMeManager.playerDiamond = currentValue;
             },
         };
         PopupManager.getInstance().openAnimPopup("PopupSelectionMini", PopupSelectionMini, param);

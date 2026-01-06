@@ -426,14 +426,15 @@ export class PopupBattlePet extends Component {
     }
 
     public async battleFinished(data) {
-        const { id, expReceived, dimondChallenge, currentPets, isWinner } = data;
+        const { id, expReceived, currentValue, currentPets, isWinner, isDiamond } = data;
         await Constants.waitUntil(() => this.myClient != null);
         const param: WinLoseBattleParam = {
             petsDataBeforeUpdate: this.myClient.battlePets,
             petsDataAfterUpdate: currentPets,
             statusBattle: isWinner ? StatusBattle.WIN : StatusBattle.LOSE,
-            dimondChallenge: dimondChallenge,
+            currentValue: currentValue,
             expAddedPerPet: expReceived,
+            isDiamond: isDiamond,
         };
         this.closeBattle();
         await PopupManager.getInstance().closeAllPopups();
