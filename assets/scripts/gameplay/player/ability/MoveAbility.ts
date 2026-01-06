@@ -176,8 +176,9 @@ export class MoveAbility extends Ability {
 
                 value.normalize();
                 this.currentDirection.x = value.x > 0 ? 1 : -1;
-                const move = value.multiplyScalar(this.moveSpeed * dt);
-                this.move(this.node.position.add(move));
+                const move = value.clone().multiplyScalar(this.moveSpeed * dt);
+                const nextPos = this.node.position.clone().add(move);
+                this.move(nextPos);
                 break;
             }
         }
@@ -186,7 +187,7 @@ export class MoveAbility extends Ability {
     move(targetPosition: Vec3) {
         this.node.setPosition(targetPosition);
         this.animationController.node.scale = this.currentDirection;
-        this.lastPosition = targetPosition;
+        this.lastPosition = targetPosition.clone();
         this.updateAction("move");
     }
 
