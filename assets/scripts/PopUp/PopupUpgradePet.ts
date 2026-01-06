@@ -23,6 +23,7 @@ export class PopupUpgradePet extends BasePopup {
     @property({ type: Node }) tabMerge: Node = null;
     @property({ type: Node }) tabUpgrade: Node = null;
     @property({ type: Node }) noPetPanel: Node = null;
+    @property({ type: Node }) noPetPanelRarity: Node = null;
     @property({ type: Prefab }) itemAnimalSlotPrefab: Prefab = null;
     @property({ type: Node }) parentPetCanMove: Node = null;
     @property({ type: PopupUpgradeStarPet }) popupStarUpgradePet: PopupUpgradeStarPet = null;
@@ -62,10 +63,12 @@ export class PopupUpgradePet extends BasePopup {
         });
     }
 
-    private switchTab(tab: UpgradeTab) {
+    private async switchTab(tab: UpgradeTab) {
         this.currentTab = tab;
         this.setActiveTabUI(tab);
-        const myPets = UserMeManager.MyPets();
+        const petRarity = await WebRequestManager.instance.getMyPetAsync({ stars: 3 });
+        const petStar = await WebRequestManager.instance.getMyPetAsync();
+        const myPets = tab ===  UpgradeTab.STAR ? petStar : petRarity;
         this.renderPets(myPets, tab, { forceUpdate: false });
     }
 
@@ -74,19 +77,19 @@ export class PopupUpgradePet extends BasePopup {
     }
 
     private renderPets(pets: PetDTO[], tab: UpgradeTab, options: { forceUpdate: boolean }) {
-        if (!this.hasPets(pets)) {
-            this.noPetPanel.active = true;
-            return;
-        }
         this.noPetPanel.active = false;
-
-        const sorted = this.groupPetsBySpecies(pets);
-
+        this.noPetPanelRarity.active = false;
         if (options.forceUpdate) {
             this.clearStarSlots();
             this.clearRaritySlots();
         }
+        if (!this.hasPets(pets)) {
+            this.noPetPanel.active = tab !== UpgradeTab.RARITY;
+            this.noPetPanelRarity.active = tab === UpgradeTab.RARITY;
+            return;
+        }
 
+        const sorted = this.groupPetsBySpecies(pets);
         if (tab === UpgradeTab.STAR) {
             if (options.forceUpdate || this.animalSlotsStar.length === 0) {
                 this.updateStarPets(sorted);
