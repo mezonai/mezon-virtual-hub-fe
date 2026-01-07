@@ -290,7 +290,7 @@ export class SlotMachineController extends BasePopup {
             UserMeManager.playerCoin = userGold;
         }
 
-        const rewardItems = ConvetData.ConvertReward(rewardsData);
+        const rewardItems = ConvetData.ConvertRewards(rewardsData);
         const hasReward = rewardItems.length > 0;
 
         this.rewardPopUp.show(hasReward, rewardItems);

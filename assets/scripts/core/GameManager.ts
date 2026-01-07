@@ -13,6 +13,8 @@ import { PlayerHubController } from '../ui/PlayerHubController';
 import { PopupLoginEvents, PopupLoginEventsParam } from '../PopUp/PopupLoginEvents';
 import { PopupTutorialFarm, PopupTutorialFarmParam } from '../PopUp/PopupTutorialFarm';
 import { UserManager } from './UserManager';
+import { PopupRewardClanWeekly, PopupRewardClanWeeklyParam } from '../PopUp/PopupRewardClanWeekly';
+import { UserMeManager } from './UserMeManager';
 
 const { ccclass, property } = _decorator;
 
@@ -40,6 +42,7 @@ export class GameManager extends Component {
             await this.getEventReward();
             await this.getNewbieReward();
             await this.getReward();
+            await this.getRewardClanWeekly();
         };
         await this.tutorialCacthPet();
         await this.tuturialFarm();
@@ -87,6 +90,20 @@ export class GameManager extends Component {
             const popup = await PopupManager.getInstance().openPopup('PopupReward', PopupReward, param);
             await PopupManager.getInstance().waitCloseAsync(popup.node.uuid);
         }
+    }
+
+    async getRewardClanWeekly() {
+        const rewardItems = await WebRequestManager.instance.getRewardClanWeeklyAsync();
+        if(rewardItems.items.length <= 0) return;
+        const name = Constants.getNameRewardItem(rewardItems.type);
+        const content = `Chúc mừng \n ${name}`;
+        const param: PopupRewardClanWeeklyParam = {
+            status: RewardStatus.GAIN,
+            content: content,
+            reward: rewardItems.items
+        };
+        const popup = await PopupManager.getInstance().openPopup('PopupRewardClanWeekly', PopupRewardClanWeekly, param);
+        await PopupManager.getInstance().waitCloseAsync(popup.node.uuid);
     }
 
     async getNewbieReward() {

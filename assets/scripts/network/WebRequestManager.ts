@@ -7,7 +7,7 @@ import { AssignViceLeadersDto as AssignViceLeadersDTO, ClanActivityResponseDTO, 
 import { ServerManager } from '../core/ServerManager';
 import { PopupSelectionMini, SelectionMiniParam } from '../PopUp/PopupSelectionMini';
 import { PopupManager } from '../PopUp/PopupManager';
-import { BuyItemPayload, EventRewardDTO, InventoryDTO, Item, RewardItemDTO, RewardNewbieDTO, StatsConfigDTO } from '../Model/Item';
+import { BuyItemPayload, EventRewardDTO, InventoryDTO, Item, RewardItemDTO, RewardNewbieDTO, StatsConfigDTO, WeeklyRewardDto as WeeklyRewardDTO } from '../Model/Item';
 import { GameManager } from '../core/GameManager';
 import { UpgradePetResponseDTO, PetDTO } from '../Model/PetDTO';
 import { Constants } from '../utilities/Constants';
@@ -146,11 +146,26 @@ export class WebRequestManager extends Component {
         return new Promise((resolve, reject) => {
             WebRequestManager.instance.postGetReward(
                 (response) => {
-                    const rewardData = ConvetData.ConvertReward(response.data.rewards) ?? [];
+                    const rewardData = ConvetData.ConvertRewards(response.data.rewards) ?? [];
                     resolve(rewardData);
                 },
                 (error) => {
                     resolve([]);
+                }
+            );
+        });
+    }
+
+    public getRewardClanWeeklyAsync(): Promise<WeeklyRewardDTO> {
+        return new Promise((resolve, reject) => {
+            WebRequestManager.instance.getRewardClanWeekly(
+                (response) => {
+                    console.log("response.data: ", response)
+                    const rewardData = ConvetData.convertWeeklyRewardClan(response);
+                    resolve(rewardData);
+                },
+                (error) => {
+                    resolve(null);
                 }
             );
         });
@@ -670,6 +685,10 @@ export class WebRequestManager extends Component {
 
     public postGetReward(successCallback, errorCallback) {
         APIManager.postData(this.combineWithSlash(APIConstant.GAME, APIConstant.INITIAL_REWARD), {}, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    }
+
+    public getRewardClanWeekly(successCallback, errorCallback) {
+        APIManager.getData(this.combineWithSlash(APIConstant.GAME, APIConstant.WEEKLY_REWARD), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
     public getCheckUnclaimedQuest(successCallback, errorCallback) {

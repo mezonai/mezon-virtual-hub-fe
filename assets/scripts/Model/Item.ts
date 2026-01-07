@@ -53,7 +53,16 @@ export class PetReward {
     public species: Species;
 }
 
+export interface WeeklyRewardDto {
+  id: string;
+  name: string;
+  description: string;
+  type: RewardType;
+  items: RewardItemDTO[];
+}
+
 export class RewardItemDTO {
+    public id?: string;
     public type: RewardType;
     public item?: Item;
     public food?: Food;
@@ -97,6 +106,11 @@ export enum RewardType {
     FOOD = 'food',
     PET = 'pet',
     PLANT = 'plant',
+
+    WEEKLY_RANKING_MEMBER_1 = 'weekly_ranking_member_1',
+    WEEKLY_RANKING_MEMBER_2 = 'weekly_ranking_member_2',
+    WEEKLY_RANKING_MEMBER_3 = 'weekly_ranking_member_3',
+    WEEKLY_RANKING_MEMBER_TOP_10 = 'weekly_ranking_member_top_10',
 }
 
 export enum ItemType {
