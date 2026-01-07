@@ -15,6 +15,8 @@ export class User {
     display_name: string | null;
     skin_set: string[] | null;
     clan_role: string | null;
+    isPetTutorialCompleted : boolean = false;
+    isPlantTutorialCompleted : boolean = false;
 }
 
 export class UserDataResponse {

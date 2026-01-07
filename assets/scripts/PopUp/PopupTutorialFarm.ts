@@ -35,7 +35,6 @@ export class PopupTutorialFarm extends TutorialBase {
             this._onActionCompleted = param.onActionCompleted;
         }
         this.buttonSkip.node.on(Button.EventType.CLICK, () => {
-            localStorage.setItem(Constants.TUTORIAL_FARM, 'true');
             this.cancelTutorial();
         }, this);
         this.loadBase();
@@ -75,7 +74,6 @@ export class PopupTutorialFarm extends TutorialBase {
         await this.catchBug();
         await this.waterPlant();
         await this.harvesPlant();
-        localStorage.setItem(Constants.TUTORIAL_FARM, 'true');
         this.cancelTutorial();
         this.closePopup();
 

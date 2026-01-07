@@ -57,17 +57,16 @@ export class GameManager extends Component {
 
     async tutorialCacthPet() {
         await WebRequestManager.instance.checkUnclaimedQuest();
-        if (localStorage.getItem(Constants.TUTORIAL_CACTH_PET) === null) {
-            const param: PopupTutorialCatchPetParam = {
-                onActionCompleted: async () => {
-                },
-            };
-            const popup = await PopupManager.getInstance().openPopup("PopupTutorialCatchPet", PopupTutorialCatchPet, param);
-            await PopupManager.getInstance().waitCloseAsync(popup.node.uuid);
-        }
+        if (UserMeManager.Get == null || UserMeManager.Get.user == null || UserMeManager.Get.user.isPetTutorialCompleted) return;
+        const param: PopupTutorialCatchPetParam = {
+            onActionCompleted: async () => {
+            },
+        };
+        const popup = await PopupManager.getInstance().openPopup("PopupTutorialCatchPet", PopupTutorialCatchPet, param);
+        await PopupManager.getInstance().waitCloseAsync(popup.node.uuid);
     }
     async tuturialFarm() {
-        if (localStorage.getItem(Constants.TUTORIAL_FARM) !== null) return;
+        if (UserMeManager.Get == null || UserMeManager.Get.user == null || UserMeManager.Get.user.isPlantTutorialCompleted) return;
         const param: PopupTutorialFarmParam = {
         };
         const popup = await PopupManager.getInstance().openPopup("PopupTutorialFarm", PopupTutorialFarm, param);

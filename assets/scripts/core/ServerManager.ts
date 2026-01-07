@@ -162,11 +162,11 @@ export class ServerManager extends Component {
         });
 
         this.room.onMessage("onSendTokenSuccess", (data) => {
-           ExchangeCoinController.instance.onSendTokenSuccess(data);
+            ExchangeCoinController.instance.onSendTokenSuccess(data);
         });
 
-         this.room.onMessage("onSendTokenFail", (data) => {
-           ExchangeCoinController.instance.onSendTokenFail(data);
+        this.room.onMessage("onSendTokenFail", (data) => {
+            ExchangeCoinController.instance.onSendTokenFail(data);
         });
 
         this.room.onMessage("onPlayerUpdateDiamond", (data) => {
@@ -222,6 +222,8 @@ export class ServerManager extends Component {
             }
 
             if (code == 4444) {
+                this.sendDisconnectdBattle();
+                this.leaveBattleRoom();
                 if (UIManager.Instance) {
                     const param: SelectionMiniParam = {
                         title: "Chú Ý",
@@ -229,7 +231,7 @@ export class ServerManager extends Component {
                         textButtonLeft: "",
                         textButtonRight: "",
                         textButtonCenter: "OK",
-                        onActionButtonCenter: () => {
+                        onActionButtonCenter: () => {                           
                             window.location.replace("about:blank");
                         },
                     };
@@ -632,10 +634,10 @@ export class ServerManager extends Component {
         this.room.onMessage(MessageTypes.ON_HARVEST_INTERRUPTED_BY_OTHER, (data) => {
             let message = `Bạn bị phá thu hoạch bởi ${data.interruptedByName}!`;
             if (this.ShowLimitHarvestPlant(data.selfHarvest.max, data.selfHarvest.remaining)) {
-            message += `\nLượt thu hoạch của bạn còn lại: ${data.selfHarvest.remaining}/${data.selfHarvest.max}`;
+                message += `\nLượt thu hoạch của bạn còn lại: ${data.selfHarvest.remaining}/${data.selfHarvest.max}`;
             }
             if (this.ShowLimitHarvestPlant(data.plantHarvest.max, data.plantHarvest.remaining)) {
-            message += `\nLượt thu hoạch còn lại của cây: ${data.plantHarvest.remaining}/${data.plantHarvest.max}`;
+                message += `\nLượt thu hoạch còn lại của cây: ${data.plantHarvest.remaining}/${data.plantHarvest.max}`;
             }
             Constants.showConfirm(message);
             UserManager.instance.GetMyClientPlayer.get_MoveAbility.startMove();
@@ -679,7 +681,7 @@ export class ServerManager extends Component {
 
     private ShowLimitHarvestPlant(max?: number, remaining?: number): boolean {
         if (max == null || remaining == null) return false;
-        return ( max !== Constants.HARVEST_UNLIMITED && remaining !== Constants.HARVEST_UNLIMITED);
+        return (max !== Constants.HARVEST_UNLIMITED && remaining !== Constants.HARVEST_UNLIMITED);
     }
 
     public async joinBattleRoom(roomId: string): Promise<void> {
@@ -924,6 +926,11 @@ export class ServerManager extends Component {
     public sendSurrenderBattle() {
         if (this.battleRoom == null) return;
         this.battleRoom.send(MessageTypes.SURRENDER_BATTLE, { message: "", });
+    }
+
+    public sendDisconnectdBattle() {
+        if (this.battleRoom == null) return;
+        this.battleRoom.send(MessageTypes.DISCONNECTED, { message: "", });
     }
 
     public sendEndTurn() {
