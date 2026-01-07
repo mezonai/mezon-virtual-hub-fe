@@ -1,7 +1,7 @@
 
 import { FarmDTO, FarmSlotDTO, PlantState, ClanWarehouseSlotDTO, PlantDataDTO, PlantData, HarvestCountDTO } from "../Farm/EnumPlant";
 import { ClansData, PageInfo, ClansResponseDTO, MemberResponseDTO, UserClan, ClanContributorDTO, ClanContributorsResponseDTO, ClanFundResponseDTO, ClanFund, ClanRequestResponseDTO, MemberClanRequestDTO, ClanStatus, ClanActivityItemDTO, ClanActivityResponseDTO, RequestToJoinDTO } from "../Interface/DataMapAPI";
-import { EventRewardDTO, EventType, Food, InventoryDTO, Item, PetReward, QuestType, RewardItemDTO, RewardNewbieDTO, RewardType, StatsConfigDTO } from "../Model/Item";
+import { EventRewardDTO, EventType, Food, InventoryDTO, Item, PetReward, QuestType, RewardItemDTO, RewardNewbieDTO, RewardType, StatsConfigDTO, WeeklyRewardDto as WeeklyRewardDTO } from "../Model/Item";
 import { AnimalElementString, AnimalRarity, Element, PetBattleInfo, PetDTO, PlayerBattle, SkillBattleInfo, Species, TypeSkill } from "../Model/PetDTO";
 
 export default class ConvetData {
@@ -368,7 +368,61 @@ export default class ConvetData {
         return pet;
     }
 
-    public static ConvertReward(data: any): RewardItemDTO[] {
+    public static convertWeeklyRewardClan(response: any): WeeklyRewardDTO {
+        const data = response?.data;
+        if (!data) {
+            return {
+                id: '',
+                name: '',
+                description: '',
+                type: null,
+                items: [],
+            };
+        }
+        return {
+            id: data.id,
+            name: data.name,
+            description: data.description,
+            type: data.type as RewardType,
+            items: Array.isArray(data.items)
+                ? data.items.map(entry => this.ConvertReward(entry))
+                : []
+        };
+    }
+
+    public static ConvertReward(entry: any): RewardItemDTO {
+        const rewardItem = new RewardItemDTO();
+
+        switch (entry.type) {
+            case RewardType.ITEM:
+                rewardItem.type = RewardType.ITEM;
+                rewardItem.item = this.parseItem(entry.item);
+                rewardItem.quantity = entry.quantity ?? 1;
+                break;
+
+            case RewardType.FOOD:
+                rewardItem.type = RewardType.FOOD;
+                rewardItem.food = this.parseFood(entry.food);
+                rewardItem.quantity = entry.quantity ?? 0;
+                break;
+
+            case RewardType.PET:
+                rewardItem.type = RewardType.PET;
+                rewardItem.pet = this.ConvertPetReward(entry.pet);
+                rewardItem.quantity = entry.quantity ?? 0;
+                break;
+
+            case RewardType.GOLD:
+            default:
+                rewardItem.type = RewardType.GOLD;
+                rewardItem.quantity = entry.quantity ?? 0;
+                break;
+        }
+
+        return rewardItem;
+    }
+
+    public static ConvertRewards(data: any): RewardItemDTO[] {
         if (!Array.isArray(data)) return [];
 
         return data
@@ -483,7 +537,7 @@ export default class ConvetData {
         rewardNewbie.is_claimed = data.is_claimed;
         rewardNewbie.is_available = data.is_available;
         rewardNewbie.quest_type = this.mapServerQuestTypeToClient(data.quest_type);
-        rewardNewbie.rewards = this.ConvertReward(data.rewards);
+        rewardNewbie.rewards = this.ConvertRewards(data.rewards);
         return rewardNewbie;
     }
 

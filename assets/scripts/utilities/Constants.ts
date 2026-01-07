@@ -2,7 +2,7 @@
 import { ServerMapManager } from "../core/ServerMapManager";
 import { OfficePosition, Season } from "../GameMap/OfficePosition";
 import { RoomType } from "../GameMap/RoomType";
-import { ClanRole, ClansData } from "../Interface/DataMapAPI";
+import { ClanActivityActionType, ClanRole, ClansData } from "../Interface/DataMapAPI";
 import { FoodType, InventoryType, ItemType, RewardItemDTO, RewardType } from "../Model/Item";
 import { ConfirmParam, ConfirmPopup } from "../PopUp/ConfirmPopup";
 import { PopupManager } from "../PopUp/PopupManager";
@@ -310,6 +310,21 @@ export class Constants {
                     default: "";
                 }
             default:
+                return "";// fallback
+        }
+    }
+
+     public static getNameRewardItem(type: string): string {
+        switch (type) {
+            case RewardType.WEEKLY_RANKING_MEMBER_1:
+               return "Bạn đạt hạng Nhất bảng xếp hạng tuần thành viên năng động tại văn phòng";
+            case RewardType.WEEKLY_RANKING_MEMBER_2:
+                return "Bạn đạt hạng Nhì bảng xếp hạng tuần thành viên năng động tại văn phòng";
+            case RewardType.WEEKLY_RANKING_MEMBER_3:
+                return "Bạn đạt hạng Ba bảng xếp hạng tuần thành viên năng động tại văn phòng";
+            case RewardType.WEEKLY_RANKING_MEMBER_TOP_10:
+              return "Bạn thuộc 10 người năng động đứng đầu bảng xếp hạng tuần tại văn phòng";
+             default:
                 return "";// fallback
         }
     }

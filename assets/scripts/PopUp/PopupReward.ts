@@ -47,6 +47,7 @@ export class PopupReward extends BasePopup {
         switch (param.reward.type) {
             case RewardType.ITEM:
                 await WebRequestManager.instance.getUserProfileAsync();
+                break;
             case RewardType.GOLD:
                 UserMeManager.playerCoin += (param.status === RewardStatus.GAIN ? quantity : -quantity);
                 break;
