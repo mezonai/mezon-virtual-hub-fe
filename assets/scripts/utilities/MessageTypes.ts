@@ -57,5 +57,5 @@ export enum MessageTypes {
     ON_HARVEST_INTERRUPTED_FAILED = 'onHarvestInterruptedFailed',
     ON_HARVEST_PLAYER_JOIN = 'onHarvestPlayerJoin',
     ON_CANCEL_HARVEST_PLAYER_LEFT = 'onCancelHarvestPlayerLeft',
-    
+    ON_DISCONNECTED_BATTE = 'onDisconnectedBatte',
 }
