@@ -46,6 +46,8 @@ export class GameManager extends Component {
         };
         await this.tutorialCacthPet();
         await this.tuturialFarm();
+        UserMeManager.Get.user.isPetTutorialCompleted = true;
+        UserMeManager.Get.user.isPlantTutorialCompleted = true;
         await runRewards();
     }
 
