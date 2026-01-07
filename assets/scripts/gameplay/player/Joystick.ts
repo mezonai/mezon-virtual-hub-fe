@@ -139,69 +139,63 @@ export class Joystick extends Component {
 
     public _touchStartEvent(event: EventTouch) {
         if (!this.ring || !this.dot) return;
-        instance.emit(Input.EventType.TOUCH_START, event);
 
-        const location = event.getUILocation();
-        const touchPos = new Vec3(location.x, location.y);
-
+        const touchPos = this.uiToLocal(event, this.node);
         if (this.joystickType === JoystickType.FIXED) {
-            this._stickPos = this.ring.getPosition();
+            this._stickPos.set(this.ring.position);
 
-            const moveVec = touchPos.subtract(this.ring.getPosition());
-            const distance = moveVec.length();
-
-            if (this.radius > distance) {
+            const moveVec = touchPos.clone().subtract(this.ring.position);
+            if (moveVec.length() <= this.radius) {
                 this.dot.setPosition(moveVec);
             }
-        } else if (this.joystickType === JoystickType.FOLLOW) {
-            this._stickPos = touchPos;
+        } else {
+            this._stickPos.set(touchPos);
+            this._touchLocation.set(event.getUILocation().x, event.getUILocation().y);
             this.node.getComponent(UIOpacity)!.opacity = 255;
-            this._touchLocation = event.getUILocation();
             this.ring.setPosition(touchPos);
-            this.dot.setPosition(new Vec3());
+            this.dot.setPosition(Vec3.ZERO);
         }
     }
 
+
     public _touchMoveEvent(event: EventTouch) {
         if (!this.dot || !this.ring) return;
-        if (
-            this.joystickType === JoystickType.FOLLOW &&
-            this._touchLocation === event.getUILocation()
-        ) {
-            return false;
-        }
-
-        const location = event.getUILocation();
-        const touchPos = new Vec3(location.x, location.y);
-        // move vector
-        const moveVec = touchPos.subtract(this.ring.getPosition());
+        const touchPos = this.uiToLocal(event, this.node);
+        const moveVec = touchPos.clone().subtract(this.ring.position);
         const distance = moveVec.length();
-
         let speedType = SpeedType.NORMAL;
-        if (this.radius > distance) {
-            this.dot.setPosition(moveVec);
-            speedType = SpeedType.NORMAL;
+        let finalVec = new Vec3();
+        if (distance <= this.radius) {
+            finalVec.set(moveVec);
         } else {
-            this.dot.setPosition(moveVec.normalize().multiplyScalar(this.radius));
+            finalVec.set(moveVec.normalize().multiplyScalar(this.radius));
             speedType = SpeedType.FAST;
         }
-
-        instance.emit(Node.EventType.TOUCH_MOVE, event, {
-            SpeedType,
-            moveVec: moveVec.normalize(),
+        this.dot.setPosition(finalVec);
+        instance.emit(Input.EventType.TOUCH_MOVE, event, {
+            speedType,
+            moveVec: finalVec.clone().normalize(),
         });
     }
 
     public _touchEndEvent(event: EventTouch) {
-
-        if (!this.dot || !this.ring) return;
-        this.dot.setPosition(new Vec3());
+        if (!this.dot) return;
+        this.dot.setPosition(Vec3.ZERO);
         if (this.joystickType === JoystickType.FOLLOW) {
             this.node.getComponent(UIOpacity)!.opacity = 0;
         }
-
         instance.emit(Input.EventType.TOUCH_END, event, {
             speedType: SpeedType.STOP,
+            moveVec: Vec3.ZERO,
         });
     }
+
+    private uiToLocal(event: EventTouch, target: Node): Vec3 {
+        const uiPos = event.getUILocation();
+        const uiTransform = target.getComponent(UITransform)!;
+        return uiTransform.convertToNodeSpaceAR(
+            new Vec3(uiPos.x, uiPos.y, 0)
+        );
+    }
+
 }

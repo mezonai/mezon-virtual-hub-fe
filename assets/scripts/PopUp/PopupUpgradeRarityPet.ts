@@ -129,7 +129,7 @@ export class PopupUpgradeRarityPet extends BasePopup {
                 petMerge: this.petUpgrade,
                 isSuccess: dataPetMerge.success,
                 onFinishAnim: async () => {
-                    const myPets = await WebRequestManager.instance.getMyPetAsync();
+                    const myPets = await WebRequestManager.instance.getMyPetAsync({ stars: 3 });
                     this.updateListPet?.(myPets);
                     WebRequestManager.instance.getUserProfileAsync();
                     await this.getConfigRateAsync();
