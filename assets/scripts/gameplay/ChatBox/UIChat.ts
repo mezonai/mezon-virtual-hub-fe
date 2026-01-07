@@ -26,17 +26,21 @@ export class UIChat extends Component {
     @property({ type: Node }) backgroundUI: Node = null;
     @property({ type: [Color] }) chatColor: Color[] = [];
     @property({ type: Widget }) positionChat: Widget = null;
-    private positionChatMobile = 400;
+    private positionChatMobile = 500;
     private positionChatNoMobile = 53;
     private isShowUIByMobile: boolean = false;
     ////
 
     private maxItemCanShow: 50;
     private popupSpam: BasePopup = null;
+    private autoHideDelay = 3; // seconds
+    private autoHideTimer: number | null = null;
+
 
     async onLoad() {
         this.isShowUIByMobile = false;
-        this.positionChat.bottom = sys.isMobile ? this.positionChatMobile : this.positionChatNoMobile;
+        this.positionChat.bottom = this.positionChatNoMobile;
+        this.positionChat.right = sys.isMobile ? this.positionChatNoMobile : this.positionChatMobile;
         this.isShowUI(false);
         this.buttonSend.node.on(Button.EventType.CLICK, () => this.sendMessage(), this);
         if (sys.isMobile) {
@@ -60,6 +64,7 @@ export class UIChat extends Component {
     showChatUi() {
         this.isShowUI(true);
         this.editBox.focus();
+        this.resetAutoHide();
     }
 
     registerKey() {
@@ -112,6 +117,8 @@ export class UIChat extends Component {
     }
 
     public showChatMessage(sender: string, message: string) {
+        this.isShowUI(true);
+        this.resetAutoHide();
         if (this.chatScrollView.content.children.length >= this.maxItemCanShow) {
             ObjectPoolManager.instance.returnToPool(this.chatScrollView.content.children[0])
         }
@@ -142,6 +149,20 @@ export class UIChat extends Component {
     isShowUI(isShow: boolean) {
         this.backgroundUI.active = isShow;
         this.scrollBar.active = isShow;
+        this.chatScrollView.node.active = isShow;
+    }
+
+    private resetAutoHide() {
+        if (this.autoHideTimer !== null) {
+            clearTimeout(this.autoHideTimer);
+            this.autoHideTimer = null;
+        }
+
+        this.autoHideTimer = window.setTimeout(() => {
+            if (!this.editBox.isFocused()) {
+                this.isShowUI(false);
+            }
+        }, this.autoHideDelay * 1000);
     }
 }
 

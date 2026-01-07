@@ -112,9 +112,10 @@ export class WebRequestManager extends Component {
         });
     }
 
-    public getMyPetAsync(): Promise<PetDTO[]> {
+    public getMyPetAsync(filters?: { rarity?: string; stars?: number }): Promise<PetDTO[]> {
         return new Promise((resolve, reject) => {
             WebRequestManager.instance.getMyPetData(
+                filters,
                 (response) => resolve(response.data),
                 (error) => {
                     resolve([]);
@@ -580,8 +581,17 @@ export class WebRequestManager extends Component {
         APIManager.postData(this.combineWithSlash(APIConstant.PET_PLAYERS, pet_player_id, APIConstant.UPGRADE_RARITY_PET), {}, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
-    public getMyPetData(successCallback, errorCallback) {
-        APIManager.getData(this.combineWithSlash(APIConstant.PET_PLAYERS), (data) => { UserMeManager.SetMyPets = data.data; this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    public getMyPetData(filters, successCallback, errorCallback) {
+        const params = new URLSearchParams();
+        if (filters?.rarity) {
+            params.append('current_rarity', filters.rarity);
+        }
+
+        if (filters?.stars != null) {
+            params.append('stars', filters.stars.toString());
+        }
+        const url = this.combineWithSlash(APIConstant.PET_PLAYERS) + (params.toString() ? `?${params.toString()}` : '');
+        APIManager.getData(url, (data) => { UserMeManager.SetMyPets = data.data; this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
     public getRewardsSpin(successCallback, errorCallback) {
