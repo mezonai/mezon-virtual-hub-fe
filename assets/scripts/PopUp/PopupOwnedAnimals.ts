@@ -298,6 +298,8 @@ export class PopupOwnedAnimals extends BasePopup {
         const hasBattleUpdate = petDataBattle.pets.length > 0;
         if (hasPetBringUpdate || hasBattleUpdate) {
             if (hasBattleUpdate) {
+                const totalPetBattle = petDataBattle?.pets?.filter(pet => pet.battle_slot > 0).length ?? 0;
+                ServerManager.instance.sendUpdateSlotPetBattle(totalPetBattle)
                 await this.updateListPetBattleUserAsync(petDataBattle);
             }
             if (hasPetBringUpdate) {
