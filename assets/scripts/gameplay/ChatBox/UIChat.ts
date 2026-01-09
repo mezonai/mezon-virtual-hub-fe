@@ -12,6 +12,8 @@ import { sys } from 'cc';
 import { UIMobileManager } from '../Mobile/UIMobileManager';
 import { EVENT_NAME } from '../../network/APIConstant';
 import { Widget } from 'cc';
+import { Tween } from 'cc';
+import { tween } from 'cc';
 
 const { ccclass, property } = _decorator;
 
@@ -34,14 +36,13 @@ export class UIChat extends Component {
     private maxItemCanShow: 50;
     private popupSpam: BasePopup = null;
     private autoHideDelay = 3; // seconds
-    private autoHideTimer: number | null = null;
 
 
     async onLoad() {
         this.isShowUIByMobile = false;
         this.positionChat.bottom = this.positionChatNoMobile;
-        this.positionChat.right = sys.isMobile ? this.positionChatNoMobile : this.positionChatMobile;
-        this.isShowUI(false);
+        this.positionChat.right = sys.isMobile ? this.positionChatMobile : this.positionChatNoMobile;
+        this.showFullChatGroup(false, false);
         this.buttonSend.node.on(Button.EventType.CLICK, () => this.sendMessage(), this);
         if (sys.isMobile) {
             await Constants.waitUntil(() => UIMobileManager.instance != null);
@@ -62,9 +63,9 @@ export class UIChat extends Component {
     }
 
     showChatUi() {
-        this.isShowUI(true);
+        this.showFullChatGroup(true, true);
         this.editBox.focus();
-        this.resetAutoHide();
+        Tween.stopAllByTarget(this.node);
     }
 
     registerKey() {
@@ -77,18 +78,15 @@ export class UIChat extends Component {
     async sendMessage() {
         const message = this.editBox.string.trim();
         if (message == "") {
+            this.resetAutoHide();
             this.clearChat();
-            return;
-        }
-        if (message == "VituralHub-X92J7K1M") {
-            this.clearChat();
-            // UIManager.Instance.toolcreatePet.node.active = true
             return;
         }
         if (!Constants.canSendChat()) {
             if (this.popupSpam != null && this.popupSpam.node != null) {
                 await PopupManager.getInstance().closePopup(this.popupSpam.node.uuid);
             }
+            this.resetAutoHide();
             this.clearChat();
             const timeRemaning = Math.ceil((Constants.muteUntil - Date.now()) / 1000);
             const param: ConfirmParam = {
@@ -107,7 +105,7 @@ export class UIChat extends Component {
         this.editBox.blur();
         this.editBox.string = "";
         game.canvas.focus();
-        this.isShowUI(false);
+        this.showFullChatGroup(false, true);
     }
 
     protected onDisable(): void {
@@ -117,7 +115,7 @@ export class UIChat extends Component {
     }
 
     public showChatMessage(sender: string, message: string) {
-        this.isShowUI(true);
+        this.showFullChatGroup(false, true);
         this.resetAutoHide();
         if (this.chatScrollView.content.children.length >= this.maxItemCanShow) {
             ObjectPoolManager.instance.returnToPool(this.chatScrollView.content.children[0])
@@ -146,23 +144,31 @@ export class UIChat extends Component {
         return `[${hours}:${minutes}] ${name}: ${message}`;
     }
 
-    isShowUI(isShow: boolean) {
+    showBackgroundChat(isShow: boolean) {
         this.backgroundUI.active = isShow;
         this.scrollBar.active = isShow;
-        this.chatScrollView.node.active = isShow;
     }
 
     private resetAutoHide() {
-        if (this.autoHideTimer !== null) {
-            clearTimeout(this.autoHideTimer);
-            this.autoHideTimer = null;
-        }
+        Tween.stopAllByTarget(this.node);
+        tween(this.node)
+            .delay(this.autoHideDelay)
+            .call(() => {
+                if (!this.editBox.isFocused()) {
+                    this.showFullChatGroup(false, false);
+                }
+            })
+            .start();
+    }
 
-        this.autoHideTimer = window.setTimeout(() => {
-            if (!this.editBox.isFocused()) {
-                this.isShowUI(false);
-            }
-        }, this.autoHideDelay * 1000);
+    private showFullChatGroup(isShowBackground: boolean, isShowScrollChat: boolean) {
+        this.showBackgroundChat(isShowBackground);
+        this.ShowScrollChat(isShowScrollChat);
+    }
+
+    private ShowScrollChat(isShow: boolean) {
+        if (this.chatScrollView == null) return;
+        this.chatScrollView.node.active = isShow;
     }
 }
 
