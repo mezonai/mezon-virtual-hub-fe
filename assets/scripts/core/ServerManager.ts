@@ -87,9 +87,15 @@ export class ServerManager extends Component {
         });
 
         this.room.state.players.onAdd((player, sessionId) => {
-            let playerData = new PlayerColysesusObjectData(sessionId, this.room, player.x, player.y, player.display_name, player.skin_set, player.user_id, player.is_show_name, player.pet_players, player.isInBattle);
+            let playerData = new PlayerColysesusObjectData(sessionId, this.room, player.x, player.y, player.display_name, player.skin_set, player.user_id, player.is_show_name, player.pet_players, player.isInBattle, player.totalPetBattle);
             UserManager.instance.createPlayer(playerData);
+
         });
+
+        this.room.state.players.onChange(async (player, sessionId) => {
+
+        });
+
 
         this.room.state.items.onAdd((item, key) => {
             console.log(item, key);
@@ -231,7 +237,7 @@ export class ServerManager extends Component {
                         textButtonLeft: "",
                         textButtonRight: "",
                         textButtonCenter: "OK",
-                        onActionButtonCenter: () => {                           
+                        onActionButtonCenter: () => {
                             window.location.replace("about:blank");
                         },
                     };
@@ -957,20 +963,11 @@ export class ServerManager extends Component {
         }
     }
 
-    public sendNotEnoughPet(data) {
-        this.room.send(MessageTypes.NOT_ENOUGH_PET_BATTLE, data);
-    }
-
-    public sendNotPet(data) {
-        this.room.send(MessageTypes.NOT_PET_BATTLE, data);
-    }
-
-    public sendNotEnoughSkillPet(data) {
-        this.room.send(MessageTypes.NOT_ENOUGH_SKILL_PET_BATTLE, data);
-    }
-
     public sendUpdateSlot() {
         this.room.send("UpdateSlots")
     }
 
+    public sendUpdateSlotPetBattle(totalPetBattle: number) {
+        this.room.send(MessageTypes.ON_CHANGE_TOTAL_SLOT_PET_BATTLE, totalPetBattle)
+    }
 }
