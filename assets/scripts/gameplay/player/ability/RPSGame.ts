@@ -76,7 +76,7 @@ export class RPSGame extends PlayerInteractAction {
         const { amount, isDiamond } = data;
         const param: SelectionTimeOutParam = {
             title: "Chú Ý",
-            content: `${data.fromName} mời bạn chơi đấu pet. Phí <color=#FF0000> ${amount} ${isDiamond ? 'Diamond' : 'Gold'}</color>`,
+            content: `${data.fromName} mời bạn chơi oẳn tù tì. Phí <color=#FF0000> ${amount} ${isDiamond ? 'Diamond' : 'Gold'}</color>`,
             textButtonLeft: "Chơi",
             textButtonRight: "Thôi",
             textButtonCenter: "",
