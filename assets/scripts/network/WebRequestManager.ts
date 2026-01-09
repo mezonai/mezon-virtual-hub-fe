@@ -510,6 +510,21 @@ export class WebRequestManager extends Component {
         });
     }
 
+    public getAllItemsInWarehouseAsync(clanId: string): Promise<ClanWarehouseSlotDTO[]> {
+        return new Promise((resolve, reject) => {
+            WebRequestManager.instance.getAllItemsInWarehouse(
+                clanId,
+                (response) => {
+                    const farmData = ConvetData.ConvertWarehouseSlots(response.data.items);
+                    resolve(farmData);
+                },
+                (error) => {
+                    reject(error);
+                }
+            );
+        });
+    }
+
     public getShopPlantAsync(): Promise<PlantDataDTO[]> {
         return new Promise((resolve, reject) => {
             WebRequestManager.instance.getShopPlant(
@@ -804,6 +819,10 @@ export class WebRequestManager extends Component {
 
     public getClanWarehouses(clan_id, successCallback, errorCallback) {
         APIManager.getData(this.combineWithSlash(APIConstant.CLANS ,clan_id, APIConstant.CLANWAREHOUSE), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    }
+
+    public getAllItemsInWarehouse(clan_id, successCallback, errorCallback) {
+        APIManager.getData(this.combineWithSlash(APIConstant.CLANS ,clan_id, APIConstant.CLANWAREHOUSE, APIConstant.ITEMS_FOR_PLANTING), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
     //Farm
