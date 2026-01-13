@@ -1,7 +1,7 @@
 [
   {
     "__type__": "cc.Prefab",
-    "_name": "Horse",
+    "_name": "Voltstrider",
     "_objFlags": 0,
     "__editorExtras__": {},
     "_native": "",
@@ -13,7 +13,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "Horse",
+    "_name": "Voltstrider",
     "_objFlags": 0,
     "__editorExtras__": {},
     "_parent": null,
@@ -26,12 +26,15 @@
       },
       {
         "__id__": 16
+      },
+      {
+        "__id__": 167
       }
     ],
     "_active": true,
     "_components": [
       {
-        "__id__": 167
+        "__id__": 173
       },
       {
         "__id__": 159
@@ -47,7 +50,7 @@
       }
     ],
     "_prefab": {
-      "__id__": 169
+      "__id__": 175
     },
     "_lpos": {
       "__type__": "cc.Vec3",
@@ -145,8 +148,8 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 60,
-      "height": 70
+      "width": 59,
+      "height": 61
     },
     "_anchorPoint": {
       "__type__": "cc.Vec2",
@@ -187,7 +190,7 @@
     },
     "_type": 0,
     "_fillType": 0,
-    "_sizeMode": 0,
+    "_sizeMode": 1,
     "_fillCenter": {
       "__type__": "cc.Vec2",
       "x": 0,
@@ -310,7 +313,7 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 17.745794392523365,
+      "width": 17.74831021769663,
       "height": 12.6
     },
     "_anchorPoint": {
@@ -3105,7 +3108,7 @@
     "_string": "",
     "_horizontalAlign": 1,
     "_verticalAlign": 1,
-    "_actualFontSize": 29.72222222222222,
+    "_actualFontSize": 33.375,
     "_fontSize": 8,
     "_fontFamily": "Arial",
     "_lineHeight": 15,
@@ -3633,6 +3636,211 @@
     ]
   },
   {
+    "__type__": "cc.Node",
+    "_name": "Effect",
+    "_objFlags": 0,
+    "__editorExtras__": {},
+    "_parent": {
+      "__id__": 1
+    },
+    "_children": [],
+    "_active": true,
+    "_components": [
+      {
+        "__id__": 168
+      },
+      {
+        "__id__": 170
+      }
+    ],
+    "_prefab": {
+      "__id__": 172
+    },
+    "_lpos": {
+      "__type__": "cc.Vec3",
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "_lrot": {
+      "__type__": "cc.Quat",
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "w": 1
+    },
+    "_lscale": {
+      "__type__": "cc.Vec3",
+      "x": 1,
+      "y": 1,
+      "z": 1
+    },
+    "_mobility": 0,
+    "_layer": 1073741824,
+    "_euler": {
+      "__type__": "cc.Vec3",
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "_id": ""
+  },
+  {
+    "__type__": "cc.UITransform",
+    "_name": "",
+    "_objFlags": 0,
+    "__editorExtras__": {},
+    "node": {
+      "__id__": 167
+    },
+    "_enabled": true,
+    "__prefab": {
+      "__id__": 169
+    },
+    "_contentSize": {
+      "__type__": "cc.Size",
+      "width": 100,
+      "height": 100
+    },
+    "_anchorPoint": {
+      "__type__": "cc.Vec2",
+      "x": 0.5,
+      "y": 0.5
+    },
+    "_id": ""
+  },
+  {
+    "__type__": "cc.CompPrefabInfo",
+    "fileId": "7dphuWyPRF3ZassQSNibLW"
+  },
+  {
+    "__type__": "cc.ParticleSystem2D",
+    "_name": "Node<ParticleSystem2D>",
+    "_objFlags": 0,
+    "__editorExtras__": {},
+    "node": {
+      "__id__": 167
+    },
+    "_enabled": true,
+    "__prefab": {
+      "__id__": 171
+    },
+    "_customMaterial": null,
+    "_srcBlendFactor": 2,
+    "_dstBlendFactor": 1,
+    "_color": {
+      "__type__": "cc.Color",
+      "r": 255,
+      "g": 255,
+      "b": 255,
+      "a": 255
+    },
+    "duration": -1,
+    "emissionRate": 999.999985098839,
+    "life": 0.2,
+    "lifeVar": 1,
+    "angle": 0,
+    "angleVar": 360,
+    "startSize": 1,
+    "startSizeVar": 3,
+    "endSize": 5,
+    "endSizeVar": 0,
+    "startSpin": 0,
+    "startSpinVar": 0,
+    "endSpin": 0,
+    "endSpinVar": 0,
+    "sourcePos": {
+      "__type__": "cc.Vec2",
+      "x": 0,
+      "y": 0
+    },
+    "posVar": {
+      "__type__": "cc.Vec2",
+      "x": 40,
+      "y": 10
+    },
+    "emitterMode": 1,
+    "gravity": {
+      "__type__": "cc.Vec2",
+      "x": 0,
+      "y": 0
+    },
+    "speed": 0,
+    "speedVar": 0,
+    "tangentialAccel": 0,
+    "tangentialAccelVar": 0,
+    "radialAccel": 100,
+    "radialAccelVar": 0,
+    "rotationIsDir": false,
+    "startRadius": 5,
+    "startRadiusVar": 0,
+    "endRadius": 15,
+    "endRadiusVar": 0,
+    "rotatePerS": 0,
+    "rotatePerSVar": 0,
+    "playOnLoad": true,
+    "autoRemoveOnFinish": false,
+    "_preview": true,
+    "preview": true,
+    "_custom": true,
+    "_file": {
+      "__uuid__": "e17b4526-57a2-48d3-acc9-cf09f30aa138",
+      "__expectedType__": "cc.ParticleAsset"
+    },
+    "_spriteFrame": {
+      "__uuid__": "8b9e496e-65e8-43de-a0b1-eb93c8bd145f@f9941",
+      "__expectedType__": "cc.SpriteFrame"
+    },
+    "_totalParticles": 20,
+    "_startColor": {
+      "__type__": "cc.Color",
+      "r": 233,
+      "g": 208,
+      "b": 23,
+      "a": 255
+    },
+    "_startColorVar": {
+      "__type__": "cc.Color",
+      "r": 0,
+      "g": 0,
+      "b": 0,
+      "a": 0
+    },
+    "_endColor": {
+      "__type__": "cc.Color",
+      "r": 235,
+      "g": 255,
+      "b": 0,
+      "a": 0
+    },
+    "_endColorVar": {
+      "__type__": "cc.Color",
+      "r": 0,
+      "g": 0,
+      "b": 0,
+      "a": 0
+    },
+    "_positionType": 0,
+    "_id": ""
+  },
+  {
+    "__type__": "cc.CompPrefabInfo",
+    "fileId": "674Uoq2D5KpZxbHhBHA2mf"
+  },
+  {
+    "__type__": "cc.PrefabInfo",
+    "root": {
+      "__id__": 1
+    },
+    "asset": {
+      "__id__": 0
+    },
+    "fileId": "2f6k6gu4hGiYBGZGujxi/t",
+    "instance": null,
+    "targetOverrides": null,
+    "nestedPrefabInstanceRoots": null
+  },
+  {
     "__type__": "cc.UITransform",
     "_name": "",
     "_objFlags": 0,
@@ -3642,7 +3850,7 @@
     },
     "_enabled": true,
     "__prefab": {
-      "__id__": 168
+      "__id__": 174
     },
     "_contentSize": {
       "__type__": "cc.Size",
@@ -3672,22 +3880,22 @@
     "instance": null,
     "targetOverrides": [
       {
-        "__id__": 170
-      },
-      {
-        "__id__": 173
-      },
-      {
         "__id__": 176
       },
       {
-        "__id__": 178
-      },
-      {
-        "__id__": 180
+        "__id__": 179
       },
       {
         "__id__": 182
+      },
+      {
+        "__id__": 184
+      },
+      {
+        "__id__": 186
+      },
+      {
+        "__id__": 188
       }
     ],
     "nestedPrefabInstanceRoots": [
@@ -3702,7 +3910,7 @@
       "__id__": 16
     },
     "sourceInfo": {
-      "__id__": 171
+      "__id__": 177
     },
     "propertyPath": [
       "tameButton"
@@ -3711,7 +3919,7 @@
       "__id__": 16
     },
     "targetInfo": {
-      "__id__": 172
+      "__id__": 178
     }
   },
   {
@@ -3732,7 +3940,7 @@
       "__id__": 16
     },
     "sourceInfo": {
-      "__id__": 174
+      "__id__": 180
     },
     "propertyPath": [
       "actionButtonParent"
@@ -3741,7 +3949,7 @@
       "__id__": 16
     },
     "targetInfo": {
-      "__id__": 175
+      "__id__": 181
     }
   },
   {
@@ -3767,7 +3975,7 @@
       "__id__": 16
     },
     "targetInfo": {
-      "__id__": 177
+      "__id__": 183
     }
   },
   {
@@ -3787,7 +3995,7 @@
       "__id__": 16
     },
     "targetInfo": {
-      "__id__": 179
+      "__id__": 185
     }
   },
   {
@@ -3809,7 +4017,7 @@
       "__id__": 16
     },
     "targetInfo": {
-      "__id__": 181
+      "__id__": 187
     }
   },
   {
@@ -3831,7 +4039,7 @@
       "__id__": 16
     },
     "targetInfo": {
-      "__id__": 183
+      "__id__": 189
     }
   },
   {
