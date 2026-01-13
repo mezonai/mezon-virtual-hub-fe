@@ -1,3 +1,5 @@
+import { Item } from "../Model/Item";
+
 export enum PlantState {
   NONE = 0,
   SEED = 1,
@@ -39,10 +41,13 @@ export interface ClanWarehouseSlotDTO {
   id: string;
   farm_id: string;
   plant_id: string;
+  item_id: string;
   quantity: number;
+  type: string;
   is_harvested: boolean;
   purchased_by: string;
   plant?: PlantDataDTO;
+  item?: Item;
 }
 
 export interface FarmDTO {

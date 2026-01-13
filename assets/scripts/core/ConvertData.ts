@@ -226,6 +226,8 @@ export default class ConvetData {
             id: w.id,
             farm_id: w.clan_id,
             plant_id: w.item_id,
+            item_id: w.item_id,
+            type: w.type,
             quantity: w.quantity,
             is_harvested: w.is_harvested,
             purchased_by: w.purchased_by || '',
@@ -239,6 +241,16 @@ export default class ConvetData {
                     description: w.plant.description,
                 }
                 : undefined,
+            item: w.item
+            ? {
+                  id: w.item.id,
+                  name: w.item.name,
+                  gold: w.item.gold,
+                  type: w.item.type,
+                  item_code: w.item.item_code,
+                  rate:  w.item.rate,
+              }
+            : undefined,
         }));
     }
 
@@ -247,6 +259,8 @@ export default class ConvetData {
             id: warehouse.id,
             farm_id: warehouse.farm_id,
             plant_id: warehouse.plant_id,
+            item_id: warehouse.item_id,
+            type: warehouse.type,
             quantity: warehouse.quantity,
             is_harvested: warehouse.is_harvested,
             purchased_by: warehouse.purchased_by || '',
@@ -260,6 +274,16 @@ export default class ConvetData {
                     description: warehouse.plant.description,
                 }
                 : undefined,
+            item: warehouse.item
+            ? {
+                  id: warehouse.item.id,
+                  name: warehouse.item.name,
+                  gold: warehouse.item.gold,
+                  type: warehouse.item.type,
+                  item_code: warehouse.item.item_code,
+                  rate: warehouse.item.rate,
+              }
+            : undefined,
         };
     }
 

@@ -16,13 +16,21 @@ const { ccclass, property } = _decorator;
 @ccclass('PopupClanInventory')
 export class PopupClanInventory extends BasePopup {
     @property(Button) closeButton: Button = null;
+
+    @property(Node) detailMain: Node = null;
+    @property(Node) infoPlant: Node = null;
     @property(RichText) plantNamert: RichText = null;
     @property(Label) descriptionrt: Label = null;
     @property(RichText) growTimert: RichText = null;
     @property(RichText) harvestScorert: RichText = null;
     @property(RichText) priceBuyrt: RichText = null;
+
+    @property(Node) infoTool: Node = null;
+    @property(RichText) toolNamert: RichText = null;
+    @property(RichText) useTime: RichText = null;
+    @property(RichText) toolpriceBuyrt: RichText = null;
+
     @property(Node) noItemPanel: Node = null;
-    @property(Node) detailMain: Node = null;
     @property(Prefab) itemPrefab: Prefab = null!;
     @property(ScrollView) svInvenoryClan: ScrollView = null!;
 
@@ -96,9 +104,17 @@ export class PopupClanInventory extends BasePopup {
             const plantItem = slotNode.getComponent(InventoryClanUIItem);
 
             if (plantItem) {
-                plantItem.initPlant(element, () => {
-                    this.showSlotDetail(element);
+                if(element.plant){
+                    plantItem.initPlant(element, () => {
+                        this.showSlotDetail(element);
+                    });
+                }
+                if(element.item){
+                    plantItem.initTool(element, () => {
+                    this.showSlotDetailFarmTool(element);
                 });
+                }
+                
             }
 
             slotNode.setParent(this.svInvenoryClan.content);
@@ -122,6 +138,9 @@ export class PopupClanInventory extends BasePopup {
             this.iconItemUIHelper.icon.spriteFrame = sprite;
             this.iconSeed.spriteFrame = sprite;
         } 
+        this.harvestScorert.node.active = true;
+        this.infoPlant.active = true;
+        this.infoTool.active = false;
         this.seedBags.node.active = !clanWarehouseSlotDTO.is_harvested;
         this.iconItemUIHelper.node.active = clanWarehouseSlotDTO.is_harvested;
         this.descriptionrt.string = `${clanWarehouseSlotDTO.plant.description}`;
@@ -129,6 +148,18 @@ export class PopupClanInventory extends BasePopup {
         this.growTimert.string = `<outline color=#222222 width=1> ${clanWarehouseSlotDTO.plant.grow_time} s</outline>`;
         this.harvestScorert.string = `<outline color=#222222 width=1> ${clanWarehouseSlotDTO.plant.harvest_point}</outline>`;
         this.priceBuyrt.string = `<outline color=#222222 width=1> ${clanWarehouseSlotDTO.plant.buy_price}</outline>`;
+    }
+
+    private async showSlotDetailFarmTool(clanWarehouseSlotDTO: ClanWarehouseSlotDTO) {
+        this.harvestScorert.node.active = false;
+        this.iconItemUIHelper.node.active = true;
+        this.infoPlant.active = false;
+        this.infoTool.active = true;
+        this.iconItemUIHelper.setIconByItem(clanWarehouseSlotDTO.item);
+        this.descriptionrt.string = `${clanWarehouseSlotDTO.item.name} \n [ ${Math.round(clanWarehouseSlotDTO.item.rate * 100)} ] %`;
+        this.toolNamert.string = `<outline color=#222222 width=1> ${clanWarehouseSlotDTO.item.name}</outline>`;
+        this.useTime.string = `<outline color=#222222 width=1> ${Math.round(clanWarehouseSlotDTO.item.rate * 100)} %</outline>`;
+        this.toolpriceBuyrt.string = `<outline color=#222222 width=1> ${clanWarehouseSlotDTO.item.gold}</outline>`;
     }
 }
 

@@ -7,7 +7,7 @@ import { AssignViceLeadersDto as AssignViceLeadersDTO, ClanActivityResponseDTO, 
 import { ServerManager } from '../core/ServerManager';
 import { PopupSelectionMini, SelectionMiniParam } from '../PopUp/PopupSelectionMini';
 import { PopupManager } from '../PopUp/PopupManager';
-import { BuyItemPayload, EventRewardDTO, InventoryDTO, Item, RewardItemDTO, RewardNewbieDTO, StatsConfigDTO, WeeklyRewardDto as WeeklyRewardDTO } from '../Model/Item';
+import { BuyItemPayload, EventRewardDTO, InventoryDTO, Item, ItemDTO, RewardItemDTO, RewardNewbieDTO, StatsConfigDTO, WeeklyRewardDto as WeeklyRewardDTO } from '../Model/Item';
 import { GameManager } from '../core/GameManager';
 import { UpgradePetResponseDTO, PetDTO } from '../Model/PetDTO';
 import { Constants } from '../utilities/Constants';
@@ -119,6 +119,18 @@ export class WebRequestManager extends Component {
                 (response) => resolve(response.data),
                 (error) => {
                     resolve([]);
+                }
+            );
+        });
+    }
+
+    public getAllItemFarmToolsFilterAsync(filters?: { gender?: string; type?: string, item_code?: string }): Promise<Item[]> {
+        return new Promise((resolve, reject) => {
+            WebRequestManager.instance.getAllItemFarmToolsFilter(
+                filters,
+                (response) => resolve(response.data),
+                (error) => {
+                    resolve(null);
                 }
             );
         });
@@ -582,6 +594,23 @@ export class WebRequestManager extends Component {
 
     public getAllItem(successCallback, errorCallback) {
         APIManager.getData(this.combineWithSlash(APIConstant.ITEM), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    }
+
+    public getAllItemFarmToolsFilter(filters, successCallback, errorCallback) {
+        const params = new URLSearchParams();
+        if (filters?.gender) {
+            params.append('gender', filters.gender);
+        }
+
+        if (filters?.type != null) {
+            params.append('type', filters.type.toString());
+        }
+
+        if (filters?.item_code != null) {
+            params.append('item_code', filters.item_code.toString());
+        }
+        const url = this.combineWithSlash(APIConstant.ITEM, APIConstant.ALL_ITEM) + (params.toString() ? `?${params.toString()}` : '');
+        APIManager.getData(url, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
     public getAllPetData(mapCode, successCallback, errorCallback) {
