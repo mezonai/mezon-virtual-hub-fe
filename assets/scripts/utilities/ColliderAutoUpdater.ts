@@ -9,16 +9,17 @@ const { ccclass, property } = _decorator;
 export class ColliderAutoUpdater extends Component {
 
     @property(Node) colliderParent: Node | null = null;
-
+    private _isHandlingResize = false;
     private resizeDebounceTimer: any = null;
 
     start() {
         director.on(EVENT_NAME.CANVAS_RESIZE, this.onCanvasResize, this);
-        //input.on(Input.EventType.MOUSE_UP, this.onMouseUp, this);
+        input.on(Input.EventType.TOUCH_END, this.onMouseUp, this);
     }
 
     protected onDisable(): void {
         director.off(EVENT_NAME.CANVAS_RESIZE, this.onCanvasResize, this);
+        input.off(Input.EventType.TOUCH_END, this.onMouseUp, this);
         //input.off(Input.EventType.MOUSE_UP, this.onMouseUp, this);
         this.unscheduleAllCallbacks();
         if (this.resizeDebounceTimer) {
@@ -27,20 +28,23 @@ export class ColliderAutoUpdater extends Component {
     }
 
     onCanvasResize() {
+        if (this._isHandlingResize) return;
+        this._isHandlingResize = true;
         if (this.resizeDebounceTimer) {
             clearTimeout(this.resizeDebounceTimer);
         }
         this.resizeDebounceTimer = setTimeout(() => {
             this.resetAllColliders();
-            this.resetBox();
         }, 0);
     }
 
-    // onMouseUp() {
-    //     this.schedule(() => {
-    //         this.resetBox();
-    //     }, 0);
-    // }
+    onMouseUp() {
+        if (!this._isHandlingResize) return;
+        this._isHandlingResize = false;
+        this.scheduleOnce(() => {
+            this.resetBox();
+        }, 0);
+    }
 
     resetBox() {
         if (!this.colliderParent) return;
@@ -50,7 +54,6 @@ export class ColliderAutoUpdater extends Component {
             this.colliderParent.active = true;
             const player = UserManager.instance.GetMyClientPlayer;
             if (player != null) {
-                console.log("startMove");
                 player.get_MoveAbility.startMove();
             }
         }, 0);
@@ -61,7 +64,6 @@ export class ColliderAutoUpdater extends Component {
         this.colliderParent.active = false;
         const player = UserManager.instance.GetMyClientPlayer;
         if (player != null) {
-            console.log("StopMove");
             player.get_MoveAbility.StopMove();
         }
     }
