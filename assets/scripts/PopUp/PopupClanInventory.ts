@@ -1,165 +1,219 @@
-import { _decorator, Component, Node, Button, Prefab, ScrollView, instantiate, RichText, Label, Sprite } from 'cc';
+import { _decorator, Component, Node, Button, Prefab, ScrollView, instantiate, RichText, Label, Sprite, Toggle} from 'cc';
 import { BasePopup } from './BasePopup';
 import { PopupManager } from './PopupManager';
 import { WebRequestManager } from '../network/WebRequestManager';
 import { ClansData } from '../Interface/DataMapAPI';
-import { UserMeManager } from '../core/UserMeManager';
 import { ClanWarehouseSlotDTO, HarvestCountDTO } from '../Farm/EnumPlant';
-import { IconItemUIHelper } from '../Reward/IconItemUIHelper';
-import { PopupClanShop } from './PopupClanShop';
 import { InventoryClanUIItem } from '../Clan/InventoryClanUIItem';
 import { Constants } from '../utilities/Constants';
-import { StatsConfigDTO } from '../Model/Item';
+import { ItemType, StatsConfigDTO } from '../Model/Item';
 import { LoadingManager } from './LoadingManager';
+import { ItemIconManager } from '../utilities/ItemIconManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('PopupClanInventory')
 export class PopupClanInventory extends BasePopup {
-    @property(Button) closeButton: Button = null;
+    @property(Button) closeButton: Button = null!;
 
-    @property(Node) detailMain: Node = null;
-    @property(Node) infoPlant: Node = null;
-    @property(RichText) plantNamert: RichText = null;
-    @property(Label) descriptionrt: Label = null;
-    @property(RichText) growTimert: RichText = null;
-    @property(RichText) harvestScorert: RichText = null;
-    @property(RichText) priceBuyrt: RichText = null;
+    @property(Node) infoPlant: Node = null!;
+    @property(Node) infoTool: Node = null!;
 
-    @property(Node) infoTool: Node = null;
-    @property(RichText) toolNamert: RichText = null;
-    @property(RichText) useTime: RichText = null;
-    @property(RichText) toolpriceBuyrt: RichText = null;
-
-    @property(Node) noItemPanel: Node = null;
-    @property(Prefab) itemPrefab: Prefab = null!;
     @property(ScrollView) svInvenoryClan: ScrollView = null!;
+    @property(ScrollView) svInvenoryClanTool: ScrollView = null!;
+    @property(Prefab) itemPrefab: Prefab = null!;
 
-    @property(RichText) harvertCountrt: RichText = null;
-    @property(RichText) harvertInterrupCountrt: RichText = null;
-    @property(Sprite) seedBags: Sprite = null;
-    @property({type: IconItemUIHelper }) iconItemUIHelper: IconItemUIHelper = null;
-    @property(Sprite) iconSeed: Sprite = null;
-    @property(Node) limitHarvestNode: Node = null;
+    @property(RichText) plantNamert: RichText = null!;
+    @property(Label) descriptionrt: Label = null!;
+    @property(RichText) growTimert: RichText = null!;
+    @property(RichText) harvestScorert: RichText = null!;
+    @property(RichText) priceBuyrt: RichText = null!;
+    
+    @property(Label) toolDescriptionrt: Label = null!;
+    @property(RichText) toolNamert: RichText = null!;
+    @property(RichText) useTime: RichText = null!;
+    @property(RichText) toolpriceBuyrt: RichText = null!;
 
-    private clanDetail: ClansData;
-    private clanWarehouseSlot: ClanWarehouseSlotDTO[];
-    private _clanWarehouseSlot: InventoryClanUIItem[];
-    private timeoutLoadSlot: number = 50;
-    getConfigRate: StatsConfigDTO;
-    private harvestCountDTO: HarvestCountDTO;
+    @property(Node) noItemPanel: Node = null!;
+    @property(Sprite) seedBags: Sprite = null!;
+    @property(Node) limitHarvestNode: Node = null!;
+    @property(Sprite) iconSeed: Sprite = null!;
+    @property(Sprite) iconPlant: Sprite = null!;
+    @property(Sprite) iconTool: Sprite = null!;
 
-    public async init(param?: PopupClanInventoryParam) {
-        this.closeButton.addAsyncListener(async () => {
-            this.closeButton.interactable = false;
-            await PopupManager.getInstance().closePopup(this.node.uuid);
-            this.closeButton.interactable = true;
-        });
-        this.detailMain.active = false;
+    @property(RichText) harvertCountrt: RichText = null!;
+    @property(RichText) harvertInterrupCountrt: RichText = null!;
+
+    @property(Toggle) tabPlantButton: Toggle = null!;
+    @property(Toggle) tabToolButton: Toggle = null!;
+
+    private clanDetail!: ClansData;
+    private warehouseData: ClanWarehouseSlotDTO[] = [];
+
+    private plantUIItems: InventoryClanUIItem[] = [];
+    private toolUIItems: InventoryClanUIItem[] = [];
+
+    private hasBuiltUI = false;
+    private currentMode: ItemType | null = null;
+
+    private configRate!: StatsConfigDTO;
+    private harvestCountDTO!: HarvestCountDTO;
+
+    public init(param?: PopupClanInventoryParam) {
         if (!param) return;
         this.clanDetail = param.clanDetail;
-        await this.LoadInventoryUI();
+
+        this.closeButton.addAsyncListener(async () => {
+            await PopupManager.getInstance().closePopup(this.node.uuid);
+        });
+
+        this.tabPlantButton.node.on(
+            Toggle.EventType.TOGGLE,
+            (t: Toggle) => t.isChecked && this.switchMode(ItemType.FARM_PLANT),
+            this
+        );
+
+        this.tabToolButton.node.on(
+            Toggle.EventType.TOGGLE,
+            (t: Toggle) => t.isChecked && this.switchMode(ItemType.FARM_TOOL),
+            this
+        );
+        LoadingManager.getInstance().openLoading();
+        this.infoTool.active = false;
+        this.infoPlant.active = true;
+        this.loadHarvestInfo();
+        this.loadWarehouse();
+        LoadingManager.getInstance().closeLoading();
     }
 
-    private async LoadInventoryUI() {
+    private async loadHarvestInfo() {
         try {
-            LoadingManager.getInstance().openLoading();
-            this.GetHarvestCounts();
-            this.GetClanWareHouse();
-        } catch {
+            this.configRate = await WebRequestManager.instance.getConfigRateAsync();
+            this.harvestCountDTO = await WebRequestManager.instance.getHarvestCountsAsync(this.clanDetail.id);
 
-        } finally {
-            LoadingManager.getInstance().closeLoading();
+            this.limitHarvestNode.active = this.configRate.farmLimit.harvest.enabledLimit;
+            this.setCountLabel(
+                this.harvertCountrt,
+                this.harvestCountDTO.harvest_count_use,
+                this.configRate.farmLimit.harvest.maxHarvest
+            );
+            this.setCountLabel(
+                this.harvertInterrupCountrt,
+                this.harvestCountDTO.harvest_interrupt_count_use,
+                this.configRate.farmLimit.harvest.maxInterrupt
+            );
+        } catch (e) {
+            console.error('loadHarvestInfo error', e);
         }
     }
 
-    setCountLabel = (label, used, max) => {
-        const isMaxed = used >= max;
-        const color = isMaxed ? '#ff4d4d' : '#ffffff';
-        const suffix = isMaxed ? ' (Hết lượt)' : '';
-        label.string = `<outline color=#222 width=1><color=${color}> ${used}/${max}${suffix} </color></outline>`;
-    };
+    private async loadWarehouse() {
+        try {
+            this.warehouseData = await WebRequestManager.instance.getClanWarehousesAsync(this.clanDetail.id);
+            this.noItemPanel.active = !this.warehouseData.length;
+            if (!this.warehouseData.length) return;
 
-    async GetHarvestCounts(){
-        this.getConfigRate = await WebRequestManager.instance.getConfigRateAsync();
-        this.harvestCountDTO = await WebRequestManager.instance.getHarvestCountsAsync(this.clanDetail.id);
-        this.limitHarvestNode.active = this.getConfigRate.farmLimit.harvest.enabledLimit;
-        this.setCountLabel(this.harvertCountrt, this.harvestCountDTO.harvest_count_use, this.getConfigRate.farmLimit.harvest.maxHarvest);
-        this.setCountLabel(this.harvertInterrupCountrt, this.harvestCountDTO.harvest_interrupt_count_use, this.getConfigRate.farmLimit.harvest.maxInterrupt);
-    }
-
-    public async GetClanWareHouse() {
-        this.clanWarehouseSlot = await WebRequestManager.instance.getClanWarehousesAsync(this.clanDetail.id);
-        this.noItemPanel.active = !this.clanWarehouseSlot || this.clanWarehouseSlot.length === 0;
-        if (!this.clanWarehouseSlot || this.clanWarehouseSlot.length === 0) return;
-        this.detailMain.active = true;
-        this.InitItemInventory(this.clanWarehouseSlot);
-    }
-
-    public InitItemInventory(data: ClanWarehouseSlotDTO[]) {
-        this.svInvenoryClan.content.removeAllChildren();
-        this._clanWarehouseSlot = [];
-
-        for (const element of data) {
-            const slotNode = instantiate(this.itemPrefab);
-            const plantItem = slotNode.getComponent(InventoryClanUIItem);
-
-            if (plantItem) {
-                if(element.plant){
-                    plantItem.initPlant(element, () => {
-                        this.showSlotDetail(element);
-                    });
-                }
-                if(element.item){
-                    plantItem.initTool(element, () => {
-                    this.showSlotDetailFarmTool(element);
-                });
-                }
-                
+            if (!this.hasBuiltUI) {
+                this.buildInventoryUI(this.warehouseData);
+                this.hasBuiltUI = true;
             }
 
-            slotNode.setParent(this.svInvenoryClan.content);
-            this._clanWarehouseSlot.push(plantItem);
+            this.switchMode(ItemType.FARM_PLANT);
+        } catch (e) {
+            console.error('loadWarehouse error', e);
         }
-        setTimeout(() => {
-            this.setDefaultDetailItem();
-        }, this.timeoutLoadSlot);
+
     }
 
-    public setDefaultDetailItem() {
-        if (!this._clanWarehouseSlot || this._clanWarehouseSlot.length === 0) return;
-        const firstItem = this._clanWarehouseSlot[0];
-        firstItem.toggle.isChecked = true;
-        firstItem.onItemClick();
+    private buildInventoryUI(data: ClanWarehouseSlotDTO[]) {
+        this.svInvenoryClan.content.removeAllChildren();
+        this.svInvenoryClanTool.content.removeAllChildren();
+        this.plantUIItems = [];
+        this.toolUIItems = [];
+
+        for (const slot of data) {
+            const node = instantiate(this.itemPrefab);
+            const uiItem = node.getComponent(InventoryClanUIItem);
+            if (!uiItem) continue;
+
+            if (slot.plant) {
+                uiItem.initPlant(slot, () => this.showPlantDetail(slot));
+                this.plantUIItems.push(uiItem);
+                node.setParent(this.svInvenoryClan.content);
+            }
+            else if (slot.item) {
+                uiItem.initTool(slot, () => this.showToolDetail(slot));
+                this.toolUIItems.push(uiItem);
+                node.setParent(this.svInvenoryClanTool.content);
+            }
+        }
     }
 
-    private showSlotDetail(clanWarehouseSlotDTO: ClanWarehouseSlotDTO) {
-        const sprite = this.iconItemUIHelper.getPlantIcon(clanWarehouseSlotDTO.plant.name);
-        if (sprite){
-            this.iconItemUIHelper.icon.spriteFrame = sprite;
+    private switchMode(mode: ItemType) {
+        if (this.currentMode === mode) return;
+        this.currentMode = mode;
+        this.updateTabVisibility();
+    }
+
+    private updateTabVisibility() {
+        const isPlant = this.currentMode === ItemType.FARM_PLANT;
+
+        this.infoPlant.active = isPlant;
+        this.infoTool.active = !isPlant;
+
+        this.plantUIItems.forEach(i => i.node.active = isPlant);
+        this.toolUIItems.forEach(i => i.node.active = !isPlant);
+
+        if (isPlant) this.selectFirstPlant();
+        else this.selectFirstTool();
+    }
+
+    private selectFirstPlant() {
+        if (!this.plantUIItems.length) return;
+        const item = this.plantUIItems[0];
+        item.toggle.isChecked = true;
+        item.onItemClick();
+    }
+
+    private selectFirstTool() {
+        if (!this.toolUIItems.length) return;
+        const item = this.toolUIItems[0];
+        item.toggle.isChecked = true;
+        item.onItemClick();
+    }
+
+    private showPlantDetail(slot: ClanWarehouseSlotDTO) {
+        const sprite = ItemIconManager.getInstance().getIconPlantFarm(slot.plant.name);
+        if (sprite) {
+            this.iconPlant.spriteFrame = sprite;
             this.iconSeed.spriteFrame = sprite;
-        } 
-        this.harvestScorert.node.active = true;
-        this.infoPlant.active = true;
-        this.infoTool.active = false;
-        this.seedBags.node.active = !clanWarehouseSlotDTO.is_harvested;
-        this.iconItemUIHelper.node.active = clanWarehouseSlotDTO.is_harvested;
-        this.descriptionrt.string = `${clanWarehouseSlotDTO.plant.description}`;
-        this.plantNamert.string = `<outline color=#222222 width=1> ${Constants.getPlantName(clanWarehouseSlotDTO.plant.name)}</outline>`;
-        this.growTimert.string = `<outline color=#222222 width=1> ${clanWarehouseSlotDTO.plant.grow_time} s</outline>`;
-        this.harvestScorert.string = `<outline color=#222222 width=1> ${clanWarehouseSlotDTO.plant.harvest_point}</outline>`;
-        this.priceBuyrt.string = `<outline color=#222222 width=1> ${clanWarehouseSlotDTO.plant.buy_price}</outline>`;
+        }
+
+        this.seedBags.node.active = !slot.is_harvested;
+        this.iconPlant.node.active = slot.is_harvested;
+
+        this.descriptionrt.string = `${slot.plant.description}`;
+        this.plantNamert.string = `<outline color=#222 width=1> ${Constants.getPlantName(slot.plant.name)}</outline>`;
+        this.growTimert.string = `<outline color=#222 width=1> ${slot.plant.grow_time} s</outline>`;
+        this.harvestScorert.string = `<outline color=#222 width=1> ${slot.plant.harvest_point}</outline>`;
+        this.priceBuyrt.string = `<outline color=#222 width=1> ${slot.plant.buy_price}</outline>`;
     }
 
-    private async showSlotDetailFarmTool(clanWarehouseSlotDTO: ClanWarehouseSlotDTO) {
-        this.harvestScorert.node.active = false;
-        this.iconItemUIHelper.node.active = true;
-        this.infoPlant.active = false;
-        this.infoTool.active = true;
-        this.iconItemUIHelper.setIconByItem(clanWarehouseSlotDTO.item);
-        this.descriptionrt.string = `${clanWarehouseSlotDTO.item.name} \n [ ${Math.round(clanWarehouseSlotDTO.item.rate * 100)} ] %`;
-        this.toolNamert.string = `<outline color=#222222 width=1> ${clanWarehouseSlotDTO.item.name}</outline>`;
-        this.useTime.string = `<outline color=#222222 width=1> ${Math.round(clanWarehouseSlotDTO.item.rate * 100)} %</outline>`;
-        this.toolpriceBuyrt.string = `<outline color=#222222 width=1> ${clanWarehouseSlotDTO.item.gold}</outline>`;
+    private async showToolDetail(slot: ClanWarehouseSlotDTO) {
+        this.iconTool.node.active = true;
+        this.iconTool.spriteFrame = await ItemIconManager.getInstance().getIconItemDto(slot.item);
+
+        const percent = Math.round(slot.item.rate * 100);
+        this.toolDescriptionrt.string = `${slot.item.name}\n[ ${percent}% ]`;
+        this.toolNamert.string = `<outline color=#222 width=1> ${slot.item.name}</outline>`;
+        this.useTime.string = `<outline color=#222 width=1> ${percent}%</outline>`;
+        this.toolpriceBuyrt.string = `<outline color=#222 width=1> ${slot.item.gold}</outline>`;
+    }
+
+    private setCountLabel(label: RichText, used: number, max: number) {
+        const isMax = used >= max;
+        const color = isMax ? '#ff4d4d' : '#ffffff';
+        const suffix = isMax ? ' (Hết lượt)' : '';
+        label.string = `<outline color=#222 width=1><color=${color}> ${used}/${max}${suffix} </color></outline>`;
     }
 }
 

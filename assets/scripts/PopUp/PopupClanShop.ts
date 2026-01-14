@@ -64,9 +64,6 @@ export class PopupClanShop extends BasePopup {
     private currentMode: ItemType = ItemType.FARM_PLANT;
     @property(Toggle) tabPlantButton: Toggle = null!;
     @property(Toggle) tabToolButton: Toggle = null!;
-    private isPlantDefaultSet = false;
-    private isToolDefaultSet = false;
-
 
     public init(param?: PopupClanShopParam): void {
 
@@ -211,11 +208,11 @@ export class PopupClanShop extends BasePopup {
 
     private showSlotDetail(item: ShopClanItem) {
         this.selectingUIItem = item;
-        const sprite = this.iconItemUIHelper.getPlantIcon(item.plant.name);
+        const sprite = ItemIconManager.getInstance().getIconPlantFarm(item.plant.name);
         if (sprite) this.iconItemUIHelper.icon.spriteFrame = sprite;
 
         this.descriptionrt.string = ` ${item.plant.description}`;
-        this.plantNamert.string = `<outline color=#222222 width=1> ${item.plant.name}</outline>`;
+        this.plantNamert.string = `<outline color=#222222 width=1> ${Constants.getPlantName(item.plant.name)}</outline>`;
         this.growTimert.string = `<outline color=#222222 width=1> ${item.plant.grow_time} s</outline>`;
         this.harvestScorert.string = `<outline color=#222222 width=1> ${item.plant.harvest_point}</outline>`;
         this.priceBuyrt.string = `<outline color=#222222 width=1> ${item.plant.buy_price}</outline>`;
@@ -233,12 +230,20 @@ export class PopupClanShop extends BasePopup {
     private getBuyContext(): BuyContext | null {
         if (this.currentMode === ItemType.FARM_PLANT && this.selectingUIItem) {
             const p = this.selectingUIItem.plant;
-            return { id: p.id, price: p.buy_price, inventoryType: InventoryClanType.PLANT };
+            return {
+                id: p.id,
+                price: p.buy_price,
+                inventoryType: InventoryClanType.PLANT
+            };
         }
 
         if (this.currentMode === ItemType.FARM_TOOL && this.selectingUITool) {
             const t = this.selectingUITool.farmTool;
-            return { id: t.id, price: t.gold, inventoryType: t.item_code };
+            return {
+                id: t.id,
+                price: t.gold,
+                inventoryType: t.item_code
+            };
         }
         return null;
     }

@@ -62,9 +62,11 @@ export interface FarmPDTO {
   warehouseSlots: ClanWarehouseSlotDTO[];
 }
 
-export interface PlantToSlotPayload {
+export interface InteractToSlotPayload {
   farm_slot_id: string;
   plant_id?: string;
+  harvest_tool_id?: string;
+  growth_plant_tool_id?: string;
 }
 
 export interface HarvestCountDTO {
@@ -78,5 +80,6 @@ export enum SlotActionType {
   Water = 'water',
   CatchBug = 'catch_bug',
   Harvest = 'harvest',
+  growth_plant = 'growth_plant',
 }
 

@@ -1,8 +1,7 @@
 import { _decorator, Component, Label, Node, Sprite, SpriteFrame, Toggle, tween, Vec3 } from 'cc';
-import { Food, InventoryDTO, InventoryType, Item, ItemType, PurchaseMethod, RewardItemDTO } from '../../../Model/Item';
+import { Food, Item, ItemType, PurchaseMethod, RewardItemDTO } from '../../../Model/Item';
 import { AudioType, SoundManager } from '../../../core/SoundManager';
 import { IconItemUIHelper } from '../../../Reward/IconItemUIHelper';
-import { PlantData } from '../../../Farm/EnumPlant';
 const { ccclass, property } = _decorator;
 
 @ccclass('BaseInventoryUIITem')

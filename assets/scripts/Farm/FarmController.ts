@@ -1,13 +1,14 @@
 import { _decorator, Component, Prefab, Node, instantiate, game, Game } from 'cc';
 import { PopupManager } from '../PopUp/PopupManager';
-import { PopupChoosePlant, PopupChoosePlantParam } from '../PopUp/PopupChoosePlant';
 import { FarmSlot } from './FarmSlot';
 import { WebRequestManager } from '../network/WebRequestManager';
-import { FarmDTO, FarmSlotDTO, PlantDataDTO, PlantToSlotPayload, SlotActionType } from './EnumPlant';
+import { FarmDTO, FarmSlotDTO, PlantDataDTO, InteractToSlotPayload, SlotActionType } from './EnumPlant';
 import { ServerManager } from '../core/ServerManager';
 import { UserManager } from '../core/UserManager';
 import { UserMeManager } from '../core/UserMeManager';
 import { Constants } from '../utilities/Constants';
+import { PopupChooseItem, PopupChooseItemParam } from '../PopUp/PopupChooseItem';
+import { InventoryClanType } from '../Model/Item';
 const { ccclass, property } = _decorator;
 
 @ccclass('FarmController')
@@ -69,19 +70,21 @@ export class FarmController extends Component {
       return;
     }
 
-    const inventory = await WebRequestManager.instance.getClanWarehousesAsync(UserMeManager.Get.clan.id);
+    const inventory = await WebRequestManager.instance.getClanWarehousesAsync(UserMeManager.Get.clan.id, {type: InventoryClanType.PLANT, is_harvested: true});
     if (!inventory || inventory.length === 0) {
       Constants.showConfirm("Hiện tại bạn không có cây nào trong kho để trồng.");
       return;
     }
 
-    const param: PopupChoosePlantParam = {
+    const param: PopupChooseItemParam = {
       slotFarm: slot,
-      cland: inventory,
+      inventory: inventory,
+      filterType: InventoryClanType.PLANT,
+      titlert:'Danh Sách Cây trồng'
     };
     
     await UserManager.instance.GetMyClientPlayer.get_MoveAbility.StopMove();
-    await PopupManager.getInstance().openAnimPopup('PopupChoosePlant', PopupChoosePlant, param);
+    await PopupManager.getInstance().openAnimPopup('PopupChooseItem', PopupChooseItem, param);
   }
 
   private findSlotById(slotId: string): FarmSlot | null {
@@ -89,7 +92,7 @@ export class FarmController extends Component {
     return this.landSlots.find(s => s.data?.id === slotId) ?? null;
   }
 
-  public UpdateSlotAction(slotId: string, type: SlotActionType, isDone: boolean = false) {
+  public UpdateSlotAction(slotId: string, type: SlotActionType, isDone: boolean = false, typeTool : string='') {
     const slot = this.findSlotById(slotId);
     if (!slot) return;
     switch (type) {
@@ -101,6 +104,9 @@ export class FarmController extends Component {
         break;
       case SlotActionType.Harvest:
         slot.PlayHarvestAnim(isDone);
+        break;
+      case SlotActionType.growth_plant:
+        slot.PlayGrowthPlantAnim(isDone, typeTool);
         break;
     }
   }
@@ -118,5 +124,4 @@ export class FarmController extends Component {
       if (slot.interactAction) slot.interactAction.active = false;
     });
   }
-
 }

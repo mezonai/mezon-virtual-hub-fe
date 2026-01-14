@@ -3,26 +3,9 @@ import { Food, Item, ItemType, PurchaseMethod, RewardItemDTO, RewardType } from 
 import { ItemIconManager } from '../utilities/ItemIconManager';
 const { ccclass, property } = _decorator;
 
-@ccclass("IconItemUIHelper")
+@ccclass('IconItemUIHelper')
 export class IconItemUIHelper extends Component {
-    @property([SpriteFrame]) plantIcons: SpriteFrame[] = [];
     @property(Sprite) icon: Sprite = null!;
-    private plantMap: Record<string, SpriteFrame> | null = null;
-
-    private initPlantMap() {
-        this.plantMap = {};
-        for (const sf of this.plantIcons) {
-            if (sf && sf.name) {
-                this.plantMap[sf.name] = sf;
-            }
-        }
-    }
-
-    private async applyPlantIcon(plantName: string) {
-        if (!plantName) return;
-        if (!this.plantMap) this.initPlantMap();
-        this.icon.spriteFrame = this.plantMap?.[plantName] ?? null;
-    }
 
     public async setIconByFood(food: Food) {
         if (!food || !ItemIconManager.getInstance()) return;
@@ -32,10 +15,6 @@ export class IconItemUIHelper extends Component {
     public async setIconByItem(item: Item) {
         if (!item || !ItemIconManager.getInstance()) return;
         this.icon.spriteFrame = await ItemIconManager.getInstance().getIconItemDto(item);
-    }
-
-    public async setIconPlantByItem(plantName: string) {
-        await this.applyPlantIcon(plantName);
     }
 
     public async setIconByReward(reward: RewardItemDTO) {
@@ -95,9 +74,4 @@ export class IconItemUIHelper extends Component {
         return (this.icon.spriteFrame = ItemIconManager.getInstance().getIconPurchaseMethod(rewardType));
     }
 
-    public getPlantIcon(plantName: string): SpriteFrame {
-        if (!this.plantMap) this.initPlantMap();
-        const key = plantName;
-        return this.plantMap?.[key] ?? null;
-    }
 }

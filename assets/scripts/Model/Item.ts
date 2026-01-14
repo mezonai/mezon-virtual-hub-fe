@@ -134,31 +134,18 @@ export enum InventoryType {
     FOOD = 'food',
 }
 
-export enum InventoryClanType {
-  PLANT = 'plant',
-
-  HARVEST_TOOL_1 = 'harvest_tool_1',
-  HARVEST_TOOL_2 = 'harvest_tool_2',
-  HARVEST_TOOL_3 = 'harvest_tool_3',
-  HARVEST_TOOL_4 = 'harvest_tool_4',
-  HARVEST_TOOL_5 = 'harvest_tool_5',
-
-  GROWTH_PLANT_TOOL_1 = 'growth_plant_tool_1',
-  GROWTH_PLANT_TOOL_2 = 'growth_plant_tool_2',
-  GROWTH_PLANT_TOOL_3 = 'growth_plant_tool_3',
-  GROWTH_PLANT_TOOL_4 = 'growth_plant_tool_4',
-  GROWTH_PLANT_TOOL_5 = 'growth_plant_tool_5',
-
-  INTERRUPT_HARVEST_TOOL_1 = 'interrupt_harvest_tool_1',
-  INTERRUPT_HARVEST_TOOL_2 = 'interrupt_harvest_tool_2',
-  INTERRUPT_HARVEST_TOOL_3 = 'interrupt_harvest_tool_3',
-  INTERRUPT_HARVEST_TOOL_4 = 'interrupt_harvest_tool_4',
-  INTERRUPT_HARVEST_TOOL_5 = 'interrupt_harvest_tool_5',
-  
-  LOCK_PLANT_TOOL = 'lock_plant_tool',
-  LOCK_PICK_TOOL = 'lock_pick_tool',
+export enum ToolCategory {
+    HARVEST = 'harvest',
+    GROWTH = 'growth',
+    INTERRUPT = 'interrupt',
+    LOCK = 'lock',
 }
 
+export enum InventoryClanType {
+  PLANT = 'plant',
+  TOOL = 'farm_tool',
+  TOOLS = 'Tool',
+}
 
 export enum FoodType {
     NORMAL = 'normal',

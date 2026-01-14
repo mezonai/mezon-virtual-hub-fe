@@ -1,7 +1,7 @@
 [
   {
     "__type__": "cc.AnimationClip",
-    "_name": "catchBug",
+    "_name": "ToolSPPlant",
     "_objFlags": 0,
     "__editorExtras__": {
       "embeddedPlayerGroups": []
@@ -80,7 +80,7 @@
         "__type__": "cc.RealKeyframeValue",
         "interpolationMode": 0,
         "tangentWeightMode": 0,
-        "value": 150,
+        "value": 111.39600372314453,
         "rightTangent": 0,
         "rightTangentWeight": 1,
         "leftTangent": 0,
@@ -92,7 +92,7 @@
         "__type__": "cc.RealKeyframeValue",
         "interpolationMode": 0,
         "tangentWeightMode": 0,
-        "value": 164.75999450683594,
+        "value": 108.68000030517578,
         "rightTangent": 0,
         "rightTangentWeight": 1,
         "leftTangent": 0,
@@ -121,7 +121,7 @@
         "__type__": "cc.RealKeyframeValue",
         "interpolationMode": 0,
         "tangentWeightMode": 0,
-        "value": 100,
+        "value": 160.39999389648438,
         "rightTangent": 0,
         "rightTangentWeight": 1,
         "leftTangent": 0,
@@ -133,7 +133,7 @@
         "__type__": "cc.RealKeyframeValue",
         "interpolationMode": 0,
         "tangentWeightMode": 0,
-        "value": 157.75999450683594,
+        "value": 152.5760040283203,
         "rightTangent": 0,
         "rightTangentWeight": 1,
         "leftTangent": 0,
@@ -227,7 +227,10 @@
   {
     "__type__": "cc.QuatCurve",
     "_times": [
-      0.3499999940395355
+      0,
+      0.3499999940395355,
+      0.75,
+      0.8333333134651184
     ],
     "_values": [
       {
@@ -235,10 +238,46 @@
         "interpolationMode": 0,
         "value": {
           "__type__": "cc.Quat",
-          "x": 0,
-          "y": 0,
-          "z": 0.37763071060180664,
-          "w": 0.9259563088417053
+          "x": 0.3583679497241974,
+          "y": -0.9335803985595703,
+          "z": -2.194370702451906e-17,
+          "w": 5.716531393301687e-17
+        },
+        "easingMethod": 0
+      },
+      {
+        "__type__": "cc.QuatKeyframeValue",
+        "interpolationMode": 0,
+        "value": {
+          "__type__": "cc.Quat",
+          "x": 0.3583679497241974,
+          "y": -0.9335803985595703,
+          "z": -2.1943708678880285e-17,
+          "w": 5.716531393301687e-17
+        },
+        "easingMethod": 0
+      },
+      {
+        "__type__": "cc.QuatKeyframeValue",
+        "interpolationMode": 0,
+        "value": {
+          "__type__": "cc.Quat",
+          "x": 0.6124035716056824,
+          "y": -0.7905452847480774,
+          "z": -3.7498902963666524e-17,
+          "w": 4.840693701012575e-17
+        },
+        "easingMethod": 0
+      },
+      {
+        "__type__": "cc.QuatKeyframeValue",
+        "interpolationMode": 0,
+        "value": {
+          "__type__": "cc.Quat",
+          "x": 0.3583679497241974,
+          "y": -0.9335803985595703,
+          "z": -2.1943708678880285e-17,
+          "w": 5.716531393301687e-17
         },
         "easingMethod": 0
       }
@@ -307,7 +346,7 @@
         "__type__": "cc.RealKeyframeValue",
         "interpolationMode": 0,
         "tangentWeightMode": 0,
-        "value": 1.5,
+        "value": 1.100000023841858,
         "rightTangent": 0,
         "rightTangentWeight": 1,
         "leftTangent": 0,
@@ -361,7 +400,7 @@
         "__type__": "cc.RealKeyframeValue",
         "interpolationMode": 0,
         "tangentWeightMode": 0,
-        "value": 1.5,
+        "value": 1.100000023841858,
         "rightTangent": 0,
         "rightTangentWeight": 1,
         "leftTangent": 0,
@@ -415,7 +454,7 @@
         "__type__": "cc.RealKeyframeValue",
         "interpolationMode": 0,
         "tangentWeightMode": 0,
-        "value": 1.5,
+        "value": 1.100000023841858,
         "rightTangent": 0,
         "rightTangentWeight": 1,
         "leftTangent": 0,
