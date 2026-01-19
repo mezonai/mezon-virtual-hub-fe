@@ -427,7 +427,6 @@ export class UserManager extends Component {
         const { message } = data;
         Constants.showConfirm(message, "Chú Ý");
     }
-
     public setStatusBattle(playerId, isInBattle: boolean): PlayerController {
         let player = this.players.get(playerId);
         if (player != null) {

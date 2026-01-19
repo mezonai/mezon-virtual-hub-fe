@@ -72,13 +72,16 @@ export class PlayerColysesusObjectData extends ColysesusObjectData {
     public isShowName: boolean;
     public pet_players: string
     public isInBattle: boolean;
-    constructor(sessionId: string, room: Colyseus.Room<any>, x: number, y: number, name: string, skinSet: string, id: string, isShowName: boolean, pet_players: string, isInBattle: boolean) {
+    public totalPetBattle: number = 0;
+    constructor(sessionId: string, room: Colyseus.Room<any>, x: number, y: number, name: string, skinSet: string, id: string, isShowName: boolean, pet_players: string, isInBattle: boolean
+        , totalPetBattle: number) {
         super(sessionId, room, x, y, name);
         this.skinSet = skinSet;
         this.userId = id;
         this.isShowName = isShowName;
         this.pet_players = pet_players;
         this.isInBattle = isInBattle;
+        this.totalPetBattle = totalPetBattle;
     }
 
 }

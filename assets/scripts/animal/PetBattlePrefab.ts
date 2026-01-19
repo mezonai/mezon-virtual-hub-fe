@@ -1,6 +1,7 @@
 import { _decorator, Component, Node, Sprite, SpriteFrame, Animation, Enum, Vec3, tween } from 'cc';
 import { PetBattleInfo, Species } from '../Model/PetDTO';
 import { Widget } from 'cc';
+import { Constants } from '../utilities/Constants';
 const { ccclass, property } = _decorator;
 @ccclass('SpeciesMap')
 export class SpeciesMap {
@@ -242,6 +243,31 @@ export class PetBattlePrefab extends Component {
         });
     }
 
+    async playSkillAtSelf(skillId: string) {
+        const anim = this.getSkillAnimation(skillId);
+        if (!anim) {
+            console.error("Animation not found:", skillId);
+            return;
+        }
+        try {
+            anim.node.active = true;
+            anim.play();
+            await Constants.waitForSeconds(1.5);
+        } finally {
+            anim.node.active = false;
+        }
+    }
+
+    private getSkillAnimation(skillId: string) {
+        const newSkillId = this.convertSkillIdStart(skillId);
+        const species = this.currentPet.species;
+
+        return (
+            this.getAnimPet(species, newSkillId) ||
+            this.getAnimMove(species, newSkillId)
+        );
+    }
+
     async throwSkillImage(
         skillId: string,
         from: PetBattlePrefab,
@@ -309,7 +335,7 @@ export class PetBattlePrefab extends Component {
         });
     }
 
-    convertSkillIdStart(skillId: string): string {
+    public convertSkillIdStart(skillId: string): string {
         if (skillId === "ELECTRIC03" || skillId === "FIRE02" || skillId === "WATER01" || skillId === "FIRE01" || skillId === "FIRE03") {
             return `${skillId}_START`;
         }
@@ -321,6 +347,46 @@ export class PetBattlePrefab extends Component {
             return `${skillId}_END`;
         }
         return skillId;
+    }
+
+    async fadeBackgroundEffect(sprite: Sprite, timeLoop: number) {
+        const node = sprite.node;
+        node.active = true;
+        await this.tweenSpriteAlpha(sprite, 0, 150, 0.2);
+
+        for (let i = 0; i < timeLoop; i++) {
+            await this.tweenSpriteAlpha(sprite, 150, 100, 0.15);
+            await this.tweenSpriteAlpha(sprite, 100, 150, 0.15);
+        }
+
+        await this.tweenSpriteAlpha(sprite, 150, 100, 0.15);
+
+        node.active = false;
+    }
+
+    tweenSpriteAlpha(
+        sprite: Sprite,
+        from: number,
+        to: number,
+        duration: number
+    ): Promise<void> {
+        return new Promise(resolve => {
+            const color = sprite.color.clone();
+            color.a = from;
+            sprite.color = color;
+
+            tween(sprite)
+                .to(duration, {}, {
+                    onUpdate: (_, ratio) => {
+                        const a = from + (to - from) * ratio;
+                        const c = sprite.color.clone();
+                        c.a = Math.round(a);
+                        sprite.color = c;
+                    }
+                })
+                .call(() => resolve())
+                .start();
+        });
     }
 }
 

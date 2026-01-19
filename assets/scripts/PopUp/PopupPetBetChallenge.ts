@@ -66,7 +66,6 @@ export class PopupPetBetChallenge extends BasePopup {
 
     private updateBetType() {
         this.isDiamond = this.toggleDiamond.isChecked;
-        console.log("updateBetType: ", this.isDiamond)
     }
 
     initPopup() {

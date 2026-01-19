@@ -16,9 +16,6 @@ export enum MessageTypes {
     DISCONNECTED = "Disconnected",
     END_BATTLE = "end_battle",
     END_BATTLE_COMPLETED = " end_battle_completed",
-    NOT_PET_BATTLE = "not_pet_battle",
-    NOT_ENOUGH_PET_BATTLE = "not_enough_pet_battle",
-    NOT_ENOUGH_SKILL_PET_BATTLE = "not_enough_skill_pet_battle",
     NOTIFY_BATTLE = "notify_battle",
     CONFIRM_END_TURN = "Confirm_end_turn",
     TIME_REMAINING_USING_SKILL = "Time_remaining_using_skill",
@@ -58,4 +55,5 @@ export enum MessageTypes {
     ON_HARVEST_PLAYER_JOIN = 'onHarvestPlayerJoin',
     ON_CANCEL_HARVEST_PLAYER_LEFT = 'onCancelHarvestPlayerLeft',
     ON_DISCONNECTED_BATTE = 'onDisconnectedBatte',
+    ON_CHANGE_TOTAL_SLOT_PET_BATTLE = 'onChangeTotalSlotPetBatte',
 }
