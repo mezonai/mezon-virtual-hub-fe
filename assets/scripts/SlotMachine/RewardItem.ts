@@ -9,6 +9,7 @@ const { ccclass, property } = _decorator;
 export class RewardItem extends BaseInventoryUIITem {
 
     setRewardItem(itemReward: RewardItemDTO){
+        this.iconItemUIHelper.icon.spriteFrame = null;
         this.iconItemUIHelper.node.active = true;
         this.setIconByReward(itemReward);
         this.amountLabel.string = "+" + itemReward.quantity.toString();
