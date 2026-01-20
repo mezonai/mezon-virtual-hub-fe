@@ -45,6 +45,22 @@ export class ItemIconManager extends Component {
         }
     }
 
+    async getIconRewardSlot(reward: RewardItemDTO): Promise<SpriteFrame> {
+        switch (reward.type_item) {
+            case RewardType.ITEM:
+                return this.getIconItem(reward.item);
+            case RewardType.FOOD:
+                return this.getIconFood(reward.food.type);
+            case RewardType.GOLD:
+            case RewardType.DIAMOND:
+                return this.getIconValue(reward.type);
+            case RewardType.PET:
+                return this.getIconPet(reward.pet?.species);
+            default:
+                return this.defaultIcon;// hoặc icon mặc định nếu có
+        }
+    }
+
     getIconFoodDto(food: Food): SpriteFrame {
         return this.getIconFood(food.type);
     }

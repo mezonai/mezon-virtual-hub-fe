@@ -7,7 +7,7 @@ import { AssignViceLeadersDto as AssignViceLeadersDTO, ClanActivityResponseDTO, 
 import { ServerManager } from '../core/ServerManager';
 import { PopupSelectionMini, SelectionMiniParam } from '../PopUp/PopupSelectionMini';
 import { PopupManager } from '../PopUp/PopupManager';
-import { BuyItemPayload, EventRewardDTO, InventoryDTO, Item, RewardItemDTO, RewardNewbieDTO, StatsConfigDTO, WeeklyRewardDto as WeeklyRewardDTO } from '../Model/Item';
+import { BuyItemPayload, EventRewardDTO, InventoryDTO, Item, RewardItemDTO, RewardNewbieDTO, StatsConfigDTO, WeeklyRewardDto as WeeklyRewardDTO, WheelDTO } from '../Model/Item';
 import { GameManager } from '../core/GameManager';
 import { UpgradePetResponseDTO, PetDTO } from '../Model/PetDTO';
 import { Constants } from '../utilities/Constants';
@@ -568,6 +568,21 @@ export class WebRequestManager extends Component {
         });
     }
 
+     public getAllWheelAsync(type: string): Promise<WheelDTO[]> {
+        return new Promise((resolve, reject) => {
+            this.getAllWheel(
+                type,
+                (response) => {
+                    const statsConfigDTO = ConvetData.ConvertWheels(response.data);
+                    resolve(statsConfigDTO);
+                },
+                (error) => {
+                    resolve(null);
+                }
+            );
+        });
+    }
+
     public getQRMezon(successCallback, errorCallback) {
         APIManager.getData(this.combineWithSlash(APIConstant.QR_MEZON), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
@@ -611,6 +626,16 @@ export class WebRequestManager extends Component {
 
     public getRewardsSpin(successCallback, errorCallback) {
         APIManager.getData(this.combineWithSlash(APIConstant.GAME, APIConstant.SPIN), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    }
+
+    public getAllWheel(type: string, successCallback, errorCallback) {
+        const url = this.combineWithSlash(APIConstant.WHEEL) + (type.toString() ? `?type=${type.toString()}` : '');
+        APIManager.getData(url, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    }
+
+    public getRewardsSlotWheel(wheel_id: string, quantity:number = 1 , successCallback, errorCallback) {
+        const url = this.combineWithSlash(APIConstant.SLOT_WHEEL, APIConstant.SPIN) + `?wheel_id=${wheel_id.toString()}&quantity=${quantity.toString()}`;
+        APIManager.getData(url, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
     public getConfigRate(successCallback, errorCallback) {

@@ -106,6 +106,14 @@ export class RewardUIController extends BasePopup {
                             uiItem.setRewardItem(reward);
                             break;
                         }
+                        case RewardType.PLANT: {
+                            uiItem.setRewardItem(reward);
+                            break;
+                        }
+                        case RewardType.PETFRAGMENT: {
+                            uiItem.setRewardItem(reward);
+                            break;
+                        }
                         default: {
                             SoundManager.instance.playSound(AudioType.NoReward);
                             uiItem.setupEmpty?.();
@@ -129,7 +137,6 @@ export class RewardUIController extends BasePopup {
     }
 
     ShowTextFly(reward?: RewardItemDTO) {
-        console.log("reward: ", reward);
         const rewardTextNode = instantiate(this.rewardTextPrefab);
         rewardTextNode.setParent(this.container);
 

@@ -2,6 +2,7 @@ import { _decorator, SpriteFrame } from "cc";
 import { LocalItemDataConfig } from "./LocalItemConfig";
 import { AnimalRarity, PetDTO, Species, Element } from "./PetDTO";
 import { Enum } from "cc";
+import { PlantDataDTO } from "../Farm/EnumPlant";
 
 export class BaseInventoryDTO {
 
@@ -68,6 +69,10 @@ export class RewardItemDTO {
     public food?: Food;
     public pet?: PetReward;
     public quantity?: number;
+    public plant?: PlantDataDTO;
+    public type_item?: RewardType;
+    public weight_point?: number;
+    public rate?: number;
 }
 
 export class RewardNewbieDTO {
@@ -106,6 +111,7 @@ export enum RewardType {
     FOOD = 'food',
     PET = 'pet',
     PLANT = 'plant',
+    PETFRAGMENT = 'pet_fragment',
 
     WEEKLY_RANKING_MEMBER_1 = 'weekly_ranking_member_1',
     WEEKLY_RANKING_MEMBER_2 = 'weekly_ranking_member_2',
@@ -150,6 +156,10 @@ export enum ItemGenderFilter {
     FEMALE = 'female',
     MALE = 'male',
     UNISEX = 'unisex'
+}
+
+export enum SlotWheelType {
+    NORMAL_WHEEL = 'normal_wheel',
 }
 
 export enum QuestType {
@@ -234,4 +244,17 @@ export interface FarmLimitHarvestDTO {
 export interface FarmLimitDTO {
     plant: FarmLimitPlantDTO;
     harvest: FarmLimitHarvestDTO;
+}
+
+export class SpinResultDTO {
+  wheel_type: string;
+  rewards: RewardItemDTO[];
+  user_balance: number;
+}
+
+export class WheelDTO {
+  id: string;
+  type: string;
+  base_fee: number;
+  slots: RewardItemDTO[];
 }

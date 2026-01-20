@@ -1,7 +1,7 @@
 
 import { FarmDTO, FarmSlotDTO, PlantState, ClanWarehouseSlotDTO, PlantDataDTO, PlantData, HarvestCountDTO } from "../Farm/EnumPlant";
 import { ClansData, PageInfo, ClansResponseDTO, MemberResponseDTO, UserClan, ClanContributorDTO, ClanContributorsResponseDTO, ClanFundResponseDTO, ClanFund, ClanRequestResponseDTO, MemberClanRequestDTO, ClanStatus, ClanActivityItemDTO, ClanActivityResponseDTO, RequestToJoinDTO } from "../Interface/DataMapAPI";
-import { EventRewardDTO, EventType, Food, InventoryDTO, Item, PetReward, QuestType, RewardItemDTO, RewardNewbieDTO, RewardType, StatsConfigDTO, WeeklyRewardDto as WeeklyRewardDTO } from "../Model/Item";
+import { EventRewardDTO, EventType, Food, InventoryDTO, Item, PetReward, QuestType, RewardItemDTO, RewardNewbieDTO, RewardType, SpinResultDTO, StatsConfigDTO, WeeklyRewardDto as WeeklyRewardDTO, WheelDTO } from "../Model/Item";
 import { AnimalElementString, AnimalRarity, Element, PetBattleInfo, PetDTO, PlayerBattle, SkillBattleInfo, Species, TypeSkill } from "../Model/PetDTO";
 
 export default class ConvetData {
@@ -432,6 +432,7 @@ export default class ConvetData {
 
                 switch (entry.type) {
                     case RewardType.ITEM:
+                        console.log("iTEM");
                         rewardItem.type = RewardType.ITEM;
                         rewardItem.item = this.parseItem(entry.item);
                         rewardItem.quantity = 1;
@@ -444,11 +445,9 @@ export default class ConvetData {
                         break;
                     case RewardType.PET:
                         rewardItem.type = RewardType.PET;
-                        console.log("entry.pet: ", entry.pet);
                         rewardItem.pet = this.ConvertPetReward(entry.pet);
                         rewardItem.quantity = entry.quantity ?? 0;
                         break;
-
                     case RewardType.GOLD:
                     default:
                         rewardItem.type = RewardType.GOLD;
@@ -456,6 +455,45 @@ export default class ConvetData {
                         break;
                 }
 
+                return rewardItem;
+            });
+    }
+
+    public static ConvertRewardsSlot(data: any): RewardItemDTO[] {
+        if (!Array.isArray(data)) return [];
+
+        return data
+            .filter((d: any) => d && typeof d === 'object')
+            .map((entry: any) => {
+                const rewardItem = new RewardItemDTO();
+
+                switch (entry.type_item) {
+                    case RewardType.ITEM:
+                        rewardItem.type = RewardType.ITEM;
+                        rewardItem.item = this.parseItem(entry.item);
+                        rewardItem.quantity = 1;
+                        break;
+
+                    case RewardType.FOOD:
+                        rewardItem.type = RewardType.FOOD;
+                        rewardItem.food = this.parseFood(entry.food);
+                        rewardItem.quantity = entry.quantity ?? 0;
+                        break;
+                    case RewardType.PET:
+                        rewardItem.type = RewardType.PET;
+                        rewardItem.pet = this.ConvertPetReward(entry.pet);
+                        rewardItem.quantity = entry.quantity ?? 0;
+                        break;
+                    case RewardType.PETFRAGMENT:
+                        rewardItem.type = RewardType.PETFRAGMENT;
+                        rewardItem.quantity = entry.quantity ?? 0;
+                        break;
+                    case RewardType.GOLD:
+                    default:
+                        rewardItem.type = RewardType.GOLD;
+                        rewardItem.quantity = entry.quantity ?? 0;
+                        break;
+                }
                 return rewardItem;
             });
     }
@@ -685,4 +723,51 @@ export default class ConvetData {
             return inventory;
         });
     }
+
+    public static ConvertSpinResult(raw: any): SpinResultDTO {
+        return {
+            wheel_type: raw.wheel_type,
+            user_balance: raw.user_balance,
+
+            rewards: Array.isArray(raw.rewards)
+                ? raw.rewards.map((r: any) => ({
+                    id: r.id,
+                    type_item: r.type_item as RewardType,
+                    quantity: r.quantity,
+                    weight_point: r.weight_point,
+
+                    item: r.type_item === RewardType.ITEM ? r.item : undefined,
+                    food: r.type_item === RewardType.FOOD ? r.food : undefined,
+                    pet: r.type_item === RewardType.PET ? r.pet : undefined,
+                    plant: r.type_item === RewardType.PLANT ? r.plant : undefined,
+                }))
+                : [],
+        };
+    }
+    
+    public static ConvertWheel(raw: any): WheelDTO{
+        return {
+            id: raw.id,
+            type: raw.type,
+            base_fee: raw.base_fee,
+            slots: raw.slots.map((slot: any) => ({
+                id: slot.id,
+                type_item: slot.type_item as RewardType,
+                quantity: slot.quantity,
+                weight_point: slot.weight_point,
+                rate: slot.rate,
+
+                item: slot.type_item === RewardType.ITEM ? slot.item : null,
+                food: slot.type_item === RewardType.FOOD ? slot.food : null,
+                pet: slot.type_item === RewardType.PET ? slot.pet : null,
+                plant: slot.type_item === RewardType.PLANT ? slot.plant : null,
+            })),
+        };
+    }
+
+    public static ConvertWheels(rawData: any[]): WheelDTO[] {
+        if (!Array.isArray(rawData)) return [];
+        return rawData.map(this.ConvertWheel);
+    }
+
 }
