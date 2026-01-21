@@ -372,6 +372,11 @@ export class PopupClanShop extends BasePopup {
 
     public async ReloadAfterBuyItem() {
         this.quantityBuy = 1;
+        if (this.currentMode === ItemType.FARM_PLANT) {
+            await this.initListFarmPlants();
+        } else if (this.currentMode === ItemType.FARM_TOOL) {
+            await this.initListFarmTools();
+        }
         this.param?.onBuySuccess?.();
     }
 }
