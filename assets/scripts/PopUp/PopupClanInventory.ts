@@ -104,34 +104,46 @@ export class PopupClanInventory extends BasePopup {
     }
 
     private async loadPlantData() {
-        if (this.isPlantLoaded) return;
+        try {
+            LoadingManager.getInstance().openLoading();
+            if (this.isPlantLoaded) return;
 
-        this.plantSlots = await WebRequestManager.instance.getClanWarehousesAsync(
-            this.clanDetail.id,
-            { type: InventoryClanType.PLANT }
-        );
+            this.plantSlots = await WebRequestManager.instance.getClanWarehousesAsync(
+                this.clanDetail.id,
+                { type: InventoryClanType.PLANT }
+            );
 
-        this.buildPlantUI();
-        this.isPlantLoaded = true;
+            this.buildPlantUI();
+            this.isPlantLoaded = true;
+        } catch {
+
+        } finally {
+            LoadingManager.getInstance().closeLoading();
+        }
     }
 
     private async loadToolData() {
-        if (this.isToolLoaded) return;
+        try {
+            LoadingManager.getInstance().openLoading();
+            if (this.isToolLoaded) return;
 
-        this.toolSlots = await WebRequestManager.instance.getClanWarehousesAsync(
-            this.clanDetail.id,
-            { type: InventoryClanType.TOOLS }
-        );
+            this.toolSlots = await WebRequestManager.instance.getClanWarehousesAsync(
+                this.clanDetail.id,
+                { type: InventoryClanType.TOOLS }
+            );
 
-        this.buildToolUI();
-        this.isToolLoaded = true;
+            this.buildToolUI();
+            this.isToolLoaded = true;
+        } catch {
+
+        } finally {
+            LoadingManager.getInstance().closeLoading();
+        }
     }
 
     private buildPlantUI() {
         this.svInvenoryClan.content.removeAllChildren();
         this.plantUIItems = [];
-
-        this.noItemPanel.active = !this.plantSlots.length;
         if (!this.plantSlots.length) return;
 
         for (const slot of this.plantSlots) {
@@ -146,8 +158,6 @@ export class PopupClanInventory extends BasePopup {
     private buildToolUI() {
         this.svInvenoryClanTool.content.removeAllChildren();
         this.toolUIItems = [];
-
-        this.noItemPanel.active = !this.toolSlots.length;
         if (!this.toolSlots.length) return;
 
         for (const slot of this.toolSlots) {
@@ -162,10 +172,9 @@ export class PopupClanInventory extends BasePopup {
     private showPlantUI() {
         this.infoPlant.active = true;
         this.infoTool.active = false;
-
         this.svInvenoryClan.node.active = true;
         this.svInvenoryClanTool.node.active = false;
-
+        this.noItemPanel.active = this.plantSlots.length === 0;
         this.selectFirstPlant();
     }
 
@@ -174,6 +183,7 @@ export class PopupClanInventory extends BasePopup {
         this.infoTool.active = true;
         this.svInvenoryClan.node.active = false;
         this.svInvenoryClanTool.node.active = true;
+        this.noItemPanel.active = this.toolSlots.length === 0;
         this.selectFirstTool();
     }
 

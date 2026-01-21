@@ -137,6 +137,7 @@ export class PopupClanShop extends BasePopup {
     private updateTabVisibility() {
         this.nodeShopClan.active = this.currentMode === ItemType.FARM_PLANT;
         this.nodeShopClanTool.active = this.currentMode === ItemType.FARM_TOOL;
+        this.noItemPanel.active = false;
     }
  
     async initListFarmPlants() {
@@ -152,6 +153,7 @@ export class PopupClanShop extends BasePopup {
     }
 
     public loadFromServerFarmPlants(data: PlantDataDTO[]) {
+        this.noItemPanel.active = !data.length;
         this.svShopClan.content.removeAllChildren();
         this._plantDataDTO = [];
 
@@ -182,6 +184,7 @@ export class PopupClanShop extends BasePopup {
     }
 
     public loadFromServerFarmTools(data: RecipeDTO[]) {
+        this.noItemPanel.active = !data.length;
         this.svShopClanTool.content.removeAllChildren();
         this._farmToolDataDTO = [];
 
