@@ -31,6 +31,7 @@ export class UIChat extends Component {
     private positionChatMobile = 500;
     private positionChatNoMobile = 53;
     private isShowUIByMobile: boolean = false;
+    private isOpeningBGChat: boolean = false;
     ////
 
     private maxItemCanShow: 50;
@@ -42,7 +43,8 @@ export class UIChat extends Component {
         this.isShowUIByMobile = false;
         this.positionChat.bottom = this.positionChatNoMobile;
         this.positionChat.right = sys.isMobile ? this.positionChatMobile : this.positionChatNoMobile;
-        this.showFullChatGroup(false, false);
+        this.isOpeningBGChat = false;
+        this.showFullChatGroup(this.isOpeningBGChat, false);
         this.buttonSend.node.on(Button.EventType.CLICK, () => this.sendMessage(), this);
         if (sys.isMobile) {
             await Constants.waitUntil(() => UIMobileManager.instance != null);
@@ -63,7 +65,8 @@ export class UIChat extends Component {
     }
 
     showChatUi() {
-        this.showFullChatGroup(true, true);
+        this.isOpeningBGChat = true;
+        this.showFullChatGroup(this.isOpeningBGChat, true);
         this.editBox.focus();
         Tween.stopAllByTarget(this.node);
     }
@@ -105,7 +108,8 @@ export class UIChat extends Component {
         this.editBox.blur();
         this.editBox.string = "";
         game.canvas.focus();
-        this.showFullChatGroup(false, true);
+        this.isOpeningBGChat = false;
+        this.showFullChatGroup(this.isOpeningBGChat, true);
     }
 
     protected onDisable(): void {
@@ -115,7 +119,7 @@ export class UIChat extends Component {
     }
 
     public showChatMessage(sender: string, message: string) {
-        this.showFullChatGroup(false, true);
+        this.showFullChatGroup(this.isOpeningBGChat, true);
         this.resetAutoHide();
         if (this.chatScrollView.content.children.length >= this.maxItemCanShow) {
             ObjectPoolManager.instance.returnToPool(this.chatScrollView.content.children[0])
@@ -155,7 +159,8 @@ export class UIChat extends Component {
             .delay(this.autoHideDelay)
             .call(() => {
                 if (!this.editBox.isFocused()) {
-                    this.showFullChatGroup(false, false);
+                    if(this.isOpeningBGChat) return;// Not Hide When Player is chatting
+                    this.showFullChatGroup(this.isOpeningBGChat, false);
                 }
             })
             .start();
