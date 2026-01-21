@@ -13,6 +13,7 @@ import { Vec3 } from 'cc';
 import { Tween } from 'cc';
 import { tween } from 'cc';
 import { LoginEventController } from '../gameplay/LoginEvent/LoginEventController';
+import { PopupCombieFragment, PopupCombieFragmentParam } from '../PopUp/PopupCombieFragment';
 
 const { ccclass, property } = _decorator;
 
@@ -47,6 +48,14 @@ export class PlayerHubController extends Component {
         this.showOwnedButton.addAsyncListener(async () => {
             this.showOwnedButton.interactable = false;
             await PopupManager.getInstance().openAnimPopup('PopupOwnedAnimals', PopupOwnedAnimals);
+            // const typeFragement = "Voltstrider";
+            // const data = await WebRequestManager.instance.getItemFragmentAsync(typeFragement);     
+            // const param: PopupCombieFragmentParam = {
+            //     fragmentData: data,
+            //     onFinishAnim: async () => { },
+            //     typeFrament : typeFragement
+            // };
+            // await PopupManager.getInstance().openPopup('PopupCombieFragment', PopupCombieFragment, param);
             this.showOwnedButton.interactable = true;
         });
         this.btn_UIGuildReward.addAsyncListener(async () => {

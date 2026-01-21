@@ -95,6 +95,21 @@ export interface RewardResponse {
     user_gold: number;
 }
 
+export class FragmentDTO {
+    public species: Species;
+    public recipeId : string;
+    public fragmentItems: FragmentItemDTO[];
+}
+
+export class FragmentItemDTO {
+    public id: string;
+    public inventory_type: InventoryType;
+    public equipped: boolean;
+    public quantity: number;
+    public index: number;
+    public item: Item;
+}
+
 export enum EventType {
     EVENT_LOGIN_PLANT = 'event_login_plant',
     EVENT_LOGIN_PET = 'event_login_pet',

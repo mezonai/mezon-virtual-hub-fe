@@ -7,7 +7,7 @@ import { AssignViceLeadersDto as AssignViceLeadersDTO, ClanActivityResponseDTO, 
 import { ServerManager } from '../core/ServerManager';
 import { PopupSelectionMini, SelectionMiniParam } from '../PopUp/PopupSelectionMini';
 import { PopupManager } from '../PopUp/PopupManager';
-import { BuyItemPayload, EventRewardDTO, InventoryDTO, Item, ItemDTO, RecipeDTO, RewardItemDTO, RewardNewbieDTO, StatsConfigDTO, WeeklyRewardDTO as WeeklyRewardDTO } from '../Model/Item';
+import { BuyItemPayload, EventRewardDTO, FragmentDTO, InventoryDTO, Item, ItemDTO, RecipeDTO, RewardItemDTO, RewardNewbieDTO, StatsConfigDTO, WeeklyRewardDTO as WeeklyRewardDTO } from '../Model/Item';
 import { GameManager } from '../core/GameManager';
 import { UpgradePetResponseDTO, PetDTO } from '../Model/PetDTO';
 import { Constants } from '../utilities/Constants';
@@ -246,6 +246,22 @@ export class WebRequestManager extends Component {
         });
     }
 
+    public getItemFragmentAsync(type: string): Promise<FragmentDTO> {
+        return new Promise((resolve) => {
+            WebRequestManager.instance.getItemTypeFragment(
+                type,
+                (response) => {
+                    console.log("data", response.data);
+                    const fragmentData = ConvetData.ConvertFragmentDTO(response.data);
+                    resolve(fragmentData);
+                },
+                (error) => {
+                    resolve(null);
+                }
+            );
+        });
+    }
+
     public postUpgradeRarityPetAsync(pet_player_id): Promise<UpgradePetResponseDTO> {
         return new Promise((resolve, reject) => {
             WebRequestManager.instance.postUpgradeRarityPet(
@@ -267,7 +283,7 @@ export class WebRequestManager extends Component {
     public getAllClansync(isWeekly: boolean, page: number = 1, search?: string, sortby: SortBy = SortBy.CREATED_AT, sortOrder: SortOrder = SortOrder.DESC, limit: number = 30): Promise<ClansResponseDTO> {
         return new Promise((resolve) => {
             WebRequestManager.instance.getAllClan(
-               isWeekly, page, sortby, sortOrder, limit,
+                isWeekly, page, sortby, sortOrder, limit,
                 (response) => {
                     const clans = ConvetData.ConvertClans(response);
                     resolve(clans);
@@ -388,7 +404,7 @@ export class WebRequestManager extends Component {
     public getListMemberClanAsync(clanId: String, isWeekly, page: number = 1, search?: string, sortOrder: SortOrder = SortOrder.DESC, sortby: SortBy = SortBy.CREATED_AT, limit: number = 30): Promise<MemberResponseDTO> {
         return new Promise((resolve, reject) => {
             WebRequestManager.instance.getListMemberClan(
-                clanId, isWeekly , page, sortOrder, sortby, limit,
+                clanId, isWeekly, page, sortOrder, sortby, limit,
                 (response) => {
                     const clans = ConvetData.ConvertMemberClan(response);
                     resolve(clans);
@@ -582,6 +598,17 @@ export class WebRequestManager extends Component {
         });
     }
 
+    public postCombieFragmentAsync(recipeId: string, quantity: number): Promise<boolean> {
+        return new Promise((resolve) => {
+            WebRequestManager.instance.postCombineFragment(recipeId, quantity,
+                (response) => {
+                    console.log("Data Fragment: ", response.data)
+                    resolve(true);
+                },
+                () => { resolve(false) });
+        });
+    }
+
     public getQRMezon(successCallback, errorCallback) {
         APIManager.getData(this.combineWithSlash(APIConstant.QR_MEZON), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
@@ -652,6 +679,10 @@ export class WebRequestManager extends Component {
         APIManager.getData(this.combineWithSlash(APIConstant.INVENTORY, APIConstant.ITEM_TYPE, type), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
+    public getItemTypeFragment(species, successCallback, errorCallback) {
+        APIManager.getData(this.combineWithSlash(APIConstant.INVENTORY, APIConstant.ITEM_FRAGMENT, species), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    }
+
     public updateProfile(data, successCallback, errorCallback) {
         APIManager.putData(this.combineWithSlash(APIConstant.USER), data, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
@@ -690,6 +721,11 @@ export class WebRequestManager extends Component {
     public postBuyItem(params: BuyItemPayload, successCallback, errorCallback) {
         const { itemId: itemId, quantity, type } = params;
         const url = `${APIConstant.INVENTORY}/${APIConstant.BUY}/${itemId}?quantity=${quantity}&type=${type}`;
+        APIManager.postData(url, {}, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    }
+
+    public postCombineFragment(recipeId: string, quantity, successCallback, errorCallback) {
+        const url = `${APIConstant.INGREIENT}/${recipeId}/${APIConstant.ASSEMBLE}?quantity=${quantity}`;
         APIManager.postData(url, {}, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 

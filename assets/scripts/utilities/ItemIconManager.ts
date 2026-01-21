@@ -16,6 +16,11 @@ export class ItemIconManager extends Component {
     @property({ type: [SpriteFrame] }) iconPetRewards: SpriteFrame[] = [];
     @property({ type: [SpriteFrame] }) iconFoodRewards: SpriteFrame[] = [];
     @property({ type: [SpriteFrame] }) iconCardRewards: SpriteFrame[] = [];
+    @property({ type: [SpriteFrame] }) iconFragment1: SpriteFrame[] = [];
+    @property({ type: [SpriteFrame] }) iconFragment2: SpriteFrame[] = [];
+    @property({ type: [SpriteFrame] }) iconFragment3: SpriteFrame[] = [];
+    @property({ type: [SpriteFrame] }) iconFragment4: SpriteFrame[] = [];
+    @property({ type: [SpriteFrame] }) iconFragmentCombined: SpriteFrame[] = [];
     @property({ type: [SpriteFrame] }) iconFarmToolRewards: SpriteFrame[] = [];
     @property({ type: [SpriteFrame] }) iconPlantToolRewards: SpriteFrame[] = [];
     public static getInstance(): ItemIconManager {
@@ -31,7 +36,7 @@ export class ItemIconManager extends Component {
         director.addPersistRootNode(this.node); // Giữ lại khi đổi Scene
     }
 
-   async getIconReward(reward: RewardItemDTO): Promise<SpriteFrame> {
+    async getIconReward(reward: RewardItemDTO): Promise<SpriteFrame> {
         switch (reward.type) {
             case RewardType.ITEM:
                 return this.getIconItem(reward.item);
@@ -79,7 +84,7 @@ export class ItemIconManager extends Component {
     getIconPurchaseMethod(itemType: RewardType): SpriteFrame {
         return this.getIconValue(itemType);
     }
-    
+
     private getIconValue(itemType: RewardType): SpriteFrame {
         const index = itemType == RewardType.DIAMOND ? 0 : 1;
         return this.iconRewards[index];
@@ -91,7 +96,7 @@ export class ItemIconManager extends Component {
 
     }
 
-    private getIconPet(species: Species): SpriteFrame {
+    public getIconPet(species: Species): SpriteFrame {
         const speciesName = Species[species].charAt(0).toLowerCase() + Species[species].slice(1);
         const found = this.iconPetRewards.find(sf => sf && sf.name === speciesName);
         return found || this.iconPetRewards[0];
@@ -100,8 +105,8 @@ export class ItemIconManager extends Component {
     private async getIconItem(item: Item): Promise<SpriteFrame> {
         if (item == null) return this.defaultIcon;
         if (item.type !== ItemType.PET_CARD) {
-          return await this.getIconItemDto(item);
-        } 
+            return await this.getIconItemDto(item);
+        }
         if (item.type === ItemType.PET_CARD) {
             const index = item.item_code == ItemCode.RARITY_CARD_RARE ? 0 : item.item_code == ItemCode.RARITY_CARD_EPIC ? 1 : 2;
             return this.iconCardRewards[index];
@@ -131,6 +136,33 @@ export class ItemIconManager extends Component {
         }
         item.mappingLocalData = localData;
         return item.iconSF[0];
+    }
+
+    public getIconPetFragment(name: string, index: number): SpriteFrame {
+        if (index == 1) {
+            const found = this.iconFragment1.find(sf => sf && sf.name === name);
+            return found || this.iconFragment1[0];
+        }
+        if (index == 2) {
+            const found = this.iconFragment2.find(sf => sf && sf.name === name);
+            return found || this.iconFragment2[0];
+        }
+
+        if (index == 3) {
+            const found = this.iconFragment3.find(sf => sf && sf.name === name);
+            return found || this.iconFragment3[0];
+        }
+
+        if (index == 4) {
+            const found = this.iconFragment4.find(sf => sf && sf.name === name);
+            return found || this.iconFragment4[0];
+        }
+
+        if (index == 5) {
+            const found = this.iconFragmentCombined.find(sf => sf && sf.name === name);
+            return found || this.iconFragmentCombined[0];
+        }
+
     }
 }
 
