@@ -52,6 +52,7 @@ export default class APIConstant {
     static LOGIN_EVENT_7DAYS = "login-event-7-days";
     static QR_MEZON = "mezon";
     static WEEKLY_REWARD = "weekly-reward";
+    static ITEM_FRAGMENT = "item-fragment";
 }
 
 export class APIConfig {

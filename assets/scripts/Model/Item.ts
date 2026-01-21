@@ -54,11 +54,11 @@ export class PetReward {
 }
 
 export interface WeeklyRewardDto {
-  id: string;
-  name: string;
-  description: string;
-  type: RewardType;
-  items: RewardItemDTO[];
+    id: string;
+    name: string;
+    description: string;
+    type: RewardType;
+    items: RewardItemDTO[];
 }
 
 export class RewardItemDTO {
@@ -91,6 +91,21 @@ export class EventRewardDTO {
 export interface RewardResponse {
     rewards: RewardItemDTO[];
     user_gold: number;
+}
+
+export class FragmentDTO {
+    public species: Species;
+    public recipeId : string;
+    public fragmentItems: FragmentItemDTO[];
+}
+
+export class FragmentItemDTO {
+    public id: string;
+    public inventory_type: InventoryType;
+    public equipped: boolean;
+    public quantity: number;
+    public index: number;
+    public item: Item;
 }
 
 export enum EventType {

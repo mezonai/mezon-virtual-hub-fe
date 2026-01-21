@@ -1,7 +1,7 @@
 
 import { FarmDTO, FarmSlotDTO, PlantState, ClanWarehouseSlotDTO, PlantDataDTO, PlantData, HarvestCountDTO } from "../Farm/EnumPlant";
 import { ClansData, PageInfo, ClansResponseDTO, MemberResponseDTO, UserClan, ClanContributorDTO, ClanContributorsResponseDTO, ClanFundResponseDTO, ClanFund, ClanRequestResponseDTO, MemberClanRequestDTO, ClanStatus, ClanActivityItemDTO, ClanActivityResponseDTO, RequestToJoinDTO } from "../Interface/DataMapAPI";
-import { EventRewardDTO, EventType, Food, InventoryDTO, Item, PetReward, QuestType, RewardItemDTO, RewardNewbieDTO, RewardType, StatsConfigDTO, WeeklyRewardDto as WeeklyRewardDTO } from "../Model/Item";
+import { EventRewardDTO, EventType, Food, FragmentDTO, FragmentItemDTO, InventoryDTO, Item, PetReward, QuestType, RewardItemDTO, RewardNewbieDTO, RewardType, StatsConfigDTO, WeeklyRewardDto as WeeklyRewardDTO } from "../Model/Item";
 import { AnimalElementString, AnimalRarity, Element, PetBattleInfo, PetDTO, PlayerBattle, SkillBattleInfo, Species, TypeSkill } from "../Model/PetDTO";
 
 export default class ConvetData {
@@ -683,6 +683,29 @@ export default class ConvetData {
             if (inv.item) inventory.item = this.convertItem(inv.item);
             if (inv.food) inventory.food = this.convertFood(inv.food);
             return inventory;
+        });
+    }
+
+    public static ConvertFragmentDTO(data): FragmentDTO {
+        if (!data) return null;
+        const fragment = new FragmentDTO();
+        fragment.species = Species[data.species as keyof typeof Species];
+        fragment.recipeId = data.recipe_id;
+        fragment.fragmentItems = this.ConvertFragmenItemtDTO(data.fragmentItems);
+        return fragment;
+    }
+
+    public static ConvertFragmenItemtDTO(apiData: any[]): FragmentItemDTO[] {
+        if (!apiData || !Array.isArray(apiData)) return [];
+        return apiData.map(inv => {
+            const fragment = new FragmentItemDTO();
+            fragment.id = inv.id;
+            fragment.equipped = inv.equipped ?? false;
+            fragment.quantity = inv.quantity;
+            fragment.inventory_type = inv.inventory_type;
+            fragment.index =  inv.index;
+            fragment.item = this.convertItem(inv.item)
+            return fragment;
         });
     }
 }
