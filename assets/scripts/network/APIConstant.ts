@@ -53,6 +53,8 @@ export default class APIConstant {
     static QR_MEZON = "mezon";
     static WEEKLY_REWARD = "weekly-reward";
     static ITEM_FRAGMENT = "item-fragment";
+    static INGREIENT = "ingredient";
+    static ASSEMBLE = "assemble";
 }
 
 export class APIConfig {

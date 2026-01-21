@@ -47,12 +47,14 @@ export class PlayerHubController extends Component {
         });
         this.showOwnedButton.addAsyncListener(async () => {
             this.showOwnedButton.interactable = false;
-            const data = await WebRequestManager.instance.getItemFragmentAsync("Voltstrider");
+            const typeFragement = "Voltstrider";
+            const data = await WebRequestManager.instance.getItemFragmentAsync(typeFragement);
             console.log("Data fragment: ", data);
             // await PopupManager.getInstance().openAnimPopup('PopupOwnedAnimals', PopupOwnedAnimals);
             const param: PopupCombieFragmentParam = {
                 fragmentData: data,
                 onFinishAnim: async () => { },
+                typeFrament : typeFragement
             };
             await PopupManager.getInstance().openPopup('PopupCombieFragment', PopupCombieFragment, param);
             this.showOwnedButton.interactable = true;

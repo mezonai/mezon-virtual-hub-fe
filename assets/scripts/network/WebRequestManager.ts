@@ -584,6 +584,17 @@ export class WebRequestManager extends Component {
         });
     }
 
+    public postCombieFragmentAsync(recipeId: string, quantity: number): Promise<boolean> {
+        return new Promise((resolve) => {
+            WebRequestManager.instance.postCombineFragment(recipeId, quantity,
+                (response) => {
+                    console.log("Data Fragment: ", response.data)
+                    resolve(true);
+                },
+                () => { resolve(false) });
+        });
+    }
+
     public getQRMezon(successCallback, errorCallback) {
         APIManager.getData(this.combineWithSlash(APIConstant.QR_MEZON), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
@@ -691,6 +702,11 @@ export class WebRequestManager extends Component {
     public postBuyItem(params: BuyItemPayload, successCallback, errorCallback) {
         const { itemId: itemId, quantity, type } = params;
         const url = `${APIConstant.INVENTORY}/${APIConstant.BUY}/${itemId}?quantity=${quantity}&type=${type}`;
+        APIManager.postData(url, {}, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    }
+
+    public postCombineFragment(recipeId: string, quantity, successCallback, errorCallback) {
+        const url = `${APIConstant.INGREIENT}/${recipeId}/${APIConstant.ASSEMBLE}?quantity=${quantity}`;
         APIManager.postData(url, {}, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 

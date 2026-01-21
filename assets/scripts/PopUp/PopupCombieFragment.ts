@@ -13,6 +13,7 @@ import { Label } from 'cc';
 import { Sprite } from 'cc';
 import { ItemFragmentCombine } from '../gameplay/Upgrade/ItemFragmentCombine';
 import { FragmentDTO } from '../Model/Item';
+import { WebRequestManager } from '../network/WebRequestManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('PopupCombieFragment')
@@ -40,7 +41,7 @@ export class PopupCombieFragment extends BasePopup {
     private positionItemResult: Vec3 = new Vec3(0, 0, 0);
     resultPet: PopupCombieFragment;
 
-    resetUI() {
+    resetUI(fragmentData: FragmentDTO) {
         const positions = [
             this.positionItemCombine1,
             this.positionItemCombine2,
@@ -53,7 +54,7 @@ export class PopupCombieFragment extends BasePopup {
             item.node.setPosition(positions[index]);
             item.resetUI();
         });
-
+        this.petDetail.node.active = false;
         this.itemResult.resetUI();
         this.itemResult.node.setPosition(this.positionItemResult);
 
@@ -66,6 +67,7 @@ export class PopupCombieFragment extends BasePopup {
 
         this.optionCombine.active = true;
         this.optionContinue.active = false;
+        this.setDataItemFragment(fragmentData);
     }
 
     public async init(param?: PopupCombieFragmentParam) {
@@ -73,10 +75,9 @@ export class PopupCombieFragment extends BasePopup {
         this.closeButton.addAsyncListener(async () => {
             this.closeButton.interactable = false;
             PopupManager.getInstance().closePopup(this.node.uuid, true);
-            // await this.resultPet.onFinishAnim();
         });
-        this.resetUI();
-        this.setDataItemFragment(param.fragmentData);
+        this.resetUI(param.fragmentData);
+
         this.buttonCombieX1.addAsyncListener(async () => {
             this.onClickCombine(1, param.fragmentData);
         });
@@ -84,14 +85,22 @@ export class PopupCombieFragment extends BasePopup {
             this.onClickCombine(10, param.fragmentData);
         });
         this.buttonContinue.addAsyncListener(async () => {
-            this.resetUI();
+            const data = await WebRequestManager.instance.getItemFragmentAsync(param.typeFrament);
+            if (data == null) {
+                PopupManager.getInstance().closePopup(this.node.uuid, true);
+                return;
+            }
+            this.resetUI(data);
         });
     }
 
-    onClickCombine(times: number, ragmentData: FragmentDTO) {
+    async onClickCombine(times: number, fragmentData: FragmentDTO) {
+        let check = await WebRequestManager.instance.postCombieFragmentAsync(fragmentData.recipeId, 2);
+        if (!check) return; // doi be sua data chinh lai
         this.optionCombine.active = false;
-        this.itemResult.setDataResult(ragmentData.species, times);
+        this.itemResult.setDataResult(fragmentData.species, times);
         this.playCombineAnimation();
+        await WebRequestManager.instance.getUserProfileAsync();
     }
 
     private setDataItemFragment(fragmentData: FragmentDTO) {
@@ -234,6 +243,7 @@ export class PopupCombieFragment extends BasePopup {
 export interface PopupCombieFragmentParam {
     fragmentData: FragmentDTO;
     onFinishAnim?: () => Promise<void>;
+    typeFrament: string
 }
 
 
