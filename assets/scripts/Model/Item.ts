@@ -2,6 +2,7 @@ import { _decorator, SpriteFrame } from "cc";
 import { LocalItemDataConfig } from "./LocalItemConfig";
 import { AnimalRarity, PetDTO, Species, Element } from "./PetDTO";
 import { Enum } from "cc";
+import { PlantDataDTO } from "../Farm/EnumPlant";
 
 export class BaseInventoryDTO {
 
@@ -23,12 +24,13 @@ export class ItemDTO {
 export class Item extends BaseInventoryDTO {
     public id: string = "";
     public name: string = "";
-    public gender: string = "";
+    public gender?: string = "";
     public gold: number = 0;
     public type: ItemType = ItemType.HAIR;
-    public iconSF: SpriteFrame[] = [];
-    public mappingLocalData: LocalItemDataConfig = null;
+    public iconSF?: SpriteFrame[] = [];
+    public mappingLocalData?: LocalItemDataConfig = null;
     public item_code?: ItemCode;
+    public rate?: number;
 }
 
 export class FoodDTO {
@@ -53,12 +55,12 @@ export class PetReward {
     public species: Species;
 }
 
-export interface WeeklyRewardDto {
-    id: string;
-    name: string;
-    description: string;
-    type: RewardType;
-    items: RewardItemDTO[];
+export interface WeeklyRewardDTO {
+  id: string;
+  name: string;
+  description: string;
+  type: RewardType;
+  items: RewardItemDTO[];
 }
 
 export class RewardItemDTO {
@@ -139,13 +141,32 @@ export enum ItemType {
     GLASSES = 'glasses',
     PET_CARD = 'pet_card',
     PET_FOOD = 'pet_food',
-    ITEM_CLAN = 'item_clan',
+    FARM_TOOL = 'farm_tool',
+    FARM_PLANT = 'farm_plant',
 }
 
 export enum InventoryType {
     ITEM = 'item',
     FOOD = 'food',
-    PLANT = 'plant'
+    FARMTOOL = 'farm_tool',
+    PETFRAGMENT = 'pet_fragment',
+}
+
+export enum ToolCategory {
+    HARVEST = 'harvest',
+    GROWTH = 'growth',
+    INTERRUPT = 'interrupt',
+    LOCK = 'lock',
+}
+
+export enum ItemClanType {
+  PLANT = 'plant',
+  TOOL = 'farm_tool',
+}
+
+export enum InventoryClanType {
+  PLANT = 'Plant',
+  TOOLS = 'Tool',
 }
 
 export enum FoodType {
@@ -229,8 +250,8 @@ export enum ItemCode {
 }
 
 export interface BuyItemPayload {
-    clanId?: string | number;
-    itemId: string | number;
+    clanId?: string;
+    itemId: string;
     quantity: number;
     type: string;
 }
@@ -250,3 +271,32 @@ export interface FarmLimitDTO {
     plant: FarmLimitPlantDTO;
     harvest: FarmLimitHarvestDTO;
 }
+
+
+export interface RecipeDTO {
+  id: string;
+  type: string; 
+  item_id: string | null;
+  pet_id: string | null;
+  plant_id: string | null;
+
+  item?: Item | null;
+  pet?: PetDTO | null;
+  plant?: PlantDataDTO | null;
+  ingredients: IngredientDTO[];
+}
+
+export interface IngredientDTO {
+  id: string;
+  recipe_id: string;
+  item_id: string | null;
+  plant_id: string | null;
+  gold: number;
+  diamond: number;
+  part: number;
+  required_quantity: number;
+  item?: Item | null;
+  plant?: PlantDataDTO | null;
+  current_quantity: number;
+}
+

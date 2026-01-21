@@ -8,6 +8,7 @@ export default class APIConstant {
     static INVENTORY: string = "inventory";
     static BUY = "buy";
     static ITEM = "item";
+    static ALL_ITEM = "all-item";
     static SPIN = "spin";
     static GAME = "game";
     static GAME_EVENT = "game-event";
@@ -55,6 +56,8 @@ export default class APIConstant {
     static ITEM_FRAGMENT = "item-fragment";
     static INGREIENT = "ingredient";
     static ASSEMBLE = "assemble";
+    static RECIPE = "recipe";
+    
 }
 
 export class APIConfig {

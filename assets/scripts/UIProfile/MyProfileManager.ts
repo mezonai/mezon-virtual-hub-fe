@@ -157,15 +157,14 @@ export class MyProfileManager extends BaseProfileManager {
         // UserMeManager.Get.user.gender = this.gender_txt_Choose.string;
         this.fullName_txt.string = this.fullName_EBox.string;
         // this.gender_txt.string = this.gender_txt_Choose.string;
-        director.emit(EVENT_NAME.UPDATE_INFO_PROFILE, { fullname: this.fullName_EBox.string });
         this.btn_update_info.interactable = true;
+        if (!this.node || !this.node.isValid) return;
+        director.emit(EVENT_NAME.UPDATE_INFO_PROFILE, { fullname: this.fullName_EBox.string });
     }
 
     private onError(error: any) {
         this.btn_update_info.interactable = true;
-        if (error?.message) {
-            console.error("Error message:", error.message);
-        }
+        Constants.showConfirm("Cập nhật tên không thành công");
     }
 
     private onGenderLeft() {
@@ -205,4 +204,9 @@ export class MyProfileManager extends BaseProfileManager {
     validateUsernameInput(value: string): boolean {
         return /^[a-zA-Z0-9]+$/.test(value);
     }
+
+    onDestroy() {
+        director.off(EVENT_NAME.UPDATE_INFO_PROFILE);
+    }
+
 }

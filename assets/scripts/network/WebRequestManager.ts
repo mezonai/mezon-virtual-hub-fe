@@ -7,11 +7,11 @@ import { AssignViceLeadersDto as AssignViceLeadersDTO, ClanActivityResponseDTO, 
 import { ServerManager } from '../core/ServerManager';
 import { PopupSelectionMini, SelectionMiniParam } from '../PopUp/PopupSelectionMini';
 import { PopupManager } from '../PopUp/PopupManager';
-import { BuyItemPayload, EventRewardDTO, FragmentDTO, InventoryDTO, Item, RewardItemDTO, RewardNewbieDTO, StatsConfigDTO, WeeklyRewardDto as WeeklyRewardDTO } from '../Model/Item';
+import { BuyItemPayload, EventRewardDTO, FragmentDTO, InventoryDTO, Item, ItemDTO, RecipeDTO, RewardItemDTO, RewardNewbieDTO, StatsConfigDTO, WeeklyRewardDTO as WeeklyRewardDTO } from '../Model/Item';
 import { GameManager } from '../core/GameManager';
 import { UpgradePetResponseDTO, PetDTO } from '../Model/PetDTO';
 import { Constants } from '../utilities/Constants';
-import { ClanWarehouseSlotDTO, FarmDTO, HarvestCountDTO, PlantData, PlantDataDTO, PlantToSlotPayload } from '../Farm/EnumPlant';
+import { ClanWarehouseSlotDTO, FarmDTO, HarvestCountDTO, PlantData, PlantDataDTO, InteractToSlotPayload } from '../Farm/EnumPlant';
 const { ccclass, property } = _decorator;
 
 @ccclass("WebRequestManager")
@@ -124,6 +124,21 @@ export class WebRequestManager extends Component {
         });
     }
 
+    public getAllItemFarmToolsFilterAsync(type : string): Promise<RecipeDTO[]> {
+        return new Promise((resolve, reject) => {
+            WebRequestManager.instance.getAllItemFarmToolsFilter(
+                type,
+                (response) => {
+                    const recipeData = ConvetData.ConvertRecipesToRecipeDTO(response);
+                    resolve(recipeData);
+                },
+                (error) => {
+                    resolve(null);
+                }
+            );
+        });
+    }
+
     public checkUnclaimedQuest(): Promise<void> {
         return new Promise((resolve, reject) => {
             WebRequestManager.instance.getCheckUnclaimedQuest(
@@ -160,7 +175,6 @@ export class WebRequestManager extends Component {
         return new Promise((resolve, reject) => {
             WebRequestManager.instance.getRewardClanWeekly(
                 (response) => {
-                    console.log("response.data: ", response)
                     const rewardData = ConvetData.convertWeeklyRewardClan(response);
                     resolve(rewardData);
                 },
@@ -511,10 +525,10 @@ export class WebRequestManager extends Component {
         });
     }
 
-    public getClanWarehousesAsync(clanId: string): Promise<ClanWarehouseSlotDTO[]> {
+    public getClanWarehousesAsync(clanId: string, filters?: { type?: string; is_harvested?: boolean }): Promise<ClanWarehouseSlotDTO[]> {
         return new Promise((resolve, reject) => {
             WebRequestManager.instance.getClanWarehouses(
-                clanId,
+                clanId, filters,
                 (response) => {
                     const farmData = ConvetData.ConvertWarehouseSlots(response.data.items);
                     resolve(farmData);
@@ -609,6 +623,11 @@ export class WebRequestManager extends Component {
 
     public getAllItem(successCallback, errorCallback) {
         APIManager.getData(this.combineWithSlash(APIConstant.ITEM), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    }
+
+    public getAllItemFarmToolsFilter(type, successCallback, errorCallback) {
+        const url = this.combineWithSlash(APIConstant.RECIPE) + (type.toString() ? `?type=${type.toString()}` : '');
+        APIManager.getData(url, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
     public getAllPetData(mapCode, successCallback, errorCallback) {
@@ -838,8 +857,17 @@ export class WebRequestManager extends Component {
         APIManager.deleteData(url, data, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
-    public getClanWarehouses(clan_id, successCallback, errorCallback) {
-        APIManager.getData(this.combineWithSlash(APIConstant.CLANS, clan_id, APIConstant.CLANWAREHOUSE), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    public getClanWarehouses(clan_id, filters, successCallback, errorCallback) {
+        const params = new URLSearchParams();
+        if (filters?.type) {
+            params.append('type', filters.type);
+        }
+
+        if (filters?.is_harvested != null) {
+            params.append('is_harvested', filters.is_harvested.toString());
+        }
+        const url = this.combineWithSlash(APIConstant.CLANS ,clan_id, APIConstant.CLANWAREHOUSE) + (params.toString() ? `?${params.toString()}` : '');
+        APIManager.getData(url, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
     //Farm

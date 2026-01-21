@@ -3,6 +3,10 @@ import { PopupManager } from '../../PopUp/PopupManager';
 import { PopupSelectionMini, SelectionMiniParam } from '../../PopUp/PopupSelectionMini';
 import { ServerManager } from '../../core/ServerManager';
 import { UserManager } from '../../core/UserManager';
+import { PopupActionInterruptHarvest, PopupActionInterruptHarvestParam } from '../../PopUp/PopupActionInterruptHarvest';
+import { WebRequestManager } from '../../network/WebRequestManager';
+import { UserMeManager } from '../../core/UserMeManager';
+import { InventoryClanType } from '../../Model/Item';
 const { ccclass, property } = _decorator;
 
 @ccclass('PlayerInteractFarm')
@@ -49,7 +53,7 @@ export class PlayerInteractFarm extends Component {
                 })
                 .call(() => {
                     this.hideHarvestingBar();
-                    resolve(); // ⭐ Promise hoàn thành
+                    resolve();
                 })
                 .start();
         });
@@ -72,24 +76,18 @@ export class PlayerInteractFarm extends Component {
         }
     }
 
-    public OnActionInterruptHarvest() {
+    public async OnActionInterruptHarvest() {
         if (!this.currentHarvestSlotId) return;
-        const param: SelectionMiniParam = {
-            title: "Chú ý",
-            content: `Bạn có chắc chắn muốn phá người chơi đang thu hoạch`,
-            textButtonLeft: "Phá",
-            textButtonRight: "Thôi",
-            textButtonCenter: "",
-            onActionButtonLeft: async () => {
-                let data = {
-                    fromPlayerId: UserManager.instance.GetMyClientPlayer.myID,
-                    farm_slot_id: this.currentHarvestSlotId,
-                }
-                ServerManager.instance.sendInterruptHarvest(data)
-            },
-            onActionButtonRight: () => { },
+        const inventory = await WebRequestManager.instance.getClanWarehousesAsync(
+            UserMeManager.Get.clan.id,
+            { type: InventoryClanType.TOOLS }
+        );
+        const param: PopupActionInterruptHarvestParam = {
+            fromPlayerId: UserManager.instance.GetMyClientPlayer.myID,
+            farm_slot_id: this.currentHarvestSlotId,
+            inventory:inventory
         };
-        PopupManager.getInstance().openAnimPopup("PopupSelectionMini", PopupSelectionMini, param);
+        PopupManager.getInstance().openAnimPopup("PopupActionInterruptHarvest", PopupActionInterruptHarvest, param);
     }
 }
 
