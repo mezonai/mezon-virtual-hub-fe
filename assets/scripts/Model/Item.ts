@@ -2,6 +2,7 @@ import { _decorator, SpriteFrame } from "cc";
 import { LocalItemDataConfig } from "./LocalItemConfig";
 import { AnimalRarity, PetDTO, Species, Element } from "./PetDTO";
 import { Enum } from "cc";
+import { PlantDataDTO } from "../Farm/EnumPlant";
 
 export class BaseInventoryDTO {
 
@@ -54,7 +55,7 @@ export class PetReward {
     public species: Species;
 }
 
-export interface WeeklyRewardDto {
+export interface WeeklyRewardDTO {
   id: string;
   name: string;
   description: string;
@@ -132,6 +133,8 @@ export enum ItemType {
 export enum InventoryType {
     ITEM = 'item',
     FOOD = 'food',
+    FARMTOOL = 'farm_tool',
+    PETFRAGMENT = 'pet_fragment',
 }
 
 export enum ToolCategory {
@@ -141,9 +144,13 @@ export enum ToolCategory {
     LOCK = 'lock',
 }
 
-export enum InventoryClanType {
+export enum ItemClanType {
   PLANT = 'plant',
   TOOL = 'farm_tool',
+}
+
+export enum InventoryClanType {
+  PLANT = 'Plant',
   TOOLS = 'Tool',
 }
 
@@ -228,8 +235,8 @@ export enum ItemCode {
 }
 
 export interface BuyItemPayload {
-    clanId?: string | number;
-    itemId: string | number;
+    clanId?: string;
+    itemId: string;
     quantity: number;
     type: string;
 }
@@ -249,3 +256,32 @@ export interface FarmLimitDTO {
     plant: FarmLimitPlantDTO;
     harvest: FarmLimitHarvestDTO;
 }
+
+
+export interface RecipeDTO {
+  id: string;
+  type: string; 
+  item_id: string | null;
+  pet_id: string | null;
+  plant_id: string | null;
+
+  item?: Item | null;
+  pet?: PetDTO | null;
+  plant?: PlantDataDTO | null;
+  ingredients: IngredientDTO[];
+}
+
+export interface IngredientDTO {
+  id: string;
+  recipe_id: string;
+  item_id: string | null;
+  plant_id: string | null;
+  gold: number;
+  diamond: number;
+  part: number;
+  required_quantity: number;
+  item?: Item | null;
+  plant?: PlantDataDTO | null;
+  current_quantity: number;
+}
+

@@ -1,7 +1,7 @@
 
 import { FarmDTO, FarmSlotDTO, PlantState, ClanWarehouseSlotDTO, PlantDataDTO, PlantData, HarvestCountDTO } from "../Farm/EnumPlant";
 import { ClansData, PageInfo, ClansResponseDTO, MemberResponseDTO, UserClan, ClanContributorDTO, ClanContributorsResponseDTO, ClanFundResponseDTO, ClanFund, ClanRequestResponseDTO, MemberClanRequestDTO, ClanStatus, ClanActivityItemDTO, ClanActivityResponseDTO, RequestToJoinDTO } from "../Interface/DataMapAPI";
-import { EventRewardDTO, EventType, Food, InventoryDTO, Item, PetReward, QuestType, RewardItemDTO, RewardNewbieDTO, RewardType, StatsConfigDTO, WeeklyRewardDto as WeeklyRewardDTO } from "../Model/Item";
+import { EventRewardDTO, EventType, Food, InventoryDTO, Item, ItemClanType, PetReward, QuestType, RecipeDTO, RewardItemDTO, RewardNewbieDTO, RewardType, StatsConfigDTO, WeeklyRewardDTO } from "../Model/Item";
 import { AnimalElementString, AnimalRarity, Element, PetBattleInfo, PetDTO, PlayerBattle, SkillBattleInfo, Species, TypeSkill } from "../Model/PetDTO";
 
 export default class ConvetData {
@@ -709,4 +709,26 @@ export default class ConvetData {
             return inventory;
         });
     }
+
+    public static convertRecipeToRecipeDTO(recipe: any): RecipeDTO {
+        return {
+            id: recipe.id,
+            type: recipe.type,
+
+            item_id: recipe.item_id,
+            pet_id: recipe.pet_id,
+            plant_id: recipe.plant_id,
+
+            item: recipe.item ?? null,
+            pet: recipe.pet ?? null,
+            plant: recipe.plant ?? null,
+
+            ingredients: recipe.ingredients ?? [],
+        };
+    }
+
+    public static ConvertRecipesToRecipeDTO( response: { data: any[] }): RecipeDTO[] {
+        return response.data.map(r => this.convertRecipeToRecipeDTO(r));
+    }
+
 }

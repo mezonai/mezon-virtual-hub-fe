@@ -8,7 +8,7 @@ import { IconItemUIHelper } from '../Reward/IconItemUIHelper';
 import { ShopClanItem } from '../Clan/ShopClanItem';
 import { PopupBuyQuantityItem, PopupBuyQuantityItemParam } from '../PopUp/PopupBuyQuantityItem';
 import { Constants } from '../utilities/Constants';
-import { BuyItemPayload, InventoryClanType, InventoryType, Item, ItemDTO, ItemType, PurchaseMethod, RewardType } from '../Model/Item';
+import { BuyItemPayload, ItemClanType, InventoryType, Item, ItemDTO, ItemType, PurchaseMethod, RewardType, RecipeDTO, IngredientDTO } from '../Model/Item';
 import { UserMeManager } from '../core/UserMeManager';
 import { ServerManager } from '../core/ServerManager';
 import { ItemIconManager } from '../utilities/ItemIconManager';
@@ -16,11 +16,14 @@ import { LoadingManager } from './LoadingManager';
 import { BaseTabController } from '../ui/BaseTabController';
 import { ShopClanTool } from '../Clan/ShopClanTool';
 import { Sprite } from 'cc';
+import { InventoryClanUIItemMini } from '../Clan/InventoryClanUIItemMini';
 const { ccclass, property } = _decorator;
 
 interface BuyContext {
-    id: string;
+    recipeId?: string;
+    plantId?: string;
     price: number;
+    ingredientDTO?: IngredientDTO[];
     inventoryType: string;
 }
 
@@ -47,13 +50,17 @@ export class PopupClanShop extends BasePopup {
     @property(RichText) useTime: RichText = null;
     @property(RichText) toolpriceBuyrt: RichText = null;
 
+    @property(Node) itemExChange: Node = null!;
+    @property(ScrollView) svShopClanToolExChange: ScrollView = null!;
+    @property(Prefab) itemToolExChange: Prefab = null!;
+
     @property(Node) noItemPanel: Node = null;
     @property({ type: IconItemUIHelper }) iconItemUIHelper: IconItemUIHelper = null;
     @property(Sprite) icon: Sprite = null!;
 
     private clanDetail: ClansData;
     private plantDataDTO: PlantDataDTO[] = [];
-    private farmToolsDTO: Item[] = [];
+    private shopRecipeDTO: RecipeDTO[] = [];
     private _plantDataDTO: ShopClanItem[] = [];
     private _farmToolDataDTO: ShopClanTool[] = [];
     private selectingUIItem: ShopClanItem = null;
@@ -165,8 +172,8 @@ export class PopupClanShop extends BasePopup {
     async initListFarmTools() {
         try {
             LoadingManager.getInstance().openLoading();
-            this.farmToolsDTO = await WebRequestManager.instance.getAllItemFarmToolsFilterAsync({type: ItemType.FARM_TOOL});
-            this.loadFromServerFarmTools(this.farmToolsDTO);
+            this.shopRecipeDTO = await WebRequestManager.instance.getAllItemFarmToolsFilterAsync(ItemType.FARM_TOOL);
+            this.loadFromServerFarmTools(this.shopRecipeDTO);
         } catch {
 
         } finally {
@@ -174,7 +181,7 @@ export class PopupClanShop extends BasePopup {
         }
     }
 
-    public loadFromServerFarmTools(data: Item[]) {
+    public loadFromServerFarmTools(data: RecipeDTO[]) {
         this.svShopClanTool.content.removeAllChildren();
         this._farmToolDataDTO = [];
 
@@ -220,44 +227,73 @@ export class PopupClanShop extends BasePopup {
 
     private async showSlotDetailFarmTool(item: ShopClanTool) {
         this.selectingUITool = item;
-        this.icon.spriteFrame = await ItemIconManager.getInstance().getIconItemDto(item.farmTool);
-        this.toolDescriptionrt.string = `${item.farmTool.name} \n [ ${Math.round(item.farmTool.rate * 100)} ] %`;
-        this.toolNamert.string = `<outline color=#222222 width=1> ${item.farmTool.name}</outline>`;
-        this.useTime.string = `<outline color=#222222 width=1> ${Math.round(item.farmTool.rate * 100)} %</outline>`;
-        this.toolpriceBuyrt.string = `<outline color=#222222 width=1> ${item.farmTool.gold}</outline>`;
+        this.icon.spriteFrame = await ItemIconManager.getInstance().getIconItemDto(item.farmTool.item);
+        const percent = Math.round(item.farmTool.item.rate * 100);
+        this.toolDescriptionrt.string = ` Công cụ hỗ trợ giúp bạn sử dụng trong nông trại ${item.farmTool.item.name} với tỉ lệ dùng [ ${percent}% ] `;
+        this.toolNamert.string = `<outline color=#222222 width=1> ${item.farmTool.item.name}</outline>`;
+        this.useTime.string = `<outline color=#222222 width=1> ${Math.round(item.farmTool.item.rate * 100)} %</outline>`;
+        this.toolpriceBuyrt.string = `<outline color=#222222 width=1> ${item.farmTool.item.gold}</outline>`;
+        this.itemExChange.active = item.farmTool.ingredients?.length > 0;
+        if (item.farmTool.ingredients?.length > 0) {
+            this.svShopClanToolExChange.content.removeAllChildren();
+            for (const element of item.farmTool.ingredients) {
+                const itemNode = instantiate(this.itemToolExChange);
+                const farmTool = itemNode.getComponent(InventoryClanUIItemMini);
+                if (farmTool) {
+                    farmTool.setupItem(element);
+                }
+                itemNode.setParent(this.svShopClanToolExChange.content);
+            }
+        }
+        const canBuy = this.checkEnoughIngredientsForTool(item.farmTool.ingredients);
+        this.buyToolButton.interactable = canBuy;
+    }
+
+    private checkEnoughIngredientsForTool( ingredients?: IngredientDTO[] | null): boolean {
+        if (!ingredients || ingredients.length === 0) return true;
+
+        return ingredients.every(ing => {
+            const need = ing.required_quantity;
+            const have = ing.current_quantity ?? 0;
+            return have >= need;
+        });
     }
 
     private getBuyContext(): BuyContext | null {
         if (this.currentMode === ItemType.FARM_PLANT && this.selectingUIItem) {
             const p = this.selectingUIItem.plant;
             return {
-                id: p.id,
+                plantId: p.id,
                 price: p.buy_price,
-                inventoryType: InventoryClanType.PLANT
+                inventoryType: ItemClanType.PLANT,
             };
         }
 
         if (this.currentMode === ItemType.FARM_TOOL && this.selectingUITool) {
-            const t = this.selectingUITool.farmTool;
+            const recipe = this.selectingUITool.farmTool;
             return {
-                id: t.id,
-                price: t.gold,
-                inventoryType: t.item_code
+                recipeId: recipe.id,
+                price: recipe.item.gold,
+                ingredientDTO: recipe.ingredients,
+                inventoryType: ItemClanType.TOOL,
             };
         }
+
         return null;
     }
 
-    private showBuyQuantityPopup(price: number): Promise<number> {
+
+    private showBuyQuantityPopup(price: number, ingredientDTO?: IngredientDTO[]): Promise<number> {
         return new Promise(resolve => {
             if (this.isOpenPopUp) return resolve(null);
             this.isOpenPopUp = true;
-
+            const ingredients = ingredientDTO ?? [];
             PopupManager.getInstance().openAnimPopup(
                 'PopupBuyQuantityItem',
                 PopupBuyQuantityItem,
                 <PopupBuyQuantityItemParam>{
                     selectedItemPrice: price,
+                    ingredientDTO: ingredients,
                     spriteMoneyValue: ItemIconManager.getInstance().getIconPurchaseMethod(RewardType.GOLD),
                     textButtonLeft: 'Thôi',
                     textButtonRight: 'Mua',
@@ -272,11 +308,24 @@ export class PopupClanShop extends BasePopup {
     async actionBuy() {
         const context = this.getBuyContext();
         if (!context) return;
-
-        const quantity = await this.showBuyQuantityPopup(context.price);
+        const quantity = await this.showBuyQuantityPopup(context.price, context.ingredientDTO );
         if (!quantity) return;
 
-        const fundRes = await WebRequestManager.instance.getClanFundAsync(UserMeManager.Get.clan.id);
+        if (context.inventoryType === ItemClanType.TOOL && context.ingredientDTO?.length) {
+            const isEnough = this.checkEnoughIngredients(
+                context.ingredientDTO,
+                quantity
+            );
+
+            if (!isEnough) {
+                Constants.showConfirm('Không đủ vật phẩm để đổi.');
+                return;
+            }
+        }
+
+        const fundRes = await WebRequestManager.instance.getClanFundAsync(
+            UserMeManager.Get.clan.id
+        );
         const gold = fundRes?.funds.find(f => f.type === 'gold')?.amount ?? 0;
 
         if (gold < context.price * quantity) {
@@ -284,14 +333,38 @@ export class PopupClanShop extends BasePopup {
             return;
         }
 
-        const payload: BuyItemPayload = {
+        const payload: any = {
             clanId: this.clanDetail.id,
-            itemId: context.id,
             quantity,
-            type: context.inventoryType
         };
 
+        if (context.recipeId) {
+            payload.recipeId = context.recipeId;
+        }
+
+        if (context.plantId) {
+            payload.plantId = context.plantId;
+        }
+
         ServerManager.instance.sendBuyItem(payload);
+    }
+
+    private checkEnoughIngredients(ingredients: IngredientDTO[], quantity: number): boolean {
+        if (!ingredients || ingredients.length === 0) return true;
+
+        for (const ing of ingredients) {
+            const need = ing.required_quantity * quantity;
+            const have = ing.current_quantity ?? 0;
+
+            if (have < need) {
+                console.warn(
+                    `Không đủ vật phẩm: cần ${need}, hiện có ${have}`,
+                    ing
+                );
+                return false;
+            }
+        }
+        return true;
     }
 
     public async ReloadAfterBuyItem() {

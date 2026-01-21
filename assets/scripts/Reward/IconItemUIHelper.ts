@@ -1,5 +1,5 @@
 import { _decorator, Component, Sprite, SpriteFrame, Vec3 } from 'cc';
-import { Food, Item, ItemType, PurchaseMethod, RewardItemDTO, RewardType } from '../Model/Item';
+import { Food, IngredientDTO, Item, ItemType, PurchaseMethod, RewardItemDTO, RewardType } from '../Model/Item';
 import { ItemIconManager } from '../utilities/ItemIconManager';
 const { ccclass, property } = _decorator;
 
@@ -15,6 +15,30 @@ export class IconItemUIHelper extends Component {
     public async setIconByItem(item: Item) {
         if (!item || !ItemIconManager.getInstance()) return;
         this.icon.spriteFrame = await ItemIconManager.getInstance().getIconItemDto(item);
+    }
+
+    async getIconIngredient(ingredient: IngredientDTO) {
+        if (ingredient.item) {
+            this.icon.spriteFrame =
+                await ItemIconManager.getInstance().getIconItemDto(ingredient.item);
+            return;
+        }
+
+        if (ingredient.plant) {
+            this.icon.spriteFrame =
+                ItemIconManager.getInstance().getIconPlantFarm(ingredient.plant.name);
+            return;
+        }
+
+        if (ingredient.gold) {
+            this.setIconByPurchaseMethod(PurchaseMethod.GOLD);
+            return;
+        }
+
+        if (ingredient.diamond) {
+            this.setIconByPurchaseMethod(PurchaseMethod.DIAMOND);
+            return;
+        }
     }
 
     public async setIconByReward(reward: RewardItemDTO) {

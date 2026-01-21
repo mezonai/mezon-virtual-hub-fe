@@ -6,7 +6,7 @@ import { InventoryClanUIItem } from '../Clan/InventoryClanUIItem';
 import { UserManager } from '../core/UserManager';
 import { FarmSlot } from '../Farm/FarmSlot';
 import { ServerManager } from '../core/ServerManager';
-import { InventoryClanType, ToolCategory } from '../Model/Item';
+import { ItemClanType, ToolCategory } from '../Model/Item';
 import { GameManager } from '../core/GameManager';
 const { ccclass, property } = _decorator;
 
@@ -35,7 +35,7 @@ export class PopupChooseItem extends BasePopup {
     }
 
     isPlant(type: string): boolean {
-        return type === InventoryClanType.PLANT;
+        return type === ItemClanType.PLANT;
     }
 
     getToolCategory(type: string): ToolCategory | null {
@@ -50,26 +50,22 @@ export class PopupChooseItem extends BasePopup {
         this.titlert.string = param.titlert;
         if (!this.node.isValid || !this.itemListParent?.content) return;
         this.itemListParent.content.removeAllChildren();
-        const items = this.filterItems(param);
+         const items =
+        param.filterType === ItemClanType.PLANT
+            ? param.inventory.filter(e => !!e.plant)
+            : this.filterItems(param);
         if (!items.length){
             this.noItem.active = true;
             return;
         } 
         this.renderItems(items, param);
     }
-
+   
     private filterItems(param: PopupChooseItemParam): ClanWarehouseSlotDTO[] {
         const baseFilter = (e: ClanWarehouseSlotDTO) =>
             !e.is_harvested && (!!e.plant || !!e.item);
 
         switch (param.filterType) {
-            case InventoryClanType.PLANT:
-                return param.inventory.filter(e =>
-                    baseFilter(e) &&
-                    e.type === InventoryClanType.PLANT &&
-                    !!e.plant
-                );
-
             case ToolCategory.HARVEST:
             case ToolCategory.GROWTH:
             case ToolCategory.INTERRUPT:
@@ -95,7 +91,7 @@ export class PopupChooseItem extends BasePopup {
             const uiItem = slotNode.getComponent(InventoryClanUIItem);
             if (!uiItem) continue;
 
-            element.type === InventoryClanType.PLANT
+            element.type === ItemClanType.PLANT
                 ? this.renderPlant(uiItem, element, param)
                 : this.renderTool(uiItem, element, param);
 
@@ -134,7 +130,7 @@ export class PopupChooseItem extends BasePopup {
         }, true);
     }
 
-    private handleToolAction( type: InventoryClanType | ToolCategory, payload: InteractToSlotPayload, toolId: string
+    private handleToolAction( type: ItemClanType | ToolCategory, payload: InteractToSlotPayload, toolId: string
     ) {
         switch (type) {
             case ToolCategory.GROWTH:
@@ -159,7 +155,7 @@ export class PopupChooseItem extends BasePopup {
 export interface PopupChooseItemParam {
     slotFarm: FarmSlot;
     inventory: ClanWarehouseSlotDTO[];
-    filterType: InventoryClanType | ToolCategory;
+    filterType: ItemClanType | ToolCategory;
     titlert: string;
 }
 

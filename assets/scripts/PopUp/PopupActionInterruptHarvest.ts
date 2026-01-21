@@ -6,7 +6,7 @@ import { ServerManager } from '../core/ServerManager';
 import { WebRequestManager } from '../network/WebRequestManager';
 import { UserMeManager } from '../core/UserMeManager';
 import { InventoryClanUIItem } from '../Clan/InventoryClanUIItem';
-import { InventoryClanType } from '../Model/Item';
+import { ItemClanType } from '../Model/Item';
 import { ClanWarehouseSlotDTO } from '../Farm/EnumPlant';
 const { ccclass, property } = _decorator;
 

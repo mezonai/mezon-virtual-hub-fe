@@ -8,7 +8,7 @@ import { UserManager } from '../core/UserManager';
 import { UserMeManager } from '../core/UserMeManager';
 import { Constants } from '../utilities/Constants';
 import { PopupChooseItem, PopupChooseItemParam } from '../PopUp/PopupChooseItem';
-import { InventoryClanType } from '../Model/Item';
+import { InventoryClanType, ItemClanType } from '../Model/Item';
 const { ccclass, property } = _decorator;
 
 @ccclass('FarmController')
@@ -70,7 +70,7 @@ export class FarmController extends Component {
       return;
     }
 
-    const inventory = await WebRequestManager.instance.getClanWarehousesAsync(UserMeManager.Get.clan.id, {type: InventoryClanType.PLANT, is_harvested: true});
+    const inventory = await WebRequestManager.instance.getClanWarehousesAsync(UserMeManager.Get.clan.id, { type: InventoryClanType.PLANT, is_harvested: true});
     if (!inventory || inventory.length === 0) {
       Constants.showConfirm("Hiện tại bạn không có cây nào trong kho để trồng.");
       return;
@@ -79,7 +79,7 @@ export class FarmController extends Component {
     const param: PopupChooseItemParam = {
       slotFarm: slot,
       inventory: inventory,
-      filterType: InventoryClanType.PLANT,
+      filterType: ItemClanType.PLANT,
       titlert:'Danh Sách Cây trồng'
     };
     
