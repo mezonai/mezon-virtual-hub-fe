@@ -1,6 +1,7 @@
 import { _decorator, Component, Node, Sprite, SpriteFrame, Toggle, Label } from 'cc';
 import { PlantDataDTO } from '../Farm/EnumPlant';
 import { IconItemUIHelper } from '../Reward/IconItemUIHelper';
+import { ItemIconManager } from '../utilities/ItemIconManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('ShopClanItem')
@@ -20,7 +21,7 @@ export class ShopClanItem extends Component {
         this.onClick = callback;
         if (plant) {
             this.seedBags.node.active = true;
-            const sprite = this.iconItemUIHelper.getPlantIcon(plant?.name);
+            const sprite = ItemIconManager.getInstance().getIconPlantFarm(plant?.name);
             if (sprite) this.iconItemUIHelper.icon.spriteFrame = sprite;
         }
         if (this.toggle) {

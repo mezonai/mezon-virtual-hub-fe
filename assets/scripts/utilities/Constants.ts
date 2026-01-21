@@ -264,6 +264,31 @@ export class Constants {
         return matched ? nameMap[matched] : englishName;
     }
 
+    public static getToolName(englishName: string): string {
+        const nameMap: Record<string, string> = {
+            growth_plant_tool_1: 'Thời gian [-',
+            growth_plant_tool_2: 'Thời gian [-',
+            growth_plant_tool_3: 'Thời gian [-',
+            growth_plant_tool_4: 'Thời gian [-',
+            growth_plant_tool_5: 'Thời gian [-',
+            harvest_tool_1: 'Thời gian [-',
+            harvest_tool_2: 'Thời gian [-',
+            harvest_tool_3: 'Thời gian [-',
+            harvest_tool_4: 'Thời gian [-',
+            harvest_tool_5: 'Thời gian [-',
+            interrupt_harvest_tool_1: 'Phá [+',
+            interrupt_harvest_tool_2: 'Phá [+',
+            interrupt_harvest_tool_3: 'Phá [+',
+            interrupt_harvest_tool_4: 'Phá [+',
+            interrupt_harvest_tool_5: 'Phá [+',
+        };
+        const normalized = englishName.trim().toLowerCase();
+        const matched = Object.keys(nameMap).find(
+            key => key.toLowerCase() === normalized
+        );
+        return matched ? nameMap[matched] : englishName;
+    }
+
     public static getOfficeName(englishName: string): string {
         const nameMap: Record<string, string> = {
             "Ha Noi 1 Farm": "Hà Nội 1",

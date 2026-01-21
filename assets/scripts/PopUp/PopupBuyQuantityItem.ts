@@ -1,7 +1,9 @@
-import { _decorator, Button, EditBox, Label, RichText, Sprite, SpriteFrame } from 'cc';
+import { _decorator, Button, EditBox, Label, RichText, Sprite, SpriteFrame, Node, ScrollView, Prefab, instantiate } from 'cc';
 import { BasePopup } from './BasePopup';
 import { PopupManager } from './PopupManager';
 import Utilities from '../utilities/Utilities';
+import { IngredientDTO } from '../Model/Item';
+import { InventoryClanUIItemMini } from '../Clan/InventoryClanUIItemMini';
 const { ccclass, property } = _decorator;
 
 @ccclass('PopupBuyItem')
@@ -15,17 +17,39 @@ export class PopupBuyQuantityItem extends BasePopup {
     @property({ type: Button }) increaseQuantityBtn: Button = null;
     @property({ type: Button }) decreaseQuantityBtn: Button = null;
     @property({ type: Sprite }) iconMoneyFrame: Sprite = null;
-    
+    @property(Node) nodeItemExChange: Node = null!;
+    @property(ScrollView) svShopClanToolExChange: ScrollView = null!;
+    @property(Prefab) itemToolExChange: Prefab = null!;
+
     private quantity: number = 1;
     private readonly quantityLimit: number = 1;
     private readonly quantityIncreaseBtn: number = 1;
     private _selectedItemPrice: number;
+    private ingredientNodes: InventoryClanUIItemMini[] = [];
+    private ingredientData: IngredientDTO[] = [];
 
     public init(param?: PopupBuyQuantityItemParam) {
         if (!param) {
             this.closePopup();
             return;
         }
+        const ingredients = param.ingredientDTO ?? [];
+        this.nodeItemExChange.active = ingredients.length > 0;
+        if (ingredients.length > 0 && this.nodeItemExChange.active) {
+            this.ingredientNodes = [];
+            this.ingredientData = ingredients;
+            this.svShopClanToolExChange.content.removeAllChildren();
+            for (const element of ingredients) {
+                const itemNode = instantiate(this.itemToolExChange);
+                const farmTool = itemNode.getComponent(InventoryClanUIItemMini);
+                if (farmTool) {
+                    farmTool.setupItem(element, this.quantity);
+                    this.ingredientNodes.push(farmTool);
+                }
+                itemNode.setParent(this.svShopClanToolExChange.content);
+            }
+        }
+
         this._selectedItemPrice = param.selectedItemPrice;
         this.iconMoneyFrame.spriteFrame = param.spriteMoneyValue;
         this.setupQuantityHandlers();
@@ -46,7 +70,7 @@ export class PopupBuyQuantityItem extends BasePopup {
                 this.closePopup();
             }, this);
         } else this.buttonRight.node.active = false;
-        if(param != null && param.onActionClose != null){
+        if (param != null && param.onActionClose != null) {
             this._onActionClose = param.onActionClose;
         }
     }
@@ -57,9 +81,14 @@ export class PopupBuyQuantityItem extends BasePopup {
     }
 
     private setupQuantityHandlers() {
+        this.increaseQuantityBtn.node.off(Button.EventType.CLICK, this.onIncreaseQuantity, this);
+        this.decreaseQuantityBtn.node.off(Button.EventType.CLICK, this.onDecreaseQuantity, this);
+        this.quantityItemFood.node.off(EditBox.EventType.TEXT_CHANGED, this.onQuantityChanged, this);
+
         this.increaseQuantityBtn.node.on(Button.EventType.CLICK, this.onIncreaseQuantity, this);
         this.decreaseQuantityBtn.node.on(Button.EventType.CLICK, this.onDecreaseQuantity, this);
         this.quantityItemFood.node.on(EditBox.EventType.TEXT_CHANGED, this.onQuantityChanged, this);
+
         this.updateQuantityUI();
     }
 
@@ -87,15 +116,40 @@ export class PopupBuyQuantityItem extends BasePopup {
 
     private updateQuantityUI() {
         this.quantityItemFood.string = this.quantity.toString();
+
         const totalPrice = this._selectedItemPrice * this.quantity;
         this.priceBuyQuantity.string = Utilities.convertBigNumberToStr(totalPrice);
+
         this.decreaseQuantityBtn.interactable = this.quantity > this.quantityLimit;
+
+        if (this.ingredientNodes.length) {
+            for (let i = 0; i < this.ingredientNodes.length; i++) {
+                this.ingredientNodes[i].setupItem(
+                    this.ingredientData[i],
+                    this.quantity
+                );
+            }
+        }
+
+        const canBuy = this.checkEnoughIngredients(this.quantity);
+        this.buttonRight.interactable = canBuy;
+    }
+
+    private checkEnoughIngredients(quantity: number): boolean {
+        if (!this.ingredientData || this.ingredientData.length === 0) return true;
+
+        return this.ingredientData.every(ing => {
+            const need = ing.required_quantity * quantity;
+            const have = ing.current_quantity ?? 0;
+            return have >= need;
+        });
     }
 }
 
 export interface PopupBuyQuantityItemParam {
     selectedItemPrice: number;
-    spriteMoneyValue : SpriteFrame;
+    ingredientDTO?: IngredientDTO[];
+    spriteMoneyValue: SpriteFrame;
     textButtonLeft: string;
     textButtonRight: string;
     onActionButtonLeft?: () => void;

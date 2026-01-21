@@ -1,4 +1,4 @@
-import { _decorator, Prefab, ScrollView, Node } from 'cc';
+import { _decorator, Prefab, ScrollView, Node, instantiate } from 'cc';
 import { WebRequestManager } from '../../../network/WebRequestManager';
 import { BaseTabController } from '../../../ui/BaseTabController';
 import { Constants } from '../../../utilities/Constants';
@@ -161,6 +161,26 @@ export class InventoryManager extends BaseInventoryManager {
                 this.checEmptyItem(combinedList);
                 await this.spawnClothesItems(combinedList);
                 break;
+        }
+    }
+
+    protected async spawnClothesItems(items: any[]) {
+        for (const item of items) {
+            let skinLocalData = this.getLocalData(item);
+            if (!skinLocalData)
+                continue;
+            item.item.mappingLocalData ??= skinLocalData;
+
+            if (!item.item.name || item.item.name.trim() === "") {
+                item.item.name = skinLocalData.name;
+            }
+            let itemNode = instantiate(this.itemPrefab);
+            itemNode.setParent(this.itemContainer);
+
+            await this.registUIItemData(itemNode, item,
+                (uiItem, data) => {
+                    this.onUIItemClick(uiItem, data as Item);
+                });
         }
     }
 

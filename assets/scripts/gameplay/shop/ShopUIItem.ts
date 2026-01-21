@@ -10,6 +10,7 @@ export class ShopUIItem extends BaseInventoryUIITem {
 
     public override toggleActive(isActive) {
         this.stasSprite.spriteFrame = isActive ? this.stasFrame[1] : this.stasFrame[0];
+        this.toggle.isChecked = isActive;
     }
 
     public override init(data: Item) {

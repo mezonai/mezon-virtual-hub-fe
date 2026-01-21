@@ -657,6 +657,14 @@ export class ServerManager extends Component {
             FarmController.instance.UpdateSlotAction(data.slotId, SlotActionType.Harvest, false);
         });
 
+        this.room.onMessage(MessageTypes.ON_DECREASE_GROWTH_TIME, (data) => {
+            const isMe = data.sessionId === UserManager.instance.GetMyClientPlayer?.myID;
+            if (isMe) {
+                FarmController.instance.UpdateSlotAction(data.slotId, SlotActionType.growth_plant, true, data.typeTool);
+                // Constants.showConfirm(data.message);
+            }
+        });
+
         this.room.onMessage(MessageTypes.ON_PLANT_TO_PLANT_FAILED, (data) => {
             Constants.showConfirm(`${data.message}`);
         });
@@ -672,6 +680,10 @@ export class ServerManager extends Component {
         });
 
         this.room.onMessage(MessageTypes.ON_HARVEST_INTERRUPTED_FAILED, (data) => {
+            Constants.showConfirm(`${data.message}`);
+        });
+
+        this.room.onMessage(MessageTypes.ON_DECREASE_GROWTH_TIME_FAILED, (data) => {
             Constants.showConfirm(`${data.message}`);
         });
 
@@ -867,6 +879,10 @@ export class ServerManager extends Component {
 
     public sendPlantToSlot(sendData) {
         this.room.send("plantToSlot", sendData)
+    }
+
+    public sendDecreaseGrowthTimeToSlot(sendData) {
+        this.room.send("decreaseGrowthTime", sendData)
     }
 
     public sendWaterPlant(sendData) {
