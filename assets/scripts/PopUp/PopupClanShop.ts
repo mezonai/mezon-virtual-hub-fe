@@ -372,12 +372,31 @@ export class PopupClanShop extends BasePopup {
 
     public async ReloadAfterBuyItem() {
         this.quantityBuy = 1;
-        if (this.currentMode === ItemType.FARM_PLANT) {
-            await this.initListFarmPlants();
-        } else if (this.currentMode === ItemType.FARM_TOOL) {
-            await this.initListFarmTools();
+        if (this.currentMode === ItemType.FARM_TOOL && this.selectingUITool) {
+            await this.syncCurrentIngredientsForSelectedTool();
+            await this.showSlotDetailFarmTool(this.selectingUITool);
         }
         this.param?.onBuySuccess?.();
+    }
+
+    private async syncCurrentIngredientsForSelectedTool() {
+        if (!this.selectingUITool) return;
+        this.shopRecipeDTO =  await WebRequestManager.instance.getAllItemFarmToolsFilterAsync( ItemType.FARM_TOOL);
+        for (const ing of this.selectingUITool.farmTool.ingredients) {
+            let foundQuantity = 0;
+            for (const recipe of this.shopRecipeDTO) {
+                const matchedIng = recipe.ingredients?.find(rIng =>
+                    (ing.item_id && rIng.item_id === ing.item_id) ||
+                    (ing.plant_id && rIng.plant_id === ing.plant_id)
+                );
+
+                if (matchedIng) {
+                    foundQuantity = matchedIng.current_quantity ?? 0;
+                    break;
+                }
+            }
+            ing.current_quantity = foundQuantity;
+        }
     }
 }
 
