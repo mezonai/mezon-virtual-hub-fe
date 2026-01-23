@@ -56,7 +56,7 @@ export class ItemFragmentCombine extends Component {
 
     private setImage(fragmentItem: FragmentItemDTO) {
         this.iconFragmentCombine.spriteFrame = ItemIconManager.getInstance().getIconPetFragment(fragmentItem.item.item_code, fragmentItem.index);
-        this.setSpriteAlpha(this.iconFragmentCombine, fragmentItem.quantity > 1 ? 255 : 150);
+        this.setSpriteAlpha(this.iconFragmentCombine, fragmentItem.quantity > 0 ? 255 : 150);
     }
 
     async playExplosive() {
