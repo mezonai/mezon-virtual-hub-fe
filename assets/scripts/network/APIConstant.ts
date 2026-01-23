@@ -57,6 +57,7 @@ export default class APIConstant {
     static INGREIENT = "ingredient";
     static ASSEMBLE = "assemble";
     static RECIPE = "recipe";
+    static EXCHANGE = "exchange";
     
 }
 

@@ -52,7 +52,7 @@ export class PlayerHubController extends Component {
             // const data = await WebRequestManager.instance.getItemFragmentAsync(typeFragement);     
             // const param: PopupCombieFragmentParam = {
             //     fragmentData: data,
-            //     onFinishAnim: async () => { },
+            //     isCombine : true,
             //     typeFrament : typeFragement
             // };
             // await PopupManager.getInstance().openPopup('PopupCombieFragment', PopupCombieFragment, param);

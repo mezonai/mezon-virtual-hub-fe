@@ -7,7 +7,7 @@ import { AssignViceLeadersDto as AssignViceLeadersDTO, ClanActivityResponseDTO, 
 import { ServerManager } from '../core/ServerManager';
 import { PopupSelectionMini, SelectionMiniParam } from '../PopUp/PopupSelectionMini';
 import { PopupManager } from '../PopUp/PopupManager';
-import { BuyItemPayload, EventRewardDTO, FragmentDTO, InventoryDTO, Item, ItemDTO, RecipeDTO, RewardItemDTO, RewardNewbieDTO, StatsConfigDTO, WeeklyRewardDTO as WeeklyRewardDTO } from '../Model/Item';
+import { BuyItemPayload, EventRewardDTO, FragmentDTO, FragmentItemDTO, InventoryDTO, Item, ItemDTO, RecipeDTO, RewardItemDTO, RewardNewbieDTO, StatsConfigDTO, WeeklyRewardDTO as WeeklyRewardDTO } from '../Model/Item';
 import { GameManager } from '../core/GameManager';
 import { UpgradePetResponseDTO, PetDTO } from '../Model/PetDTO';
 import { Constants } from '../utilities/Constants';
@@ -124,7 +124,7 @@ export class WebRequestManager extends Component {
         });
     }
 
-    public getAllItemFarmToolsFilterAsync(type : string): Promise<RecipeDTO[]> {
+    public getAllItemFarmToolsFilterAsync(type: string): Promise<RecipeDTO[]> {
         return new Promise((resolve, reject) => {
             WebRequestManager.instance.getAllItemFarmToolsFilter(
                 type,
@@ -602,12 +602,23 @@ export class WebRequestManager extends Component {
         return new Promise((resolve) => {
             WebRequestManager.instance.postCombineFragment(recipeId, quantity,
                 (response) => {
-                    console.log("Data Fragment: ", response.data)
                     resolve(true);
                 },
                 () => { resolve(false) });
         });
     }
+
+     public postChangeFragmentAsync(recipeId: string, quantity: number): Promise<FragmentItemDTO[]> {
+        return new Promise((resolve) => {
+            WebRequestManager.instance.postChangeFragment(recipeId, quantity,
+                (response) => {
+                    const data = ConvetData.ConvertFragmenItemtDTO(response.data);
+                    resolve(data);
+                },
+                () => { resolve(null) });
+        });
+    }
+
 
     public getQRMezon(successCallback, errorCallback) {
         APIManager.getData(this.combineWithSlash(APIConstant.QR_MEZON), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
@@ -728,7 +739,10 @@ export class WebRequestManager extends Component {
         const url = `${APIConstant.INGREIENT}/${recipeId}/${APIConstant.ASSEMBLE}?quantity=${quantity}`;
         APIManager.postData(url, {}, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
-
+    public postChangeFragment(recipeId: string, quantity, successCallback, errorCallback) {
+        const url = `${APIConstant.INGREIENT}/${APIConstant.EXCHANGE}?recipeId=${recipeId}&quantity=${quantity}`;
+        APIManager.postData(url, {}, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    }
     public createPet(data, successCallback, errorCallback) {
         APIManager.postData(APIConstant.PET_PLAYERS, data, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
@@ -866,7 +880,7 @@ export class WebRequestManager extends Component {
         if (filters?.is_harvested != null) {
             params.append('is_harvested', filters.is_harvested.toString());
         }
-        const url = this.combineWithSlash(APIConstant.CLANS ,clan_id, APIConstant.CLANWAREHOUSE) + (params.toString() ? `?${params.toString()}` : '');
+        const url = this.combineWithSlash(APIConstant.CLANS, clan_id, APIConstant.CLANWAREHOUSE) + (params.toString() ? `?${params.toString()}` : '');
         APIManager.getData(url, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
