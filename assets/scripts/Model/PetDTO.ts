@@ -160,6 +160,7 @@ export enum Species {
   Rabit,
   Sika,
   Snowria,
+  Voltstrider
 }
 
 export enum SkillCode {

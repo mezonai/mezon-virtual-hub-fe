@@ -1,4 +1,4 @@
-import { _decorator, Node, RichText } from 'cc';
+import { _decorator, Node, RichText, instantiate } from 'cc';
 import { UserMeManager } from '../../core/UserMeManager';
 import { WebRequestManager } from '../../network/WebRequestManager';
 import { BuyItemPayload, InventoryType, Item, ItemType } from '../../Model/Item';
@@ -127,7 +127,7 @@ export class ShopController extends BaseInventoryManager {
         this.groupedItems = this.groupByCategory(ResourceManager.instance.ItemData.data);
         this.categories = [];
         for (const category in this.groupedItems) {
-            if (category === InventoryType.FOOD) {
+            if (category === InventoryType.FOOD || category === InventoryType.FARMTOOL || category === InventoryType.PETFRAGMENT) {
                 continue;
             }
             this.categories.push(category);

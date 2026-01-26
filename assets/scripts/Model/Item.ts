@@ -24,12 +24,13 @@ export class ItemDTO {
 export class Item extends BaseInventoryDTO {
     public id: string = "";
     public name: string = "";
-    public gender: string = "";
+    public gender?: string = "";
     public gold: number = 0;
     public type: ItemType = ItemType.HAIR;
-    public iconSF: SpriteFrame[] = [];
-    public mappingLocalData: LocalItemDataConfig = null;
+    public iconSF?: SpriteFrame[] = [];
+    public mappingLocalData?: LocalItemDataConfig = null;
     public item_code?: ItemCode;
+    public rate?: number;
 }
 
 export class FoodDTO {
@@ -54,7 +55,7 @@ export class PetReward {
     public species: Species;
 }
 
-export interface WeeklyRewardDto {
+export interface WeeklyRewardDTO {
   id: string;
   name: string;
   description: string;
@@ -98,6 +99,21 @@ export interface RewardResponse {
     user_gold: number;
 }
 
+export class FragmentDTO {
+    public species: Species;
+    public recipeId : string;
+    public fragmentItems: FragmentItemDTO[];
+}
+
+export class FragmentItemDTO {
+    public id: string;
+    public inventory_type: InventoryType;
+    public equipped: boolean;
+    public quantity: number;
+    public index: number;
+    public item: Item;
+}
+
 export enum EventType {
     EVENT_LOGIN_PLANT = 'event_login_plant',
     EVENT_LOGIN_PET = 'event_login_pet',
@@ -130,13 +146,32 @@ export enum ItemType {
     GLASSES = 'glasses',
     PET_CARD = 'pet_card',
     PET_FOOD = 'pet_food',
-    ITEM_CLAN = 'item_clan',
+    FARM_TOOL = 'farm_tool',
+    FARM_PLANT = 'farm_plant',
 }
 
 export enum InventoryType {
     ITEM = 'item',
     FOOD = 'food',
-    PLANT = 'plant'
+    FARMTOOL = 'farm_tool',
+    PETFRAGMENT = 'pet_fragment',
+}
+
+export enum ToolCategory {
+    HARVEST = 'harvest',
+    GROWTH = 'growth',
+    INTERRUPT = 'interrupt',
+    LOCK = 'lock',
+}
+
+export enum ItemClanType {
+  PLANT = 'plant',
+  TOOL = 'farm_tool',
+}
+
+export enum InventoryClanType {
+  PLANT = 'Plant',
+  TOOLS = 'Tool',
 }
 
 export enum FoodType {
@@ -224,8 +259,8 @@ export enum ItemCode {
 }
 
 export interface BuyItemPayload {
-    clanId?: string | number;
-    itemId: string | number;
+    clanId?: string;
+    itemId: string;
     quantity: number;
     type: string;
 }
@@ -258,3 +293,31 @@ export class WheelDTO {
   base_fee: number;
   slots: RewardItemDTO[];
 }
+
+export interface RecipeDTO {
+  id: string;
+  type: string; 
+  item_id: string | null;
+  pet_id: string | null;
+  plant_id: string | null;
+
+  item?: Item | null;
+  pet?: PetDTO | null;
+  plant?: PlantDataDTO | null;
+  ingredients: IngredientDTO[];
+}
+
+export interface IngredientDTO {
+  id: string;
+  recipe_id: string;
+  item_id: string | null;
+  plant_id: string | null;
+  gold: number;
+  diamond: number;
+  part: number;
+  required_quantity: number;
+  item?: Item | null;
+  plant?: PlantDataDTO | null;
+  current_quantity: number;
+}
+
