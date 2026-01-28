@@ -91,7 +91,7 @@ export class BaseInventoryManager extends BasePopup {
 
         for (const node of content.children) {
             const uiItem = node.getComponent(ShopUIItem);
-            if (!uiItem || !uiItem.data) continue;
+            if (!uiItem || !uiItem.data || uiItem.owned) continue;
 
             if (uiItem.data.gold > 0) {
                 if (this.selectingUIItem && this.selectingUIItem !== uiItem) {
