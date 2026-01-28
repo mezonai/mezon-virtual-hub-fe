@@ -39,7 +39,7 @@ export class ShopPetController extends BaseInventoryManager {
                 .catch(() => { })
             if (confirm) {
                 const result = await this.buyItem();
-                await this.getAllFoodAsync();
+                await WebRequestManager.instance.getUserProfileAsync();
                 this.addItemToInventory(result);
                 this.ResetQuantity();
             }
@@ -119,19 +119,6 @@ export class ShopPetController extends BaseInventoryManager {
 
             WebRequestManager.instance.postBuyItem(payload, resolve, reject);
         });
-    }
-
-    private getAllFoodAsync() {
-        WebRequestManager.instance.getUserProfile(
-            (response) => {
-                UserMeManager.Set = response.data;
-            },
-            (error) => this.onApiError(error)
-        );
-    }
-
-    private onApiError(error) {
-        Constants.showConfirm(error.error_message, "Chú ý");
     }
 
     private checkGoldUser(price: number) {

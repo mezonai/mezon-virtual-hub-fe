@@ -2,7 +2,7 @@ import { _decorator, Component, EditBox, Label, Node, Sprite, SpriteFrame, log, 
 import { MezonAppEvent, MezonWebViewEvent } from '../../webview';
 import { WebRequestManager } from '../network/WebRequestManager';
 import { MezonDTO, UserDTO } from '../Model/Player';
-import { APIConfig } from '../network/APIConstant';
+import { APIConfig, EVENT_NAME } from '../network/APIConstant';
 import { ResourceManager } from '../core/ResourceManager';
 import { GameMapController } from '../GameMap/GameMapController';
 import { UserMeManager } from '../core/UserMeManager';
@@ -16,6 +16,7 @@ import { sys } from 'cc';
 import { LoadingManager } from '../PopUp/LoadingManager';
 import { SceneManagerController } from '../utilities/SceneManagerController';
 import { SceneName } from '../utilities/SceneName';
+import { director } from 'cc';
 
 const { ccclass, property } = _decorator;
 
@@ -64,12 +65,24 @@ export class UILoginControll extends Component {
         return UILoginControll._instance;
     }
 
+    public async startLoginMezonOnce() {
+        await this.loadData();
+        
+    }
+
     public init() {
         if (APIConfig.token != "") {
-            this.closePanel(false, false);
+            if(Constants.isFirstEnterGame){
+                Constants.isFirstEnterGame = false;
+                this.closePanel();
+            }else
+            {
+                this.closePanel(false, false);
+            }
         }
         else {
-            this.loadData();
+            this.onLoginSuccessAfterLoadAsset();
+            this.loginPanel.active = false;
             this.updateAvatar();
             this.login_Btn.interactable = false;
 
@@ -192,25 +205,25 @@ export class UILoginControll extends Component {
 
 
     private async onLoginSuccess(response: any) {
-        if (!response) {
-            console.log("Login Success: Response is null or undefined");
+        if (!response) return;
+        APIConfig.token = response.data.accessToken;
+        const getInfoSuccess = await WebRequestManager.instance.getUserProfileAsync();
+        if (!getInfoSuccess) {
+            await SceneManagerController.loadSceneAsync(SceneName.SCENE_GAME_MAP, null);
             return;
         }
+        const getDataMyPetSuccess = await WebRequestManager.instance.getMyPetAsync();
+        if (!getDataMyPetSuccess) {
+            await SceneManagerController.loadSceneAsync(SceneName.SCENE_GAME_MAP, null);
+                return;
+            }
+        director.emit(EVENT_NAME.ON_LOGIN_MEZON_READY);
+    }
 
+    public async onLoginSuccessAfterLoadAsset() {
         this.login_Btn.interactable = true;
-        APIConfig.token = response.data.accessToken;
         LoadingManager.getInstance().openLoading();
         try {
-            const getInfoSuccess = await WebRequestManager.instance.getUserProfileAsync();
-            if (!getInfoSuccess) {
-                await SceneManagerController.loadSceneAsync(SceneName.SCENE_GAME_MAP, null);
-                return;
-            }
-            const getDataMyPetSuccess = await WebRequestManager.instance.getMyPetAsync();
-            if (!getDataMyPetSuccess) {
-                await SceneManagerController.loadSceneAsync(SceneName.SCENE_GAME_MAP, null);
-                return;
-            }
             this.setUI();
         } catch {
 
@@ -309,7 +322,6 @@ export class UILoginControll extends Component {
         UserMeManager.Get.user.display_name = this.usernameLabel.string;
         UserMeManager.Get.user.gender = this.genderLabel.string.toLowerCase() == "nam" ? "male" : "female";
         this.setDefaultSkinSet();
-        this.closePanel(true, true);
     }
 
     private setDefaultSkinSet() {

@@ -31,6 +31,9 @@ export class Item extends BaseInventoryDTO {
     public mappingLocalData?: LocalItemDataConfig = null;
     public item_code?: ItemCode;
     public rate?: number;
+    public index?: number;
+    public remainingQuantity?: number;
+    public takenQuantity?: number;
 }
 
 export class FoodDTO {
@@ -70,6 +73,10 @@ export class RewardItemDTO {
     public food?: Food;
     public pet?: PetReward;
     public quantity?: number;
+    public plant?: PlantDataDTO;
+    public type_item?: RewardType;
+    public weight_point?: number;
+    public rate?: number;
 }
 
 export class RewardNewbieDTO {
@@ -110,6 +117,11 @@ export class FragmentItemDTO {
     public item: Item;
 }
 
+export interface FragmentExchangeResponseDTO {
+    removed: Item[];
+    reward: Item;
+}
+
 export enum EventType {
     EVENT_LOGIN_PLANT = 'event_login_plant',
     EVENT_LOGIN_PET = 'event_login_pet',
@@ -123,6 +135,7 @@ export enum RewardType {
     FOOD = 'food',
     PET = 'pet',
     PLANT = 'plant',
+    PETFRAGMENT = 'pet_fragment',
 
     WEEKLY_RANKING_MEMBER_1 = 'weekly_ranking_member_1',
     WEEKLY_RANKING_MEMBER_2 = 'weekly_ranking_member_2',
@@ -143,6 +156,8 @@ export enum ItemType {
     PET_FOOD = 'pet_food',
     FARM_TOOL = 'farm_tool',
     FARM_PLANT = 'farm_plant',
+    PETFRAGMENT = 'pet_fragment',
+    PET = 'pet',
 }
 
 export enum InventoryType {
@@ -186,6 +201,10 @@ export enum ItemGenderFilter {
     FEMALE = 'female',
     MALE = 'male',
     UNISEX = 'unisex'
+}
+
+export enum SlotWheelType {
+    NORMAL_WHEEL = 'normal_wheel',
 }
 
 export enum QuestType {
@@ -272,6 +291,18 @@ export interface FarmLimitDTO {
     harvest: FarmLimitHarvestDTO;
 }
 
+export class SpinResultDTO {
+  wheel_type: string;
+  rewards: RewardItemDTO[];
+  user_balance: number;
+}
+
+export class WheelDTO {
+  id: string;
+  type: string;
+  base_fee: number;
+  slots: RewardItemDTO[];
+}
 
 export interface RecipeDTO {
   id: string;

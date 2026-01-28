@@ -52,6 +52,22 @@ export class ItemIconManager extends Component {
         }
     }
 
+    async getIconRewardSlot(reward: RewardItemDTO): Promise<SpriteFrame> {
+        switch (reward.type_item) {
+            case RewardType.ITEM:
+                return this.getIconItem(reward.item);
+            case RewardType.FOOD:
+                return this.getIconFood(reward.food.type);
+            case RewardType.GOLD:
+            case RewardType.DIAMOND:
+                return this.getIconValue(reward.type);
+            case RewardType.PET:
+                return this.getIconPet(reward.pet?.species);
+            default:
+                return this.defaultIcon;// hoặc icon mặc định nếu có
+        }
+    }
+
     getIconFoodDto(food: Food): SpriteFrame {
         return this.getIconFood(food.type);
     }
@@ -64,6 +80,9 @@ export class ItemIconManager extends Component {
         }
         else if (item.type === ItemType.FARM_TOOL) {
             return this.getIconToolFarm(item.item_code);
+        }
+        else if (item.type === ItemType.PETFRAGMENT) {
+            return this.getIconPetFragment(item.item_code, item.index );
         }
         else{
             const localData = this.getLocalData(item);
@@ -104,12 +123,15 @@ export class ItemIconManager extends Component {
 
     private async getIconItem(item: Item): Promise<SpriteFrame> {
         if (item == null) return this.defaultIcon;
-        if (item.type !== ItemType.PET_CARD) {
+        if (item.type !== ItemType.PET_CARD && item.type !== ItemType.PETFRAGMENT) {
             return await this.getIconItemDto(item);
         }
         if (item.type === ItemType.PET_CARD) {
             const index = item.item_code == ItemCode.RARITY_CARD_RARE ? 0 : item.item_code == ItemCode.RARITY_CARD_EPIC ? 1 : 2;
             return this.iconCardRewards[index];
+        }
+        if (item.type === ItemType.PETFRAGMENT) {
+            return this.getIconPetFragment(item.item_code, item.index);
         }
         return this.defaultIcon;
     }

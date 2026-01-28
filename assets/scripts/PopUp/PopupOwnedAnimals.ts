@@ -432,8 +432,12 @@ export class PopupOwnedAnimals extends BasePopup {
             await PopupManager.getInstance().openAnimPopup("PopupUpgradePet", PopupUpgradePet, param);
             this.petChartButton.interactable = true;
         });
+        this.getLoadMyPet();
+    }
 
-        this.onGetMyPet(UserMeManager.MyPets());
+    async getLoadMyPet(){
+        const mypets = await WebRequestManager.instance.getMyPetAsync();
+        this.onGetMyPet(mypets);
     }
 
     GetPetAfterUpgrade(pets: PetDTO[]) {

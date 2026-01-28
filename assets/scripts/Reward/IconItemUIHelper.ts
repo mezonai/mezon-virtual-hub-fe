@@ -68,6 +68,7 @@ export class IconItemUIHelper extends Component {
         let value = sizeDefault;
         if (itemType) {
             if (itemType === ItemType.PET_CARD) value = 0.06;
+            if (itemType === ItemType.PETFRAGMENT) value = 0.1;
             else if (itemType === ItemType.HAIR || itemType === ItemType.FACE)
                 value = sizeSpecial;
         }

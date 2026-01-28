@@ -7,7 +7,7 @@ import { AssignViceLeadersDto as AssignViceLeadersDTO, ClanActivityResponseDTO, 
 import { ServerManager } from '../core/ServerManager';
 import { PopupSelectionMini, SelectionMiniParam } from '../PopUp/PopupSelectionMini';
 import { PopupManager } from '../PopUp/PopupManager';
-import { BuyItemPayload, EventRewardDTO, FragmentDTO, FragmentItemDTO, InventoryDTO, Item, ItemDTO, RecipeDTO, RewardItemDTO, RewardNewbieDTO, StatsConfigDTO, WeeklyRewardDTO as WeeklyRewardDTO } from '../Model/Item';
+import { BuyItemPayload, EventRewardDTO, FragmentDTO, FragmentExchangeResponseDTO, FragmentItemDTO, InventoryDTO, Item, ItemDTO, RecipeDTO, RewardItemDTO, RewardNewbieDTO, StatsConfigDTO, WeeklyRewardDTO, WheelDTO } from '../Model/Item';
 import { GameManager } from '../core/GameManager';
 import { UpgradePetResponseDTO, PetDTO } from '../Model/PetDTO';
 import { Constants } from '../utilities/Constants';
@@ -124,9 +124,9 @@ export class WebRequestManager extends Component {
         });
     }
 
-    public getAllItemFarmToolsFilterAsync(type: string): Promise<RecipeDTO[]> {
+    public getAllRecipeByTypeAsync(type: string): Promise<RecipeDTO[]> {
         return new Promise((resolve, reject) => {
-            WebRequestManager.instance.getAllItemFarmToolsFilter(
+            WebRequestManager.instance.getAllRecipeByType(
                 type,
                 (response) => {
                     const recipeData = ConvetData.ConvertRecipesToRecipeDTO(response);
@@ -238,22 +238,6 @@ export class WebRequestManager extends Component {
                 (response) => {
                     const inventoryList = ConvetData.ConvertInventoryDTO(response.data);
                     resolve(inventoryList);
-                },
-                (error) => {
-                    resolve(null);
-                }
-            );
-        });
-    }
-
-    public getItemFragmentAsync(type: string): Promise<FragmentDTO> {
-        return new Promise((resolve) => {
-            WebRequestManager.instance.getItemTypeFragment(
-                type,
-                (response) => {
-                    console.log("data", response.data);
-                    const fragmentData = ConvetData.ConvertFragmentDTO(response.data);
-                    resolve(fragmentData);
                 },
                 (error) => {
                     resolve(null);
@@ -598,21 +582,38 @@ export class WebRequestManager extends Component {
         });
     }
 
-    public postCombieFragmentAsync(recipeId: string, quantity: number): Promise<boolean> {
-        return new Promise((resolve) => {
-            WebRequestManager.instance.postCombineFragment(recipeId, quantity,
+     public getAllWheelAsync(type: string): Promise<WheelDTO[]> {
+        return new Promise((resolve, reject) => {
+            this.getAllWheel(
+                type,
                 (response) => {
-                    resolve(true);
+                    const statsConfigDTO = ConvetData.ConvertWheels(response.data);
+                    resolve(statsConfigDTO);
                 },
-                () => { resolve(false) });
+                (error) => {
+                    resolve(null);
+                }
+            );
         });
     }
 
-     public postChangeFragmentAsync(recipeId: string, quantity: number): Promise<FragmentItemDTO[]> {
+    public postCombieFragmentAsync(recipeId: string): Promise<PetDTO> {
         return new Promise((resolve) => {
-            WebRequestManager.instance.postChangeFragment(recipeId, quantity,
+            WebRequestManager.instance.postCombineFragment(recipeId,
                 (response) => {
-                    const data = ConvetData.ConvertFragmenItemtDTO(response.data);
+                    const petDTO = ConvetData.ConvertPetAssemble(response.data.createdPet);
+                   resolve(petDTO);
+                },
+                () => { resolve(null) });
+        });
+    }
+
+    public postChangeFragmentAsync(recipeId: string): Promise<FragmentExchangeResponseDTO> {
+        return new Promise((resolve) => {
+            WebRequestManager.instance.postChangeFragment(recipeId,
+                (response) => {
+                    console.log("response.data: ", response.data);
+                    const data = ConvetData.ConvertFragmentExchangeResponse(response.data);
                     resolve(data);
                 },
                 () => { resolve(null) });
@@ -636,7 +637,7 @@ export class WebRequestManager extends Component {
         APIManager.getData(this.combineWithSlash(APIConstant.ITEM), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
-    public getAllItemFarmToolsFilter(type, successCallback, errorCallback) {
+    public getAllRecipeByType(type, successCallback, errorCallback) {
         const url = this.combineWithSlash(APIConstant.RECIPE) + (type.toString() ? `?type=${type.toString()}` : '');
         APIManager.getData(url, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
@@ -670,6 +671,16 @@ export class WebRequestManager extends Component {
         APIManager.getData(this.combineWithSlash(APIConstant.GAME, APIConstant.SPIN), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
+    public getAllWheel(type: string, successCallback, errorCallback) {
+        const url = this.combineWithSlash(APIConstant.WHEEL) + (type.toString() ? `?type=${type.toString()}` : '');
+        APIManager.getData(url, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    }
+
+    public getRewardsSlotWheel(wheel_id: string, quantity:number = 1 , successCallback, errorCallback) {
+        const url = this.combineWithSlash(APIConstant.SLOT_WHEEL, APIConstant.SPIN) + `?wheel_id=${wheel_id.toString()}&quantity=${quantity.toString()}`;
+        APIManager.getData(url, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    }
+
     public getConfigRate(successCallback, errorCallback) {
         APIManager.getData(this.combineWithSlash(APIConstant.GAME, APIConstant.CONFIG), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
@@ -690,8 +701,8 @@ export class WebRequestManager extends Component {
         APIManager.getData(this.combineWithSlash(APIConstant.INVENTORY, APIConstant.ITEM_TYPE, type), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
-    public getItemTypeFragment(species, successCallback, errorCallback) {
-        APIManager.getData(this.combineWithSlash(APIConstant.INVENTORY, APIConstant.ITEM_FRAGMENT, species), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    public getItemTypeFragment(recipeId, successCallback, errorCallback) {
+        APIManager.getData(this.combineWithSlash(APIConstant.INGREIENT, recipeId,APIConstant.ASSEMBLE), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
     public updateProfile(data, successCallback, errorCallback) {
@@ -735,12 +746,12 @@ export class WebRequestManager extends Component {
         APIManager.postData(url, {}, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
-    public postCombineFragment(recipeId: string, quantity, successCallback, errorCallback) {
-        const url = `${APIConstant.INGREIENT}/${recipeId}/${APIConstant.ASSEMBLE}?quantity=${quantity}`;
+    public postCombineFragment(recipeId: string, successCallback, errorCallback) {
+        const url = `${APIConstant.INGREIENT}/${recipeId}/${APIConstant.ASSEMBLE}`;
         APIManager.postData(url, {}, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
-    public postChangeFragment(recipeId: string, quantity, successCallback, errorCallback) {
-        const url = `${APIConstant.INGREIENT}/${APIConstant.EXCHANGE}?recipeId=${recipeId}&quantity=${quantity}`;
+    public postChangeFragment(recipeId: string, successCallback, errorCallback) {
+        const url = `${APIConstant.INGREIENT}/${APIConstant.EXCHANGE}/${recipeId}`;
         APIManager.postData(url, {}, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
     public createPet(data, successCallback, errorCallback) {

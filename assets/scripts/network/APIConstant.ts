@@ -53,6 +53,8 @@ export default class APIConstant {
     static LOGIN_EVENT_7DAYS = "login-event-7-days";
     static QR_MEZON = "mezon";
     static WEEKLY_REWARD = "weekly-reward";
+    static SLOT_WHEEL = "slot-wheel";
+    static WHEEL = "wheel";
     static ITEM_FRAGMENT = "item-fragment";
     static INGREIENT = "ingredient";
     static ASSEMBLE = "assemble";
@@ -96,5 +98,6 @@ export class EVENT_NAME {
     static ON_CLICK_BUTTON_CHANGE_ANIM_MOBILE = "ON_CLICK_BUTTON_CHANGE_ANIM_MOBILE";
     static ON_PRESS_KEYBOARD = "ON_PRESS_KEYBOARD";
     static ON_RELEASE_KEYBOARD = "ON_RELEASE_KEYBOARD";
+    static ON_LOGIN_MEZON_READY = "ON_LOGIN_MEZON_READY";
 }
 

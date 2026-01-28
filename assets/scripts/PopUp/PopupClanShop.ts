@@ -174,7 +174,7 @@ export class PopupClanShop extends BasePopup {
     async initListFarmTools() {
         try {
             LoadingManager.getInstance().openLoading();
-            this.shopRecipeDTO = await WebRequestManager.instance.getAllItemFarmToolsFilterAsync(ItemType.FARM_TOOL);
+            this.shopRecipeDTO = await WebRequestManager.instance.getAllRecipeByTypeAsync(ItemType.FARM_TOOL);
             this.loadFromServerFarmTools(this.shopRecipeDTO);
         } catch {
 
@@ -383,7 +383,7 @@ export class PopupClanShop extends BasePopup {
         if (!this.selectingUITool) return;
 
         this.shopRecipeDTO =
-            await WebRequestManager.instance.getAllItemFarmToolsFilterAsync(
+            await WebRequestManager.instance.getAllRecipeByTypeAsync(
                 ItemType.FARM_TOOL
             );
 

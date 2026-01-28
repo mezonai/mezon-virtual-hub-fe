@@ -5,6 +5,7 @@ import { RewardItem } from './RewardItem';
 import { RewardFloatingText } from './RewardFloatingText';
 import { AudioType, SoundManager } from '../core/SoundManager';
 import { BasePopup } from '../PopUp/BasePopup';
+import { AnimalRarity, Species } from '../Model/PetDTO';
 const { ccclass, property } = _decorator;
 
 @ccclass('RewardUIController')
@@ -17,7 +18,7 @@ export class RewardUIController extends BasePopup {
 
     private spawnCount: number = 0;
     private isCoin: boolean;
-    private readonly MAX_SLOT = 3;
+    private readonly MAX_SLOT = 5;
 
     private onAllRewardsShownCallback: () => void = null;
 
@@ -91,17 +92,12 @@ export class RewardUIController extends BasePopup {
                                 uiItem.setRewardItem(reward);
                             break;
                         }
+                        case RewardType.FOOD:
+                        case RewardType.PET:
                         case RewardType.GOLD:
                         case RewardType.DIAMOND:
-                            {
-                                uiItem.setRewardItem(reward);
-                                break;
-                            }
-                        case RewardType.FOOD: {
-                            uiItem.setRewardItem(reward);
-                            break;
-                        }
-                        case RewardType.PET: {
+                        case RewardType.PLANT:
+                        {
                             uiItem.setRewardItem(reward);
                             break;
                         }
@@ -150,6 +146,12 @@ export class RewardUIController extends BasePopup {
                 }
                 else if (reward.type === RewardType.FOOD && reward.food) {
                     const itemName = `${reward.food?.name} x ${reward.quantity} `;
+                    message = `Bạn nhận được ${itemName}`;
+                    this.isCoin = false;
+                }
+                else if (reward.type === RewardType.PET && reward.pet) {
+                    const speciesName = Species[reward.pet?.species].charAt(0).toLowerCase() + Species[reward.pet?.species].slice(1);
+                    const itemName = `${speciesName} - ${reward.pet?.rarity} x ${reward.quantity} `;
                     message = `Bạn nhận được ${itemName}`;
                     this.isCoin = false;
                 }
