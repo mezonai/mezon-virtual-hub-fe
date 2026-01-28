@@ -119,7 +119,6 @@ export class SlotMachineController extends BasePopup {
             return;
         }
         await this.showItem(this.wheel);
-        this.minusCoin = this.wheel.base_fee;
         this.minusCoinX1Text.string = this.wheel.base_fee.toString();
         this.minusCoinX5Text.string = (this.wheel.base_fee * 5).toString();
         this.rateButton.interactable = true;
@@ -172,7 +171,7 @@ export class SlotMachineController extends BasePopup {
         }
 
         this.prepareSpinUI();
-
+        this.minusCoin = this.wheel.base_fee * quantity;
         this.rewardPopUp.setOnRewardsShownCallback(() => {
             this.restoreSpinUI();
         });
