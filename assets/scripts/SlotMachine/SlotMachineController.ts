@@ -143,6 +143,7 @@ export class SlotMachineController extends BasePopup {
                 spriteFrame: await ItemIconManager.getInstance().getIconRewardSlot(element),
                 name: this.getNameIconReward(element),
                 rate: Math.floor(element.rate) ?? 0,
+                quantity: element.quantity,
                 isItem: element.type == RewardType.ITEM && !NOT_ITEM_TYPES.includes(element.item.type),
             };
             slotItem.setupIcon(displayData, this.parentHover);
