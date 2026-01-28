@@ -216,6 +216,7 @@ export interface RewardDisplayData {
     spriteFrame: SpriteFrame | null;
     name: string;
     rate: number;
+    quantity: number;
     isItem?: boolean;
 }
 
