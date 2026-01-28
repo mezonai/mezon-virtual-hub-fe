@@ -14,7 +14,7 @@ export class InventoryUIITem extends BaseInventoryUIITem {
         const isSpecialType = [
             ItemType.PET_CARD,
             ItemType.PET_FOOD,
-            ItemType.ITEM_CLAN,
+            ItemType.PETFRAGMENT,
         ].includes(data.type);
 
         const quantity = itemDTO?.quantity ?? (isSpecialType ? 0 : 1);

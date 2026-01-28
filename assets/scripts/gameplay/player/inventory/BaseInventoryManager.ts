@@ -134,7 +134,7 @@ export class BaseInventoryManager extends BasePopup {
         for (const item of items) {
             if (Number(item.quantity) <= 0) continue;
             let itemNode = instantiate(this.itemPrefab);
-            itemNode.setParent(this.itemContainer);
+            itemNode.setParent(this.otherContainer);
             await this.registUIItemData(itemNode, item,
                 (uiItem, data) => {
                     this.onUIItemClick(uiItem, data as Item);
@@ -219,7 +219,7 @@ export class BaseInventoryManager extends BasePopup {
             return;
         }
 
-        if ((data as Item).type === ItemType.PET_CARD) {
+        if ((data as Item).type === ItemType.PET_CARD || (data as Item).type === ItemType.PETFRAGMENT) {
             this.itemData = data as Item;
             this.descriptionText.string = `${this.itemData.name}`;
             return;

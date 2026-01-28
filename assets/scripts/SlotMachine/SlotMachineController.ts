@@ -92,14 +92,12 @@ export class SlotMachineController extends BasePopup {
     }
 
     public showNoticeSpin() {
-        this.spinX1Button.interactable = true;
-        this.spinX5Button.interactable = true;
         this.rewardPopUp.node.active = false;
         this.waitingNode.active = false;
         this.slotMachinePopUp.active = true;
-        this.spinX1Button.interactable = true;
-        this.spinX5Button.interactable = true;
-        this.closeButton.node.active = true;
+        this.rateButton.interactable = false;
+        this.spinX1Button.interactable = false;
+        this.spinX5Button.interactable = false;
         this.rewardPopUp.HideNode();
         this.getRewardsPercent();
         UserManager.instance.GetMyClientPlayer.get_MoveAbility.StopMove();
@@ -124,6 +122,10 @@ export class SlotMachineController extends BasePopup {
         this.minusCoin = this.wheel.base_fee;
         this.minusCoinX1Text.string = this.wheel.base_fee.toString();
         this.minusCoinX5Text.string = (this.wheel.base_fee * 5).toString();
+        this.rateButton.interactable = true;
+        this.spinX1Button.interactable = true;
+        this.spinX5Button.interactable = true;
+        this.closeButton.node.active = true;
     }
 
     private async showItem(wheel: WheelDTO) {
@@ -131,7 +133,7 @@ export class SlotMachineController extends BasePopup {
         const NOT_ITEM_TYPES = [
             ItemType.PET_CARD,
             ItemType.PET_FOOD,
-            ItemType.ITEM_CLAN
+            ItemType.PETFRAGMENT
         ];
         for (const element of wheel.slots) {
             const itemNode = instantiate(this.itemPrefab);

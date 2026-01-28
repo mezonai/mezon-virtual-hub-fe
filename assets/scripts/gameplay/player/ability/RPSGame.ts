@@ -108,7 +108,6 @@ export class RPSGame extends PlayerInteractAction {
 
     public override onStartAction(data) {
         SoundManager.instance.playSound(AudioType.CountDown, this.autoChooseTimeout);
-        console.log(AudioType.CountDown, this.autoChooseTimeout)
         super.onStartAction(data);
         this.gameData = data;
         this.toogleShowActions(true);

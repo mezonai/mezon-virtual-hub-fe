@@ -21,12 +21,18 @@ export class SlotPetDetail extends Component {
     public showDetailPanel(pet: PetDTO) {
         this.namePet.string = `${pet.name}`;
         this.expValue.string = `${pet.exp} / ${pet.max_exp}`;
-        this.typeValue.string = `${this.getElementName(pet.pet.type)}`;
         this.hpValue.string = `${pet.hp}`;
         this.attackValue.string = `${pet.attack}`;
         this.denfenseValue.string = `${pet.defense}`;
         this.speedValue.string = ` ${pet.speed}`;
         this.levelValue.string = `${pet.level}`;
+        const type = pet?.pet?.type ?? pet?.type;
+        if (type) {
+            this.typeValue.node.active = true;
+            this.typeValue.string = this.getElementName(type);
+        } else {
+            this.typeValue.node.active = false;
+        }
     }
 
     public clearPetDetail() {

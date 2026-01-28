@@ -41,6 +41,7 @@ export class Constants {
     public static readonly MAX_CHAT = 3;
     public static readonly MAX_VICE_LEADER = 5;
     public static readonly HARVEST_UNLIMITED = -1;
+    public static isFirstEnterGame: boolean = true;
 
     public static convertKeyOffice(positionTarget: OfficePosition): string {
         switch (positionTarget) {
@@ -180,7 +181,8 @@ export class Constants {
         [ItemType.UPPER, 'Áo'],
         [ItemType.LOWER, 'Quần'],
         [ItemType.PET_FOOD, 'Thức ăn pet'],
-        [ItemType.PET_CARD, "Thẻ pet"]
+        [ItemType.PET_CARD, "Thẻ pet"],
+        [ItemType.PETFRAGMENT, "Mảnh Pet"]
     ]);
 
     public static getTabItemMap(): Map<string, string> {
@@ -376,5 +378,12 @@ export class Constants {
         }
         this.chatCount++;
         return true;
+    }
+
+    static parseSpecies(value: string): Species | null {
+        if (value in Species) {
+            return Species[value as keyof typeof Species];
+        }
+        return null;
     }
 }

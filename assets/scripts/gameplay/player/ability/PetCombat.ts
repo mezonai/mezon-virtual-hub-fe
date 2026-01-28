@@ -27,7 +27,6 @@ export class PetCombat extends PlayerInteractAction {
         const paramConfirmPopup: PopupPetBetChallengeParam = {
             title: 'Thách Đấu đánh Pet',
             onActionChallenge: async (amount, isDiamond) => {
-                console.log("this.isDiamond: ", isDiamond);
                 this.room.send("p2pAction", {
                     targetClientId: this.playerController.myID,
                     action: this.actionType.toString(),
@@ -43,7 +42,6 @@ export class PetCombat extends PlayerInteractAction {
 
     public onBeingInvited(data) {
         const { amount, isDiamond } = data;
-        console.log("this.isDiamondas : ", JSON.stringify(data));
         const param: SelectionTimeOutParam = {
             title: "Thông báo",
             content: `${data.fromName} mời bạn chơi đấu pet. Phí <color=#FF0000> ${amount} ${isDiamond ? 'Diamond' : 'Gold'}</color>`,

@@ -18,7 +18,7 @@ export class RewardUIController extends BasePopup {
 
     private spawnCount: number = 0;
     private isCoin: boolean;
-    private readonly MAX_SLOT = 3;
+    private readonly MAX_SLOT = 5;
 
     private onAllRewardsShownCallback: () => void = null;
 
@@ -92,25 +92,12 @@ export class RewardUIController extends BasePopup {
                                 uiItem.setRewardItem(reward);
                             break;
                         }
+                        case RewardType.FOOD:
+                        case RewardType.PET:
                         case RewardType.GOLD:
                         case RewardType.DIAMOND:
-                            {
-                                uiItem.setRewardItem(reward);
-                                break;
-                            }
-                        case RewardType.FOOD: {
-                            uiItem.setRewardItem(reward);
-                            break;
-                        }
-                        case RewardType.PET: {
-                            uiItem.setRewardItem(reward);
-                            break;
-                        }
-                        case RewardType.PLANT: {
-                            uiItem.setRewardItem(reward);
-                            break;
-                        }
-                        case RewardType.PETFRAGMENT: {
+                        case RewardType.PLANT:
+                        {
                             uiItem.setRewardItem(reward);
                             break;
                         }

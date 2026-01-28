@@ -81,6 +81,9 @@ export class ItemIconManager extends Component {
         else if (item.type === ItemType.FARM_TOOL) {
             return this.getIconToolFarm(item.item_code);
         }
+        else if (item.type === ItemType.PETFRAGMENT) {
+            return this.getIconPetFragment(item.item_code, item.index );
+        }
         else{
             const localData = this.getLocalData(item);
             return this.getSkinSprite(localData, item);
@@ -120,12 +123,15 @@ export class ItemIconManager extends Component {
 
     private async getIconItem(item: Item): Promise<SpriteFrame> {
         if (item == null) return this.defaultIcon;
-        if (item.type !== ItemType.PET_CARD) {
+        if (item.type !== ItemType.PET_CARD && item.type !== ItemType.PETFRAGMENT) {
             return await this.getIconItemDto(item);
         }
         if (item.type === ItemType.PET_CARD) {
             const index = item.item_code == ItemCode.RARITY_CARD_RARE ? 0 : item.item_code == ItemCode.RARITY_CARD_EPIC ? 1 : 2;
             return this.iconCardRewards[index];
+        }
+        if (item.type === ItemType.PETFRAGMENT) {
+            return this.getIconPetFragment(item.item_code, item.index);
         }
         return this.defaultIcon;
     }
