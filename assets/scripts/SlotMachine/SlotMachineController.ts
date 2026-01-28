@@ -142,7 +142,7 @@ export class SlotMachineController extends BasePopup {
             let displayData: RewardDisplayData = {
                 spriteFrame: await ItemIconManager.getInstance().getIconRewardSlot(element),
                 name: this.getNameIconReward(element),
-                rate: Math.floor(element.rate) ?? 0,
+                rate: Math.round(element.weight_point) ?? 0,
                 quantity: element.quantity,
                 isItem: element.type == RewardType.ITEM && !NOT_ITEM_TYPES.includes(element.item.type),
             };
