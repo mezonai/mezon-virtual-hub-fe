@@ -612,7 +612,6 @@ export class WebRequestManager extends Component {
         return new Promise((resolve) => {
             WebRequestManager.instance.postChangeFragment(recipeId,
                 (response) => {
-                    console.log("response.data: ", response.data);
                     const data = ConvetData.ConvertFragmentExchangeResponse(response.data);
                     resolve(data);
                 },

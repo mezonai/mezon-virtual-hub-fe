@@ -231,31 +231,56 @@ export class InventoryManager extends BaseInventoryManager {
 
         switch (tabName) {
             case ItemType.PET_CARD:
-                this.checEmptyItem(inventoryList);
-                await this.spawnCardItems(inventoryList);
+                this.applyOtherItemTab(tabName, inventoryList, () =>
+                    this.spawnCardItems(inventoryList)
+                );
                 break;
+
             case ItemType.PETFRAGMENT:
                 this.assembleButton.node.active = true;
                 this.exchangeButton.node.active = true;
                 this.actionButton.node.active = false;
-                this.checEmptyItem(inventoryList);
-                await this.spawnPetFragment(inventoryList);
+                this.applyOtherItemTab(tabName, inventoryList, () =>
+                    this.spawnPetFragment(inventoryList)
+                );
                 break;
+
             case ItemType.PET_FOOD:
-                this.checEmptyItem(inventoryList);
-                await this.spawnFoodItems(inventoryList);
+                this.applyOtherItemTab(tabName, inventoryList, () =>
+                    this.spawnFoodItems(inventoryList)
+                );
                 break;
+
             default:
-                this.currentTabName = tabName;
-                const defaultForTab = this.setClothesItemsDefault()
-                    .filter(item => item.item?.type?.toLowerCase() === tabName.toLowerCase());
-                const combinedList = defaultForTab.length > 0
-                    ? [...defaultForTab, ...inventoryList]
-                    : inventoryList;
-                this.checEmptyItem(combinedList);
-                await this.spawnClothesItems(combinedList);
+                this.applyClothesTab(tabName, inventoryList);
                 break;
         }
+    }
+
+    private async applyOtherItemTab( itemType: ItemType, list: InventoryDTO[], spawnFn: () => Promise<void>) {
+        const isEmpty = this.isEmptyInventory(itemType, list);
+        this.noItemContainer.active = isEmpty;
+        if( itemType === ItemType.PETFRAGMENT){
+                this.assembleButton.interactable = !isEmpty;
+                this.exchangeButton.interactable = !isEmpty;
+        }
+        this.setUIState(itemType);
+        await spawnFn();
+    }
+
+    private async applyClothesTab(tabName: string, inventoryList: InventoryDTO[]) {
+        this.currentTabName = tabName;
+
+        const defaultForTab = this.setClothesItemsDefault()
+            .filter(item => item.item?.type?.toLowerCase() === tabName.toLowerCase());
+
+        const combinedList = defaultForTab.length > 0
+            ? [...defaultForTab, ...inventoryList]
+            : inventoryList;
+
+        this.noItemContainer.active = this.isEmptyInventory(null, combinedList);
+        this.setUIState();
+        await this.spawnClothesItems(combinedList);
     }
 
     protected async spawnClothesItems(items: any[]) {
@@ -296,11 +321,17 @@ export class InventoryManager extends BaseInventoryManager {
         return list;
     }
 
-    checEmptyItem(inventoryList: InventoryDTO[]) {
-        if (!inventoryList || inventoryList.length <= 0) {
-            this.noItemContainer.active = true;
-            return;
+    private isEmptyInventory(itemType: ItemType | null, list: InventoryDTO[]): boolean {
+        if (!list || list.length === 0) {
+            return true;
         }
+       
+        if (itemType === ItemType.PET_FOOD ||
+            itemType === ItemType.PET_CARD ||
+            itemType === ItemType.PETFRAGMENT) {
+            return !list.some(i => Number(i.quantity) > 0);
+        }
+        return false;
     }
 
     protected override getLocalData(item) {
@@ -406,13 +437,11 @@ export class InventoryManager extends BaseInventoryManager {
         this.reset();
         switch (tabName) {
             case ItemType.PETFRAGMENT:
-                await this.spawnPetFragment(inventoryList);
-                break;
-            case ItemType.PET_CARD:
-                await this.spawnCardItems(inventoryList);
+                this.applyOtherItemTab(tabName, inventoryList, () =>
+                    this.spawnPetFragment(inventoryList)
+                );
                 break;
             default:
-                await this.spawnClothesItems(inventoryList);
                 break;
         }
     }
