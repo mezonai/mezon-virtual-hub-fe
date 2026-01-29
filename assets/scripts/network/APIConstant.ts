@@ -60,6 +60,7 @@ export default class APIConstant {
     static ASSEMBLE = "assemble";
     static RECIPE = "recipe";
     static EXCHANGE = "exchange";
+    static EVENT_REWARD = "event-reward";
     
 }
 

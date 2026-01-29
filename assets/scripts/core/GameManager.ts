@@ -39,6 +39,7 @@ export class GameManager extends Component {
         this.resetNoticeTrandferDiamon();
         const runRewards = async () => {
 
+            await this.getEventRewardNoQuest();
             await this.getEventReward();
             await this.getNewbieReward();
             await this.getReward();
@@ -127,6 +128,22 @@ export class GameManager extends Component {
                 param
             );
             localStorage.setItem(Constants.SHOW_DAILY_QUEST_FIRST_DAY, today);
+            await PopupManager.getInstance().waitCloseAsync(popup.node.uuid);
+        }
+    }
+
+    async getEventRewardNoQuest() {
+        const rewardItems = await WebRequestManager.instance.getEventRewardNoQuestAsync();
+        if (rewardItems.length <= 0) return;
+        for (let i = 0; i < rewardItems.length; i++) {
+            const name = Constants.getNameItem(rewardItems[i]);
+            const content = `Chúc mừng bạn nhận thành công \n ${name}`;
+            const param: PopupRewardParam = {
+                status: RewardStatus.GAIN,
+                content: content,
+                reward: rewardItems[i]
+            };
+            const popup = await PopupManager.getInstance().openPopup('PopupReward', PopupReward, param);
             await PopupManager.getInstance().waitCloseAsync(popup.node.uuid);
         }
     }

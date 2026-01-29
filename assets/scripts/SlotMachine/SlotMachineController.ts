@@ -138,10 +138,11 @@ export class SlotMachineController extends BasePopup {
             const itemNode = instantiate(this.itemPrefab);
             let slotItem = itemNode.getComponent(SlotItem);
             itemNode.setParent(this.itemContainer);
+            const rawRate = element.rate ?? 0;
             let displayData: RewardDisplayData = {
                 spriteFrame: await ItemIconManager.getInstance().getIconRewardSlot(element),
                 name: this.getNameIconReward(element),
-                rate: Math.floor(element.rate) ?? 0,
+                rate: rawRate > 0 ? Math.max(0.1, Math.floor(rawRate * 10) / 10) : 0,
                 quantity: element.quantity,
                 isItem: element.type == RewardType.ITEM && !NOT_ITEM_TYPES.includes(element.item.type),
             };

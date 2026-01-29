@@ -77,6 +77,20 @@ export class WebRequestManager extends Component {
         });
     }
 
+    public async getEventRewardNoQuestAsync(): Promise<RewardItemDTO[]> {
+        return new Promise((resolve, reject) => {
+            WebRequestManager.instance.getEventRewardNoQuest(
+                (response) => {
+                    const rewardData = ConvetData.ConvertRewards(response.data.rewards) ?? [];
+                    resolve(rewardData);
+                },
+                (error) => {
+                    resolve([]);
+                }
+            );
+        });
+    }
+
     public async getEventRewardAsync(): Promise<EventRewardDTO> {
         return new Promise((resolve, reject) => {
             WebRequestManager.instance.getEventReward(
@@ -776,6 +790,10 @@ export class WebRequestManager extends Component {
 
     public getNewbieReward(successCallback, errorCallback) {
         APIManager.getData(this.combineWithSlash(APIConstant.PLAYER_QUESTS, APIConstant.NEWBIE_LOGIN), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    }
+
+    public getEventRewardNoQuest(successCallback, errorCallback) {
+        APIManager.getData(this.combineWithSlash(APIConstant.GAME, APIConstant.EVENT_REWARD), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
     public getEventReward(successCallback, errorCallback) {

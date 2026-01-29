@@ -25,7 +25,7 @@ export class InventoryManager extends BaseInventoryManager {
     @property({ type: Node }) goBg: Node = null;
     @property({ type: Node }) goListItem: Node = null;
     @property({ type: Node }) goListOtherItem: Node = null;
-    private defaultTab: ItemType = ItemType.HAIR;
+    private defaultTab: ItemType = ItemType.PETFRAGMENT;
     private cachedInventory: Record<string, InventoryDTO[]> = {};
     @property({ type: Button }) assembleButton: Button = null;
     @property({ type: Button }) exchangeButton: Button = null;

@@ -175,14 +175,14 @@ export class Constants {
     }
 
     private static _tabMap: Map<string, string> = new Map([
+        [ItemType.PETFRAGMENT, "Mảnh Pet"],
         [ItemType.HAIR, 'Tóc'],
         [ItemType.FACE, 'Mặt'],
         [ItemType.EYES, 'Mắt'],
         [ItemType.UPPER, 'Áo'],
         [ItemType.LOWER, 'Quần'],
         [ItemType.PET_FOOD, 'Thức ăn pet'],
-        [ItemType.PET_CARD, "Thẻ pet"],
-        [ItemType.PETFRAGMENT, "Mảnh Pet"]
+        [ItemType.PET_CARD, "Thẻ pet"]
     ]);
 
     public static getTabItemMap(): Map<string, string> {
