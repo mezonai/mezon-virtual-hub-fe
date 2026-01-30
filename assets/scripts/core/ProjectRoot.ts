@@ -20,6 +20,7 @@ export class ProjectRoot extends Component {
     private totalCoreNeedLoad = 1;
     private _loadedCore = 0;
     private initIntervalId = 0;
+    private isLoading = false;
 
     private get loadedCore() {
         return this._loadedCore;
@@ -46,7 +47,11 @@ export class ProjectRoot extends Component {
         this.introScene.node.active = Constants.isFirstEnterGame; 
         director.on(EVENT_NAME.RELOAD_SCENE, (scene) => { this.onSceneLoaded(scene); });
         director.on(EVENT_NAME.ON_LOGIN_MEZON_READY, this.onLoginReady, this);
-        await this.uiLoginControl.startLoginMezonOnce();
+        if(Constants.isFirstEnterGame)
+            await this.uiLoginControl.startLoginMezonOnce();
+        else{
+            this.onSceneLoaded({ name: SceneName.SCENE_GAME_MAP });
+        }
     }
 
     private async onLoginReady() {
@@ -74,8 +79,11 @@ export class ProjectRoot extends Component {
     private async onSceneLoaded(scene) {
         if (scene?.name == "GameMap") {
             this.loadedCore = 0;
+             this.isLoading = true;
             this.initNotice.active = true;
+            this.introScene.node.active = false;
             LoadBundleController.instance.init((progress) => {
+                 if (!this.isLoading) return;
                 this.updateLoadPercent(progress);
             });
             if (this.planeNotice) {
@@ -83,12 +91,14 @@ export class ProjectRoot extends Component {
                 this.planeNotice.move();
             }
             await LoadBundleController.instance.isInitDone();
+             this.isLoading = false;
             this.loadedCore++;
         }
 
     }
 
     private updateLoadPercent(progress: number) {
+         if (!this.progressText?.node?.isValid) return;
         this.progressText.string = `<b>${(Math.round(progress * 100)).toString()}%</b>`;
     }
 
