@@ -75,6 +75,7 @@ export class ProjectRoot extends Component {
         if (scene?.name == "GameMap") {
             this.loadedCore = 0;
             this.initNotice.active = true;
+            this.introScene.node.active = false;
             LoadBundleController.instance.init((progress) => {
                 this.updateLoadPercent(progress);
             });

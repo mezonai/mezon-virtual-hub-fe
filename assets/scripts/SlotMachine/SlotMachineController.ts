@@ -72,10 +72,12 @@ export class SlotMachineController extends BasePopup {
         this.spinX1Button.addAsyncListener(async () => {
             this.spinX1Button.interactable = false;
             this.spinMachine(1);
+            this.spinX1Button.interactable = true;
         });
         this.spinX5Button.addAsyncListener(async () => {
             this.spinX5Button.interactable = false;
             this.spinMachine(5);
+            this.spinX5Button.interactable = true;
         });
         this.closeButton.addAsyncListener(async () => {
             this.closeButton.interactable = false;
@@ -166,13 +168,13 @@ export class SlotMachineController extends BasePopup {
     }
 
     private async spinMachine(quantity: number = 1) {
+        this.minusCoin = this.wheel.base_fee * quantity;
         if (UserMeManager.playerCoin < this.minusCoin) {
             Constants.showConfirm(`Bạn cần ${this.minusCoin} coin để quay vòng quay may mắn`, "Chú ý" );
             return;
         }
 
         this.prepareSpinUI();
-        this.minusCoin = this.wheel.base_fee * quantity;
         this.rewardPopUp.setOnRewardsShownCallback(() => {
             this.restoreSpinUI();
         });
