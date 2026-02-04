@@ -29,6 +29,7 @@ import { FarmController } from '../Farm/FarmController';
 import { FarmSlotDTO, SlotActionType } from '../Farm/EnumPlant';
 import { LoadingManager } from '../PopUp/LoadingManager';
 import { PopupHarvestReceive, PopupHarvestReceiveParam } from '../PopUp/PopupHarvestReceive';
+import { ExchangeCoinController } from './ExchangeCoinController';
 
 @ccclass('ServerManager')
 export class ServerManager extends Component {
@@ -86,9 +87,15 @@ export class ServerManager extends Component {
         });
 
         this.room.state.players.onAdd((player, sessionId) => {
-            let playerData = new PlayerColysesusObjectData(sessionId, this.room, player.x, player.y, player.display_name, player.skin_set, player.user_id, player.is_show_name, player.pet_players, player.isInBattle);
+            let playerData = new PlayerColysesusObjectData(sessionId, this.room, player.x, player.y, player.display_name, player.skin_set, player.user_id, player.is_show_name, player.pet_players, player.isInBattle, player.totalPetBattle);
             UserManager.instance.createPlayer(playerData);
+
         });
+
+        this.room.state.players.onChange(async (player, sessionId) => {
+
+        });
+
 
         this.room.state.items.onAdd((item, key) => {
             console.log(item, key);
@@ -160,6 +167,14 @@ export class ServerManager extends Component {
             UserManager.instance.onPlayerRemoteUpdateGold(data);
         });
 
+        this.room.onMessage("onSendTokenSuccess", (data) => {
+            ExchangeCoinController.instance.onSendTokenSuccess(data);
+        });
+
+        this.room.onMessage("onSendTokenFail", (data) => {
+            ExchangeCoinController.instance.onSendTokenFail(data);
+        });
+
         this.room.onMessage("onPlayerUpdateDiamond", (data) => {
             UserManager.instance.onPlayerRemoteUpdateDiamond(data);
         });
@@ -213,6 +228,8 @@ export class ServerManager extends Component {
             }
 
             if (code == 4444) {
+                this.sendDisconnectdBattle();
+                this.leaveBattleRoom();
                 if (UIManager.Instance) {
                     const param: SelectionMiniParam = {
                         title: "Chú Ý",
@@ -623,10 +640,10 @@ export class ServerManager extends Component {
         this.room.onMessage(MessageTypes.ON_HARVEST_INTERRUPTED_BY_OTHER, (data) => {
             let message = `Bạn bị phá thu hoạch bởi ${data.interruptedByName}!`;
             if (this.ShowLimitHarvestPlant(data.selfHarvest.max, data.selfHarvest.remaining)) {
-            message += `\nLượt thu hoạch của bạn còn lại: ${data.selfHarvest.remaining}/${data.selfHarvest.max}`;
+                message += `\nLượt thu hoạch của bạn còn lại: ${data.selfHarvest.remaining}/${data.selfHarvest.max}`;
             }
             if (this.ShowLimitHarvestPlant(data.plantHarvest.max, data.plantHarvest.remaining)) {
-            message += `\nLượt thu hoạch còn lại của cây: ${data.plantHarvest.remaining}/${data.plantHarvest.max}`;
+                message += `\nLượt thu hoạch còn lại của cây: ${data.plantHarvest.remaining}/${data.plantHarvest.max}`;
             }
             Constants.showConfirm(message);
             UserManager.instance.GetMyClientPlayer.get_MoveAbility.startMove();
@@ -638,6 +655,14 @@ export class ServerManager extends Component {
                 otherPlayer.playerInteractFarm.showHarvestingComplete();
             }
             FarmController.instance.UpdateSlotAction(data.slotId, SlotActionType.Harvest, false);
+        });
+
+        this.room.onMessage(MessageTypes.ON_DECREASE_GROWTH_TIME, (data) => {
+            const isMe = data.sessionId === UserManager.instance.GetMyClientPlayer?.myID;
+            if (isMe) {
+                FarmController.instance.UpdateSlotAction(data.slotId, SlotActionType.growth_plant, true, data.typeTool);
+                // Constants.showConfirm(data.message);
+            }
         });
 
         this.room.onMessage(MessageTypes.ON_PLANT_TO_PLANT_FAILED, (data) => {
@@ -658,6 +683,10 @@ export class ServerManager extends Component {
             Constants.showConfirm(`${data.message}`);
         });
 
+        this.room.onMessage(MessageTypes.ON_DECREASE_GROWTH_TIME_FAILED, (data) => {
+            Constants.showConfirm(`${data.message}`);
+        });
+
         this.room.onMessage(MessageTypes.ON_PLANT_DEATH, (data) => {
             const harvestPlayer = UserManager.instance.getPlayerById(data.harverstId);
             const interruptedPlayer = UserManager.instance.getPlayerById(data.interruptedId);
@@ -669,7 +698,8 @@ export class ServerManager extends Component {
     }
 
     private ShowLimitHarvestPlant(max?: number, remaining?: number): boolean {
-        return max !== Constants.HARVEST_UNLIMITED && remaining != Constants.HARVEST_UNLIMITED;
+        if (max == null || remaining == null) return false;
+        return (max !== Constants.HARVEST_UNLIMITED && remaining !== Constants.HARVEST_UNLIMITED);
     }
 
     public async joinBattleRoom(roomId: string): Promise<void> {
@@ -851,6 +881,10 @@ export class ServerManager extends Component {
         this.room.send("plantToSlot", sendData)
     }
 
+    public sendDecreaseGrowthTimeToSlot(sendData) {
+        this.room.send("decreaseGrowthTime", sendData)
+    }
+
     public sendWaterPlant(sendData) {
         this.room.send("waterPlant", sendData)
     }
@@ -916,6 +950,11 @@ export class ServerManager extends Component {
         this.battleRoom.send(MessageTypes.SURRENDER_BATTLE, { message: "", });
     }
 
+    public sendDisconnectdBattle() {
+        if (this.battleRoom == null) return;
+        this.battleRoom.send(MessageTypes.DISCONNECTED, { message: "", });
+    }
+
     public sendEndTurn() {
         if (this.battleRoom == null) return;
         this.battleRoom.send(MessageTypes.CONFIRM_END_TURN, { message: "", });
@@ -940,20 +979,11 @@ export class ServerManager extends Component {
         }
     }
 
-    public sendNotEnoughPet(data) {
-        this.room.send(MessageTypes.NOT_ENOUGH_PET_BATTLE, data);
-    }
-
-    public sendNotPet(data) {
-        this.room.send(MessageTypes.NOT_PET_BATTLE, data);
-    }
-
-    public sendNotEnoughSkillPet(data) {
-        this.room.send(MessageTypes.NOT_ENOUGH_SKILL_PET_BATTLE, data);
-    }
-
     public sendUpdateSlot() {
         this.room.send("UpdateSlots")
     }
 
+    public sendUpdateSlotPetBattle(totalPetBattle: number) {
+        this.room.send(MessageTypes.ON_CHANGE_TOTAL_SLOT_PET_BATTLE, totalPetBattle)
+    }
 }

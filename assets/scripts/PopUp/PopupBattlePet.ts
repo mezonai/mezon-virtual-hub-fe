@@ -22,6 +22,7 @@ import { BGMType, SoundManager } from '../core/SoundManager';
 import { Label } from 'cc';
 import { PopupSelectionMini, SelectionMiniParam } from './PopupSelectionMini';
 import Utilities from '../utilities/Utilities';
+import { Sprite } from 'cc';
 const { ccclass, property } = _decorator;
 @ccclass('PlayerBattleStats')
 export class PlayerBattleStats {
@@ -42,6 +43,7 @@ export class PopupBattlePet extends Component {
     @property({ type: SlideObject }) slideTalkAnimation: SlideObject = null;
     @property({ type: TalkAnimation }) talkAnimation: TalkAnimation = null;
     @property({ type: Label }) timeRemaning: Label = null;
+    @property({ type: Sprite }) backgroundFade: Sprite = null;
     //Button
     @property({ type: Button }) hideSkillButton: Button = null;
     @property({ type: Button }) fightButton: Button = null;
@@ -184,7 +186,7 @@ export class PopupBattlePet extends Component {
         const targetPrefab = defender.petBattlePrefab;
 
         const skillSelfTarget = [
-            SkillCode.ATTACK, SkillCode.CUT, SkillCode.POUND, SkillCode.DOUBLE_KICK, SkillCode.BITE, SkillCode.CRUSH_CLAW, SkillCode.FURY_PUNCH,
+            SkillCode.CUT, SkillCode.POUND, SkillCode.DOUBLE_KICK, SkillCode.BITE, SkillCode.CRUSH_CLAW, SkillCode.FURY_PUNCH,
             SkillCode.RAZOR_LEAF, SkillCode.VINE_WHIP, SkillCode.THUNDERBOLT, SkillCode.THUNDER_WAVE, SkillCode.BUBBLE,
             SkillCode.ICICLE_CRASH, SkillCode.ICE_FANG, SkillCode.DRAGON_CLAW
         ];
@@ -205,7 +207,14 @@ export class PopupBattlePet extends Component {
             case SkillCode.WING_ATTACK:
                 await attackerPrefab.skillMovementFromTo(skillId, attackerPrefab, targetPrefab, parent);
                 break;
-
+            case SkillCode.ELECTRIC_CHARGE:
+                await attackerPrefab.playSkillAtSelf(SkillCode.ELECTRO_BALL);
+                await attackerPrefab.usingSkillYourself(SkillCode.ABSORB);
+                break;
+            case SkillCode.STORM_DOMINON:
+                await attackerPrefab.fadeBackgroundEffect(this.backgroundFade, 3);
+                await targetPrefab.usingSkillYourself(SkillCode.THUNDER_WAVE);
+                break;
             case SkillCode.EARTHQUAKE:
                 await attackerPrefab.earthquake(parent, 0.5, 15);
                 break;
@@ -426,14 +435,15 @@ export class PopupBattlePet extends Component {
     }
 
     public async battleFinished(data) {
-        const { id, expReceived, dimondChallenge, currentPets, isWinner } = data;
+        const { id, expReceived, currentValue, currentPets, isWinner, isDiamond } = data;
         await Constants.waitUntil(() => this.myClient != null);
         const param: WinLoseBattleParam = {
             petsDataBeforeUpdate: this.myClient.battlePets,
             petsDataAfterUpdate: currentPets,
             statusBattle: isWinner ? StatusBattle.WIN : StatusBattle.LOSE,
-            dimondChallenge: dimondChallenge,
+            currentValue: currentValue,
             expAddedPerPet: expReceived,
+            isDiamond: isDiamond,
         };
         this.closeBattle();
         await PopupManager.getInstance().closeAllPopups();

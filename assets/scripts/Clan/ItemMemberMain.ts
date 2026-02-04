@@ -23,8 +23,8 @@ export class ItemMemberMain extends Component {
         Constants.loadAvatar(this.avatarSprite, data.avatar_url);
         this.nameMemberLabel.string = data.display_name;
         this.setRole(data.clan_role);
-        this.totalScoreLabel.string = data.total_score === 0 ? '--' : data.total_score.toString();
-        this.scoreWeeklyLabel.string = data.weekly_score === 0 ? '--' : data.weekly_score.toString();
+        this.totalScoreLabel.string = (data.total_score === 0 || null) ? '--' : data.total_score.toString();
+        this.scoreWeeklyLabel.string = (data.weekly_score === 0 || null) ? '--' : data.weekly_score.toString();
         this.setRankIcon(data);
     }
 

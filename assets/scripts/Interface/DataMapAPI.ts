@@ -15,6 +15,8 @@ export class User {
     display_name: string | null;
     skin_set: string[] | null;
     clan_role: string | null;
+    isPetTutorialCompleted : boolean = false;
+    isPlantTutorialCompleted : boolean = false;
 }
 
 export class UserDataResponse {
@@ -39,6 +41,7 @@ export class ClansData {
     id: string;
     name: string;
     score: number;
+    weekly_score: number;
     fund: number;
     description: string | null;
     member_count?: number;
@@ -68,8 +71,8 @@ export class UserClan {
     avatar_url: string | null;
     gender: string | null;
     clan_role: string | null;
-    total_score: number | null;
-    weekly_score: number | null;
+    total_score?: number | null;
+    weekly_score?: number | null;
     rank: number | null;
 }
 
@@ -130,6 +133,12 @@ export enum SortBy {
     CREATED_AT = "created_at",
     USERNAME = "username",
     TOTAL_AMOUNT = "total_amount"
+}
+
+export enum ScoreType {
+  TOTAL = 'total',
+  WEEKLY = 'weekly',
+  ALL = 'all',
 }
 
 export class ClanFundPayload {
@@ -200,6 +209,14 @@ export enum ClanActivityActionType {
     FUND = 'fund',
     JOIN = 'join',
     LEAVE = 'leave',
+    WEEKLY_RANKING_MEMBER_1 = 'weekly_ranking_member_1',
+    WEEKLY_RANKING_MEMBER_2 = 'weekly_ranking_member_2',
+    WEEKLY_RANKING_MEMBER_3 = 'weekly_ranking_member_3',
+    WEEKLY_RANKING_MEMBER_TOP_10 = 'weekly_ranking_member_top_10',
+
+    WEEKLY_RANKING_CLAN_1 = 'weekly_ranking_clan_1',
+    WEEKLY_RANKING_CLAN_2 = 'weekly_ranking_clan_2',
+    WEEKLY_RANKING_CLAN_3 = 'weekly_ranking_clan_3',
 }
 
 export interface RequestToJoinDTO {

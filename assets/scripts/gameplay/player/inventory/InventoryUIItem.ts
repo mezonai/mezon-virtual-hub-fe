@@ -11,9 +11,14 @@ export class InventoryUIITem extends BaseInventoryUIITem {
     public override init(data: Item) {
         super.init(data);
         const itemDTO = UserMeManager.GetItem?.find(inv => inv.item?.id === data.id);
-        const quantity = itemDTO?.quantity ?? 0;
+        const isSpecialType = [
+            ItemType.PET_CARD,
+            ItemType.PET_FOOD,
+            ItemType.PETFRAGMENT,
+        ].includes(data.type);
+
+        const quantity = itemDTO?.quantity ?? (isSpecialType ? 0 : 1);
         this.amountLabel.string = Utilities.convertBigNumberToStr(quantity);
-        this.amountLabel.node.active = data.type == ItemType.PET_CARD;
     }
 
     public override initFood(data: Food) {

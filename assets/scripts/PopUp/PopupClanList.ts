@@ -60,7 +60,7 @@ export class PopupClanList extends BasePopup {
     }
 
     async loadList(page: number, search?: string) {
-        this.listClan = await WebRequestManager.instance.getAllClanRequestsync(page, search);
+        this.listClan = await WebRequestManager.instance.getAllClanRequestsync(false, page, search);
         this.svClanList.content.removeAllChildren();
         this._listClan = [];
         this.noMember.active = !this.listClan?.result || this.listClan.result.length === 0;

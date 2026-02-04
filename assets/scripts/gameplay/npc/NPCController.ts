@@ -9,6 +9,8 @@ import { UIManager } from '../../core/UIManager';
 import { UIID } from '../../ui/enum/UIID';
 import { MathProblemParam, MathProblemPopup } from '../../ui/MathProblemPopup';
 import { PopupManager } from '../../PopUp/PopupManager';
+import { Constants } from '../../utilities/Constants';
+import { Season } from '../../GameMap/OfficePosition';
 const { ccclass, property } = _decorator;
 
 export enum NPC_TYPE {
@@ -28,6 +30,7 @@ export class NPCController extends Component {
     private tweenAction: Tween<Node> | null = null;
     private hideTimeout: number | null = null;
     @property({ type: CCFloat }) showDialogueTime: number = 8;
+    @property([Node]) characters: Node[] = [];// 0: chacracter normal, 1: character LunarnewYear
     private inited: boolean = false;
     private maxDistancePlayerCanInteract = 100;
 
@@ -49,6 +52,8 @@ export class NPCController extends Component {
                 .then(() => {
                     this.inited = true;
                 })
+            this.characters[0].active = Constants.season != Season.LUNARNEWYEAR;
+            this.characters[1].active = Constants.season == Season.LUNARNEWYEAR;
         }
         else {
             this.node.active = false;

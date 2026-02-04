@@ -26,25 +26,28 @@
       },
       {
         "__id__": 54
+      },
+      {
+        "__id__": 80
       }
     ],
     "_active": true,
     "_components": [
       {
-        "__id__": 80
-      },
-      {
-        "__id__": 82
-      },
-      {
-        "__id__": 84
-      },
-      {
         "__id__": 86
+      },
+      {
+        "__id__": 88
+      },
+      {
+        "__id__": 90
+      },
+      {
+        "__id__": 92
       }
     ],
     "_prefab": {
-      "__id__": 88
+      "__id__": 94
     },
     "_lpos": {
       "__type__": "cc.Vec3",
@@ -1116,14 +1119,14 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "PlayerName",
+    "_name": "CharacterLunarNewYear",
     "_objFlags": 0,
     "__editorExtras__": {},
     "_parent": {
       "__id__": 1
     },
     "_children": [],
-    "_active": true,
+    "_active": false,
     "_components": [
       {
         "__id__": 49
@@ -1137,8 +1140,8 @@
     },
     "_lpos": {
       "__type__": "cc.Vec3",
-      "x": -0.147,
-      "y": 77.303,
+      "x": 0.637,
+      "y": 24.539,
       "z": 0
     },
     "_lrot": {
@@ -1155,7 +1158,7 @@
       "z": 1
     },
     "_mobility": 0,
-    "_layer": 4,
+    "_layer": 1073741824,
     "_euler": {
       "__type__": "cc.Vec3",
       "x": 0,
@@ -1178,8 +1181,8 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 201.96670772821577,
-      "height": 40.32
+      "width": 80,
+      "height": 96.969697
     },
     "_anchorPoint": {
       "__type__": "cc.Vec2",
@@ -1190,10 +1193,10 @@
   },
   {
     "__type__": "cc.CompPrefabInfo",
-    "fileId": "61gQcvG5pA2aTaUa+x3vfP"
+    "fileId": "ec0UxEIRdDMb/Ehe2IEG0R"
   },
   {
-    "__type__": "cc.RichText",
+    "__type__": "cc.Sprite",
     "_name": "",
     "_objFlags": 0,
     "__editorExtras__": {},
@@ -1204,37 +1207,38 @@
     "__prefab": {
       "__id__": 52
     },
-    "_lineHeight": 32,
-    "_string": "<outline color=#222222 width=1>Thiên Đạo (NPC)</outline>",
-    "_horizontalAlign": 0,
-    "_verticalAlign": 1,
-    "_fontSize": 20,
-    "_fontColor": {
+    "_customMaterial": null,
+    "_srcBlendFactor": 2,
+    "_dstBlendFactor": 4,
+    "_color": {
       "__type__": "cc.Color",
       "r": 255,
       "g": 255,
       "b": 255,
       "a": 255
     },
-    "_maxWidth": 0,
-    "_fontFamily": "Arial",
-    "_font": {
-      "__uuid__": "80b195e8-b21f-4337-ba2e-4ed924f9efd5",
-      "__expectedType__": "cc.TTFFont"
+    "_spriteFrame": {
+      "__uuid__": "0f21deff-6cda-4d5b-93b4-30bd7b213c52@f9941",
+      "__expectedType__": "cc.SpriteFrame"
     },
-    "_isSystemFontUsed": false,
-    "_userDefinedFont": {
-      "__uuid__": "80b195e8-b21f-4337-ba2e-4ed924f9efd5",
-      "__expectedType__": "cc.TTFFont"
+    "_type": 0,
+    "_fillType": 0,
+    "_sizeMode": 0,
+    "_fillCenter": {
+      "__type__": "cc.Vec2",
+      "x": 0,
+      "y": 0
     },
-    "_cacheMode": 0,
-    "_imageAtlas": null,
-    "_handleTouchEvent": true,
+    "_fillStart": 0,
+    "_fillRange": 0,
+    "_isTrimmedMode": true,
+    "_useGrayscale": false,
+    "_atlas": null,
     "_id": ""
   },
   {
     "__type__": "cc.CompPrefabInfo",
-    "fileId": "26+49ErYJNibvukk2FOZVr"
+    "fileId": "fa30b/nX5OgI1eFa8gEt7C"
   },
   {
     "__type__": "cc.PrefabInfo",
@@ -1244,7 +1248,7 @@
     "asset": {
       "__id__": 0
     },
-    "fileId": "45BKYSGSdKyrqVWbCowqtn",
+    "fileId": "9edVe5jjZLf5xorsc5P1BP",
     "instance": null,
     "targetOverrides": null,
     "nestedPrefabInstanceRoots": null
@@ -1463,7 +1467,7 @@
     "_string": "",
     "_horizontalAlign": 1,
     "_verticalAlign": 1,
-    "_actualFontSize": 46.861111111111114,
+    "_actualFontSize": 63.546875,
     "_fontSize": 14,
     "_fontFamily": "Arial",
     "_lineHeight": 25.9,
@@ -1863,6 +1867,141 @@
     "nestedPrefabInstanceRoots": null
   },
   {
+    "__type__": "cc.Node",
+    "_name": "PlayerName",
+    "_objFlags": 0,
+    "__editorExtras__": {},
+    "_parent": {
+      "__id__": 1
+    },
+    "_children": [],
+    "_active": true,
+    "_components": [
+      {
+        "__id__": 81
+      },
+      {
+        "__id__": 83
+      }
+    ],
+    "_prefab": {
+      "__id__": 85
+    },
+    "_lpos": {
+      "__type__": "cc.Vec3",
+      "x": -0.147,
+      "y": 77.303,
+      "z": 0
+    },
+    "_lrot": {
+      "__type__": "cc.Quat",
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "w": 1
+    },
+    "_lscale": {
+      "__type__": "cc.Vec3",
+      "x": 1,
+      "y": 1,
+      "z": 1
+    },
+    "_mobility": 0,
+    "_layer": 4,
+    "_euler": {
+      "__type__": "cc.Vec3",
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "_id": ""
+  },
+  {
+    "__type__": "cc.UITransform",
+    "_name": "",
+    "_objFlags": 0,
+    "__editorExtras__": {},
+    "node": {
+      "__id__": 80
+    },
+    "_enabled": true,
+    "__prefab": {
+      "__id__": 82
+    },
+    "_contentSize": {
+      "__type__": "cc.Size",
+      "width": 201.97722138554218,
+      "height": 40.32
+    },
+    "_anchorPoint": {
+      "__type__": "cc.Vec2",
+      "x": 0.5,
+      "y": 0.5
+    },
+    "_id": ""
+  },
+  {
+    "__type__": "cc.CompPrefabInfo",
+    "fileId": "61gQcvG5pA2aTaUa+x3vfP"
+  },
+  {
+    "__type__": "cc.RichText",
+    "_name": "",
+    "_objFlags": 0,
+    "__editorExtras__": {},
+    "node": {
+      "__id__": 80
+    },
+    "_enabled": true,
+    "__prefab": {
+      "__id__": 84
+    },
+    "_lineHeight": 32,
+    "_string": "<outline color=#222222 width=1>Thiên Đạo (NPC)</outline>",
+    "_horizontalAlign": 0,
+    "_verticalAlign": 1,
+    "_fontSize": 20,
+    "_fontColor": {
+      "__type__": "cc.Color",
+      "r": 255,
+      "g": 255,
+      "b": 255,
+      "a": 255
+    },
+    "_maxWidth": 0,
+    "_fontFamily": "Arial",
+    "_font": {
+      "__uuid__": "80b195e8-b21f-4337-ba2e-4ed924f9efd5",
+      "__expectedType__": "cc.TTFFont"
+    },
+    "_isSystemFontUsed": false,
+    "_userDefinedFont": {
+      "__uuid__": "80b195e8-b21f-4337-ba2e-4ed924f9efd5",
+      "__expectedType__": "cc.TTFFont"
+    },
+    "_cacheMode": 0,
+    "_imageAtlas": null,
+    "_handleTouchEvent": true,
+    "_id": ""
+  },
+  {
+    "__type__": "cc.CompPrefabInfo",
+    "fileId": "26+49ErYJNibvukk2FOZVr"
+  },
+  {
+    "__type__": "cc.PrefabInfo",
+    "root": {
+      "__id__": 1
+    },
+    "asset": {
+      "__id__": 0
+    },
+    "fileId": "45BKYSGSdKyrqVWbCowqtn",
+    "instance": null,
+    "targetOverrides": null,
+    "nestedPrefabInstanceRoots": null
+  },
+  {
     "__type__": "cc.UITransform",
     "_name": "",
     "_objFlags": 0,
@@ -1872,7 +2011,7 @@
     },
     "_enabled": true,
     "__prefab": {
-      "__id__": 81
+      "__id__": 87
     },
     "_contentSize": {
       "__type__": "cc.Size",
@@ -1900,7 +2039,7 @@
     },
     "_enabled": true,
     "__prefab": {
-      "__id__": 83
+      "__id__": 89
     },
     "enabledContactListener": false,
     "bullet": true,
@@ -1934,7 +2073,7 @@
     },
     "_enabled": true,
     "__prefab": {
-      "__id__": 85
+      "__id__": 91
     },
     "tag": 0,
     "_group": 2,
@@ -1964,7 +2103,7 @@
     },
     "_enabled": true,
     "__prefab": {
-      "__id__": 87
+      "__id__": 93
     },
     "type": 0,
     "showContentInterval": 10,
@@ -1974,6 +2113,15 @@
     "contentBubbleChat": {
       "__id__": 59
     },
+    "showDialogueTime": 8,
+    "characters": [
+      {
+        "__id__": 2
+      },
+      {
+        "__id__": 48
+      }
+    ],
     "_id": ""
   },
   {

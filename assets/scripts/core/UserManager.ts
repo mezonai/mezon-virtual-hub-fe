@@ -204,8 +204,9 @@ export class UserManager extends Component {
         let result2 = data.result2;
         let fee = data.fee;
         let winner = data.winner;
-        let p1Diamond = data.fromDiamond;
-        let p2Diamond = data.toDiamond;
+        let p1fromBetValue = data.fromBetValue;
+        let p2toBetValue = data.toBetValue;
+        let isDiamond = data.isDiamond;
         if (action == ActionType.RPS.toString()) {
             if (p1.myID != this.GetMyClientPlayer.myID) {
                 p1.p2PInteractManager.showSpinRPS();
@@ -230,11 +231,13 @@ export class UserManager extends Component {
             }
 
             if (UserMeManager.Get?.user) {
-                if (p1.myID == this.GetMyClientPlayer.myID && p1Diamond != null) {
-                    UserMeManager.playerDiamond = p1Diamond;
+                if (p1.myID == this.GetMyClientPlayer.myID && p1fromBetValue != null) {
+                    const moneyKey = isDiamond ? 'playerDiamond' : 'playerCoin';
+                    UserMeManager[moneyKey] = p1fromBetValue;
                 }
-                else if (p2.myID == this.GetMyClientPlayer.myID && p2Diamond != null) {
-                    UserMeManager.playerDiamond = p2Diamond;
+                else if (p2.myID == this.GetMyClientPlayer.myID && p2toBetValue != null) {
+                    const moneyKey = isDiamond ? 'playerDiamond' : 'playerCoin';
+                    UserMeManager[moneyKey] = p2toBetValue;
                 }
             }
         }
@@ -424,7 +427,6 @@ export class UserManager extends Component {
         const { message } = data;
         Constants.showConfirm(message, "Chú Ý");
     }
-
     public setStatusBattle(playerId, isInBattle: boolean): PlayerController {
         let player = this.players.get(playerId);
         if (player != null) {

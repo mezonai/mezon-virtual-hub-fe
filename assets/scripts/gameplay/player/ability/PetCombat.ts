@@ -21,16 +21,19 @@ export class PetCombat extends PlayerInteractAction {
     }
 
     protected override async invite() {
-        if (!this.canBattle(null)) return;
+        if (!this.canBattle()) return;
         super.invite();
 
         const paramConfirmPopup: PopupPetBetChallengeParam = {
-            onActionChallenge: async (amount) => {
+            title: 'Thách Đấu đánh Pet',
+            onActionChallenge: async (amount, isDiamond) => {
                 this.room.send("p2pAction", {
                     targetClientId: this.playerController.myID,
                     action: this.actionType.toString(),
-                    amount: amount
+                    amount: amount,
+                    isDiamond: isDiamond,
                 });
+
             }
         };
         await PopupManager.getInstance().openPopup("PopupPetBetChallenge", PopupPetBetChallenge, paramConfirmPopup);
@@ -38,11 +41,10 @@ export class PetCombat extends PlayerInteractAction {
     }
 
     public onBeingInvited(data) {
-        if (!this.canBattle(data)) return;
-        const { amount } = data;
+        const { amount, isDiamond } = data;
         const param: SelectionTimeOutParam = {
             title: "Thông báo",
-            content: `${data.fromName} mời bạn chơi đấu pet. Phí <color=#FF0000> ${amount} diamond</color>`,
+            content: `${data.fromName} mời bạn chơi đấu pet. Phí <color=#FF0000> ${amount} ${isDiamond ? 'Diamond' : 'Gold'}</color>`,
             textButtonLeft: "Chơi",
             textButtonRight: "Thôi",
             textButtonCenter: "",
@@ -81,29 +83,27 @@ export class PetCombat extends PlayerInteractAction {
         return PetBattleError.NONE;
     }
 
-    private canBattle(data: any): boolean {
+    private canBattle(): boolean {
         const error = this.validateBattlePets();
         if (error === PetBattleError.NONE) return true;
-        if (data != null) {
-            const dataSend = {
-                sender: data.from,
-            };
-            if (error === PetBattleError.NOT_PET) {
-                ServerManager.instance.sendNotPet(dataSend);
-            } else if (error === PetBattleError.NOT_ENOUGH_BATTLE_PETS) {
-                ServerManager.instance.sendNotEnoughPet(dataSend);
-            } else {
-                ServerManager.instance.sendNotEnoughSkillPet(dataSend);
-            }
-        } else {
-            if (error === PetBattleError.NOT_PET) {
-                Constants.showConfirm("Bạn chưa có Pet để đấu. Vui lòng hãy bắt pet", "Thông báo");
-            } else if (error === PetBattleError.NOT_ENOUGH_BATTLE_PETS) {
-                Constants.showConfirm("Bạn cần có đủ 3 Pet chiến đấu để thách đấu", "Thông báo");
-            } else {
-                Constants.showConfirm("Bạn cần cài đặt đủ kỹ năng chiến đấu cho Pet", "Thông báo");
-            }
-        }
+
+        const messageMap: Record<PetBattleError, string> = {
+            [PetBattleError.NOT_PET]:
+                "Bạn chưa có Pet để đấu. Vui lòng hãy bắt pet",
+
+            [PetBattleError.NOT_ENOUGH_BATTLE_PETS]:
+                "Bạn cần có đủ 3 Pet chiến đấu để thách đấu",
+
+            [PetBattleError.NOT_ENOUGH_BATTLE_SKILL_PETS]:
+                "Bạn cần cài đặt đủ kỹ năng chiến đấu cho Pet",
+
+            [PetBattleError.NONE]: ""
+        };
+
+        Constants.showConfirm(
+            messageMap[error] ?? "Không thể tham gia chiến đấu",
+            "Thông báo"
+        );
 
         return false;
     }
@@ -113,6 +113,7 @@ export class PetCombat extends PlayerInteractAction {
             targetClientId: data.from,
             action: data.action,
             amount: data.amount,
+            isDiamond: data.isDiamond,
         }
         this.room.send("p2pCombatActionAccept", sendData);
         this.onStartAction(data);

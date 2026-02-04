@@ -1,8 +1,8 @@
 ﻿import { Sprite } from "cc";
 import { ServerMapManager } from "../core/ServerMapManager";
-import { OfficePosition } from "../GameMap/OfficePosition";
+import { OfficePosition, Season } from "../GameMap/OfficePosition";
 import { RoomType } from "../GameMap/RoomType";
-import { ClanRole, ClansData } from "../Interface/DataMapAPI";
+import { ClanActivityActionType, ClanRole, ClansData } from "../Interface/DataMapAPI";
 import { FoodType, InventoryType, ItemType, RewardItemDTO, RewardType } from "../Model/Item";
 import { ConfirmParam, ConfirmPopup } from "../PopUp/ConfirmPopup";
 import { PopupManager } from "../PopUp/PopupManager";
@@ -30,6 +30,7 @@ export class Constants {
     public static TUTORIAL_COMPLETE: string = "tutorial_completed";
     public static POSX_PLAYER_INIT = 912;
     public static POSY_PLAYER_INIT = -261;
+    public static season: Season = Season.NONE;
     ///Chat 
     public static lastChatTime = 0;
     public static chatCount = 0;
@@ -40,6 +41,7 @@ export class Constants {
     public static readonly MAX_CHAT = 3;
     public static readonly MAX_VICE_LEADER = 5;
     public static readonly HARVEST_UNLIMITED = -1;
+    public static isFirstEnterGame: boolean = true;
 
     public static convertKeyOffice(positionTarget: OfficePosition): string {
         switch (positionTarget) {
@@ -173,6 +175,7 @@ export class Constants {
     }
 
     private static _tabMap: Map<string, string> = new Map([
+        [ItemType.PETFRAGMENT, "Mảnh Pet"],
         [ItemType.HAIR, 'Tóc'],
         [ItemType.FACE, 'Mặt'],
         [ItemType.EYES, 'Mắt'],
@@ -263,6 +266,31 @@ export class Constants {
         return matched ? nameMap[matched] : englishName;
     }
 
+    public static getToolName(englishName: string): string {
+        const nameMap: Record<string, string> = {
+            growth_plant_tool_1: 'Thời gian [-',
+            growth_plant_tool_2: 'Thời gian [-',
+            growth_plant_tool_3: 'Thời gian [-',
+            growth_plant_tool_4: 'Thời gian [-',
+            growth_plant_tool_5: 'Thời gian [-',
+            harvest_tool_1: 'Thời gian [-',
+            harvest_tool_2: 'Thời gian [-',
+            harvest_tool_3: 'Thời gian [-',
+            harvest_tool_4: 'Thời gian [-',
+            harvest_tool_5: 'Thời gian [-',
+            interrupt_harvest_tool_1: 'Phá [+',
+            interrupt_harvest_tool_2: 'Phá [+',
+            interrupt_harvest_tool_3: 'Phá [+',
+            interrupt_harvest_tool_4: 'Phá [+',
+            interrupt_harvest_tool_5: 'Phá [+',
+        };
+        const normalized = englishName.trim().toLowerCase();
+        const matched = Object.keys(nameMap).find(
+            key => key.toLowerCase() === normalized
+        );
+        return matched ? nameMap[matched] : englishName;
+    }
+
     public static getOfficeName(englishName: string): string {
         const nameMap: Record<string, string> = {
             "Ha Noi 1 Farm": "Hà Nội 1",
@@ -313,6 +341,21 @@ export class Constants {
         }
     }
 
+     public static getNameRewardItem(type: string): string {
+        switch (type) {
+            case RewardType.WEEKLY_RANKING_MEMBER_1:
+               return "Bạn đạt hạng Nhất bảng xếp hạng tuần thành viên năng động tại văn phòng";
+            case RewardType.WEEKLY_RANKING_MEMBER_2:
+                return "Bạn đạt hạng Nhì bảng xếp hạng tuần thành viên năng động tại văn phòng";
+            case RewardType.WEEKLY_RANKING_MEMBER_3:
+                return "Bạn đạt hạng Ba bảng xếp hạng tuần thành viên năng động tại văn phòng";
+            case RewardType.WEEKLY_RANKING_MEMBER_TOP_10:
+              return "Bạn thuộc 10 người năng động đứng đầu bảng xếp hạng tuần tại văn phòng";
+             default:
+                return "";// fallback
+        }
+    }
+
     static canSendChat(): boolean {
         const now = Date.now();
         // đang bị mute
@@ -335,5 +378,12 @@ export class Constants {
         }
         this.chatCount++;
         return true;
+    }
+
+    static parseSpecies(value: string): Species | null {
+        if (value in Species) {
+            return Species[value as keyof typeof Species];
+        }
+        return null;
     }
 }

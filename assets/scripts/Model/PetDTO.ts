@@ -160,6 +160,7 @@ export enum Species {
   Rabit,
   Sika,
   Snowria,
+  Voltstrider
 }
 
 export enum SkillCode {
@@ -183,6 +184,8 @@ export enum SkillCode {
   THUNDERBOLT = 'ELECTRIC01',
   THUNDER_WAVE = 'ELECTRIC02',
   ELECTRO_BALL = 'ELECTRIC03',
+  STORM_DOMINON = 'ELECTRIC04',
+  ELECTRIC_CHARGE = 'ELECTRIC05',
   WATER_GUN = 'WATER01',
   BUBBLE = 'WATER02',
   AQUA_CUTTER = 'WATER03',

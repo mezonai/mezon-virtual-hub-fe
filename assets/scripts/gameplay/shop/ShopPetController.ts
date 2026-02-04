@@ -39,7 +39,7 @@ export class ShopPetController extends BaseInventoryManager {
                 .catch(() => { })
             if (confirm) {
                 const result = await this.buyItem();
-                await this.getAllFoodAsync();
+                await WebRequestManager.instance.getUserProfileAsync();
                 this.addItemToInventory(result);
                 this.ResetQuantity();
             }
@@ -57,8 +57,7 @@ export class ShopPetController extends BaseInventoryManager {
     private async showPopupAndReset(): Promise<boolean> {
         let result = await new Promise<boolean>((resolve, reject) => {
             this.ResetQuantity();
-            if (this.isOpenPopUp || !this.selectingUIItem?.dataFood?.price || this.selectingUIItem.dataFood.price <= 0) 
-            {
+            if (this.isOpenPopUp || !this.selectingUIItem?.dataFood?.price || this.selectingUIItem.dataFood.price <= 0) {
                 reject(false);
                 return;
             }
@@ -66,7 +65,7 @@ export class ShopPetController extends BaseInventoryManager {
             this.isOpenPopUp = true;
             const param: PopupBuyQuantityItemParam = {
                 selectedItemPrice: this.selectingUIItem.dataFood.price,
-                spriteMoneyValue:  this.iconItemUIHelper.GetIcon(),
+                spriteMoneyValue: this.iconItemUIHelper.GetIcon(),
                 textButtonLeft: "Thôi",
                 textButtonRight: "Mua",
                 onActionButtonLeft: () => {
@@ -120,19 +119,6 @@ export class ShopPetController extends BaseInventoryManager {
 
             WebRequestManager.instance.postBuyItem(payload, resolve, reject);
         });
-    }
-
-    private getAllFoodAsync() {
-        WebRequestManager.instance.getUserProfile(
-            (response) => {
-                UserMeManager.Set = response.data;
-            },
-            (error) => this.onApiError(error)
-        );
-    }
-
-    private onApiError(error) {
-        Constants.showConfirm(error.error_message, "Chú ý");
     }
 
     private checkGoldUser(price: number) {
@@ -192,6 +178,31 @@ export class ShopPetController extends BaseInventoryManager {
         uiItem.reset();
     }
 
+    protected override async onTabChange(tabName: string) {
+        await super.onTabChange(tabName);
+        this.scheduleOnce(() => {
+            this.showDefaultItemFallback();
+        }, 0);
+    }
+
+    private showDefaultItemFallback() {
+        const content = this.otherScrollView?.content;
+        if (!content || content.children.length === 0) return;
+
+        const firstNode = content.children[0];
+        const uiItem = firstNode.getComponent(ShopUIItem);
+        if (!uiItem) return;
+
+        if (this.selectingUIItem) {
+            this.selectingUIItem.toggleActive(false);
+        }
+
+        this.selectingUIItem = uiItem;
+        uiItem.toggleActive(true);
+
+        this.onUIItemClick(uiItem, uiItem.dataFood);
+    }
+
     protected override resetSelectItem() {
         if (this.selectingUIItem) {
             this.selectingUIItem.reset();
@@ -211,6 +222,11 @@ export class ShopPetController extends BaseInventoryManager {
     }
 
     protected override onUIItemClick(uiItem: ShopUIItem, data: Food) {
+        if (!uiItem || !data) return;
+
+        if (this.selectingUIItem && this.selectingUIItem !== uiItem) {
+            this.selectingUIItem.toggleActive(false);
+        }
         this.selectingUIItem = uiItem;
         this.actionButton.interactable = uiItem != null;
         this.descriptionText.string = data.name;

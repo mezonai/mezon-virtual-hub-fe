@@ -8,6 +8,7 @@ export default class APIConstant {
     static INVENTORY: string = "inventory";
     static BUY = "buy";
     static ITEM = "item";
+    static ALL_ITEM = "all-item";
     static SPIN = "spin";
     static GAME = "game";
     static GAME_EVENT = "game-event";
@@ -50,6 +51,17 @@ export default class APIConstant {
     static HARVEST_COUNTS = "harvest-counts";
     static CLAN_ACTIVITYS = "clan-activitys";
     static LOGIN_EVENT_7DAYS = "login-event-7-days";
+    static QR_MEZON = "mezon";
+    static WEEKLY_REWARD = "weekly-reward";
+    static SLOT_WHEEL = "slot-wheel";
+    static WHEEL = "wheel";
+    static ITEM_FRAGMENT = "item-fragment";
+    static INGREIENT = "ingredient";
+    static ASSEMBLE = "assemble";
+    static RECIPE = "recipe";
+    static EXCHANGE = "exchange";
+    static EVENT_REWARD = "event-reward";
+    
 }
 
 export class APIConfig {
@@ -87,5 +99,6 @@ export class EVENT_NAME {
     static ON_CLICK_BUTTON_CHANGE_ANIM_MOBILE = "ON_CLICK_BUTTON_CHANGE_ANIM_MOBILE";
     static ON_PRESS_KEYBOARD = "ON_PRESS_KEYBOARD";
     static ON_RELEASE_KEYBOARD = "ON_RELEASE_KEYBOARD";
+    static ON_LOGIN_MEZON_READY = "ON_LOGIN_MEZON_READY";
 }
 

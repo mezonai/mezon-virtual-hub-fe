@@ -202,7 +202,6 @@ export class PopupTutorialCatchPet extends BasePopup {
         this.animalTutorial.node.setPosition(this.defaultPosititonPet);
         this.animalTutorial.node.setScale(new Vec3(0.4, 0.4, 0.4));
         this.buttonSkip.node.on(Button.EventType.CLICK, () => {
-            localStorage.setItem(Constants.TUTORIAL_CACTH_PET, 'true');
             this.cancelTutorial();
         }, this);
 
@@ -226,7 +225,6 @@ export class PopupTutorialCatchPet extends BasePopup {
             textButtonRight: "",
             textButtonCenter: "Bắt Đầu",
             onActionButtonCenter: async () => {
-                localStorage.setItem(Constants.TUTORIAL_CACTH_PET, 'true');
                 this.cancelTutorial();
             },
         };

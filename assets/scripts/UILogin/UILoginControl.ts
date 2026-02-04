@@ -2,7 +2,7 @@ import { _decorator, Component, EditBox, Label, Node, Sprite, SpriteFrame, log, 
 import { MezonAppEvent, MezonWebViewEvent } from '../../webview';
 import { WebRequestManager } from '../network/WebRequestManager';
 import { MezonDTO, UserDTO } from '../Model/Player';
-import { APIConfig } from '../network/APIConstant';
+import { APIConfig, EVENT_NAME } from '../network/APIConstant';
 import { ResourceManager } from '../core/ResourceManager';
 import { GameMapController } from '../GameMap/GameMapController';
 import { UserMeManager } from '../core/UserMeManager';
@@ -16,6 +16,8 @@ import { sys } from 'cc';
 import { LoadingManager } from '../PopUp/LoadingManager';
 import { SceneManagerController } from '../utilities/SceneManagerController';
 import { SceneName } from '../utilities/SceneName';
+import { director } from 'cc';
+import { Tween } from 'cc';
 
 const { ccclass, property } = _decorator;
 
@@ -64,23 +66,64 @@ export class UILoginControll extends Component {
         return UILoginControll._instance;
     }
 
+    public async startLoginMezonOnce() {
+        await this.loadData();
+
+    }
+
     public init() {
         if (APIConfig.token != "") {
-            this.closePanel(false, false);
+            this.GetDataInit();
+            this.handleUserState();
         }
         else {
-            this.loadData();
-            this.updateAvatar();
-            this.login_Btn.interactable = false;
+            Constants.showConfirm("LỖi đăng nhập", "Chú ý");
+        }
+    }
 
-            this.btnLeft.on(Node.EventType.TOUCH_END, this.prevCharacter, this);
-            this.btnRight.on(Node.EventType.TOUCH_END, this.nextCharacter, this);
-            this.login_Btn.node.on('click', () => this.updateGender());
+    public async GetDataInit() {
+        const getInfoSuccess = await WebRequestManager.instance.getUserProfileAsync();
+        if (!getInfoSuccess) {
+            await SceneManagerController.loadSceneAsync(SceneName.SCENE_GAME_MAP, null);
+            return;
+        }
+        const getDataMyPetSuccess = await WebRequestManager.instance.getMyPetAsync();
+        if (!getDataMyPetSuccess) {
+            await SceneManagerController.loadSceneAsync(SceneName.SCENE_GAME_MAP, null);
+            return;
+        }
+        
+    }
+
+    private bindGenderEvents() {
+        this.btnLeft.off(Node.EventType.TOUCH_END, this.prevCharacter, this);
+        this.btnRight.off(Node.EventType.TOUCH_END, this.nextCharacter, this);
+
+        this.btnLeft.on(Node.EventType.TOUCH_END, this.prevCharacter, this);
+        this.btnRight.on(Node.EventType.TOUCH_END, this.nextCharacter, this);
+
+        this.login_Btn.node.off('click');
+        this.login_Btn.node.on('click', this.updateGender, this);
+    }
+
+    private async handleUserState() {
+        if (UserMeManager.Get.user.gender == null) {
+            this.loginPanel.active = true;
+            this.bindGenderEvents();
+            this.usernameLabel.string = UserMeManager.Get.user.username;
+            this.updateAvatar();
+        }else{
+            if (Constants.isFirstEnterGame) {
+                Constants.isFirstEnterGame = false;
+                this.closePanel();
+            }
+            else {
+                this.closePanel(false, false);
+            }
         }
     }
 
     private async loadData() {
-        this.loginPanel.active = false;
         await this.loadLocalSkinConfig();
         await this.loadConfig();
         this.loginMezon();
@@ -141,9 +184,9 @@ export class UILoginControll extends Component {
             //webView.onEvent(MezonAppEvent.UserHashInfo, this.handleUserHashInfo);
         }
         else {
-            appData = "query_id=abOflweIXFgCSfZlNEjH7pXI&user=%7B%22id%22%3A%221831510401251020800%22%2C%22username%22%3A%22toan.nguyenthanh%22%2C%22display_name%22%3A%22toan.nguyenthanh%22%2C%22avatar_url%22%3A%22https%3A%2F%2Fcdn.mezon.vn%2F1779484504377790464%2F1840678703248445440%2F1831510401251020800%2F4371000005003.jpg%22%2C%22mezon_id%22%3A%22toan.nguyenthanh%40ncc.asia%22%7D&auth_date=1742783975&signature=ZWViZTM4YWExZmY4YzBiZDUxMjY5NmRhYWQ1ZTM0ODU4MjhjOTc0NTZjODU4MWUyYmMwNTQ4NDU1Yjk5MDA5MQ%3D%3D&hash=851b8cf3bab1c960c47fd4ab2b1d90fafbb9eef96aea419bb76600b29d0554ce";
-            //appData = "query_id=nc_MQN20O8mX90ud_04Irlxk&user=%7B%22id%22%3A%221838774373004087296%22%2C%22username%22%3A%22tam.canhlechi%22%2C%22display_name%22%3A%22tam.canhlechi%22%2C%22avatar_url%22%3A%22https%3A%2F%2Fcdn.mezon.vn%2F1779484504377790464%2F1833340253138587648%2F1838774373004087300%2F622_undefined461398087_2594678774067461_1520915077734667936_n.jpg%22%2C%22mezon_id%22%3A%22tam.canhlechi%40ncc.asia%22%7D&auth_date=1742551789&signature=NjYzYTc1MjYxM2M2NzBmNjNmNjRkOTUyNDI0NzQyZDk1ODZlMDFmZGRlNmEwNTdhODVmYTJkZjBhZWEyOWJlMg%3D%3D&hash=d9b1515435ebeccce5f3549c3383504282aa164d135828ec029c503721ecdd91";
-            //  appData = "query_id=MqHtm6OFCCOL6569eLMbDiYJ&user=%7B%22id%22%3A%221833329094238932992%22%2C%22username%22%3A%22an.nguyentranthy%22%2C%22display_name%22%3A%22an.nguyentranthy%22%2C%22avatar_url%22%3A%22https%3A%2F%2Fcdn.mezon.vn%2F1779484504377790464%2F1840660683964813312%2F1833329094238933000%2F1739841664950_undefinedB612_20210211_164318_228.jpg%22%2C%22mezon_id%22%3A%22an.nguyentranthy%40ncc.asia%22%7D&auth_date=1742474029&signature=ZDMxZTYxOGNmNDRiNTYwMWMxM2E5ZGY1Yzg5OTRkODQwYTU5MWMxYjA4MzlmMGNlZjQ2MzFjYWY1ZmFkYmE0OQ%3D%3D&hash=9bb67b37acf3a64769d071d0433ebcff670f525b2c5d74e5ddf20ba2955f37cc";
+            // appData = "query_id=abOflweIXFgCSfZlNEjH7pXI&user=%7B%22id%22%3A%221831510401251020800%22%2C%22username%22%3A%22toan.nguyenthanh%22%2C%22display_name%22%3A%22toan.nguyenthanh%22%2C%22avatar_url%22%3A%22https%3A%2F%2Fcdn.mezon.vn%2F1779484504377790464%2F1840678703248445440%2F1831510401251020800%2F4371000005003.jpg%22%2C%22mezon_id%22%3A%22toan.nguyenthanh%40ncc.asia%22%7D&auth_date=1742783975&signature=ZWViZTM4YWExZmY4YzBiZDUxMjY5NmRhYWQ1ZTM0ODU4MjhjOTc0NTZjODU4MWUyYmMwNTQ4NDU1Yjk5MDA5MQ%3D%3D&hash=851b8cf3bab1c960c47fd4ab2b1d90fafbb9eef96aea419bb76600b29d0554ce";
+            appData = "query_id=nc_MQN20O8mX90ud_04Irlxk&user=%7B%22id%22%3A%221838774373004087296%22%2C%22username%22%3A%22tam.canhlechi%22%2C%22display_name%22%3A%22tam.canhlechi%22%2C%22avatar_url%22%3A%22https%3A%2F%2Fcdn.mezon.vn%2F1779484504377790464%2F1833340253138587648%2F1838774373004087300%2F622_undefined461398087_2594678774067461_1520915077734667936_n.jpg%22%2C%22mezon_id%22%3A%22tam.canhlechi%40ncc.asia%22%7D&auth_date=1742551789&signature=NjYzYTc1MjYxM2M2NzBmNjNmNjRkOTUyNDI0NzQyZDk1ODZlMDFmZGRlNmEwNTdhODVmYTJkZjBhZWEyOWJlMg%3D%3D&hash=d9b1515435ebeccce5f3549c3383504282aa164d135828ec029c503721ecdd91";
+            // appData = "query_id=MqHtm6OFCCOL6569eLMbDiYJ&user=%7B%22id%22%3A%221833329094238932992%22%2C%22username%22%3A%22an.nguyentranthy%22%2C%22display_name%22%3A%22an.nguyentranthy%22%2C%22avatar_url%22%3A%22https%3A%2F%2Fcdn.mezon.vn%2F1779484504377790464%2F1840660683964813312%2F1833329094238933000%2F1739841664950_undefinedB612_20210211_164318_228.jpg%22%2C%22mezon_id%22%3A%22an.nguyentranthy%40ncc.asia%22%7D&auth_date=1742474029&signature=ZDMxZTYxOGNmNDRiNTYwMWMxM2E5ZGY1Yzg5OTRkODQwYTU5MWMxYjA4MzlmMGNlZjQ2MzFjYWY1ZmFkYmE0OQ%3D%3D&hash=9bb67b37acf3a64769d071d0433ebcff670f525b2c5d74e5ddf20ba2955f37cc";
         }
         let loginData = {
             "web_app_data": appData,
@@ -192,45 +235,10 @@ export class UILoginControll extends Component {
 
 
     private async onLoginSuccess(response: any) {
-        if (!response) {
-            console.log("Login Success: Response is null or undefined");
-            return;
-        }
-
-        this.login_Btn.interactable = true;
+        if (!response) return;
         APIConfig.token = response.data.accessToken;
-        LoadingManager.getInstance().openLoading();
-        try {
-            const getInfoSuccess = await WebRequestManager.instance.getUserProfileAsync();
-            if (!getInfoSuccess) {
-                await SceneManagerController.loadSceneAsync(SceneName.SCENE_GAME_MAP, null);
-                return;
-            }
-            const getDataMyPetSuccess = await WebRequestManager.instance.getMyPetAsync();
-            if (!getDataMyPetSuccess) {
-                await SceneManagerController.loadSceneAsync(SceneName.SCENE_GAME_MAP, null);
-                return;
-            }
-            this.setUI();
-        } catch {
-
-        }
-        finally {
-            LoadingManager.getInstance().closeLoading();
-        }
-
-    }
-
-    private setUI() {
-        this.setDefaultSkinSet();
-
-        if (UserMeManager.Get.user.gender == null) {// The firstTime login
-            this.loginPanel.active = true;
-            this.usernameLabel.string = UserMeManager.Get.user.username;
-        }
-        else {
-            this.closePanel();
-        }
+        this.GetDataInit();
+        director.emit(EVENT_NAME.ON_LOGIN_MEZON_READY);
     }
 
     private onError(error: any) {
@@ -309,7 +317,6 @@ export class UILoginControll extends Component {
         UserMeManager.Get.user.display_name = this.usernameLabel.string;
         UserMeManager.Get.user.gender = this.genderLabel.string.toLowerCase() == "nam" ? "male" : "female";
         this.setDefaultSkinSet();
-        this.closePanel(true, true);
     }
 
     private setDefaultSkinSet() {
@@ -321,6 +328,7 @@ export class UILoginControll extends Component {
                 UserMeManager.Get.user.skin_set = ResourceManager.instance.LocalSkinConfig.female.defaultSet;
             }
         }
+        this.closePanel(false, false);
     }
 
     private closePanel(autoLoadMap: boolean = true, isFirstTime: boolean = false) {
@@ -334,6 +342,14 @@ export class UILoginControll extends Component {
     }
 
     updateAvatar() {
+        if (
+            !this.avatarNode ||
+            !this.avatarNode.node ||
+            !this.avatarNode.node.isValid
+        ) {
+            console.warn("updateAvatar skipped: avatarNode invalid");
+            return;
+        } Tween.stopAllByTarget(this.avatarNode.node);
         tween(this.avatarNode.node)
             .to(0.1, { scale: new Vec3(0, 1, 1) })
             .call(() => {
@@ -353,5 +369,4 @@ export class UILoginControll extends Component {
         this.selectedCharacter = (this.selectedCharacter === 0) ? 1 : 0;
         this.updateAvatar();
     }
-
 }

@@ -3,15 +3,15 @@ import { APIManager } from './APIManager';
 import APIConstant, { APIConfig, EVENT_NAME } from './APIConstant';
 import ConvetData from '../core/ConvertData';
 import { UserMeManager } from '../core/UserMeManager';
-import { AssignViceLeadersDto as AssignViceLeadersDTO, ClanActivityResponseDTO, ClanContributorsResponseDTO, ClanDescriptionDTO as ClanDescriptionDTO, ClanFundResponseDTO, ClanRequestResponseDTO, ClansData, ClansResponseDTO, MemberResponseDTO, RemoveMembersPayload, RequestToJoinDTO, SortBy, SortOrder, UserDataResponse } from '../Interface/DataMapAPI';
+import { AssignViceLeadersDto as AssignViceLeadersDTO, ClanActivityResponseDTO, ClanContributorsResponseDTO, ClanDescriptionDTO as ClanDescriptionDTO, ClanFundResponseDTO, ClanRequestResponseDTO, ClansData, ClansResponseDTO, MemberResponseDTO, RemoveMembersPayload, RequestToJoinDTO, ScoreType, SortBy, SortOrder, UserDataResponse } from '../Interface/DataMapAPI';
 import { ServerManager } from '../core/ServerManager';
 import { PopupSelectionMini, SelectionMiniParam } from '../PopUp/PopupSelectionMini';
 import { PopupManager } from '../PopUp/PopupManager';
-import { BuyItemPayload, EventRewardDTO, InventoryDTO, Item, RewardItemDTO, RewardNewbieDTO, StatsConfigDTO } from '../Model/Item';
+import { BuyItemPayload, EventRewardDTO, FragmentDTO, FragmentExchangeResponseDTO, FragmentItemDTO, InventoryDTO, Item, ItemDTO, RecipeDTO, RewardItemDTO, RewardNewbieDTO, StatsConfigDTO, WeeklyRewardDTO, WheelDTO } from '../Model/Item';
 import { GameManager } from '../core/GameManager';
 import { UpgradePetResponseDTO, PetDTO } from '../Model/PetDTO';
 import { Constants } from '../utilities/Constants';
-import { ClanWarehouseSlotDTO, FarmDTO, HarvestCountDTO, PlantData, PlantDataDTO, PlantToSlotPayload } from '../Farm/EnumPlant';
+import { ClanWarehouseSlotDTO, FarmDTO, HarvestCountDTO, PlantData, PlantDataDTO, InteractToSlotPayload } from '../Farm/EnumPlant';
 const { ccclass, property } = _decorator;
 
 @ccclass("WebRequestManager")
@@ -77,6 +77,20 @@ export class WebRequestManager extends Component {
         });
     }
 
+    public async getEventRewardNoQuestAsync(): Promise<RewardItemDTO[]> {
+        return new Promise((resolve, reject) => {
+            WebRequestManager.instance.getEventRewardNoQuest(
+                (response) => {
+                    const rewardData = ConvetData.ConvertRewards(response.data.rewards) ?? [];
+                    resolve(rewardData);
+                },
+                (error) => {
+                    resolve([]);
+                }
+            );
+        });
+    }
+
     public async getEventRewardAsync(): Promise<EventRewardDTO> {
         return new Promise((resolve, reject) => {
             WebRequestManager.instance.getEventReward(
@@ -112,12 +126,28 @@ export class WebRequestManager extends Component {
         });
     }
 
-    public getMyPetAsync(): Promise<PetDTO[]> {
+    public getMyPetAsync(filters?: { rarity?: string; stars?: number }): Promise<PetDTO[]> {
         return new Promise((resolve, reject) => {
             WebRequestManager.instance.getMyPetData(
+                filters,
                 (response) => resolve(response.data),
                 (error) => {
                     resolve([]);
+                }
+            );
+        });
+    }
+
+    public getAllRecipeByTypeAsync(type: string): Promise<RecipeDTO[]> {
+        return new Promise((resolve, reject) => {
+            WebRequestManager.instance.getAllRecipeByType(
+                type,
+                (response) => {
+                    const recipeData = ConvetData.ConvertRecipesToRecipeDTO(response);
+                    resolve(recipeData);
+                },
+                (error) => {
+                    resolve(null);
                 }
             );
         });
@@ -145,11 +175,25 @@ export class WebRequestManager extends Component {
         return new Promise((resolve, reject) => {
             WebRequestManager.instance.postGetReward(
                 (response) => {
-                    const rewardData = ConvetData.ConvertReward(response.data.rewards) ?? [];
+                    const rewardData = ConvetData.ConvertRewards(response.data.rewards) ?? [];
                     resolve(rewardData);
                 },
                 (error) => {
                     resolve([]);
+                }
+            );
+        });
+    }
+
+    public getRewardClanWeeklyAsync(): Promise<WeeklyRewardDTO> {
+        return new Promise((resolve, reject) => {
+            WebRequestManager.instance.getRewardClanWeekly(
+                (response) => {
+                    const rewardData = ConvetData.convertWeeklyRewardClan(response);
+                    resolve(rewardData);
+                },
+                (error) => {
+                    resolve(null);
                 }
             );
         });
@@ -234,10 +278,10 @@ export class WebRequestManager extends Component {
         });
     }
 
-    public getAllClansync(page: number = 1, search?: string, sortby: SortBy = SortBy.CREATED_AT, sortOrder: SortOrder = SortOrder.DESC, limit: number = 30): Promise<ClansResponseDTO> {
+    public getAllClansync(isWeekly: boolean, page: number = 1, search?: string, sortby: SortBy = SortBy.CREATED_AT, sortOrder: SortOrder = SortOrder.DESC, limit: number = 30): Promise<ClansResponseDTO> {
         return new Promise((resolve) => {
             WebRequestManager.instance.getAllClan(
-                page, sortby, sortOrder, limit,
+                isWeekly, page, sortby, sortOrder, limit,
                 (response) => {
                     const clans = ConvetData.ConvertClans(response);
                     resolve(clans);
@@ -250,10 +294,10 @@ export class WebRequestManager extends Component {
         });
     }
 
-    public getAllClanRequestsync(page: number = 1, search?: string, sortby: SortBy = SortBy.CREATED_AT, sortOrder: SortOrder = SortOrder.DESC, limit: number = 30): Promise<ClansResponseDTO> {
+    public getAllClanRequestsync(isWeekly: boolean, page: number = 1, search?: string, sortby: SortBy = SortBy.CREATED_AT, sortOrder: SortOrder = SortOrder.DESC, limit: number = 30): Promise<ClansResponseDTO> {
         return new Promise((resolve) => {
             WebRequestManager.instance.getAllClanRequest(
-                page, sortby, sortOrder, limit,
+                isWeekly, page, sortby, sortOrder, limit,
                 (response) => {
                     const clans = ConvetData.ConvertClans(response);
                     resolve(clans);
@@ -355,10 +399,10 @@ export class WebRequestManager extends Component {
         });
     }
 
-    public getListMemberClanAsync(clanId: String, page: number = 1, search?: string, sortOrder: SortOrder = SortOrder.DESC, sortby: SortBy = SortBy.USERNAME, limit: number = 30): Promise<MemberResponseDTO> {
+    public getListMemberClanAsync(clanId: String, isWeekly, page: number = 1, search?: string, sortOrder: SortOrder = SortOrder.DESC, sortby: SortBy = SortBy.CREATED_AT, limit: number = 30): Promise<MemberResponseDTO> {
         return new Promise((resolve, reject) => {
             WebRequestManager.instance.getListMemberClan(
-                clanId, page, sortOrder, sortby, limit,
+                clanId, isWeekly, page, sortOrder, sortby, limit,
                 (response) => {
                     const clans = ConvetData.ConvertMemberClan(response);
                     resolve(clans);
@@ -479,10 +523,10 @@ export class WebRequestManager extends Component {
         });
     }
 
-    public getClanWarehousesAsync(clanId: string): Promise<ClanWarehouseSlotDTO[]> {
+    public getClanWarehousesAsync(clanId: string, filters?: { type?: string; is_harvested?: boolean }): Promise<ClanWarehouseSlotDTO[]> {
         return new Promise((resolve, reject) => {
             WebRequestManager.instance.getClanWarehouses(
-                clanId,
+                clanId, filters,
                 (response) => {
                     const farmData = ConvetData.ConvertWarehouseSlots(response.data.items);
                     resolve(farmData);
@@ -552,6 +596,48 @@ export class WebRequestManager extends Component {
         });
     }
 
+     public getAllWheelAsync(type: string): Promise<WheelDTO[]> {
+        return new Promise((resolve, reject) => {
+            this.getAllWheel(
+                type,
+                (response) => {
+                    const statsConfigDTO = ConvetData.ConvertWheels(response.data);
+                    resolve(statsConfigDTO);
+                },
+                (error) => {
+                    resolve(null);
+                }
+            );
+        });
+    }
+
+    public postCombieFragmentAsync(recipeId: string): Promise<PetDTO> {
+        return new Promise((resolve) => {
+            WebRequestManager.instance.postCombineFragment(recipeId,
+                (response) => {
+                    const petDTO = ConvetData.ConvertPetAssemble(response.data.createdPet);
+                   resolve(petDTO);
+                },
+                () => { resolve(null) });
+        });
+    }
+
+    public postChangeFragmentAsync(recipeId: string): Promise<FragmentExchangeResponseDTO> {
+        return new Promise((resolve) => {
+            WebRequestManager.instance.postChangeFragment(recipeId,
+                (response) => {
+                    const data = ConvetData.ConvertFragmentExchangeResponse(response.data);
+                    resolve(data);
+                },
+                () => { resolve(null) });
+        });
+    }
+
+
+    public getQRMezon(successCallback, errorCallback) {
+        APIManager.getData(this.combineWithSlash(APIConstant.QR_MEZON), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    }
+
     public getGameConfig(successCallback, errorCallback) {
         APIManager.getData(this.combineWithSlash(APIConstant.CONFIG, APIConstant.GAME_CONFIG), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, false);
     }
@@ -562,6 +648,11 @@ export class WebRequestManager extends Component {
 
     public getAllItem(successCallback, errorCallback) {
         APIManager.getData(this.combineWithSlash(APIConstant.ITEM), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    }
+
+    public getAllRecipeByType(type, successCallback, errorCallback) {
+        const url = this.combineWithSlash(APIConstant.RECIPE) + (type.toString() ? `?type=${type.toString()}` : '');
+        APIManager.getData(url, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
     public getAllPetData(mapCode, successCallback, errorCallback) {
@@ -576,12 +667,31 @@ export class WebRequestManager extends Component {
         APIManager.postData(this.combineWithSlash(APIConstant.PET_PLAYERS, pet_player_id, APIConstant.UPGRADE_RARITY_PET), {}, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
-    public getMyPetData(successCallback, errorCallback) {
-        APIManager.getData(this.combineWithSlash(APIConstant.PET_PLAYERS), (data) => { UserMeManager.SetMyPets = data.data; this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    public getMyPetData(filters, successCallback, errorCallback) {
+        const params = new URLSearchParams();
+        if (filters?.rarity) {
+            params.append('current_rarity', filters.rarity);
+        }
+
+        if (filters?.stars != null) {
+            params.append('stars', filters.stars.toString());
+        }
+        const url = this.combineWithSlash(APIConstant.PET_PLAYERS) + (params.toString() ? `?${params.toString()}` : '');
+        APIManager.getData(url, (data) => { UserMeManager.SetMyPets = data.data; this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
     public getRewardsSpin(successCallback, errorCallback) {
         APIManager.getData(this.combineWithSlash(APIConstant.GAME, APIConstant.SPIN), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    }
+
+    public getAllWheel(type: string, successCallback, errorCallback) {
+        const url = this.combineWithSlash(APIConstant.WHEEL) + (type.toString() ? `?type=${type.toString()}` : '');
+        APIManager.getData(url, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    }
+
+    public getRewardsSlotWheel(wheel_id: string, quantity:number = 1 , successCallback, errorCallback) {
+        const url = this.combineWithSlash(APIConstant.SLOT_WHEEL, APIConstant.SPIN) + `?wheel_id=${wheel_id.toString()}&quantity=${quantity.toString()}`;
+        APIManager.getData(url, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
     public getConfigRate(successCallback, errorCallback) {
@@ -602,6 +712,10 @@ export class WebRequestManager extends Component {
 
     public getItemType(type, successCallback, errorCallback) {
         APIManager.getData(this.combineWithSlash(APIConstant.INVENTORY, APIConstant.ITEM_TYPE, type), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    }
+
+    public getItemTypeFragment(recipeId, successCallback, errorCallback) {
+        APIManager.getData(this.combineWithSlash(APIConstant.INGREIENT, recipeId,APIConstant.ASSEMBLE), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
     public updateProfile(data, successCallback, errorCallback) {
@@ -645,6 +759,14 @@ export class WebRequestManager extends Component {
         APIManager.postData(url, {}, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
+    public postCombineFragment(recipeId: string, successCallback, errorCallback) {
+        const url = `${APIConstant.INGREIENT}/${recipeId}/${APIConstant.ASSEMBLE}`;
+        APIManager.postData(url, {}, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    }
+    public postChangeFragment(recipeId: string, successCallback, errorCallback) {
+        const url = `${APIConstant.INGREIENT}/${APIConstant.EXCHANGE}/${recipeId}`;
+        APIManager.postData(url, {}, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    }
     public createPet(data, successCallback, errorCallback) {
         APIManager.postData(APIConstant.PET_PLAYERS, data, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
@@ -658,12 +780,20 @@ export class WebRequestManager extends Component {
         APIManager.postData(this.combineWithSlash(APIConstant.GAME, APIConstant.INITIAL_REWARD), {}, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
+    public getRewardClanWeekly(successCallback, errorCallback) {
+        APIManager.getData(this.combineWithSlash(APIConstant.GAME, APIConstant.WEEKLY_REWARD), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    }
+
     public getCheckUnclaimedQuest(successCallback, errorCallback) {
         APIManager.getData(this.combineWithSlash(APIConstant.PLAYER_QUESTS, APIConstant.CHECK_UNCLAIMED_QUEST), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
     public getNewbieReward(successCallback, errorCallback) {
         APIManager.getData(this.combineWithSlash(APIConstant.PLAYER_QUESTS, APIConstant.NEWBIE_LOGIN), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    }
+
+    public getEventRewardNoQuest(successCallback, errorCallback) {
+        APIManager.getData(this.combineWithSlash(APIConstant.GAME, APIConstant.EVENT_REWARD), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
     public getEventReward(successCallback, errorCallback) {
@@ -676,16 +806,16 @@ export class WebRequestManager extends Component {
     }
 
     //Clan
-    public getAllClan(page = 1, sortby: SortBy, sortOrder: SortOrder, limit = 30, successCallback, errorCallback, search?: string) {
-        let url = `${APIConstant.CLANS}?page=${page}&sort_by=${sortby.toString()}&order=${sortOrder.toString()}&limit=${limit}`;
+    public getAllClan(isWeekly, page = 1, sortby: SortBy, sortOrder: SortOrder, limit = 30, successCallback, errorCallback, search?: string) {
+        let url = `${APIConstant.CLANS}?page=${page}&sort_by=${sortby.toString()}&order=${sortOrder.toString()}&limit=${limit}&isWeekly=${isWeekly}`;
         if (search && search.trim() !== "") {
             url += `&search=${encodeURIComponent(search.trim())}`;
         }
         APIManager.getData(url, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
-    public getAllClanRequest(page = 1, sortby: SortBy, sortOrder: SortOrder, limit = 30, successCallback, errorCallback, search?: string) {
-        let url = `${APIConstant.CLANS}/${APIConstant.CLAN_REQUESTS}?page=${page}&sort_by=${sortby.toString()}&order=${sortOrder.toString()}&limit=${limit}`;
+    public getAllClanRequest(isWeekly, page = 1, sortby: SortBy, sortOrder: SortOrder, limit = 30, successCallback, errorCallback, search?: string) {
+        let url = `${APIConstant.CLANS}/${APIConstant.CLAN_REQUESTS}?page=${page}&sort_by=${sortby.toString()}&order=${sortOrder.toString()}&limit=${limit}&isWeekly=${isWeekly}`;
         if (search && search.trim() !== "") {
             url += `&search=${encodeURIComponent(search.trim())}`;
         }
@@ -712,12 +842,12 @@ export class WebRequestManager extends Component {
         APIManager.postData(this.combineWithSlash(APIConstant.CLANS, clan_id, APIConstant.DESCRIPTION), data, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
-    public getListMemberClan(clan_id, page = 1, sortOrder: SortOrder, sortby: SortBy, limit = 30, successCallback, errorCallback, search?: string) {
+    public getListMemberClan(clan_id, isWeekly, page = 1, sortOrder: SortOrder, sortby: SortBy, limit = 30, successCallback, errorCallback, search?: string) {
         let url = `${APIConstant.CLANS}/${clan_id}/${APIConstant.USERS}?`;
         if (search && search.trim() !== "") {
             url += `search=${encodeURIComponent(search.trim())}&`;
         }
-        url += `page=${page}&order=${sortOrder.toString()}&sort_by=${sortby.toString()}&limit=${limit}`;
+        url += `page=${page}&order=${sortOrder.toString()}&sort_by=${sortby.toString()}&limit=${limit}&isWeekly=${isWeekly}`;
         APIManager.getData(url, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
@@ -769,8 +899,17 @@ export class WebRequestManager extends Component {
         APIManager.deleteData(url, data, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
-    public getClanWarehouses(clan_id, successCallback, errorCallback) {
-        APIManager.getData(this.combineWithSlash(APIConstant.CLANS ,clan_id, APIConstant.CLANWAREHOUSE), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    public getClanWarehouses(clan_id, filters, successCallback, errorCallback) {
+        const params = new URLSearchParams();
+        if (filters?.type) {
+            params.append('type', filters.type);
+        }
+
+        if (filters?.is_harvested != null) {
+            params.append('is_harvested', filters.is_harvested.toString());
+        }
+        const url = this.combineWithSlash(APIConstant.CLANS, clan_id, APIConstant.CLANWAREHOUSE) + (params.toString() ? `?${params.toString()}` : '');
+        APIManager.getData(url, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
     //Farm

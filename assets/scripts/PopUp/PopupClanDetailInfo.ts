@@ -15,6 +15,7 @@ import { Constants } from '../utilities/Constants';
 import { isValid } from 'cc';
 import { PopupClanHistory, PopupClanHistoryParam } from './PopupClanHistory';
 import { LoadingManager } from './LoadingManager';
+import { PopupClanShop } from './PopupClanShop';
 const { ccclass, property } = _decorator;
 
 @ccclass('PopupClanDetailInfo')
@@ -31,6 +32,7 @@ export class PopupClanDetailInfo extends BasePopup {
     @property(Button) private listMemberBtn: Button;
     @property(Button) private leaderboardBtn: Button = null!;
     @property(Button) private outClanBtn: Button = null!;
+    @property(Button) ShopClanButton: Button = null;
     @property(Button) closeButton: Button = null;
     @property(AvatarIconHelper) avatarSprite: AvatarIconHelper = null!;
     @property(Button) private history_Btn: Button = null!;
@@ -52,6 +54,14 @@ export class PopupClanDetailInfo extends BasePopup {
             this.wallPostBtn.interactable = false;
             await this.updateDescription();
             this.wallPostBtn.interactable = true;
+        });
+
+        this.ShopClanButton.addAsyncListener(async () => {
+            this.ShopClanButton.interactable = false;
+            await PopupManager.getInstance().openAnimPopup("UI_ClanShop", PopupClanShop, {
+                clanDetail: this.clanDetail,
+            });
+            this.ShopClanButton.interactable = true;
         });
 
         this.inventoryClanBtn.addAsyncListener(async () => {

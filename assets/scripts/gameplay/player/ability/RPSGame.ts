@@ -5,6 +5,7 @@ import { AudioType, SoundManager } from '../../../core/SoundManager';
 import { PopupManager } from '../../../PopUp/PopupManager';
 import { TargetButton, SelectionTimeOutParam, PopupSelectionTimeOut } from '../../../PopUp/PopupSelectionTimeOut';
 import { Constants } from '../../../utilities/Constants';
+import { PopupPetBetChallenge, PopupPetBetChallengeParam } from '../../../PopUp/PopupPetBetChallenge';
 const { ccclass, property } = _decorator;
 
 export interface GameData {
@@ -28,7 +29,6 @@ export class RPSGame extends PlayerInteractAction {
     private autoChooseTimeoutId: number = 0
     private gameData: GameData = null;
     private defaultChooseValue: string = "rock"
-    private fee: number = 5;
 
     protected override start(): void {
         super.start();
@@ -55,25 +55,28 @@ export class RPSGame extends PlayerInteractAction {
         this.stopSpineMachine(action, false);
     }
 
-    public override invite(): void {
-        if (UserMeManager.Get) {
-            if (UserMeManager.playerDiamond < this.fee) {
-                Constants.showConfirm( `Cần <color=#FF0000>${this.fee} diamond</color> để chơi`, "Chú Ý");
-                return;
-            }
-        }
+    public override async invite(){
         super.invite();
-        let data = {
-            targetClientId: this.playerController.myID,
-            action: this.actionType.toString()
-        }
-        this.room.send("p2pAction", data);
+        const paramConfirmPopup: PopupPetBetChallengeParam = {
+            title:'Thách Đấu oẳn tù tì',
+            onActionChallenge: async (amount, isDiamond) => {
+                this.room.send("p2pAction", {
+                    targetClientId: this.playerController.myID,
+                    action: this.actionType.toString(),
+                    amount: amount,
+                    isDiamond: isDiamond,
+                });
+                
+            }
+        };
+        await PopupManager.getInstance().openPopup("PopupPetBetChallenge", PopupPetBetChallenge, paramConfirmPopup);
     }
 
     public override onBeingInvited(data: any): void {
+        const { amount, isDiamond } = data;
         const param: SelectionTimeOutParam = {
             title: "Chú Ý",
-            content: `${data.fromName} mời bạn chơi kéo búa bao. Phí <color=#FF0000> ${this.fee} diamond</color>`,
+            content: `${data.fromName} mời bạn chơi oẳn tù tì. Phí <color=#FF0000> ${amount} ${isDiamond ? 'Diamond' : 'Gold'}</color>`,
             textButtonLeft: "Chơi",
             textButtonRight: "Thôi",
             textButtonCenter: "",
@@ -95,7 +98,9 @@ export class RPSGame extends PlayerInteractAction {
     protected override startAction(data) {
         let sendData = {
             targetClientId: data.from,
-            action: data.action
+            action: data.action,
+            amount: data.amount,
+            isDiamond: data.isDiamond,
         }
         this.room.send("p2pActionAccept", sendData);
         this.onStartAction(data);
@@ -103,7 +108,6 @@ export class RPSGame extends PlayerInteractAction {
 
     public override onStartAction(data) {
         SoundManager.instance.playSound(AudioType.CountDown, this.autoChooseTimeout);
-        console.log(AudioType.CountDown, this.autoChooseTimeout)
         super.onStartAction(data);
         this.gameData = data;
         this.toogleShowActions(true);

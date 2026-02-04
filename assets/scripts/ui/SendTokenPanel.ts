@@ -5,6 +5,11 @@ import { BasePopup } from '../PopUp/BasePopup';
 import { PopupManager } from '../PopUp/PopupManager';
 import { Constants } from '../utilities/Constants';
 import { AudioType, SoundManager } from '../core/SoundManager';
+import { WebRequestManager } from '../network/WebRequestManager';
+import { Sprite } from 'cc';
+import { ImageAsset } from 'cc';
+import { Texture2D } from 'cc';
+import { SpriteFrame } from 'cc';
 const { ccclass, property } = _decorator;
 
 export enum SendActionType {
@@ -29,6 +34,9 @@ export class SendTokenPanel extends BasePopup {
     @property({ type: Toggle }) noticeToggle: Toggle = null;
 
     @property({ type: Button }) closeUIBtn: Button = null;
+    @property({ type: Sprite }) qrSprite: Sprite = null;
+    @property({ type: Node }) qrNode: Node = null;
+    
 
     private sendValue: number = 0;
     private cb = null;
@@ -55,7 +63,7 @@ export class SendTokenPanel extends BasePopup {
 
         this.sendButton.on(Node.EventType.TOUCH_START, () => {
             SoundManager.instance.playSound(AudioType.Button);
-            this.send(true, SendActionType.Buy);
+            this.send(true, SendActionType.Gift);
         }, this);
 
         this.withdrawButton.on(Node.EventType.TOUCH_START, () => {
@@ -74,6 +82,36 @@ export class SendTokenPanel extends BasePopup {
         }, this);
 
         this.closeUIBtn.node.on("click", this.closeUIBtnClick, this);
+        WebRequestManager.instance.getQRMezon((respone) => { this.onGetAllItem(respone) }, (error) => { this.onApiError(error); });
+    }
+
+    private onGetAllItem(respone) {
+        this.showImageFromBase64(this.qrSprite, respone.data.qr_base64);
+    }
+    showImageFromBase64(sprite: Sprite, base64: string) {
+        if (!sprite || !base64) return;
+
+        const img = new Image();
+        img.src = base64;
+
+        img.onload = () => {
+            const imageAsset = new ImageAsset(img);
+
+            const texture = new Texture2D();
+            texture.image = imageAsset;
+
+            const spriteFrame = new SpriteFrame();
+            spriteFrame.texture = texture;
+
+            sprite.spriteFrame = spriteFrame;
+        };
+
+        img.onerror = (err) => {
+            console.error('[Base64Image] Load failed', err);
+        };
+    }
+    private onApiError(error) {
+        Constants.showConfirm(error.error_message, "Waning");
     }
 
     private HandleCallback(param: SendTokenParam) {
@@ -83,7 +121,7 @@ export class SendTokenPanel extends BasePopup {
             const handlerMap = {
                 onActionClose: (cb: any) => this._onActionClose = cb,
                 onActionSendDiamond: (cb: any) => this.setSendDimondCallback(cb),
-                onActionBuyDiamond: (cb: any) => this.setBuyDimondCallback(cb),
+                // onActionBuyDiamond: (cb: any) => this.setBuyDimondCallback(cb),
                 onActionWithdrawDiamond: (cb: any) => this.setWithdrawDimondCallback(cb),
                 onActionChangeDiamondToCoin: (cb: any) => this.setChangeDiamondToCoinCallback(cb),
             };
@@ -102,11 +140,13 @@ export class SendTokenPanel extends BasePopup {
     }
 
     public setSendDimondCallback(callback: (amount: number) => void) {
+        this.withdrawButton.active = false;
+        this.changeButton.active = false;
+        this.qrNode.active = false;
+        this.sendButton.active = true;
         this.isBuy = false;
         this.isWithdraw = false;
         this.isExchange = false;
-        this.withdrawButton.active = false;
-        this.changeButton.active = false;
         this.title.string = "Tặng Quà";
         this.sendButtonTitle.string = "Gửi";
         this.cbBuy = callback;
@@ -114,18 +154,27 @@ export class SendTokenPanel extends BasePopup {
     }
 
     public setBuyDimondCallback(callback: (amount: number) => void) {
+        this.qrNode.active = true;
+        this.sendButton.active = false;
+        this.withdrawButton.active = true;
+        this.changeButton.active = true;
+        this.sendButton.active = true;
         this.isBuy = true;
         this.isWithdraw = false;
         this.isExchange = false;
         this.title.string = "Nạp/Rút/Đổi Diamond";
         this.sendButtonTitle.string = "Nạp";
-        this.withdrawButton.active = true;
-        this.changeButton.active = true;
         this.cbBuy = callback;
         this.noticePopup.node.active = false;
+        this.qrNode.active = true;
     }
 
     public setWithdrawDimondCallback(callback: (amount: number) => void) {
+        this.qrNode.active = true;
+        this.sendButton.active = false;
+        this.withdrawButton.active = true;
+        this.changeButton.active = true;
+        this.sendButton.active = true;
         this.isBuy = false;
         this.isWithdraw = true;
         this.isExchange = false;
@@ -136,13 +185,20 @@ export class SendTokenPanel extends BasePopup {
     }
 
     public setChangeDiamondToCoinCallback(callback: (amount: number) => void) {
+        this.sendButton.active = false;
+        this.withdrawButton.active = true;
+        this.changeButton.active = true;
+        this.qrNode.active = true;
+        this.sendButton.active = true;
         this.isBuy = false;
+        this.sendButton.active = false;
         this.isWithdraw = false;
         this.isExchange = true;
         this.title.string = "Nạp/Rút/Đổi Diamond";
         this.sendButtonTitle.string = "Nạp";
         this.cbChange = callback;
         this.noticePopup.node.active = false;
+        this.qrNode.active = true;
     }
 
     protected onDisable(): void {
@@ -204,9 +260,9 @@ export class SendTokenPanel extends BasePopup {
         }
 
         switch (type) {
-            case SendActionType.Buy:
-                this.cbBuy?.(this.sendValue);
-                break;
+            // case SendActionType.Buy:
+            //     this.cbBuy?.(this.sendValue);
+            //     break;
             case SendActionType.Withdraw:
                 this.cbWithdraw?.(this.sendValue);
                 break;
@@ -227,7 +283,7 @@ export class SendTokenPanel extends BasePopup {
 export interface SendTokenParam {
     onActionClose?: () => void;
     onActionSendDiamond?: (value: number) => void;
-    onActionBuyDiamond?: (value: number) => void;
+    //onActionBuyDiamond?: (value: number) => void;
     onActionWithdrawDiamond?: (value: number) => void;
     onActionChangeDiamondToCoin?: (value: number) => void;
 }

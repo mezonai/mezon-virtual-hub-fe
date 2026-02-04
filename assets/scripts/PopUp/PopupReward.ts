@@ -1,7 +1,7 @@
 import { _decorator, Button, Component, Label, Node, RichText, Sprite, SpriteFrame } from 'cc';
 import { BasePopup } from './BasePopup';
 import { PopupManager } from './PopupManager';
-import { Food, FoodType, RewardItemDTO, RewardType } from '../Model/Item';
+import { Food, FoodType, FragmentItemDTO, RewardItemDTO, RewardType } from '../Model/Item';
 import { UserMeManager } from '../core/UserMeManager';
 import { WebRequestManager } from '../network/WebRequestManager';
 import { ItemIconManager } from '../utilities/ItemIconManager';
@@ -33,6 +33,10 @@ export class PopupReward extends BasePopup {
 
     async showReward(param: PopupRewardParam) {
         this.title.string = param.status === RewardStatus.GAIN ? "Nhận Quà" : "Thông Báo";
+        if (param.fragmentDTO != null) {
+            this.icon.spriteFrame = ItemIconManager.getInstance().getIconPetFragment(param.fragmentDTO.item.item_code, param.fragmentDTO.index);
+            return;
+        }
         this.icon.spriteFrame = await ItemIconManager.getInstance().getIconReward(param.reward);
 
         // 3. Content
@@ -47,6 +51,7 @@ export class PopupReward extends BasePopup {
         switch (param.reward.type) {
             case RewardType.ITEM:
                 await WebRequestManager.instance.getUserProfileAsync();
+                break;
             case RewardType.GOLD:
                 UserMeManager.playerCoin += (param.status === RewardStatus.GAIN ? quantity : -quantity);
                 break;
@@ -74,5 +79,6 @@ export class PopupReward extends BasePopup {
 export interface PopupRewardParam {
     status: RewardStatus;
     content: string,
-    reward: RewardItemDTO
+    reward?: RewardItemDTO,
+    fragmentDTO?: FragmentItemDTO,// gán reward hoặc fragmentDTO để set Hình
 }

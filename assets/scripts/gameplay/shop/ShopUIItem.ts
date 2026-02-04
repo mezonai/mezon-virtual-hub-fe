@@ -7,9 +7,11 @@ const { ccclass, property } = _decorator;
 @ccclass('ShopUIItem')
 export class ShopUIItem extends BaseInventoryUIITem {
     @property({ type: Node }) blockOverlay: Node = null;
+    public owned: boolean = false;
 
     public override toggleActive(isActive) {
         this.stasSprite.spriteFrame = isActive ? this.stasFrame[1] : this.stasFrame[0];
+        this.toggle.isChecked = isActive;
     }
 
     public override init(data: Item) {
@@ -29,10 +31,10 @@ export class ShopUIItem extends BaseInventoryUIITem {
             return;
         }
 
-        const owned = this.isOwn(data);
-        this.blockOverlay.active = owned;
-        this.toggle.interactable = !owned;
-        this.node.setSiblingIndex(owned ? this.node.parent.children.length : 0);
+        this.owned = this.isOwn(data);
+        this.blockOverlay.active = this.owned;
+        this.toggle.interactable = !this.owned;
+        this.node.setSiblingIndex(this.owned ? this.node.parent.children.length : 0);
     }
 
     private isFoodData(data: any): boolean {

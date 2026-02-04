@@ -4,11 +4,12 @@ import { UserManager } from '../../core/UserManager';
 import { SceneManagerController } from '../../utilities/SceneManagerController';
 import { SceneName } from '../../utilities/SceneName';
 import { ServerManager } from '../../core/ServerManager';
-import { OfficePosition } from '../OfficePosition';
+import { OfficePosition, Season } from '../OfficePosition';
 import { MapManagerBase } from '../Map/MapManagerBase';
 import { ResourceManager } from '../../core/ResourceManager';
 import { UserMeManager } from '../../core/UserMeManager';
 import { RoomType } from '../RoomType';
+import { Constants } from '../../utilities/Constants';
 const { ccclass, property } = _decorator;
 
 @ccclass('OfficeSceneController')
@@ -21,10 +22,13 @@ export class OfficeSceneController extends Component {
     backMapButton: Button;
     @property(Prefab)
     mapOffice: Prefab[] = [];
+    @property(Prefab)
+    mapLunarNewYear: Prefab[] = [];
     @property(Node)
     mapParent: Node = null;
     @property currentMap: MapManagerBase = null;
     nameCode: string = "";
+    @property({ type: Node }) effectLunaNewYear: Node = null;
     protected onLoad(): void {
         if (OfficeSceneController._instance == null) {
             OfficeSceneController._instance = this;
@@ -38,7 +42,7 @@ export class OfficeSceneController extends Component {
         const param = SceneManagerController.getSceneParam<OfficeSenenParameter>();
         if (param != null) {
             let nameRoom = this.convertNameRoom(param.idclan, param.roomEnds);
-            let map = instantiate(this.mapOffice[this.getOffice(param.currentOffice, nameRoom)]);
+            const map = this.createMap(nameRoom, param.currentOffice);
             map.setParent(this.mapParent);
             let mapManager = map.getComponent("MapManagerBase") as MapManagerBase;
             if (mapManager) {
@@ -63,6 +67,26 @@ export class OfficeSceneController extends Component {
         UserMeManager.CurrentOffice = param;
         UserMeManager.CurrentRoomType = param.roomStart;
         return true;
+    }
+
+    private createMap(nameRoom: string, currentOffice: number) {
+
+        const isFarm = nameRoom.includes('-farm');
+        const isOffice = nameRoom.includes('-office');
+        const isShop = nameRoom.includes('-shop');
+        const isLNY = Constants.season === Season.LUNARNEWYEAR;
+        this.effectLunaNewYear.active = false;
+        if (isLNY && !isShop && !isOffice) {
+            this.effectLunaNewYear.active = true;
+            return instantiate(
+                isFarm
+                    ? this.mapLunarNewYear[1]
+                    : this.mapLunarNewYear[0]
+            );
+        }
+        return instantiate(
+            this.mapOffice[this.getOffice(currentOffice, nameRoom)]
+        );
     }
 
     public spawnPet(data) {
@@ -93,7 +117,7 @@ export class OfficeSceneController extends Component {
         else if (nameRoom.includes("-shop")) {
             return 0;
         }
-        else if(nameRoom.includes("-farm")){
+        else if (nameRoom.includes("-farm")) {
             return 9;
         }
         else {

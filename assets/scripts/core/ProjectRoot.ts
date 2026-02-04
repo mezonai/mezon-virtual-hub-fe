@@ -3,10 +3,11 @@ const { ccclass, property } = _decorator;
 import { LoadBundleController } from '../bundle/LoadBundleController';
 import { UILoginControll } from '../UILogin/UILoginControl';
 import { RandomlyMover } from '../utilities/RandomlyMover';
-import { EVENT_NAME } from '../network/APIConstant';
+import { APIConfig, EVENT_NAME } from '../network/APIConstant';
 import { SceneManagerController } from '../utilities/SceneManagerController';
 import { SceneName } from '../utilities/SceneName';
 import { IntroScene } from '../GameMap/IntroScene/IntroScene';
+import { Constants } from '../utilities/Constants';
 
 @ccclass('ProjectRoot')
 export class ProjectRoot extends Component {
@@ -19,6 +20,7 @@ export class ProjectRoot extends Component {
     private totalCoreNeedLoad = 1;
     private _loadedCore = 0;
     private initIntervalId = 0;
+    private isLoading = false;
 
     private get loadedCore() {
         return this._loadedCore;
@@ -41,11 +43,24 @@ export class ProjectRoot extends Component {
         }
     }
 
-    protected start() {
-        this.init();
-        const onLoaded = () => {
+    protected async onLoad() {
+        this.introScene.node.active = Constants.isFirstEnterGame; 
+        director.on(EVENT_NAME.RELOAD_SCENE, (scene) => { this.onSceneLoaded(scene); });
+        director.on(EVENT_NAME.ON_LOGIN_MEZON_READY, this.onLoginReady, this);
+        if(Constants.isFirstEnterGame)
+            await this.uiLoginControl.startLoginMezonOnce();
+        else{
             this.onSceneLoaded({ name: SceneName.SCENE_GAME_MAP });
-            this.introScene.node.active = false;
+        }
+    }
+
+    private async onLoginReady() {
+        await this.startLoadBundle();
+    }
+
+    private async startLoadBundle() {
+        const onLoaded = async () => {
+            this.onSceneLoaded({ name: SceneName.SCENE_GAME_MAP });
         };
 
         const param = SceneManagerController.getSceneParam<{ params: any }>();
@@ -56,19 +71,19 @@ export class ProjectRoot extends Component {
         }
     }
 
-    private async init() {
-        director.on(EVENT_NAME.RELOAD_SCENE, (scene) => { this.onSceneLoaded(scene) });
-    }
-
     protected onDestroy(): void {
         director.off(EVENT_NAME.RELOAD_SCENE);
+        director.off(EVENT_NAME.ON_LOGIN_MEZON_READY, this.onLoginReady, this);
     }
 
     private async onSceneLoaded(scene) {
         if (scene?.name == "GameMap") {
             this.loadedCore = 0;
+             this.isLoading = true;
             this.initNotice.active = true;
+            this.introScene.node.active = false;
             LoadBundleController.instance.init((progress) => {
+                 if (!this.isLoading) return;
                 this.updateLoadPercent(progress);
             });
             if (this.planeNotice) {
@@ -76,16 +91,18 @@ export class ProjectRoot extends Component {
                 this.planeNotice.move();
             }
             await LoadBundleController.instance.isInitDone();
+             this.isLoading = false;
             this.loadedCore++;
         }
 
     }
 
     private updateLoadPercent(progress: number) {
+         if (!this.progressText?.node?.isValid) return;
         this.progressText.string = `<b>${(Math.round(progress * 100)).toString()}%</b>`;
     }
 
     private initGameComponent() {
-        this.uiLoginControl.init();
+        this.uiLoginControl?.init();
     }
 }

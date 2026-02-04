@@ -3,7 +3,7 @@ import { PopupManager } from './PopupManager';
 import { ItemMemberManager } from '../Clan/ItemMemberManager';
 import { Label } from 'cc';
 import { PopupClanMemberManager } from './PopupClanMemberManager';
-import { AssignViceLeadersDto, ClanRole, ClansData, MemberResponseDTO, RemoveMembersPayload, UserClan } from '../Interface/DataMapAPI';
+import { AssignViceLeadersDto, ClanRole, ClansData, MemberResponseDTO, RemoveMembersPayload, ScoreType, UserClan } from '../Interface/DataMapAPI';
 import { WebRequestManager } from '../network/WebRequestManager';
 import { Constants } from '../utilities/Constants';
 import { PopupSelectionMini, SelectionMiniParam } from './PopupSelectionMini';
@@ -101,7 +101,7 @@ export class PopupManageMember extends Component {
     public async loadList(page: number, search?: string) {
         try {
             LoadingManager.getInstance().openLoading();
-            this.listMember = await WebRequestManager.instance.getListMemberClanAsync(this.clanDetail.id, page, search);
+            this.listMember = await WebRequestManager.instance.getListMemberClanAsync(this.clanDetail.id, false, page, search);
             this.svMemberList.content.removeAllChildren();
             this._listMember = [];
             this.noMember.active = false;

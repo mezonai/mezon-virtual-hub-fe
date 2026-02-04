@@ -1,7 +1,8 @@
 
 import { FarmDTO, FarmSlotDTO, PlantState, ClanWarehouseSlotDTO, PlantDataDTO, PlantData, HarvestCountDTO } from "../Farm/EnumPlant";
 import { ClansData, PageInfo, ClansResponseDTO, MemberResponseDTO, UserClan, ClanContributorDTO, ClanContributorsResponseDTO, ClanFundResponseDTO, ClanFund, ClanRequestResponseDTO, MemberClanRequestDTO, ClanStatus, ClanActivityItemDTO, ClanActivityResponseDTO, RequestToJoinDTO } from "../Interface/DataMapAPI";
-import { EventRewardDTO, EventType, Food, InventoryDTO, Item, PetReward, QuestType, RewardItemDTO, RewardNewbieDTO, RewardType, StatsConfigDTO } from "../Model/Item";
+
+import { EventRewardDTO, EventType, Food, FragmentDTO, FragmentExchangeResponseDTO, FragmentItemDTO, InventoryDTO, Item, ItemClanType, ItemType, PetReward, QuestType, RecipeDTO, RewardItemDTO, RewardNewbieDTO, RewardType, SpinResultDTO, StatsConfigDTO, WeeklyRewardDTO, WheelDTO } from "../Model/Item";
 import { AnimalElementString, AnimalRarity, Element, PetBattleInfo, PetDTO, PlayerBattle, SkillBattleInfo, Species, TypeSkill } from "../Model/PetDTO";
 
 export default class ConvetData {
@@ -36,7 +37,8 @@ export default class ConvetData {
             id: clan.id ?? "",
             name: clan.name ?? "",
             fund: clan.fund ?? 0,
-            score: clan.score ?? 0,
+            score: clan.score ?? null,
+            weekly_score: clan.weekly_score ?? null,
             max_members: clan.max_members ?? 0,
             member_count: clan.member_count ?? 0,
             join_status: clan.join_status ?? ClanStatus.NONE,
@@ -58,8 +60,8 @@ export default class ConvetData {
                 avatar_url: user.avatar_url ?? null,
                 gender: user.gender ?? null,
                 clan_role: user.clan_role ?? null,
-                total_score: user.total_score ?? 0,
-                weekly_score: user.weekly_score ?? 0,
+                total_score: user.total_score ?? null,
+                weekly_score: user.weekly_score ?? null,
                 rank: user.rank ?? 0,
             }
             : null;
@@ -83,7 +85,8 @@ export default class ConvetData {
             id: clanDT.id ?? "",
             name: clanDT.name ?? "",
             fund: clanDT.fund ?? 0,
-            score: clanDT.score ?? 0,
+            score: clanDT.score ?? null,
+            weekly_score: clanDT.weekly_score ?? null,
             description: clanDT.description ?? null,
             member_count: clanDT.member_count ?? 0,
             max_members: clanDT.max_members ?? 0,
@@ -123,8 +126,8 @@ export default class ConvetData {
             avatar_url: user.avatar_url ?? null,
             gender: user.gender ?? null,
             clan_role: user.clan_role ?? null,
-            total_score: user.total_score ?? 0,
-            weekly_score: user.weekly_score ?? 0,
+            total_score: user.total_score ?? null,
+            weekly_score: user.weekly_score ?? null,
             rank: user.rank ?? 0,
         }));
 
@@ -224,6 +227,8 @@ export default class ConvetData {
             id: w.id,
             farm_id: w.clan_id,
             plant_id: w.item_id,
+            item_id: w.item_id,
+            type: w.type,
             quantity: w.quantity,
             is_harvested: w.is_harvested,
             purchased_by: w.purchased_by || '',
@@ -237,6 +242,16 @@ export default class ConvetData {
                     description: w.plant.description,
                 }
                 : undefined,
+            item: w.item
+                ? {
+                    id: w.item.id,
+                    name: w.item.name,
+                    gold: w.item.gold,
+                    type: w.item.type,
+                    item_code: w.item.item_code,
+                    rate: w.item.rate,
+                }
+                : undefined,
         }));
     }
 
@@ -245,6 +260,8 @@ export default class ConvetData {
             id: warehouse.id,
             farm_id: warehouse.farm_id,
             plant_id: warehouse.plant_id,
+            item_id: warehouse.item_id,
+            type: warehouse.type,
             quantity: warehouse.quantity,
             is_harvested: warehouse.is_harvested,
             purchased_by: warehouse.purchased_by || '',
@@ -256,6 +273,16 @@ export default class ConvetData {
                     harvest_point: warehouse.plant.harvest_point,
                     buy_price: warehouse.plant.buy_price as PlantState,
                     description: warehouse.plant.description,
+                }
+                : undefined,
+            item: warehouse.item
+                ? {
+                    id: warehouse.item.id,
+                    name: warehouse.item.name,
+                    gold: warehouse.item.gold,
+                    type: warehouse.item.type,
+                    item_code: warehouse.item.item_code,
+                    rate: warehouse.item.rate,
                 }
                 : undefined,
         };
@@ -357,6 +384,40 @@ export default class ConvetData {
         return petData;
     }
 
+    public static ConvertPetAssemble(createdPet: any): PetDTO {
+        if (!createdPet) {
+            console.error("ConvertPetAssemble: createdPet is undefined");
+            return null;
+        }
+        const raw = {
+            id: "",
+            name: createdPet.name ?? "",
+            level: createdPet.level ?? 1,
+            exp: createdPet.exp ?? 0,
+            max_exp: 0,
+            stars: createdPet.stars ?? 1,
+            current_rarity: createdPet.current_rarity ?? "common",
+            hp: createdPet.hp ?? 0,
+            attack: createdPet.attack ?? 0,
+            defense: createdPet.defense ?? 0,
+            speed: createdPet.speed ?? 0,
+            is_brought: createdPet.is_brought ?? false,
+            is_caught: createdPet.is_caught ?? true,
+            battle_slot: createdPet.battle_slot ?? 0,
+            individual_value: createdPet.individual_value ?? 0,
+            room_code: "",
+            pet: createdPet.pet,
+            skill_slot_1: null,
+            skill_slot_2: null,
+            skill_slot_3: null,
+            skill_slot_4: null,
+            equipped_skill_codes: [],
+        };
+
+        return this.ConvertPet(raw);
+    }
+
+
     public static ConvertPetReward(petData: any): PetReward {
         const pet = new PetReward();
         pet.id = petData.id;
@@ -366,7 +427,61 @@ export default class ConvetData {
         return pet;
     }
 
-    public static ConvertReward(data: any): RewardItemDTO[] {
+    public static convertWeeklyRewardClan(response: any): WeeklyRewardDTO {
+        const data = response?.data;
+        if (!data) {
+            return {
+                id: '',
+                name: '',
+                description: '',
+                type: null,
+                items: [],
+            };
+        }
+        return {
+            id: data.id,
+            name: data.name,
+            description: data.description,
+            type: data.type as RewardType,
+            items: Array.isArray(data.items)
+                ? data.items.map(entry => this.ConvertReward(entry))
+                : []
+        };
+    }
+
+    public static ConvertReward(entry: any): RewardItemDTO {
+        const rewardItem = new RewardItemDTO();
+
+        switch (entry.type) {
+            case RewardType.ITEM:
+                rewardItem.type = RewardType.ITEM;
+                rewardItem.item = this.parseItem(entry.item);
+                rewardItem.quantity = entry.quantity ?? 1;
+                break;
+
+            case RewardType.FOOD:
+                rewardItem.type = RewardType.FOOD;
+                rewardItem.food = this.parseFood(entry.food);
+                rewardItem.quantity = entry.quantity ?? 0;
+                break;
+
+            case RewardType.PET:
+                rewardItem.type = RewardType.PET;
+                rewardItem.pet = this.ConvertPetReward(entry.pet);
+                rewardItem.quantity = entry.quantity ?? 0;
+                break;
+
+            case RewardType.GOLD:
+            default:
+                rewardItem.type = RewardType.GOLD;
+                rewardItem.quantity = entry.quantity ?? 0;
+                break;
+        }
+
+        return rewardItem;
+    }
+
+    public static ConvertRewards(data: any): RewardItemDTO[] {
         if (!Array.isArray(data)) return [];
 
         return data
@@ -388,11 +503,9 @@ export default class ConvetData {
                         break;
                     case RewardType.PET:
                         rewardItem.type = RewardType.PET;
-                        console.log("entry.pet: ", entry.pet);
                         rewardItem.pet = this.ConvertPetReward(entry.pet);
                         rewardItem.quantity = entry.quantity ?? 0;
                         break;
-
                     case RewardType.GOLD:
                     default:
                         rewardItem.type = RewardType.GOLD;
@@ -400,6 +513,45 @@ export default class ConvetData {
                         break;
                 }
 
+                return rewardItem;
+            });
+    }
+
+    public static ConvertRewardsSlot(data: any): RewardItemDTO[] {
+        if (!Array.isArray(data)) return [];
+
+        return data
+            .filter((d: any) => d && typeof d === 'object')
+            .map((entry: any) => {
+                const rewardItem = new RewardItemDTO();
+
+                switch (entry.type_item) {
+                    case RewardType.ITEM:
+                        rewardItem.type = RewardType.ITEM;
+                        rewardItem.item = this.parseItem(entry.item);
+                        rewardItem.quantity = 1;
+                        break;
+
+                    case RewardType.FOOD:
+                        rewardItem.type = RewardType.FOOD;
+                        rewardItem.food = this.parseFood(entry.food);
+                        rewardItem.quantity = entry.quantity ?? 0;
+                        break;
+                    case RewardType.PET:
+                        rewardItem.type = RewardType.PET;
+                        rewardItem.pet = this.ConvertPetReward(entry.pet);
+                        rewardItem.quantity = entry.quantity ?? 0;
+                        break;
+                    case RewardType.PETFRAGMENT:
+                        rewardItem.type = RewardType.PETFRAGMENT;
+                        rewardItem.quantity = entry.quantity ?? 0;
+                        break;
+                    case RewardType.GOLD:
+                    default:
+                        rewardItem.type = RewardType.GOLD;
+                        rewardItem.quantity = entry.quantity ?? 0;
+                        break;
+                }
                 return rewardItem;
             });
     }
@@ -481,7 +633,7 @@ export default class ConvetData {
         rewardNewbie.is_claimed = data.is_claimed;
         rewardNewbie.is_available = data.is_available;
         rewardNewbie.quest_type = this.mapServerQuestTypeToClient(data.quest_type);
-        rewardNewbie.rewards = this.ConvertReward(data.rewards);
+        rewardNewbie.rewards = this.ConvertRewards(data.rewards);
         return rewardNewbie;
     }
 
@@ -600,6 +752,10 @@ export default class ConvetData {
         item.gold = data.gold ?? 0;
         item.type = data.type;
         item.item_code = data.item_code ?? null;
+        item.rate = data.rate ?? 0;
+        item.index = data.index ?? 1;
+        item.remainingQuantity = data.remainingQuantity ?? 0;
+        item.takenQuantity = data.takenQuantity ?? 0;
         return item;
     }
 
@@ -629,4 +785,114 @@ export default class ConvetData {
             return inventory;
         });
     }
+
+    public static ConvertSpinResult(raw: any): SpinResultDTO {
+        return {
+            wheel_type: raw.wheel_type,
+            user_balance: raw.user_balance,
+
+            rewards: Array.isArray(raw.rewards)
+                ? raw.rewards.map((r: any) => ({
+                    id: r.id,
+                    type_item: r.type_item as RewardType,
+                    quantity: r.quantity,
+                    weight_point: r.weight_point,
+
+                    item: r.type_item === RewardType.ITEM ? r.item : undefined,
+                    food: r.type_item === RewardType.FOOD ? r.food : undefined,
+                    pet: r.type_item === RewardType.PET ? r.pet : undefined,
+                    plant: r.type_item === RewardType.PLANT ? r.plant : undefined,
+                }))
+                : [],
+        };
+    }
+
+    public static ConvertWheel(raw: any): WheelDTO {
+        return {
+            id: raw.id,
+            type: raw.type,
+            base_fee: raw.base_fee,
+            slots: raw.slots.map((slot: any) => ({
+                id: slot.id,
+                type_item: slot.type_item as RewardType,
+                quantity: slot.quantity,
+                weight_point: slot.weight_point,
+                rate: slot.rate,
+
+                item: slot.type_item === RewardType.ITEM ? slot.item : null,
+                food: slot.type_item === RewardType.FOOD ? slot.food : null,
+                pet: slot.type_item === RewardType.PET ? slot.pet : null,
+                plant: slot.type_item === RewardType.PLANT ? slot.plant : null,
+            })),
+        };
+    }
+
+    public static ConvertWheels(rawData: any[]): WheelDTO[] {
+        if (!Array.isArray(rawData)) return [];
+        return rawData.map(this.ConvertWheel);
+    }
+
+    public static convertRecipeToRecipeDTO(recipe: any): RecipeDTO {
+        return {
+            id: recipe.id,
+            type: recipe.type,
+
+            item_id: recipe.item_id,
+            pet_id: recipe.pet_id,
+            plant_id: recipe.plant_id,
+
+            item: recipe.item ?? null,
+            pet: recipe.pet ?? null,
+            plant: recipe.plant ?? null,
+
+            ingredients: recipe.ingredients ?? [],
+        };
+    }
+
+    public static ConvertRecipesToRecipeDTO(response: { data: any[] }): RecipeDTO[] {
+        return response.data.map(r => this.convertRecipeToRecipeDTO(r));
+    }
+
+    public static ConvertFragmentDTO(data): FragmentDTO {
+        if (!data) return null;
+        const fragment = new FragmentDTO();
+        fragment.species = Species[data.species as keyof typeof Species];
+        fragment.recipeId = data.recipe_id;
+        fragment.fragmentItems = this.ConvertFragmenItemtDTO(data.fragmentItems);
+        return fragment;
+    }
+
+    public static ConvertFragmenItemtDTO(apiData: any[]): FragmentItemDTO[] {
+        if (!apiData || !Array.isArray(apiData)) return [];
+        return apiData.map(inv => {
+            const fragment = new FragmentItemDTO();
+            fragment.id = inv.id;
+            fragment.equipped = inv.equipped ?? false;
+            fragment.quantity = inv.quantity;
+            fragment.inventory_type = inv.inventory_type;
+            fragment.index = inv.index;
+            fragment.item = this.convertItem(inv.item)
+            return fragment;
+        });
+    }
+
+    public static ConvertFragmentExchangeResponse(
+        apiData: any
+    ): FragmentExchangeResponseDTO {
+
+        if (!apiData) {
+            return { removed: [], reward: null };
+        }
+
+        return {
+            removed: Array.isArray(apiData.removed)
+                ? apiData.removed.map(r => this.convertItem(r))
+                : [],
+            reward: apiData.reward
+                ? this.convertItem(apiData.reward)
+                : null,
+        };
+    }
+
+
 }

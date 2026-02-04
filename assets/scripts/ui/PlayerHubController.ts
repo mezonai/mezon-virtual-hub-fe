@@ -13,6 +13,7 @@ import { Vec3 } from 'cc';
 import { Tween } from 'cc';
 import { tween } from 'cc';
 import { LoginEventController } from '../gameplay/LoginEvent/LoginEventController';
+import { PopupCombieFragment, PopupCombieFragmentParam } from '../PopUp/PopupCombieFragment';
 
 const { ccclass, property } = _decorator;
 

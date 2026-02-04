@@ -9,6 +9,7 @@ import Utilities from '../../../utilities/Utilities';
 import { BasePopup } from '../../../PopUp/BasePopup';
 import { instantiate } from 'cc';
 import { LocalItemDataConfig } from '../../../Model/LocalItemConfig';
+import { ShopUIItem } from '../../shop/ShopUIItem';
 const { ccclass, property } = _decorator;
 
 @ccclass('BaseInventoryManager')
@@ -60,26 +61,48 @@ export class BaseInventoryManager extends BasePopup {
         this.reset();
         const items = this.groupedItems[tabName] ?? [];
         const isEmpty = !items || items.length === 0;
-       
+
         if (isEmpty) {
             this.noItemContainer.active = true;
             return;
         }
         this.noItemContainer.active = false;
-        if (tabName === InventoryType.FOOD){
+        if (tabName === InventoryType.FOOD) {
             this.currentTabName = tabName;
             await this.spawnFoodItems(this.groupedItems[tabName]);
         }
-         if (tabName === ItemType.PET_CARD){
+        if (tabName === ItemType.PET_CARD) {
             this.currentTabName = tabName;
             await this.spawnCardItems(this.groupedItems[tabName]);
         }
-        else
-        {
+        else {
             this.currentTabName = tabName;
-            await this.spawnClothesItems(this.groupedItems[tabName]);  
+            await this.spawnClothesItems(this.groupedItems[tabName]);
         }
+        this.scheduleOnce(() => {
+            this.selectDefaultItem();
+        }, 0);
         this.ResetPositionScrollBar();
+    }
+
+    private selectDefaultItem() {
+        const content = this.itemScrollView?.content || this.otherScrollView?.content;
+        if (!content || content.children.length === 0) return;
+
+        for (const node of content.children) {
+            const uiItem = node.getComponent(ShopUIItem);
+            if (!uiItem || !uiItem.data || uiItem.owned) continue;
+
+            if (uiItem.data.gold > 0) {
+                if (this.selectingUIItem && this.selectingUIItem !== uiItem) {
+                    this.selectingUIItem.toggleActive(false);
+                }
+                this.selectingUIItem = uiItem;
+                uiItem.toggleActive(true);
+                this.onUIItemClick(uiItem, uiItem.data);
+                break;
+            }
+        }
     }
 
     ResetPositionScrollBar() {
@@ -111,7 +134,7 @@ export class BaseInventoryManager extends BasePopup {
         for (const item of items) {
             if (Number(item.quantity) <= 0) continue;
             let itemNode = instantiate(this.itemPrefab);
-            itemNode.setParent(this.itemContainer);
+            itemNode.setParent(this.otherContainer);
             await this.registUIItemData(itemNode, item,
                 (uiItem, data) => {
                     this.onUIItemClick(uiItem, data as Item);
@@ -196,7 +219,7 @@ export class BaseInventoryManager extends BasePopup {
             return;
         }
 
-        if ((data as Item).type === ItemType.PET_CARD) {
+        if ((data as Item).type === ItemType.PET_CARD || (data as Item).type === ItemType.PETFRAGMENT) {
             this.itemData = data as Item;
             this.descriptionText.string = `${this.itemData.name}`;
             return;
@@ -208,8 +231,11 @@ export class BaseInventoryManager extends BasePopup {
     }
 
     protected updateDescriptionAndActionButton(itemData: Item, uiItem: any | null) {
-        const description = itemData.mappingLocalData?.description || "";
+        const description = itemData.mappingLocalData?.description || itemData.name || "";
         const isFaceOrEye = itemData.type === ItemType.EYES || itemData.type === ItemType.FACE;
-        this.descriptionText.string = isFaceOrEye ? description : `${itemData.name} : ${description}`;
+        if (isFaceOrEye) { this.descriptionText.string = itemData.mappingLocalData?.description || "";
+            return;
+        }
+        this.descriptionText.string = isFaceOrEye ? description : `${itemData.name}${description ? " : " + description : ""}`;
     }
 }
