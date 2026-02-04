@@ -17,6 +17,12 @@ export class IconItemUIHelper extends Component {
         this.icon.spriteFrame = await ItemIconManager.getInstance().getIconItemDto(item);
     }
 
+
+    public async setIconByPetClan(type: string) {
+        if (!type || !ItemIconManager.getInstance()) return;
+        this.icon.spriteFrame = await ItemIconManager.getInstance().getIconFarmPet(type);
+    }
+
     async getIconIngredient(ingredient: IngredientDTO) {
         if (ingredient.item) {
             this.icon.spriteFrame =
@@ -26,7 +32,7 @@ export class IconItemUIHelper extends Component {
 
         if (ingredient.plant) {
             this.icon.spriteFrame =
-                ItemIconManager.getInstance().getIconPlantFarm(ingredient.plant.name);
+                ItemIconManager.getInstance().getIconFarmPlant(ingredient.plant.name);
             return;
         }
 

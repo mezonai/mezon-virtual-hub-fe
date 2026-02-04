@@ -12,13 +12,16 @@ export class ShopClanTool extends Component {
     @property({ type: Toggle }) toggle: Toggle = null;
     @property({ type: Label }) amountLabel: Label;
     public onClick?: (item: ShopClanTool) => void;
-    public farmTool: RecipeDTO = null;
+    public recipe: RecipeDTO = null;
 
-    public initItemFarmTool(farmTool: RecipeDTO, callback?: (item: ShopClanTool) => void) {
-        this.farmTool = farmTool;
+    public initItemToolFarm(recipe: RecipeDTO, callback?: (item: ShopClanTool) => void) {
+        this.recipe = recipe;
         this.onClick = callback;
-        if (farmTool) {
-            this.iconItemUIHelper.setIconByItem(farmTool.item);
+        if (recipe.item) {
+            this.iconItemUIHelper.setIconByItem(recipe.item);
+        }
+        else if (recipe.pet_clan) {
+            this.iconItemUIHelper.setIconByPetClan(recipe.pet_clan.type.toString());
         }
         if (this.toggle) {
             this.toggle.node.on('toggle', () => {

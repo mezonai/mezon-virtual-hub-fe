@@ -61,7 +61,9 @@ export default class APIConstant {
     static RECIPE = "recipe";
     static EXCHANGE = "exchange";
     static EVENT_REWARD = "event-reward";
-    
+    static CLAN_ANIMALS = "clan-animals";
+    static ACTIVATIVE = "activate";
+    static DEACTIVATIVE = "deactivate";
 }
 
 export class APIConfig {

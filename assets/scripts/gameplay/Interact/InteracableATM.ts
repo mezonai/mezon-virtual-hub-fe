@@ -23,7 +23,7 @@ export class InteractATM extends MapItemController {
             onActionClose:()=>{
                 this.isOpenPopUp = false;
             },    
-            onActionBuyDiamond: (data) => { this.onBuyClick(data); },
+            //onActionBuyDiamond: (data) => { this.onBuyClick(data); },
             onActionWithdrawDiamond: (data) => { this.onWithdrawClick(data); },
             onActionChangeDiamondToCoin: (data) => { this.onChangeDiamondToCoinClick(data); }
         };

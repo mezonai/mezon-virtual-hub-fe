@@ -14,6 +14,7 @@ export enum AnimalType {
     Caught = 4,
     RandomMoveOnServer = 5,
     Disappeared = 6,
+    GuardFarm = 7,
 }
 @ccclass('AnimalController')
 export class AnimalController extends Component {

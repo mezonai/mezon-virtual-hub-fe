@@ -22,7 +22,8 @@ export class ItemIconManager extends Component {
     @property({ type: [SpriteFrame] }) iconFragment4: SpriteFrame[] = [];
     @property({ type: [SpriteFrame] }) iconFragmentCombined: SpriteFrame[] = [];
     @property({ type: [SpriteFrame] }) iconFarmToolRewards: SpriteFrame[] = [];
-    @property({ type: [SpriteFrame] }) iconPlantToolRewards: SpriteFrame[] = [];
+    @property({ type: [SpriteFrame] }) iconFarmPlantRewards: SpriteFrame[] = [];
+    @property({ type: [SpriteFrame] }) iconFarmPetRewards: SpriteFrame[] = [];
     public static getInstance(): ItemIconManager {
         return this.instance;
     }
@@ -79,7 +80,7 @@ export class ItemIconManager extends Component {
             return this.iconCardRewards[index];
         }
         else if (item.type === ItemType.FARM_TOOL) {
-            return this.getIconToolFarm(item.item_code);
+            return this.getIconFarmTool(item.item_code);
         }
         else if (item.type === ItemType.PETFRAGMENT) {
             return this.getIconPetFragment(item.item_code, item.index );
@@ -90,14 +91,19 @@ export class ItemIconManager extends Component {
         }
     }
 
-    public getIconToolFarm(type: string): SpriteFrame {
+    public getIconFarmTool(type: string): SpriteFrame {
         const found = this.iconFarmToolRewards.find(sf => sf && sf.name === type);
         return found || this.iconFarmToolRewards[0];
     }
 
-    public getIconPlantFarm(name: string): SpriteFrame {
-        const found = this.iconPlantToolRewards.find(sf => sf && sf.name === name);
-        return found || this.iconPlantToolRewards[0];
+    public getIconFarmPlant(name: string): SpriteFrame {
+        const found = this.iconFarmPlantRewards.find(sf => sf && sf.name === name);
+        return found || this.iconFarmPlantRewards[0];
+    }
+
+    public getIconFarmPet(type: string): SpriteFrame {
+        const found = this.iconFarmPetRewards.find(sf => sf && sf.name === type);
+        return found || this.iconFarmPetRewards[0];
     }
 
     getIconPurchaseMethod(itemType: RewardType): SpriteFrame {

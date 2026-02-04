@@ -7,7 +7,7 @@ import { AssignViceLeadersDto as AssignViceLeadersDTO, ClanActivityResponseDTO, 
 import { ServerManager } from '../core/ServerManager';
 import { PopupSelectionMini, SelectionMiniParam } from '../PopUp/PopupSelectionMini';
 import { PopupManager } from '../PopUp/PopupManager';
-import { BuyItemPayload, EventRewardDTO, FragmentDTO, FragmentExchangeResponseDTO, FragmentItemDTO, InventoryDTO, Item, ItemDTO, RecipeDTO, RewardItemDTO, RewardNewbieDTO, StatsConfigDTO, WeeklyRewardDTO, WheelDTO } from '../Model/Item';
+import { BuyItemPayload, ClanPetDTO, EventRewardDTO, FragmentDTO, FragmentExchangeResponseDTO, FragmentItemDTO, InventoryDTO, Item, ItemDTO, RecipeDTO, RewardItemDTO, RewardNewbieDTO, StatsConfigDTO, WeeklyRewardDTO, WheelDTO } from '../Model/Item';
 import { GameManager } from '../core/GameManager';
 import { UpgradePetResponseDTO, PetDTO } from '../Model/PetDTO';
 import { Constants } from '../utilities/Constants';
@@ -538,6 +538,21 @@ export class WebRequestManager extends Component {
         });
     }
 
+    public getClanPetAsync(clanId: string, filters?: { is_active?: boolean }): Promise<ClanPetDTO[]> {
+        return new Promise((resolve, reject) => {
+            WebRequestManager.instance.getClanPet(
+                clanId, filters,
+                (response) => {
+                    const clanPet = ConvetData.convertClanPetsToClanPetDTO(response.data);
+                    resolve(clanPet);
+                },
+                (error) => {
+                    reject(error);
+                }
+            );
+        });
+    }
+
     public getShopPlantAsync(): Promise<PlantDataDTO[]> {
         return new Promise((resolve, reject) => {
             WebRequestManager.instance.getShopPlant(
@@ -912,6 +927,15 @@ export class WebRequestManager extends Component {
         APIManager.getData(url, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
+    public getClanPet(clan_id, filters, successCallback, errorCallback) {
+        const params = new URLSearchParams();
+        if (filters?.is_active) {
+            params.append('is_active', filters.is_active);
+        }
+        const url = `${APIConstant.CLAN_ANIMALS}?clan_id=${clan_id}`+ (params.toString() ? `&${params.toString()}` : '');
+        APIManager.getData(url, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    }
+    
     //Farm
     public getShopPlant(successCallback, errorCallback) {
         APIManager.getData(this.combineWithSlash(APIConstant.PLANT), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
