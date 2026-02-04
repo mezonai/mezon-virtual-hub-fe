@@ -225,7 +225,7 @@ export class FarmSlot extends Component {
   }
 
   public PlayGrowthPlantAnim(isShow: boolean, typeTool: string) {
-    this.iconTool.spriteFrame = ItemIconManager.getInstance().getIconToolFarm(typeTool);
+    this.iconTool.spriteFrame = ItemIconManager.getInstance().getIconFarmTool(typeTool);
     return this.playAnimWithDelay(this.growthPlantAnim, isShow);
   }
 

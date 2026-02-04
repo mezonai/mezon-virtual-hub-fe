@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, Button, Prefab, ScrollView, instantiate, RichText, Label, Sprite, Toggle} from 'cc';
+import { _decorator, Component, Node, Button, Prefab, ScrollView, instantiate, RichText, Label, Sprite, Toggle } from 'cc';
 import { BasePopup } from './BasePopup';
 import { PopupManager } from './PopupManager';
 import { WebRequestManager } from '../network/WebRequestManager';
@@ -6,9 +6,12 @@ import { ClansData } from '../Interface/DataMapAPI';
 import { ClanWarehouseSlotDTO, HarvestCountDTO } from '../Farm/EnumPlant';
 import { InventoryClanUIItem } from '../Clan/InventoryClanUIItem';
 import { Constants } from '../utilities/Constants';
-import { InventoryClanType, ItemType, StatsConfigDTO } from '../Model/Item';
+import { ClanPetDTO, InventoryClanType, ItemType, PetClanDTO, StatsConfigDTO } from '../Model/Item';
 import { LoadingManager } from './LoadingManager';
 import { ItemIconManager } from '../utilities/ItemIconManager';
+import { PetActionType } from './PopupOwnedAnimals';
+import { ServerManager } from '../core/ServerManager';
+import { UserMeManager } from '../core/UserMeManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('PopupClanInventory')
@@ -17,9 +20,11 @@ export class PopupClanInventory extends BasePopup {
 
     @property(Node) infoPlant: Node = null!;
     @property(Node) infoTool: Node = null!;
+    @property(Node) infoPet: Node = null!;
 
-    @property(ScrollView) svInvenoryClan: ScrollView = null!;
+    @property(ScrollView) svInvenoryClanPlant: ScrollView = null!;
     @property(ScrollView) svInvenoryClanTool: ScrollView = null!;
+    @property(ScrollView) svInvenoryClanPet: ScrollView = null!;
     @property(Prefab) itemPrefab: Prefab = null!;
 
     @property(RichText) plantNamert: RichText = null!;
@@ -27,11 +32,24 @@ export class PopupClanInventory extends BasePopup {
     @property(RichText) growTimert: RichText = null!;
     @property(RichText) harvestScorert: RichText = null!;
     @property(RichText) priceBuyrt: RichText = null!;
-    
+
     @property(Label) toolDescriptionrt: Label = null!;
     @property(RichText) toolNamert: RichText = null!;
     @property(RichText) useTime: RichText = null!;
     @property(RichText) toolpriceBuyrt: RichText = null!;
+
+    @property(RichText) petNamert: RichText = null;
+    @property(Label) petDescriptionrt: Label = null;
+    @property(RichText) petRateAffect: RichText = null;
+    @property(RichText) petLevelrt: RichText = null;
+    @property(RichText) petExprt: RichText = null;
+    @property(Prefab) itemToolExChange: Prefab = null!;
+    @property(Node) itemPetExChange: Node = null!;
+    @property(ScrollView) svInventoryClanPetExChange: ScrollView = null!;
+    @property({ type: Sprite }) progressBarExp: Sprite = null;
+    @property({ type: Node }) bringNode: Node = null;
+    @property({ type: Button }) summonButton: Button = null;
+    @property({ type: Button }) bringButton: Button = null;
 
     @property(Node) noItemPanel: Node = null!;
     @property(Sprite) seedBags: Sprite = null!;
@@ -39,23 +57,32 @@ export class PopupClanInventory extends BasePopup {
     @property(Sprite) iconSeed: Sprite = null!;
     @property(Sprite) iconPlant: Sprite = null!;
     @property(Sprite) iconTool: Sprite = null!;
+    @property(Sprite) iconPet: Sprite = null!;
 
     @property(RichText) harvertCountrt: RichText = null!;
     @property(RichText) harvertInterrupCountrt: RichText = null!;
 
-    @property(Toggle) tabPlantButton: Toggle = null!;
-    @property(Toggle) tabToolButton: Toggle = null!;
+    @property(Toggle) tabPlantTog: Toggle = null!;
+    @property(Toggle) tabToolTog: Toggle = null!;
+    @property(Toggle) tabPetTog: Toggle = null!;
 
-    private clanDetail!: ClansData;
+    private clanDetailId!: string;
 
     private plantSlots: ClanWarehouseSlotDTO[] = [];
     private toolSlots: ClanWarehouseSlotDTO[] = [];
+    private petSlots: ClanPetDTO[] = [];
 
     private plantUIItems: InventoryClanUIItem[] = [];
     private toolUIItems: InventoryClanUIItem[] = [];
+    private petUIItems: InventoryClanUIItem[] = [];
+
+    private selectingUIItem: InventoryClanUIItem = null;
+    private selectingUITool: InventoryClanUIItem = null;
+    private selectingUIPet: InventoryClanUIItem = null;
 
     private isPlantLoaded = false;
     private isToolLoaded = false;
+    private isPetLoaded = false;
 
     private currentMode: ItemType = null;
 
@@ -63,27 +90,59 @@ export class PopupClanInventory extends BasePopup {
     private harvestCountDTO!: HarvestCountDTO;
 
     public init(param?: PopupClanInventoryParam) {
-        if (!param) return;
-        this.clanDetail = param.clanDetail;
+        if (!param){
+            this.closePopup();
+            return;
+        }
+        this.clanDetailId = param.clanDetailId;
+        if (param.onActionClose != null) {
+            this._onActionClose = param.onActionClose;
+        }
 
-        this.closeButton.addAsyncListener(() =>
-            PopupManager.getInstance().closePopup(this.node.uuid)
-        );
+        this.closeButton.addAsyncListener(async () => {
+            this.bringButton.interactable = false;
+            this.closePopup();
+            this.bringButton.interactable = true;
+        });
 
-        this.tabPlantButton.node.on(
+        this.bringButton.addAsyncListener(async () => {
+            this.bringButton.interactable = false;
+            await this.onBringPet(PetActionType.BRING);
+            this.bringButton.interactable = true;
+        });
+
+        this.summonButton.addAsyncListener(async () => {
+            this.summonButton.interactable = false;
+            await this.onBringPet(PetActionType.REMOVE);
+            this.summonButton.interactable = true;
+        });
+        this.tabPlantTog.node.on(
             Toggle.EventType.TOGGLE,
             t => t.isChecked && this.switchMode(ItemType.FARM_PLANT),
             this
         );
 
-        this.tabToolButton.node.on(
+        this.tabToolTog.node.on(
             Toggle.EventType.TOGGLE,
             t => t.isChecked && this.switchMode(ItemType.FARM_TOOL),
             this
         );
 
+        this.tabPetTog.node.on(
+            Toggle.EventType.TOGGLE,
+            t => t.isChecked && this.switchMode(ItemType.PET_CLAN),
+            this
+        );
+        this.svInvenoryClanPlant.node.active = false;
+        this.svInvenoryClanTool.node.active = false;
+        this.svInvenoryClanPet.node.active = false;
         this.loadHarvestInfo();
         this.switchMode(ItemType.FARM_PLANT);
+    }
+
+    closePopup() {
+        PopupManager.getInstance().closePopup(this.node?.uuid);
+        this._onActionClose?.();
     }
 
     private async switchMode(mode: ItemType) {
@@ -91,25 +150,28 @@ export class PopupClanInventory extends BasePopup {
         this.currentMode = mode;
 
         LoadingManager.getInstance().openLoading();
-
-        if (mode === ItemType.FARM_PLANT) {
-            await this.loadPlantData();
-            this.showPlantUI();
-        } else {
-            await this.loadToolData();
-            this.showToolUI();
+        switch (mode) {
+            case ItemType.FARM_PLANT:
+                await this.loadPlantData();
+                this.showPlantUI();
+                break;
+            case ItemType.FARM_TOOL:
+                await this.loadToolData();
+                this.showToolUI();
+                break;
+            case ItemType.PET_CLAN:
+                await this.loadPetData();
+                this.showPetUI();
+                break;
         }
-
-        LoadingManager.getInstance().closeLoading();
     }
 
     private async loadPlantData() {
         try {
-            LoadingManager.getInstance().openLoading();
             if (this.isPlantLoaded) return;
 
             this.plantSlots = await WebRequestManager.instance.getClanWarehousesAsync(
-                this.clanDetail.id,
+                this.clanDetailId,
                 { type: InventoryClanType.PLANT }
             );
 
@@ -124,11 +186,10 @@ export class PopupClanInventory extends BasePopup {
 
     private async loadToolData() {
         try {
-            LoadingManager.getInstance().openLoading();
             if (this.isToolLoaded) return;
 
             this.toolSlots = await WebRequestManager.instance.getClanWarehousesAsync(
-                this.clanDetail.id,
+                this.clanDetailId,
                 { type: InventoryClanType.TOOLS }
             );
 
@@ -141,16 +202,32 @@ export class PopupClanInventory extends BasePopup {
         }
     }
 
+    private async loadPetData() {
+        try {
+            if (this.isPetLoaded) return;
+            this.petSlots = await WebRequestManager.instance.getClanPetAsync(
+                this.clanDetailId
+            );
+
+            this.buildPetUI();
+            this.isPetLoaded = true;
+        } catch {
+
+        } finally {
+            LoadingManager.getInstance().closeLoading();
+        }
+    }
+
     private buildPlantUI() {
-        this.svInvenoryClan.content.removeAllChildren();
+        this.svInvenoryClanPlant.content.removeAllChildren();
         this.plantUIItems = [];
         if (!this.plantSlots.length) return;
 
         for (const slot of this.plantSlots) {
             const node = instantiate(this.itemPrefab);
             const ui = node.getComponent(InventoryClanUIItem)!;
-            ui.initPlant(slot, () => this.showPlantDetail(slot));
-            node.setParent(this.svInvenoryClan.content);
+            ui.initPlant(slot, () => this.showPlantDetail(ui));
+            node.setParent(this.svInvenoryClanPlant.content);
             this.plantUIItems.push(ui);
         }
     }
@@ -163,17 +240,33 @@ export class PopupClanInventory extends BasePopup {
         for (const slot of this.toolSlots) {
             const node = instantiate(this.itemPrefab);
             const ui = node.getComponent(InventoryClanUIItem)!;
-            ui.initTool(slot, () => this.showToolDetail(slot));
+            ui.initTool(slot, () => this.showToolDetail(ui));
             node.setParent(this.svInvenoryClanTool.content);
             this.toolUIItems.push(ui);
+        }
+    }
+
+    private buildPetUI() {
+        this.svInvenoryClanPet.content.removeAllChildren();
+        this.petUIItems = [];
+        if (!this.petSlots.length) return;
+
+        for (const slot of this.petSlots) {
+            const node = instantiate(this.itemPrefab);
+            const ui = node.getComponent(InventoryClanUIItem)!;
+            ui.initPet(slot, () => this.showPetDetail(ui));
+            node.setParent(this.svInvenoryClanPet.content);
+            this.petUIItems.push(ui);
         }
     }
 
     private showPlantUI() {
         this.infoPlant.active = true;
         this.infoTool.active = false;
-        this.svInvenoryClan.node.active = true;
+        this.infoPet.active = false;
+        this.svInvenoryClanPlant.node.active = true;
         this.svInvenoryClanTool.node.active = false;
+        this.svInvenoryClanPet.node.active = false;
         this.noItemPanel.active = this.plantSlots.length === 0;
         this.selectFirstPlant();
     }
@@ -181,56 +274,130 @@ export class PopupClanInventory extends BasePopup {
     private showToolUI() {
         this.infoPlant.active = false;
         this.infoTool.active = true;
-        this.svInvenoryClan.node.active = false;
+        this.infoPet.active = false;
+        this.svInvenoryClanPlant.node.active = false;
         this.svInvenoryClanTool.node.active = true;
+        this.svInvenoryClanPet.node.active = false;
         this.noItemPanel.active = this.toolSlots.length === 0;
         this.selectFirstTool();
+    }
+
+    private showPetUI() {
+        this.infoPlant.active = false;
+        this.infoTool.active = false;
+        this.infoPet.active = true;
+        this.svInvenoryClanPlant.node.active = false;
+        this.svInvenoryClanTool.node.active = false;
+        this.svInvenoryClanPet.node.active = true;
+        this.noItemPanel.active = this.petSlots.length === 0;
+        this.selectFirstpet();
     }
 
     private selectFirstPlant() {
         if (!this.plantUIItems.length) return;
         this.plantUIItems[0].toggle.isChecked = true;
-        this.showPlantDetail(this.plantSlots[0]);
+        this.showPlantDetail(this.plantUIItems[0]);
     }
 
     private selectFirstTool() {
         if (!this.toolUIItems.length) return;
         this.toolUIItems[0].toggle.isChecked = true;
-        this.showToolDetail(this.toolSlots[0]);
+        this.showToolDetail(this.toolUIItems[0]);
     }
 
-    private showPlantDetail(slot: ClanWarehouseSlotDTO) {
-        const sprite = ItemIconManager.getInstance().getIconPlantFarm(slot.plant.name);
+    private selectFirstpet() {
+        if (!this.petUIItems.length) return;
+        this.petUIItems[0].toggle.isChecked = true;
+        this.showPetDetail(this.petUIItems[0]);
+    }
+
+    private showPlantDetail(slot: InventoryClanUIItem) {
+        this.selectingUIItem = slot;
+        const sprite = ItemIconManager.getInstance().getIconFarmPlant(slot.plant.plant.name);
         if (sprite) {
             this.iconPlant.spriteFrame = sprite;
             this.iconSeed.spriteFrame = sprite;
         }
 
-        this.seedBags.node.active = !slot.is_harvested;
-        this.iconPlant.node.active = slot.is_harvested;
+        this.seedBags.node.active = !slot.plant.is_harvested;
+        this.iconPlant.node.active = slot.plant.is_harvested;
 
-        this.descriptionrt.string = ` ${slot.plant.description} `;
-        this.plantNamert.string = ` <outline color=#222 width=1> ${Constants.getPlantName(slot.plant.name)} </outline> `;
-        this.growTimert.string = ` <outline color=#222 width=1> ${slot.plant.grow_time}s </outline>`;
-        this.harvestScorert.string = ` <outline color=#222 width=1> ${slot.plant.harvest_point} </outline> `;
-        this.priceBuyrt.string = ` <outline color=#222 width=1> ${slot.plant.buy_price} </outline> `;
+        this.descriptionrt.string = ` ${slot.plant.plant.description} `;
+        this.plantNamert.string = ` <outline color=#222 width=1> ${Constants.getPlantName(slot.plant.plant.name)} </outline> `;
+        this.growTimert.string = ` <outline color=#222 width=1> ${slot.plant.plant.grow_time}s </outline>`;
+        this.harvestScorert.string = ` <outline color=#222 width=1> ${slot.plant.plant.harvest_point} </outline> `;
+        this.priceBuyrt.string = ` <outline color=#222 width=1> ${slot.plant.plant.buy_price} </outline> `;
     }
 
-    private async showToolDetail(slot: ClanWarehouseSlotDTO) {
-        const itemId = slot.item.id;
-        const sprite = await ItemIconManager.getInstance().getIconItemDto(slot.item);
+    private async showToolDetail(slot: InventoryClanUIItem) {
+        this.selectingUITool = slot;
+        const sprite = await ItemIconManager.getInstance().getIconItemDto(slot.tool.item);
         if (this.currentMode !== ItemType.FARM_TOOL) return;
         this.iconTool.spriteFrame = sprite;
-        const percent = Math.round(slot.item.rate * 100);
-        this.toolDescriptionrt.string = ` Công cụ hỗ trợ giúp bạn sử dụng trong nông trại ${slot.item.name} với tỉ lệ dùng [ ${percent}% ] `;
-        this.toolNamert.string = ` <outline color=#222 width=1> ${slot.item.name} </outline> `;
+        const percent = Math.round(slot.tool.item.rate * 100);
+        this.toolDescriptionrt.string = ` Công cụ hỗ trợ giúp bạn sử dụng trong nông trại ${slot.tool.item.name} với tỉ lệ dùng [ ${percent}% ] `;
+        this.toolNamert.string = ` <outline color=#222 width=1> ${slot.tool.item.name} </outline> `;
         this.useTime.string = ` <outline color=#222 width=1> ${percent}% </outline>`;
-        this.toolpriceBuyrt.string = ` <outline color=#222 width=1> ${slot.item.gold} </outline> `;
+        this.toolpriceBuyrt.string = ` <outline color=#222 width=1> ${slot.tool.item.gold} </outline> `;
+    }
+
+    private async showPetDetail(pet: InventoryClanUIItem) {
+        this.selectingUIPet = pet;
+        this.iconPet.spriteFrame = ItemIconManager.getInstance().getIconFarmPet(pet.pet.pet_clan.type.toString());
+        this.petNamert.string = `<outline color=#222222 width=1> ${Constants.getPlantName(pet.pet.pet_clan.name)}</outline>`;
+        this.petDescriptionrt.string = ` ${pet.pet.pet_clan.description}`;
+        this.petRateAffect.string = `<outline color=#222222 width=1> ${pet.pet.total_rate_affect} %</outline>`;
+        this.petLevelrt.string = `<outline color=#222222 width=1> ${pet.pet.level} </outline>`;
+        this.petExprt.string = `<outline color=#222222 width=1> ${pet.pet.exp} / ${pet.pet.required_exp} </outline>`;
+        this.progressBarExp.fillRange = Math.min(pet.pet.exp / pet.pet.required_exp, 1);
+        this.updatePetActionButtons(pet.pet.id, pet.pet.is_active);
+    }
+
+    public updatePetActionButtons(petID: string, isActive:boolean) {
+        const isBrought = isActive;
+        this.bringButton.node.active = !isBrought;
+        this.summonButton.node.active = isBrought;
+        this.bringNode.active = isBrought;
+        const currentAnimalSlot = this.petUIItems.find(slot => slot.pet.id === petID);
+        if (currentAnimalSlot) {
+            currentAnimalSlot.setBringPet(isActive);
+        }
+    }
+
+    async onBringPet(petActionType: PetActionType) {
+        switch (petActionType) {
+            case PetActionType.BRING:
+                this.HandleSendPetInFarm();
+                break;
+            case PetActionType.REMOVE:
+                this.HandleSendPetOutFarm();
+                break;
+        }
+    }
+
+    private async HandleSendPetInFarm() {
+        // const petSlots = await WebRequestManager.instance.getClanPetActivateAsync(this.selectingUIPet.pet.id);
+        // this.updatePetActionButtons(petSlots);
+        //this.isPetLoaded = false;
+        ServerManager.instance.sendActivateGuardPet({
+            clan_id: UserMeManager.Get.clan.id,
+            id: this.selectingUIPet.pet.id,
+        });
+    }
+
+    private async HandleSendPetOutFarm() {
+        // const petSlots = await WebRequestManager.instance.getClanPetDeactivateAsync(this.selectingUIPet.pet.id);
+        // this.updatePetActionButtons(petSlots);
+        // this.isPetLoaded = false;
+        ServerManager.instance.sendDeactivateGuardPet({
+            clan_id: UserMeManager.Get.clan.id,
+            id: this.selectingUIPet.pet.id,
+        });
     }
 
     private async loadHarvestInfo() {
         this.configRate = await WebRequestManager.instance.getConfigRateAsync();
-        this.harvestCountDTO = await WebRequestManager.instance.getHarvestCountsAsync(this.clanDetail.id);
+        this.harvestCountDTO = await WebRequestManager.instance.getHarvestCountsAsync(this.clanDetailId);
 
         this.limitHarvestNode.active = this.configRate.farmLimit.harvest.enabledLimit;
         this.setCountLabel(this.harvertCountrt,
@@ -252,6 +419,7 @@ export class PopupClanInventory extends BasePopup {
 }
 
 export interface PopupClanInventoryParam {
-    clanDetail: ClansData;
+    clanDetailId: string;
     onUpdateFund?: (newFund: number) => void;
+    onActionClose?: () => void;
 }

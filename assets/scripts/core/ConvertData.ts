@@ -2,7 +2,7 @@
 import { FarmDTO, FarmSlotDTO, PlantState, ClanWarehouseSlotDTO, PlantDataDTO, PlantData, HarvestCountDTO } from "../Farm/EnumPlant";
 import { ClansData, PageInfo, ClansResponseDTO, MemberResponseDTO, UserClan, ClanContributorDTO, ClanContributorsResponseDTO, ClanFundResponseDTO, ClanFund, ClanRequestResponseDTO, MemberClanRequestDTO, ClanStatus, ClanActivityItemDTO, ClanActivityResponseDTO, RequestToJoinDTO } from "../Interface/DataMapAPI";
 
-import { EventRewardDTO, EventType, Food, FragmentDTO, FragmentExchangeResponseDTO, FragmentItemDTO, InventoryDTO, Item, ItemClanType, ItemType, PetReward, QuestType, RecipeDTO, RewardItemDTO, RewardNewbieDTO, RewardType, SpinResultDTO, StatsConfigDTO, WeeklyRewardDTO, WheelDTO } from "../Model/Item";
+import { ClanPetDTO, EventRewardDTO, EventType, Food, FragmentDTO, FragmentExchangeResponseDTO, FragmentItemDTO, InventoryDTO, Item, ItemClanType, ItemType, PetClanDTO, PetReward, QuestType, RecipeDTO, RewardItemDTO, RewardNewbieDTO, RewardType, SpinResultDTO, StatsConfigDTO, WeeklyRewardDTO, WheelDTO } from "../Model/Item";
 import { AnimalElementString, AnimalRarity, Element, PetBattleInfo, PetDTO, PlayerBattle, SkillBattleInfo, Species, TypeSkill } from "../Model/PetDTO";
 
 export default class ConvetData {
@@ -843,6 +843,7 @@ export default class ConvetData {
 
             item: recipe.item ?? null,
             pet: recipe.pet ?? null,
+            pet_clan: recipe.pet_clan ?? null,
             plant: recipe.plant ?? null,
 
             ingredients: recipe.ingredients ?? [],
@@ -852,6 +853,47 @@ export default class ConvetData {
     public static ConvertRecipesToRecipeDTO(response: { data: any[] }): RecipeDTO[] {
         return response.data.map(r => this.convertRecipeToRecipeDTO(r));
     }
+
+    public static convertPetClanToPetClanDTO(petClan: any): PetClanDTO {
+        return {
+            id: petClan.id,
+            type: petClan.type,
+            name: petClan.name,
+            description: petClan.description,
+            base_rate_affect: petClan.base_rate_affect,
+            base_exp_per_level: petClan.base_exp_per_level,
+            base_exp_increment_per_level: petClan.base_exp_increment_per_level,
+            max_level: petClan.max_level,
+            level_up_rate_multiplier: petClan.level_up_rate_multiplier,
+            current_pet_quantity:  petClan.current_pet_quantity,
+            max_pet_quantity: petClan.max_pet_quantity
+        };
+    }
+
+    public static convertClanPetToClanPetDTO(pet: any): ClanPetDTO {
+        return {
+            id: pet.id,
+            clan_id: pet.clan_id,
+            pet_clan_id: pet.pet_clan_id,
+            level: pet.level,
+            exp: pet.exp,
+            required_exp: pet.required_exp,
+            bonus_rate_affect: pet.bonus_rate_affect,
+            total_rate_affect: pet.total_rate_affect,
+            slot_index: pet.slot_index ?? null,
+            is_active: pet.is_active,
+            pet_clan: pet.pet_clan
+                ? this.convertPetClanToPetClanDTO(pet.pet_clan)
+                : null,
+        };
+    }
+
+    public static convertClanPetsToClanPetDTO(data: any[]): ClanPetDTO[] {
+        return data.map(p =>
+            this.convertClanPetToClanPetDTO(p)
+        );
+    }
+
 
     public static ConvertFragmentDTO(data): FragmentDTO {
         if (!data) return null;

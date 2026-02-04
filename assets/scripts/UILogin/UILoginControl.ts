@@ -77,7 +77,7 @@ export class UILoginControll extends Component {
             this.handleUserState();
         }
         else {
-            Constants.showConfirm("LỖi đăng nhập", "Chú ý");
+            Constants.showConfirm("Lỗi đăng nhập", "Chú ý");
         }
     }
 
@@ -184,9 +184,9 @@ export class UILoginControll extends Component {
             //webView.onEvent(MezonAppEvent.UserHashInfo, this.handleUserHashInfo);
         }
         else {
-            // appData = "query_id=abOflweIXFgCSfZlNEjH7pXI&user=%7B%22id%22%3A%221831510401251020800%22%2C%22username%22%3A%22toan.nguyenthanh%22%2C%22display_name%22%3A%22toan.nguyenthanh%22%2C%22avatar_url%22%3A%22https%3A%2F%2Fcdn.mezon.vn%2F1779484504377790464%2F1840678703248445440%2F1831510401251020800%2F4371000005003.jpg%22%2C%22mezon_id%22%3A%22toan.nguyenthanh%40ncc.asia%22%7D&auth_date=1742783975&signature=ZWViZTM4YWExZmY4YzBiZDUxMjY5NmRhYWQ1ZTM0ODU4MjhjOTc0NTZjODU4MWUyYmMwNTQ4NDU1Yjk5MDA5MQ%3D%3D&hash=851b8cf3bab1c960c47fd4ab2b1d90fafbb9eef96aea419bb76600b29d0554ce";
-            appData = "query_id=nc_MQN20O8mX90ud_04Irlxk&user=%7B%22id%22%3A%221838774373004087296%22%2C%22username%22%3A%22tam.canhlechi%22%2C%22display_name%22%3A%22tam.canhlechi%22%2C%22avatar_url%22%3A%22https%3A%2F%2Fcdn.mezon.vn%2F1779484504377790464%2F1833340253138587648%2F1838774373004087300%2F622_undefined461398087_2594678774067461_1520915077734667936_n.jpg%22%2C%22mezon_id%22%3A%22tam.canhlechi%40ncc.asia%22%7D&auth_date=1742551789&signature=NjYzYTc1MjYxM2M2NzBmNjNmNjRkOTUyNDI0NzQyZDk1ODZlMDFmZGRlNmEwNTdhODVmYTJkZjBhZWEyOWJlMg%3D%3D&hash=d9b1515435ebeccce5f3549c3383504282aa164d135828ec029c503721ecdd91";
-            // appData = "query_id=MqHtm6OFCCOL6569eLMbDiYJ&user=%7B%22id%22%3A%221833329094238932992%22%2C%22username%22%3A%22an.nguyentranthy%22%2C%22display_name%22%3A%22an.nguyentranthy%22%2C%22avatar_url%22%3A%22https%3A%2F%2Fcdn.mezon.vn%2F1779484504377790464%2F1840660683964813312%2F1833329094238933000%2F1739841664950_undefinedB612_20210211_164318_228.jpg%22%2C%22mezon_id%22%3A%22an.nguyentranthy%40ncc.asia%22%7D&auth_date=1742474029&signature=ZDMxZTYxOGNmNDRiNTYwMWMxM2E5ZGY1Yzg5OTRkODQwYTU5MWMxYjA4MzlmMGNlZjQ2MzFjYWY1ZmFkYmE0OQ%3D%3D&hash=9bb67b37acf3a64769d071d0433ebcff670f525b2c5d74e5ddf20ba2955f37cc";
+            //appData = "query_id=abOflweIXFgCSfZlNEjH7pXI&user=%7B%22id%22%3A%221831510401251020800%22%2C%22username%22%3A%22toan.nguyenthanh%22%2C%22display_name%22%3A%22toan.nguyenthanh%22%2C%22avatar_url%22%3A%22https%3A%2F%2Fcdn.mezon.vn%2F1779484504377790464%2F1840678703248445440%2F1831510401251020800%2F4371000005003.jpg%22%2C%22mezon_id%22%3A%22toan.nguyenthanh%40ncc.asia%22%7D&auth_date=1742783975&signature=ZWViZTM4YWExZmY4YzBiZDUxMjY5NmRhYWQ1ZTM0ODU4MjhjOTc0NTZjODU4MWUyYmMwNTQ4NDU1Yjk5MDA5MQ%3D%3D&hash=851b8cf3bab1c960c47fd4ab2b1d90fafbb9eef96aea419bb76600b29d0554ce";
+            // appData = "query_id=nc_MQN20O8mX90ud_04Irlxk&user=%7B%22id%22%3A%221838774373004087296%22%2C%22username%22%3A%22tam.canhlechi%22%2C%22display_name%22%3A%22tam.canhlechi%22%2C%22avatar_url%22%3A%22https%3A%2F%2Fcdn.mezon.vn%2F1779484504377790464%2F1833340253138587648%2F1838774373004087300%2F622_undefined461398087_2594678774067461_1520915077734667936_n.jpg%22%2C%22mezon_id%22%3A%22tam.canhlechi%40ncc.asia%22%7D&auth_date=1742551789&signature=NjYzYTc1MjYxM2M2NzBmNjNmNjRkOTUyNDI0NzQyZDk1ODZlMDFmZGRlNmEwNTdhODVmYTJkZjBhZWEyOWJlMg%3D%3D&hash=d9b1515435ebeccce5f3549c3383504282aa164d135828ec029c503721ecdd91";
+            appData = "query_id=MqHtm6OFCCOL6569eLMbDiYJ&user=%7B%22id%22%3A%221833329094238932992%22%2C%22username%22%3A%22an.nguyentranthy%22%2C%22display_name%22%3A%22an.nguyentranthy%22%2C%22avatar_url%22%3A%22https%3A%2F%2Fcdn.mezon.vn%2F1779484504377790464%2F1840660683964813312%2F1833329094238933000%2F1739841664950_undefinedB612_20210211_164318_228.jpg%22%2C%22mezon_id%22%3A%22an.nguyentranthy%40ncc.asia%22%7D&auth_date=1742474029&signature=ZDMxZTYxOGNmNDRiNTYwMWMxM2E5ZGY1Yzg5OTRkODQwYTU5MWMxYjA4MzlmMGNlZjQ2MzFjYWY1ZmFkYmE0OQ%3D%3D&hash=9bb67b37acf3a64769d071d0433ebcff670f525b2c5d74e5ddf20ba2955f37cc";
         }
         let loginData = {
             "web_app_data": appData,

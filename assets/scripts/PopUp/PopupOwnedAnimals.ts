@@ -18,7 +18,7 @@ import { PopupUpgradePet, PopupUpgradePetParam } from './PopupUpgradePet';
 import { Constants } from '../utilities/Constants';
 const { ccclass, property } = _decorator;
 
-enum PetActionType {
+export enum PetActionType {
     BRING,
     REMOVE,
     FIGHT,

@@ -1,19 +1,17 @@
-import { _decorator, Button, Component, Node } from 'cc';
+import { _decorator, Button, Component, Node, Prefab, ScrollView, instantiate } from 'cc';
 import { PopupManager } from '../PopUp/PopupManager';
 import { InventoryManager } from '../gameplay/player/inventory/InventoryManager';
 import { SettingManager } from '../core/SettingManager';
 import { UIMissionDetail } from '../gameplay/Mission/UIMissionDetail';
-import { WebRequestManager } from '../network/WebRequestManager';
-import { PopupLoginQuest, PopupLoginQuestParam } from '../PopUp/PopupLoginQuest';
 import { PopupOwnedAnimals } from '../PopUp/PopupOwnedAnimals';
 import { PopupClanList } from '../PopUp/PopupClanList';
 import { PopupClanDetailInfo } from '../PopUp/PopupClanDetailInfo';
 import { UserMeManager } from '../core/UserMeManager';
-import { Vec3 } from 'cc';
-import { Tween } from 'cc';
-import { tween } from 'cc';
 import { LoginEventController } from '../gameplay/LoginEvent/LoginEventController';
-import { PopupCombieFragment, PopupCombieFragmentParam } from '../PopUp/PopupCombieFragment';
+import { WebRequestManager } from '../network/WebRequestManager';
+import { InventoryClanUIItem } from '../Clan/InventoryClanUIItem';
+import { RoomType } from '../GameMap/RoomType';
+import { ClanPetDTO } from '../Model/Item';
 
 const { ccclass, property } = _decorator;
 
@@ -27,6 +25,12 @@ export class PlayerHubController extends Component {
     @property(Button) private btn_UIGuildReward: Button = null!;
     @property(Node) private redDotNoticeMission: Node = null!;
     @property(Node) private blockInteractHarvest: Node = null!;
+
+    @property(Node) private listPetMyFarm: Node = null!;
+    @property(ScrollView) private svInvenoryClanPet: ScrollView = null!;
+    @property(Prefab) private itemPrefab: Prefab = null!;
+    private petUIItems: InventoryClanUIItem[] = [];
+    private petSlots: ClanPetDTO[] = [];
 
     onLoad() {
         this.loginEventController.setData();
@@ -60,6 +64,28 @@ export class PlayerHubController extends Component {
             }
             this.btn_UIGuildReward.interactable = true;
         });
+        this.listPetMyFarm.active = false;
+    }
+
+    public async ShowListPetFarm(){
+        if (UserMeManager.CurrentOffice.roomEnds !== RoomType.FARM || !UserMeManager.Get.clan || !UserMeManager.Get.clan.id || UserMeManager.Get.clan.id !== UserMeManager.CurrentOffice.idclan) {
+            this.listPetMyFarm.active = false;
+            return;
+        }
+        this.listPetMyFarm.active = true;
+        this.svInvenoryClanPet.content.removeAllChildren();
+        this.petSlots = await WebRequestManager.instance.getClanPetAsync(UserMeManager.Get.clan.id, { is_active: true });
+        if (!this.petSlots.length) {
+            this.listPetMyFarm.active = false;
+            return;
+        }
+        for (const slot of this.petSlots) {
+            const node = instantiate(this.itemPrefab);
+            const ui = node.getComponent(InventoryClanUIItem)!;
+            ui.initPet(slot, () => { }, true);
+            node.setParent(this.svInvenoryClanPet.content);
+            this.petUIItems.push(ui);
+        }
     }
 
     onClickButtonA() {

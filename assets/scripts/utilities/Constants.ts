@@ -291,6 +291,17 @@ export class Constants {
         return matched ? nameMap[matched] : englishName;
     }
 
+    public static getPetClanName(type: string): string {
+        const nameMap: Record<string, string> = {
+            dog: 'Chống Trộm ',
+        };
+        const normalized = type.trim().toLowerCase();
+        const matched = Object.keys(nameMap).find(
+            key => key.toLowerCase() === normalized
+        );
+        return matched ? nameMap[matched] : type;
+    }
+
     public static getOfficeName(englishName: string): string {
         const nameMap: Record<string, string> = {
             "Ha Noi 1 Farm": "Hà Nội 1",
