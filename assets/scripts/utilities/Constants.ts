@@ -417,7 +417,7 @@ export class Constants {
     }
 
     static ERROR_MESSAGE_VI: Record<string, string> = {
-        'Clan already has this pet': 'Đã đạt số pet tối đa trong nông trại',
+        'Clan already has this pet': 'Mỗi nông trại chỉ có mua 1 loại pet, nông trại bạn đã sở hữu !!',
         'Maximum active pets reached': 'Đã đạt số pet tối đa trong nông trại',
         'Not enough ingredients in clan warehouse': 'Không đủ nguyên liệu',
         UNKNOWN_ERROR: 'Có lỗi xảy ra, vui lòng thử lại',
