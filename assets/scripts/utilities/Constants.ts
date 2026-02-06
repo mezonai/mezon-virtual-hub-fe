@@ -3,7 +3,7 @@ import { ServerMapManager } from "../core/ServerMapManager";
 import { OfficePosition, Season } from "../GameMap/OfficePosition";
 import { RoomType } from "../GameMap/RoomType";
 import { ClanActivityActionType, ClanRole, ClansData } from "../Interface/DataMapAPI";
-import { FoodType, InventoryType, ItemType, RewardItemDTO, RewardType } from "../Model/Item";
+import { FoodType, InventoryType, ItemType, PetCLanCode, RewardItemDTO, RewardType } from "../Model/Item";
 import { ConfirmParam, ConfirmPopup } from "../PopUp/ConfirmPopup";
 import { PopupManager } from "../PopUp/PopupManager";
 import Utilities from "./Utilities";
@@ -293,7 +293,25 @@ export class Constants {
 
     public static getPetClanName(type: string): string {
         const nameMap: Record<string, string> = {
-            dog: 'Chống Trộm ',
+            dog: ' Chống Trộm ',
+            cat: ' Tăng Vàng ',
+            bird: ' Tăng Điểm ',
+        };
+        const normalized = type.trim().toLowerCase();
+        const matched = Object.keys(nameMap).find(
+            key => key.toLowerCase() === normalized
+        );
+        return matched ? nameMap[matched] : type;
+    }
+
+    public static getPetClanType(type: string): string {
+        const nameMap: Record<string, string> = {
+            pet_clan_dog_001 : 'DogClan1',
+            pet_clan_dog_002 : 'DogClan2',
+            pet_clan_cat_001 : 'CatClan1',
+            pet_clan_cat_002 : 'CatClan2',
+            pet_clan_bird_001 : 'BirdClan1',
+            pet_clan_bird_002 : 'BirdClan2',
         };
         const normalized = type.trim().toLowerCase();
         const matched = Object.keys(nameMap).find(
@@ -397,4 +415,12 @@ export class Constants {
         }
         return null;
     }
+
+    static ERROR_MESSAGE_VI: Record<string, string> = {
+        'Clan already has this pet': 'Đã đạt số pet tối đa trong nông trại',
+        'Maximum active pets reached': 'Đã đạt số pet tối đa trong nông trại',
+        'Not enough ingredients in clan warehouse': 'Không đủ nguyên liệu',
+        UNKNOWN_ERROR: 'Có lỗi xảy ra, vui lòng thử lại',
+    };
+
 }

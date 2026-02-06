@@ -340,29 +340,31 @@ export class PopupClanShop extends BasePopup {
 
     private showSlotDetailFarmPet(pet: ShopClanTool) {
         this.selectingUIPet = pet;
-        this.iconPet.spriteFrame = ItemIconManager.getInstance().getIconFarmPet(pet.recipe.pet_clan.type.toString());
-        this.descriptionrt.string = ` ${pet.recipe.pet_clan.description}`;
-        this.petNamert.string = `<outline color=#222222 width=1> ${Constants.getPlantName(pet.recipe.pet_clan.name)}</outline>`;
-        this.petRateAffect.string = `<outline color=#222222 width=1> ${pet.recipe.pet_clan.base_rate_affect} %</outline>`;
-        const ingredients = pet.recipe.ingredients;
-        let priceGold = 0;
-        if (ingredients && ingredients.length > 0) {
-            const goldIngredient = ingredients.find(i => i.gold && i.gold > 0);
-            if (goldIngredient) {
-                priceGold = goldIngredient.gold;
-                this.petPriceBuyrt.string = `<outline color=#222222 width=1> ${priceGold}</outline>`;
-            } 
-            else {
-                for (const element of ingredients) {
-                    const itemNode = instantiate(this.itemToolExChange);
-                    const farmPet = itemNode.getComponent(InventoryClanUIItemMini);
-                    if (farmPet) {
-                        farmPet.setupItem(element);
-                    }
-                    itemNode.setParent(this.svShopClanPetExChange.content);
-                }
+        this.iconPet.spriteFrame = ItemIconManager.getInstance().getIconFarmPet(Constants.getPetClanType(pet.recipe.pet_clan.pet_clan_code.toString()));
+        this.petDescriptionrt.string = pet.recipe.pet_clan.description;
+        this.petNamert.string =`<outline color=#222222 width=1> ${pet.recipe.pet_clan.name}</outline>`;
+        this.petRateAffect.string =`<outline color=#222222 width=1> ${pet.recipe.pet_clan.base_rate_affect} %</outline>`;
+        const ingredients = pet.recipe.ingredients ?? [];
+        this.svShopClanPetExChange.content.removeAllChildren();
+        this.itemPetExChange.active = false;
+        this.petPriceBuyrt.node.active = false;
+        const goldIngredient = ingredients.find(i => i.gold && i.gold > 0);
+        if (goldIngredient) {
+            this.petPriceBuyrt.node.active = true;
+            this.petPriceBuyrt.string =`<outline color=#222222 width=1> ${goldIngredient.gold}</outline>`;
+        }
+        const itemIngredients = ingredients.filter(i => i.item || i.plant);
+        if (itemIngredients.length > 0) {
+            this.itemPetExChange.active = true;
+            for (const ing of itemIngredients) {
+                const itemNode = instantiate(this.itemToolExChange);
+                const uiItem = itemNode.getComponent(InventoryClanUIItemMini);
+                uiItem?.setupItem(ing);
+                itemNode.setParent(this.svShopClanPetExChange.content);
             }
         }
+        const canBuy = this.checkEnoughIngredientsForTool(pet.recipe.ingredients);
+        this.buyPetButton.interactable = canBuy;
     }
 
     private checkEnoughIngredientsForTool( ingredients?: IngredientDTO[] | null): boolean {
@@ -420,65 +422,151 @@ export class PopupClanShop extends BasePopup {
         });
     }
 
+    // async actionBuy(type: RecipeType) {
+    //     if(type === RecipeType.PET_CLAN){
+    //          const isEnough = this.checkEnoughIngredients(
+    //             this.selectingUIPet.recipe.ingredients,1
+    //         );
+    //          if (!isEnough) {
+    //             Constants.showConfirm('Không đủ vật phẩm để đổi.');
+    //             return;
+    //         }
+    //         const pet = this.selectingUIPet.recipe.pet_clan;
+    //         if(pet.current_pet_quantity >= pet.max_pet_quantity){
+    //             Constants.showConfirm("Mỗi Nông trại chỉ có tối đa 1 pet cho loại này");
+    //             return;
+    //         }
+    //         const payload: any = {
+    //             clanId: this.clanDetailId, 
+    //             quantity: 1,
+    //             type,
+    //             recipeId: this.selectingUIPet.recipe.id
+    //         };
+    //         ServerManager.instance.sendBuyItem(payload);
+    //         return;
+    //     }
+
+    //     const context = this.getBuyContext();
+    //     if (!context) return;
+    //     const quantity = await this.showBuyQuantityPopup(context.price, context.ingredientDTO );
+    //     if (!quantity) return;
+
+    //     if (context.inventoryType === ItemClanType.TOOL && context.ingredientDTO?.length) {
+    //         const isEnough = this.checkEnoughIngredients(
+    //             context.ingredientDTO,
+    //             quantity
+    //         );
+
+    //         if (!isEnough) {
+    //             Constants.showConfirm('Không đủ vật phẩm để đổi.');
+    //             return;
+    //         }
+    //     }
+
+    //     const fundRes = await WebRequestManager.instance.getClanFundAsync(
+    //         UserMeManager.Get.clan.id
+    //     );
+    //     const gold = fundRes?.funds.find(f => f.type === 'gold')?.amount ?? 0;
+
+    //     if (gold < context.price * quantity) {
+    //         Constants.showConfirm('Không đủ vàng trong quỹ văn phòng.');
+    //         return;
+    //     }
+
+    //     const payload: any = {
+    //         clanId: this.clanDetailId,
+    //         quantity,
+    //         type
+    //     };
+
+    //     if (context.recipeId) {
+    //         payload.recipeId = context.recipeId;
+    //     }
+
+    //     if (context.plantId) {
+    //         payload.plantId = context.plantId;
+    //     }
+
+    //     ServerManager.instance.sendBuyItem(payload);
+    // }
     async actionBuy(type: RecipeType) {
-        if(type == RecipeType.PET_CLAN){
-            const pet = this.selectingUIPet.recipe.pet_clan;
-            if(pet.current_pet_quantity >= pet.max_pet_quantity){
-                Constants.showConfirm("Mỗi Nông trại chỉ có tối đa 1 pet cho loại này");
+        switch (type) {
+            case RecipeType.PET_CLAN:
+                await this.handleBuyPetClan();
                 return;
-            }
-            const payload: any = {
-                clanId: this.clanDetailId, 
-                quantity: 1,
-                type,
-                recipeId: this.selectingUIPet.recipe.id
-            };
-            ServerManager.instance.sendBuyItem(payload);
+
+            default:
+                await this.handleBuyNormalItem(type);
+                return;
+        }
+    }
+
+    private async handleBuyPetClan() {
+        const petUI = this.selectingUIPet;
+        if (!petUI) return;
+
+        const recipe = petUI.recipe;
+        const ingredients = recipe.ingredients ?? [];
+        const pet = recipe.pet_clan;
+
+        if (!this.checkEnoughIngredients(ingredients, 1)) {
+            Constants.showConfirm('Không đủ vật phẩm để đổi.');
             return;
         }
 
-        const context = this.getBuyContext();
-        if (!context) return;
-        const quantity = await this.showBuyQuantityPopup(context.price, context.ingredientDTO );
-        if (!quantity) return;
-
-        if (context.inventoryType === ItemClanType.TOOL && context.ingredientDTO?.length) {
-            const isEnough = this.checkEnoughIngredients(
-                context.ingredientDTO,
-                quantity
-            );
-
-            if (!isEnough) {
-                Constants.showConfirm('Không đủ vật phẩm để đổi.');
-                return;
-            }
+        if (pet.current_pet_quantity >= pet.max_pet_quantity) {
+            Constants.showConfirm('Mỗi nông trại chỉ có tối đa 1 pet cho loại này');
+            return;
         }
 
-        const fundRes = await WebRequestManager.instance.getClanFundAsync(
-            UserMeManager.Get.clan.id
-        );
-        const gold = fundRes?.funds.find(f => f.type === 'gold')?.amount ?? 0;
+        ServerManager.instance.sendBuyItem({
+            clanId: this.clanDetailId,
+            quantity: 1,
+            type: RecipeType.PET_CLAN,
+            recipeId: recipe.id,
+        });
+    }
 
+    private async handleBuyNormalItem(type: RecipeType) {
+        const context = this.getBuyContext();
+        if (!context) return;
+
+        const quantity = await this.showBuyQuantityPopup(
+            context.price,
+            context.ingredientDTO
+        );
+        if (!quantity) return;
+
+        if (
+            context.inventoryType === ItemClanType.TOOL &&
+            context.ingredientDTO?.length &&
+            !this.checkEnoughIngredients(context.ingredientDTO, quantity)
+        ) {
+            Constants.showConfirm('Không đủ vật phẩm để đổi.');
+            return;
+        }
+
+        const gold = await this.getClanGold();
         if (gold < context.price * quantity) {
             Constants.showConfirm('Không đủ vàng trong quỹ văn phòng.');
             return;
         }
 
-        const payload: any = {
+        ServerManager.instance.sendBuyItem({
             clanId: this.clanDetailId,
             quantity,
-            type
-        };
+            type,
+            recipeId: context.recipeId,
+            plantId: context.plantId,
+        });
+    }
 
-        if (context.recipeId) {
-            payload.recipeId = context.recipeId;
-        }
+    private async getClanGold(): Promise<number> {
+        const fundRes = await WebRequestManager.instance.getClanFundAsync(
+            UserMeManager.Get.clan.id
+        );
 
-        if (context.plantId) {
-            payload.plantId = context.plantId;
-        }
-
-        ServerManager.instance.sendBuyItem(payload);
+        return fundRes?.funds.find(f => f.type === 'gold')?.amount ?? 0;
     }
 
     private checkEnoughIngredients(ingredients: IngredientDTO[], quantity: number): boolean {
@@ -504,6 +592,10 @@ export class PopupClanShop extends BasePopup {
             await this.syncCurrentIngredientsForSelectedTool();
             await this.showSlotDetailFarmTool(this.selectingUITool);
         }
+        if (this.currentMode === ItemType.PET_CLAN && this.selectingUIPet) {
+            await this.syncCurrentIngredientsForSelectedPet();
+            await this.showSlotDetailFarmPet(this.selectingUIPet);
+        }
         this.param?.onBuySuccess?.();
     }
 
@@ -521,10 +613,7 @@ export class PopupClanShop extends BasePopup {
             for (const ing of recipe.ingredients ?? []) {
                 if (!ing.item_id && !ing.plant_id) continue;
 
-                const key = ing.item_id
-                    ? `item_${ing.item_id}`
-                    : `plant_${ing.plant_id}`;
-
+                const key = ing.item_id ? `item_${ing.item_id}`: `plant_${ing.plant_id}`;
                 ingredientQuantityMap.set(key, ing.current_quantity ?? 0);
             }
         }
@@ -532,11 +621,45 @@ export class PopupClanShop extends BasePopup {
         for (const ing of this.selectingUITool.recipe.ingredients) {
             if (!ing.item_id && !ing.plant_id) continue;
 
-            const key = ing.item_id
-                ? `item_${ing.item_id}`
-                : `plant_${ing.plant_id}`;
-
+            const key = ing.item_id ? `item_${ing.item_id}`: `plant_${ing.plant_id}`;
             ing.current_quantity = ingredientQuantityMap.get(key) ?? 0;
+        }
+        const prevToolClanId = this.selectingUITool?.recipe?.item?.id ?? null;
+        this.selectingUITool = null;
+        if (prevToolClanId) {
+            const found = this._toolsDataDTO.find(
+                p => p.recipe.item.id === prevToolClanId
+            );
+            if (found) {
+                this.selectingUITool = found;
+                return;
+            }
+        }
+    }
+
+    private async syncCurrentIngredientsForSelectedPet() {
+        if (!this.selectingUIPet) return;
+        const prevPetClanId = this.selectingUIPet.recipe.pet_clan.id;
+        this.petRecipeDTO = await WebRequestManager.instance.getAllRecipeByTypeAsync(ItemType.PET_CLAN);
+        const ingredientQuantityMap = new Map<string, number>();
+        for (const recipe of this.petRecipeDTO) {
+            for (const ing of recipe.ingredients ?? []) {
+                if (!ing.item_id && !ing.plant_id) continue;
+                const key = ing.item_id ? `item_${ing.item_id}`: `plant_${ing.plant_id}`;
+                ingredientQuantityMap.set(key, ing.current_quantity ?? 0);
+            }
+        }
+        for (const ing of this.selectingUIPet.recipe.ingredients) {
+            if (!ing.item_id && !ing.plant_id) continue;
+            const key = ing.item_id ? `item_${ing.item_id}` : `plant_${ing.plant_id}`;
+            ing.current_quantity = ingredientQuantityMap.get(key) ?? 0;
+        }
+        const found = this._petsDataDTO.find(
+            p => p.recipe.pet_clan.id === prevPetClanId
+        );
+
+        if (found) {
+            this.selectingUIPet = found;
         }
     }
 }

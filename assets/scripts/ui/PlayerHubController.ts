@@ -1,4 +1,4 @@
-import { _decorator, Button, Component, Node, Prefab, ScrollView, instantiate } from 'cc';
+import { _decorator, Button, Component, Node, Prefab, ScrollView, instantiate, Label } from 'cc';
 import { PopupManager } from '../PopUp/PopupManager';
 import { InventoryManager } from '../gameplay/player/inventory/InventoryManager';
 import { SettingManager } from '../core/SettingManager';
@@ -12,6 +12,7 @@ import { WebRequestManager } from '../network/WebRequestManager';
 import { InventoryClanUIItem } from '../Clan/InventoryClanUIItem';
 import { RoomType } from '../GameMap/RoomType';
 import { ClanPetDTO } from '../Model/Item';
+import { PopupShopSlotPetClan } from '../PopUp/PopupShopSlotPetClan';
 
 const { ccclass, property } = _decorator;
 
@@ -22,6 +23,7 @@ export class PlayerHubController extends Component {
     @property(Button) private btn_UISetting: Button = null!;
     @property(Button) private btn_UIMission: Button = null!;
     @property(Button) private showOwnedButton: Button;
+    @property(Button) private buySlotFarmButton: Button;
     @property(Button) private btn_UIGuildReward: Button = null!;
     @property(Node) private redDotNoticeMission: Node = null!;
     @property(Node) private blockInteractHarvest: Node = null!;
@@ -31,6 +33,9 @@ export class PlayerHubController extends Component {
     @property(Prefab) private itemPrefab: Prefab = null!;
     private petUIItems: InventoryClanUIItem[] = [];
     private petSlots: ClanPetDTO[] = [];
+    @property(Label) maxSlotPetActive: Label = null!;
+    private showPetRequestId = 0;
+    private petUIMap = new Map<string, InventoryClanUIItem>();
 
     onLoad() {
         this.loginEventController.setData();
@@ -64,27 +69,56 @@ export class PlayerHubController extends Component {
             }
             this.btn_UIGuildReward.interactable = true;
         });
+        this.buySlotFarmButton.addAsyncListener(async () => {
+            this.buySlotFarmButton.interactable = false;
+            await PopupManager.getInstance().openAnimPopup('UI_ClanShopSlotPet', PopupShopSlotPetClan);
+            this.buySlotFarmButton.interactable = true;
+        });
         this.listPetMyFarm.active = false;
     }
 
-    public async ShowListPetFarm(){
-        if (UserMeManager.CurrentOffice.roomEnds !== RoomType.FARM || !UserMeManager.Get.clan || !UserMeManager.Get.clan.id || UserMeManager.Get.clan.id !== UserMeManager.CurrentOffice.idclan) {
+    public async updatePetSlotInfo() {
+        if (!this.canShowPetFarm()) {
             this.listPetMyFarm.active = false;
             return;
         }
+
         this.listPetMyFarm.active = true;
+        const petSlots = await WebRequestManager.instance.getClanPetAsync( UserMeManager.Get.clan.id, { is_active: true });
+        const maxSlot = petSlots.length > 0 ? petSlots[0].max_slot_pet_active : UserMeManager.Get.clan.max_slot_pet_active;
+        this.maxSlotPetActive.string = `Pet hoạt động: ${petSlots.length}/${maxSlot} (tối đa)`;
+        if(!petSlots) return;
+        for (const pet of petSlots) {
+            const ui = this.petUIMap.get(pet.id);
+            if (ui) {
+                ui.updatePetExpProgress(pet);
+            }
+        }
+    }
+
+    private canShowPetFarm(): boolean {
+        return (UserMeManager.CurrentOffice.roomEnds === RoomType.FARM && !!UserMeManager.Get?.clan &&!!UserMeManager.Get.clan.id && UserMeManager.Get.clan.id === UserMeManager.CurrentOffice.idclan);
+    }
+
+    public async ShowListPetFarm() {
+        const requestId = ++this.showPetRequestId;
+        this.listPetMyFarm.active = this.canShowPetFarm();
         this.svInvenoryClanPet.content.removeAllChildren();
-        this.petSlots = await WebRequestManager.instance.getClanPetAsync(UserMeManager.Get.clan.id, { is_active: true });
-        if (!this.petSlots.length) {
-            this.listPetMyFarm.active = false;
+        this.petUIItems.length = 0;
+        const petSlots = await WebRequestManager.instance.getClanPetAsync(UserMeManager.Get.clan.id, { is_active: true });
+        if (requestId !== this.showPetRequestId) {
             return;
         }
-        for (const slot of this.petSlots) {
+        petSlots.sort((a, b) => a.slot_index - b.slot_index);
+        const maxSlot = petSlots.length > 0 ? petSlots[0].max_slot_pet_active : UserMeManager.Get.clan.max_slot_pet_active;
+        this.maxSlotPetActive.string = `Pet Hoạt động: ${petSlots.length}/${maxSlot} (tối đa)`;
+        for (const slot of petSlots) {
             const node = instantiate(this.itemPrefab);
             const ui = node.getComponent(InventoryClanUIItem)!;
             ui.initPet(slot, () => { }, true);
             node.setParent(this.svInvenoryClanPet.content);
             this.petUIItems.push(ui);
+            this.petUIMap.set(slot.id, ui);
         }
     }
 

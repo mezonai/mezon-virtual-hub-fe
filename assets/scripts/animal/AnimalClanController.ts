@@ -6,6 +6,7 @@ import { ObjectPoolManager } from '../pooling/ObjectPoolManager';
 import { AnimalType } from './AnimalController';
 import { ClanPetDTO } from '../Model/Item';
 import { PetClanColysesusObjectData } from '../Model/Player';
+import { Constants } from '../utilities/Constants';
 const { ccclass, property } = _decorator;
 @ccclass('AnimalClanController')
 export class AnimalClanController extends Component {
@@ -22,15 +23,29 @@ export class AnimalClanController extends Component {
     private pet: PetClanColysesusObjectData | null = null;
     private tweenAction: Tween<Node> | null = null;
     private hideTimeout: number | null = null;
-    guardFarmLines: string[] = [
-        "Để em canh cho!",
-        "Có em ở đây rồi!",
-        "Không ai được phá vườn đâu!",
-        "Em đang canh vườn nè!",
-        "Yên tâm ngủ đi chủ ơi!",
-        "Vườn này có bảo kê nha!",
-        "Em canh rất kỹ đó!",
-    ];
+    private petTalkLines: Record<string, string[]> = {
+        dog: [
+            "Gâu gâu! Có trộm là biết liền",
+            "Để em canh vườn cho",
+            "Ai bén mảng là em sủa đó",
+            "Vườn này có chó canh nha",
+            "Ngủ ngon đi chủ, có em rồi",
+        ],
+        cat: [
+            "Meo! hôm nay vàng nhiều lắm nè",
+            "Em cảm nhận thấy tài lộc đó",
+            "Cào nhẹ là có thêm vàng nha",
+            "Vàng về vàng về",
+            "Chủ ơi hôm nay hên lắm đó",
+        ],
+        bird: [
+            "Chíp chíp! điểm sắp tăng rồi",
+            "Em thấy điểm bay đầy trời nè",
+            "Cố lên chủ ơi",
+            "Chíp~ chơi nữa là lên điểm đó",
+            "Điểm cao kìa, em thấy rồi",
+        ],
+    };
 
     setGuardFarm( pet: PetClanColysesusObjectData, areaRadius: number = 120
     ) {
@@ -38,7 +53,7 @@ export class AnimalClanController extends Component {
         this.animalType = AnimalType.GuardFarm;
         this.collider.enabled = false;
         this.nameAnimal.node.active = true;
-        this.nameAnimal.string =  `<outline color=#000 width=1>${pet.name} (Canh vườn)</outline>`;
+        this.nameAnimal.string =  `<outline color=#000 width=1>${pet.name}</outline>`;
         this.randomlyMover.setRandomMovePet(
             this.minSpeed,
             this.maxSpeed,
@@ -48,12 +63,25 @@ export class AnimalClanController extends Component {
         this.startGuardFarmBubble();
     }
 
+    private getRandomPetLine(type: string): string {
+        const key = type.trim().toLowerCase();
+        const lines = this.petTalkLines[key];
+
+        if (!lines || lines.length === 0) {
+            return "Em đang ở đây trong nông trại nè!";
+        }
+
+        const index = Math.floor(Math.random() * lines.length);
+        return lines[index];
+    }
+
     private startGuardFarmBubble() {
         this.schedule(() => {
-            if (this.animalType !== AnimalType.GuardFarm) return;
+            if (this.animalType !== AnimalType.GuardFarm || !this.pet) return;
 
-            const index = Math.floor(Math.random() * this.guardFarmLines.length);
-            this.showBubbleChat(this.guardFarmLines[index], 1500);
+            const line = this.getRandomPetLine(this.pet.petCLanCode);
+            this.showBubbleChat(line, 1500);
+
         }, 6 + Math.random() * 4);
     }
 

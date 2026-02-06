@@ -7,6 +7,7 @@ import { PopupActionInterruptHarvest, PopupActionInterruptHarvestParam } from '.
 import { WebRequestManager } from '../../network/WebRequestManager';
 import { UserMeManager } from '../../core/UserMeManager';
 import { InventoryClanType } from '../../Model/Item';
+import { Constants } from '../../utilities/Constants';
 const { ccclass, property } = _decorator;
 
 @ccclass('PlayerInteractFarm')
@@ -17,7 +18,7 @@ export class PlayerInteractFarm extends Component {
     private harvestTween: Tween<Sprite> | null = null;
     public isHarvesting: boolean;
     public currentHarvestSlotId: string | null = null;
-
+    @property(Node) biteByDogAnim: Node = null!;
 
     public showHarvestingBar(endTime?: number, slotId?: string) {
         if (!slotId || !this.harvestProgressBar || !this.harvestFillSprite) return;
@@ -25,6 +26,38 @@ export class PlayerInteractFarm extends Component {
         this.isHarvesting = true;
         this.playAnimHarvest(endTime)
     }
+
+    public showBiteByDog(msg: string) {
+        this.PlayBiteByDogAnim(true);
+
+        this.scheduleOnce(() => {
+            Constants.showConfirm(msg);
+        }, 2);
+    }
+
+    public PlayBiteByDogAnim(isShow: boolean) {
+        return this.playAnimWithDelay(this.biteByDogAnim, isShow);
+    }
+
+    private playAnimWithDelay(node: Node, isShow: boolean, delaySec: number = 2): Promise<void> {
+        return new Promise((resolve) => {
+            node.active = isShow;
+
+            if (!isShow) {
+                resolve();
+                return;
+            }
+
+            tween(node)
+                .delay(delaySec)
+                .call(() => {
+                    node.active = false;
+                    resolve();
+                })
+                .start();
+        });
+    }
+
     public playAnimHarvest(endTime?: number): Promise<void> {
         return new Promise((resolve) => {
             const now = Date.now();

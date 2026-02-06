@@ -34,35 +34,38 @@
         "__id__": 125
       },
       {
-        "__id__": 173
+        "__id__": 182
+      },
+      {
+        "__id__": 174
       }
     ],
     "_active": true,
     "_components": [
       {
-        "__id__": 179
+        "__id__": 188
       },
       {
-        "__id__": 181
+        "__id__": 190
       },
       {
-        "__id__": 183
+        "__id__": 192
       },
       {
-        "__id__": 189
+        "__id__": 198
       },
       {
-        "__id__": 191
+        "__id__": 200
       },
       {
-        "__id__": 185
+        "__id__": 194
       },
       {
-        "__id__": 187
+        "__id__": 196
       }
     ],
     "_prefab": {
-      "__id__": 193
+      "__id__": 202
     },
     "_lpos": {
       "__type__": "cc.Vec3",
@@ -1338,7 +1341,7 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 28.99691142364415,
+      "width": 28.995922759433963,
       "height": 40.32
     },
     "_anchorPoint": {
@@ -1680,7 +1683,7 @@
     "_string": "",
     "_horizontalAlign": 1,
     "_verticalAlign": 1,
-    "_actualFontSize": 57.4765625,
+    "_actualFontSize": 72.4609375,
     "_fontSize": 14,
     "_fontFamily": "Arial",
     "_lineHeight": 25.9,
@@ -2979,6 +2982,9 @@
       },
       {
         "__id__": 171
+      },
+      {
+        "__id__": 173
       }
     ],
     "removedComponents": []
@@ -3417,6 +3423,186 @@
     ]
   },
   {
+    "__type__": "CCPropertyOverrideInfo",
+    "targetInfo": {
+      "__id__": 136
+    },
+    "propertyPath": [
+      "biteByDogAnim"
+    ],
+    "value": {
+      "__id__": 174
+    }
+  },
+  {
+    "__type__": "cc.Node",
+    "_name": "Bite By Dog",
+    "_objFlags": 0,
+    "__editorExtras__": {},
+    "_parent": {
+      "__id__": 1
+    },
+    "_children": [],
+    "_active": false,
+    "_components": [
+      {
+        "__id__": 175
+      },
+      {
+        "__id__": 177
+      },
+      {
+        "__id__": 179
+      }
+    ],
+    "_prefab": {
+      "__id__": 181
+    },
+    "_lpos": {
+      "__type__": "cc.Vec3",
+      "x": 0.6715,
+      "y": 8.4905,
+      "z": 0
+    },
+    "_lrot": {
+      "__type__": "cc.Quat",
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "w": 1
+    },
+    "_lscale": {
+      "__type__": "cc.Vec3",
+      "x": 1,
+      "y": 1,
+      "z": 1
+    },
+    "_mobility": 0,
+    "_layer": 1073741824,
+    "_euler": {
+      "__type__": "cc.Vec3",
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "_id": ""
+  },
+  {
+    "__type__": "cc.UITransform",
+    "_name": "",
+    "_objFlags": 0,
+    "__editorExtras__": {},
+    "node": {
+      "__id__": 174
+    },
+    "_enabled": true,
+    "__prefab": {
+      "__id__": 176
+    },
+    "_contentSize": {
+      "__type__": "cc.Size",
+      "width": 66.157,
+      "height": 56.980999999999995
+    },
+    "_anchorPoint": {
+      "__type__": "cc.Vec2",
+      "x": 0.5,
+      "y": 0.5
+    },
+    "_id": ""
+  },
+  {
+    "__type__": "cc.CompPrefabInfo",
+    "fileId": "55I9ywsRVFBLSQZRCj29Dj"
+  },
+  {
+    "__type__": "cc.Sprite",
+    "_name": "",
+    "_objFlags": 0,
+    "__editorExtras__": {},
+    "node": {
+      "__id__": 174
+    },
+    "_enabled": true,
+    "__prefab": {
+      "__id__": 178
+    },
+    "_customMaterial": null,
+    "_srcBlendFactor": 2,
+    "_dstBlendFactor": 4,
+    "_color": {
+      "__type__": "cc.Color",
+      "r": 255,
+      "g": 255,
+      "b": 255,
+      "a": 255
+    },
+    "_spriteFrame": {
+      "__uuid__": "f5b3011a-4f43-477c-9756-8cc4d49fa567@f9941",
+      "__expectedType__": "cc.SpriteFrame"
+    },
+    "_type": 0,
+    "_fillType": 0,
+    "_sizeMode": 0,
+    "_fillCenter": {
+      "__type__": "cc.Vec2",
+      "x": 0,
+      "y": 0
+    },
+    "_fillStart": 0,
+    "_fillRange": 0,
+    "_isTrimmedMode": true,
+    "_useGrayscale": false,
+    "_atlas": null,
+    "_id": ""
+  },
+  {
+    "__type__": "cc.CompPrefabInfo",
+    "fileId": "f8TJf6EelGWLo07Y8sQCbK"
+  },
+  {
+    "__type__": "cc.Animation",
+    "_name": "",
+    "_objFlags": 0,
+    "__editorExtras__": {},
+    "node": {
+      "__id__": 174
+    },
+    "_enabled": true,
+    "__prefab": {
+      "__id__": 180
+    },
+    "playOnLoad": true,
+    "_clips": [
+      {
+        "__uuid__": "44b782c0-21e6-46ef-b54d-4c751b9b5d1f",
+        "__expectedType__": "cc.AnimationClip"
+      }
+    ],
+    "_defaultClip": {
+      "__uuid__": "44b782c0-21e6-46ef-b54d-4c751b9b5d1f",
+      "__expectedType__": "cc.AnimationClip"
+    },
+    "_id": ""
+  },
+  {
+    "__type__": "cc.CompPrefabInfo",
+    "fileId": "79ezTn0/5MDYh2XDAsVq/D"
+  },
+  {
+    "__type__": "cc.PrefabInfo",
+    "root": {
+      "__id__": 1
+    },
+    "asset": {
+      "__id__": 0
+    },
+    "fileId": "39LLkxXANAb6THnTYXUTH0",
+    "instance": null,
+    "targetOverrides": null,
+    "nestedPrefabInstanceRoots": null
+  },
+  {
     "__type__": "cc.Node",
     "_name": "BattleIcon",
     "_objFlags": 0,
@@ -3428,14 +3614,14 @@
     "_active": false,
     "_components": [
       {
-        "__id__": 174
+        "__id__": 183
       },
       {
-        "__id__": 176
+        "__id__": 185
       }
     ],
     "_prefab": {
-      "__id__": 178
+      "__id__": 187
     },
     "_lpos": {
       "__type__": "cc.Vec3",
@@ -3472,11 +3658,11 @@
     "_objFlags": 0,
     "__editorExtras__": {},
     "node": {
-      "__id__": 173
+      "__id__": 182
     },
     "_enabled": true,
     "__prefab": {
-      "__id__": 175
+      "__id__": 184
     },
     "_contentSize": {
       "__type__": "cc.Size",
@@ -3500,11 +3686,11 @@
     "_objFlags": 0,
     "__editorExtras__": {},
     "node": {
-      "__id__": 173
+      "__id__": 182
     },
     "_enabled": true,
     "__prefab": {
-      "__id__": 177
+      "__id__": 186
     },
     "_customMaterial": null,
     "_srcBlendFactor": 2,
@@ -3562,7 +3748,7 @@
     },
     "_enabled": true,
     "__prefab": {
-      "__id__": 180
+      "__id__": 189
     },
     "_contentSize": {
       "__type__": "cc.Size",
@@ -3590,7 +3776,7 @@
     },
     "_enabled": true,
     "__prefab": {
-      "__id__": 182
+      "__id__": 191
     },
     "myID": "",
     "userName": "",
@@ -3600,7 +3786,7 @@
       "__id__": 60
     },
     "moveAbility": {
-      "__id__": 183
+      "__id__": 192
     },
     "animationEventController": {
       "__id__": 51
@@ -3626,7 +3812,7 @@
     ],
     "p2PInteractManager": null,
     "iconBattle": {
-      "__id__": 173
+      "__id__": 182
     },
     "bubbleChat": {
       "__id__": 64
@@ -3635,7 +3821,7 @@
       "__id__": 69
     },
     "petCatching": {
-      "__id__": 187
+      "__id__": 196
     },
     "petFollowPrefabs": [],
     "playerInteractFarm": null,
@@ -3655,7 +3841,7 @@
     },
     "_enabled": true,
     "__prefab": {
-      "__id__": 184
+      "__id__": 193
     },
     "animationController": {
       "__id__": 47
@@ -3670,7 +3856,7 @@
     },
     "playerInputs": [
       {
-        "__id__": 185
+        "__id__": 194
       }
     ],
     "_id": ""
@@ -3689,7 +3875,7 @@
     },
     "_enabled": true,
     "__prefab": {
-      "__id__": 186
+      "__id__": 195
     },
     "_id": ""
   },
@@ -3707,7 +3893,7 @@
     },
     "_enabled": true,
     "__prefab": {
-      "__id__": 188
+      "__id__": 197
     },
     "foodPrefab": {
       "__uuid__": "be08cad3-abb2-4819-bc1d-0ce4115b8370",
@@ -3732,7 +3918,7 @@
     },
     "_enabled": true,
     "__prefab": {
-      "__id__": 190
+      "__id__": 199
     },
     "enabledContactListener": false,
     "bullet": true,
@@ -3766,7 +3952,7 @@
     },
     "_enabled": true,
     "__prefab": {
-      "__id__": 192
+      "__id__": 201
     },
     "tag": 0,
     "_group": 2,
@@ -3798,28 +3984,28 @@
     "instance": null,
     "targetOverrides": [
       {
-        "__id__": 194
-      },
-      {
-        "__id__": 196
-      },
-      {
-        "__id__": 198
-      },
-      {
-        "__id__": 200
-      },
-      {
         "__id__": 203
       },
       {
-        "__id__": 206
+        "__id__": 205
+      },
+      {
+        "__id__": 207
       },
       {
         "__id__": 209
       },
       {
         "__id__": 212
+      },
+      {
+        "__id__": 215
+      },
+      {
+        "__id__": 218
+      },
+      {
+        "__id__": 221
       }
     ],
     "nestedPrefabInstanceRoots": [
@@ -3839,7 +4025,7 @@
       "__id__": 125
     },
     "targetInfo": {
-      "__id__": 195
+      "__id__": 204
     }
   },
   {
@@ -3851,7 +4037,7 @@
   {
     "__type__": "cc.TargetOverrideInfo",
     "source": {
-      "__id__": 181
+      "__id__": 190
     },
     "sourceInfo": null,
     "propertyPath": [
@@ -3861,7 +4047,7 @@
       "__id__": 125
     },
     "targetInfo": {
-      "__id__": 197
+      "__id__": 206
     }
   },
   {
@@ -3873,7 +4059,7 @@
   {
     "__type__": "cc.TargetOverrideInfo",
     "source": {
-      "__id__": 181
+      "__id__": 190
     },
     "sourceInfo": null,
     "propertyPath": [
@@ -3883,7 +4069,7 @@
       "__id__": 125
     },
     "targetInfo": {
-      "__id__": 199
+      "__id__": 208
     }
   },
   {
@@ -3898,7 +4084,7 @@
       "__id__": 125
     },
     "sourceInfo": {
-      "__id__": 201
+      "__id__": 210
     },
     "propertyPath": [
       "actionButtonParent"
@@ -3907,7 +4093,7 @@
       "__id__": 125
     },
     "targetInfo": {
-      "__id__": 202
+      "__id__": 211
     }
   },
   {
@@ -3928,7 +4114,7 @@
       "__id__": 125
     },
     "sourceInfo": {
-      "__id__": 204
+      "__id__": 213
     },
     "propertyPath": [
       "actionButtons",
@@ -3938,7 +4124,7 @@
       "__id__": 125
     },
     "targetInfo": {
-      "__id__": 205
+      "__id__": 214
     }
   },
   {
@@ -3959,7 +4145,7 @@
       "__id__": 125
     },
     "sourceInfo": {
-      "__id__": 207
+      "__id__": 216
     },
     "propertyPath": [
       "actionButtons",
@@ -3969,7 +4155,7 @@
       "__id__": 125
     },
     "targetInfo": {
-      "__id__": 208
+      "__id__": 217
     }
   },
   {
@@ -3990,7 +4176,7 @@
       "__id__": 125
     },
     "sourceInfo": {
-      "__id__": 210
+      "__id__": 219
     },
     "propertyPath": [
       "actionButtons",
@@ -4000,7 +4186,7 @@
       "__id__": 125
     },
     "targetInfo": {
-      "__id__": 211
+      "__id__": 220
     }
   },
   {
@@ -4021,7 +4207,7 @@
       "__id__": 125
     },
     "sourceInfo": {
-      "__id__": 213
+      "__id__": 222
     },
     "propertyPath": [
       "actionButtons",
@@ -4031,7 +4217,7 @@
       "__id__": 125
     },
     "targetInfo": {
-      "__id__": 214
+      "__id__": 223
     }
   },
   {

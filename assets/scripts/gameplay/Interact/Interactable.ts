@@ -112,7 +112,6 @@ export abstract class Interactable extends Component {
         const myId = myPlayer.myID;
         if ((otherNode.layer & Constants.PLAYER_LAYER) !== 0 && otherPlayerId === myId) {
             this.isPlayerNearby = true;
-            console.log("onBeginContact");
             this.nearbyPlayerNode = otherNode;
             this.handleBeginContact(selfCollider, otherCollider, contact);
         }

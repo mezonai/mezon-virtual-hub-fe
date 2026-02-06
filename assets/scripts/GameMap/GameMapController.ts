@@ -39,7 +39,6 @@ export class GameMapController extends Component {
 
     protected start(): void {
         Constants.season = this.season;
-        console.log("Set: " , Constants.season);
         this.playerNode.active = false;
     }
 

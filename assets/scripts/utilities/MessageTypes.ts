@@ -58,4 +58,8 @@ export enum MessageTypes {
     ON_DECREASE_GROWTH_TIME = 'onDecreaseGrowthTime',
     ON_DECREASE_GROWTH_TIME_FAILED = 'onDecreaseGrowthTimeFailed',
     ON_CHANGE_TOTAL_SLOT_PET_BATTLE = 'onChangeTotalSlotPetBatte',
+    ON_ACTIVATE_PET_FAILED= 'onActivatePetFailed',
+    ON_DEACTIVATE_PET_FAILED= 'onDeactivatePetFailed',
+    ON_DOG_BITE = 'onDogBite',
+
 }

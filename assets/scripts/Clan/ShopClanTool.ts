@@ -1,6 +1,7 @@
 import { _decorator, Component, Node, Sprite, SpriteFrame, Toggle, Label } from 'cc';
 import { IconItemUIHelper } from '../Reward/IconItemUIHelper';
 import { Item, RecipeDTO, } from '../Model/Item';
+import { Constants } from '../utilities/Constants';
 const { ccclass, property } = _decorator;
 
 @ccclass('ShopClanTool')
@@ -21,7 +22,7 @@ export class ShopClanTool extends Component {
             this.iconItemUIHelper.setIconByItem(recipe.item);
         }
         else if (recipe.pet_clan) {
-            this.iconItemUIHelper.setIconByPetClan(recipe.pet_clan.type.toString());
+            this.iconItemUIHelper.setIconByPetClan(Constants.getPetClanType(recipe.pet_clan.pet_clan_code.toString()));
         }
         if (this.toggle) {
             this.toggle.node.on('toggle', () => {
