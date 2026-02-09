@@ -41,7 +41,7 @@ export class SkinChanger extends Component {
             return;
         }
         animation.stop();
-        this.animationController.init(skinFrames);
+        //this.animationController.init(skinFrames);
 
         console.log("Waiting for animation to finish...");
     }

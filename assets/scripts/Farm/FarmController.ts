@@ -9,6 +9,7 @@ import { UserMeManager } from '../core/UserMeManager';
 import { Constants } from '../utilities/Constants';
 import { PopupChooseItem, PopupChooseItemParam } from '../PopUp/PopupChooseItem';
 import { InventoryClanType, ItemClanType } from '../Model/Item';
+import { GameManager } from '../core/GameManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('FarmController')
@@ -60,6 +61,7 @@ export class FarmController extends Component {
       slot.setup(slotData);
       this.landSlots.push(slot);
     });
+    GameManager.instance.playerHubController.updatePetSlotInfo();
   }
 
   public async openPlantMenu(slot: FarmSlot) {

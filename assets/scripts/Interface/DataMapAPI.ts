@@ -46,6 +46,7 @@ export class ClansData {
     description: string | null;
     member_count?: number;
     max_members?: number;
+    max_slot_pet_active?: number;
 
     leader?: UserClan | null;
     vice_leaders?: UserClan[] | null;

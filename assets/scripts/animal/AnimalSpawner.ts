@@ -6,6 +6,7 @@ import { AnimalController, AnimalType } from './AnimalController';
 import { PetClanColysesusObjectData, PetColysesusObjectData } from '../Model/Player';
 import { AnimalClanController } from './AnimalClanController';
 import { ClanPetDTO, PetClanDTO } from '../Model/Item';
+import { Constants } from '../utilities/Constants';
 
 const { ccclass, property } = _decorator;
 
@@ -45,9 +46,8 @@ export class AnimalSpawner extends Component {
 
     public spawnClanGuardPet(pet: PetClanColysesusObjectData) {
         if (!pet.isActive) return;
-
-        const petType = pet.type.toString();
-        const petObj = ObjectPoolManager.instance.spawnFromPool(petType+"Clan");
+        const petType = pet.petCLanCode.toString();
+        const petObj = ObjectPoolManager.instance.spawnFromPool(Constants.getPetClanType(petType));
         if (!petObj) return;
         const zone = this.getRandomZone();
         petObj.setParent(zone.node);
@@ -85,16 +85,6 @@ export class AnimalSpawner extends Component {
     }
 
     public removeClanPetById(petId: string) {
-        console.log(
-            '[removeClanPetById]',
-            'input petId =', petId,
-            'spawned =',
-            this.spawnedClanPets.map(c => ({
-                clanAnimalId: c?.Pet?.id,
-                petClanId: c?.Pet?.petClanId,
-            }))
-        );
-
         const petIndex = this.spawnedClanPets.findIndex(
             controller => controller?.Pet?.id === petId
         );
@@ -105,11 +95,7 @@ export class AnimalSpawner extends Component {
         }
 
         const controller = this.spawnedClanPets[petIndex];
-
-        // remove khỏi list
         this.spawnedClanPets.splice(petIndex, 1);
-
-        // trả về pool
         controller.closeAnimal();
     }
 

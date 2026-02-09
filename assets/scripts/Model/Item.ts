@@ -3,6 +3,7 @@ import { LocalItemDataConfig } from "./LocalItemConfig";
 import { AnimalRarity, PetDTO, Species, Element } from "./PetDTO";
 import { Enum } from "cc";
 import { PlantDataDTO } from "../Farm/EnumPlant";
+import { ClansData } from "../Interface/DataMapAPI";
 
 export class BaseInventoryDTO {
 
@@ -157,6 +158,7 @@ export enum ItemType {
     FARM_TOOL = 'farm_tool',
     FARM_PLANT = 'farm_plant',
     PET_CLAN = 'pet_clan',
+    PET_CLAN_SLOT = 'pet_clan_slot',
     PETFRAGMENT = 'pet_fragment',
     PET = 'pet',
 }
@@ -319,6 +321,7 @@ export interface RecipeDTO {
   pet_clan?: PetClanDTO | null;
   plant?: PlantDataDTO | null;
   ingredients: IngredientDTO[];
+  current_slot_quantity?: number;
 }
 
 export enum RecipeType {
@@ -344,6 +347,16 @@ export interface PetClanDTO {
     level_up_rate_multiplier: number;
     current_pet_quantity: number;
     max_pet_quantity:number;
+    pet_clan_code: PetCLanCode;
+}
+
+export enum PetCLanCode {
+  PET_CLAN_DOG_001 = 'pet_clan_dog_001',
+  PET_CLAN_DOG_002 = 'pet_clan_dog_002',
+  PET_CLAN_CAT_001 = 'pet_clan_cat_001',
+  PET_CLAN_CAT_002 = 'pet_clan_cat_002',
+  PET_CLAN_BIRD_001 = 'pet_clan_bird_001',
+  PET_CLAN_BIRD_002 = 'pet_clan_bird_002',
 }
 
 export interface ClanPetDTO {
@@ -358,6 +371,7 @@ export interface ClanPetDTO {
     pet_clan: PetClanDTO;
     required_exp?: number;
     total_rate_affect?: number;
+    max_slot_pet_active?: number;
 }
 
 
@@ -373,5 +387,13 @@ export interface IngredientDTO {
   item?: Item | null;
   plant?: PlantDataDTO | null;
   current_quantity: number;
+  total_required_quantity?: number;
+
+}
+
+export interface BuyClanPetSlotDataDTO {
+  clan_id: string;
+  item: ClansData;
+  fund: number;
 }
 

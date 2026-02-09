@@ -343,7 +343,7 @@ export class PopupClanInventory extends BasePopup {
 
     private async showPetDetail(pet: InventoryClanUIItem) {
         this.selectingUIPet = pet;
-        this.iconPet.spriteFrame = ItemIconManager.getInstance().getIconFarmPet(pet.pet.pet_clan.type.toString());
+        this.iconPet.spriteFrame = ItemIconManager.getInstance().getIconFarmPet(Constants.getPetClanType(pet.pet.pet_clan.pet_clan_code.toString()));
         this.petNamert.string = `<outline color=#222222 width=1> ${Constants.getPlantName(pet.pet.pet_clan.name)}</outline>`;
         this.petDescriptionrt.string = ` ${pet.pet.pet_clan.description}`;
         this.petRateAffect.string = `<outline color=#222222 width=1> ${pet.pet.total_rate_affect} %</outline>`;
@@ -353,15 +353,22 @@ export class PopupClanInventory extends BasePopup {
         this.updatePetActionButtons(pet.pet.id, pet.pet.is_active);
     }
 
-    public updatePetActionButtons(petID: string, isActive:boolean) {
-        const isBrought = isActive;
-        this.bringButton.node.active = !isBrought;
-        this.summonButton.node.active = isBrought;
-        this.bringNode.active = isBrought;
+    public updatePetActionButtons(petID: string, isActive: boolean) {
+
+        const petData = this.petSlots.find(p => p.id === petID);
+        if (petData) {
+            petData.is_active = isActive;
+        }
+
         const currentAnimalSlot = this.petUIItems.find(slot => slot.pet.id === petID);
         if (currentAnimalSlot) {
+            currentAnimalSlot.pet.is_active = isActive;
             currentAnimalSlot.setBringPet(isActive);
         }
+
+        this.bringButton.node.active = !isActive;
+        this.summonButton.node.active = isActive;
+        this.bringNode.active = isActive;
     }
 
     async onBringPet(petActionType: PetActionType) {
@@ -376,9 +383,6 @@ export class PopupClanInventory extends BasePopup {
     }
 
     private async HandleSendPetInFarm() {
-        // const petSlots = await WebRequestManager.instance.getClanPetActivateAsync(this.selectingUIPet.pet.id);
-        // this.updatePetActionButtons(petSlots);
-        //this.isPetLoaded = false;
         ServerManager.instance.sendActivateGuardPet({
             clan_id: UserMeManager.Get.clan.id,
             id: this.selectingUIPet.pet.id,
@@ -386,9 +390,6 @@ export class PopupClanInventory extends BasePopup {
     }
 
     private async HandleSendPetOutFarm() {
-        // const petSlots = await WebRequestManager.instance.getClanPetDeactivateAsync(this.selectingUIPet.pet.id);
-        // this.updatePetActionButtons(petSlots);
-        // this.isPetLoaded = false;
         ServerManager.instance.sendDeactivateGuardPet({
             clan_id: UserMeManager.Get.clan.id,
             id: this.selectingUIPet.pet.id,

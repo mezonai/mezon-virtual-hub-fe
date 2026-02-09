@@ -108,7 +108,6 @@ export class ServerManager extends Component {
         });
 
         this.room.onMessage("onUseItem", (data) => {
-            console.log(data)
             MapItemManger.instance.onUseItem(data);
         });
 
@@ -455,10 +454,13 @@ export class ServerManager extends Component {
             }
         });
 
-        this.room.onMessage(MessageTypes.ON_BUY_CLAN_ITEM_FAILED, (data) => {
+        this.room.onMessage(MessageTypes.ON_BUY_CLAN_ITEM_FAILED, data => {
             SoundManager.instance.playSound(AudioType.NoReward);
-            Constants.showConfirm(data.message, "Chú Ý");
+            console.log(data.message);
+            const msg = Constants.ERROR_MESSAGE_VI[data.message] ?? Constants.ERROR_MESSAGE_VI.UNKNOWN_ERROR;
+            Constants.showConfirm(msg);
         });
+
 
         this.room.onMessage(MessageTypes.JOIN_CLAN_REQUEST, (data) => {
             SoundManager.instance.playSound(AudioType.NoReward);
@@ -533,6 +535,23 @@ export class ServerManager extends Component {
                 popupComp?.updatePetActionButtons(pet.id, true);
             }
             GameManager.instance.playerHubController.ShowListPetFarm();
+        });
+
+        this.room.onMessage(MessageTypes.ON_DOG_BITE, async (data) => {
+            const myPlayer = UserManager.instance.GetMyClientPlayer;
+            const isClient = data.sessionId === myPlayer?.myID;
+            if (!isClient) return;
+            GameManager.instance.playerHubController.showBlockInteractHarvest(false);
+            myPlayer.playerInteractFarm.showBiteByDog(data.message);
+            UserManager.instance.GetMyClientPlayer.get_MoveAbility.startMove();
+        });
+
+        this.room.onMessage(MessageTypes.ON_ACTIVATE_PET_FAILED, (data) => {
+            Constants.showConfirm(`${data.message}`);
+        });
+
+        this.room.onMessage(MessageTypes.ON_DEACTIVATE_PET_FAILED, (data) => {
+            Constants.showConfirm(`${data.message}`);
         });
 
         this.room.state.farmSlotState.onAdd((farmSlotState, key) => {
@@ -620,13 +639,15 @@ export class ServerManager extends Component {
                 );
                 if (isClient) {
                     const param: PopupHarvestReceiveParam = {
-                        baseScore: data.baseScore,
-                        totalScore: data.totalScore,
-                        bonusPercent: data.bonusPercent,
-                        remainingHarvest: data.remainingHarvest,
-                        maxHarvest: data.maxHarvest,
+                        baseScore : data.baseScore,
+                        finalPlayerScore : data.finalPlayerScore,
+                        finalGold : data.finalGold,
+                        birdBonusRate : data.birdBonusRate,
+                        catBonusRate: data.catBonusRate,
+                        bonusPercent : data.bonusPercent,
+                        remainingHarvest : data.remainingHarvest,
+                        maxHarvest : data.maxHarvest,
                     };
-
                     PopupManager.getInstance().openAnimPopup("PopupHarvestReceive", PopupHarvestReceive, param);
                 }
 

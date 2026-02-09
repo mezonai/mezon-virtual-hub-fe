@@ -110,14 +110,14 @@ export class PetClanColysesusObjectData{
     public petClanId!: string;
     public id!: string;
     public name!: string;
-    public type!: string;
+    public petCLanCode!: string;
     public slotIndex!: number;
     public isActive!: boolean;
-    constructor(name: string, id: string, petClanId: string, type: string, slotIndex: number, isActive: boolean) {
+    constructor(name: string, id: string, petClanId: string, petCLanCode: string, slotIndex: number, isActive: boolean) {
         this.name = name;
         this.id = id;
         this.petClanId = petClanId;
-        this.type = type;
+        this.petCLanCode = petCLanCode;
         this.slotIndex = slotIndex ?? 0;
         this.isActive = isActive;
     }

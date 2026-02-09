@@ -64,6 +64,8 @@ export default class APIConstant {
     static CLAN_ANIMALS = "clan-animals";
     static ACTIVATIVE = "activate";
     static DEACTIVATIVE = "deactivate";
+    static BUY_SLOT_CLAN_PET = "buy-slot-clan-pet";
+    
 }
 
 export class APIConfig {

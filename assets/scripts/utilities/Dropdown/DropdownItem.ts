@@ -24,7 +24,6 @@ export class DropdownItem extends Component {
     }
 
     selectedItem(onSelected: (index: number) => void) {
-        console.log("this.selectedIndex", this.selectedIndex);
         onSelected(this.selectedIndex);
     }
 }

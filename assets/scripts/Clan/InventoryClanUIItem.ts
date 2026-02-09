@@ -21,6 +21,8 @@ export class InventoryClanUIItem extends Component {
     @property({ type: Node }) bringNode: Node = null;
     @property({ type: Node }) progressBarExpNode: Node = null;
     @property({ type: Sprite }) progressBarExp: Sprite = null;
+    @property({ type: Node }) slotPositionNode: Node = null;
+    @property({ type: Label }) slotPosition: Label;
     private amountDefault = 1;
     public plant: ClanWarehouseSlotDTO;
     public tool: ClanWarehouseSlotDTO;
@@ -77,7 +79,7 @@ export class InventoryClanUIItem extends Component {
     public initPet(clanPetDTO: ClanPetDTO, callback?: () => void, ishowName: boolean = false) {
         this.pet = clanPetDTO;
         if (clanPetDTO.pet_clan) {
-            this.iconItemUIHelper.setIconByPetClan(clanPetDTO.pet_clan.type.toString());
+            this.iconItemUIHelper.setIconByPetClan(Constants.getPetClanType(clanPetDTO.pet_clan.pet_clan_code.toString()));
             this.iconItemUIHelper.node.active = true;
             this.amountLabel.string = this.amountDefault.toString();
         }
@@ -95,8 +97,32 @@ export class InventoryClanUIItem extends Component {
         }
         this.noteItem.node.active = ishowName;
         this.progressBarExpNode.active = ishowName;
-        this.progressBarExp.fillRange = Math.min(clanPetDTO.exp / clanPetDTO.required_exp, 1);
+        this.slotPositionNode.active = ishowName;
+        this.slotPosition.string = clanPetDTO.level.toString();
+        this.updatePetExpProgress(clanPetDTO);
         this.noteItem.string = `${Constants.getPetClanName(clanPetDTO.pet_clan.type.toString())} [${clanPetDTO.total_rate_affect}%]`;
+    }
+
+    getPetDisplayTypeByIndex(pet: ClanPetDTO, pets: ClanPetDTO[]): string {
+        const sameTypePets = pets.filter(
+            p => p.pet_clan.type === pet.pet_clan.type
+        );
+
+        const index = sameTypePets.findIndex(p => p.id === pet.id);
+
+        return index === 0
+            ? `${pet.pet_clan.type}`
+            : `${pet.pet_clan.type}${index + 1}`;
+    }
+
+    public updatePetExpProgress(clanPetDTO: ClanPetDTO) {
+        if (!clanPetDTO || clanPetDTO.required_exp <= 0) {
+            this.progressBarExp.fillRange = 0;
+            return;
+        }
+
+        const progress = Math.min(clanPetDTO.exp / clanPetDTO.required_exp, 1);
+        this.progressBarExp.fillRange = progress;
     }
 
     onItemClick() {
