@@ -1,4 +1,4 @@
-import { _decorator, Button, Component, Node, Prefab, ScrollView, instantiate, Label } from 'cc';
+import { _decorator, Button, Component, Node, Prefab, ScrollView, instantiate, Label, Sprite, SpriteFrame} from 'cc';
 import { PopupManager } from '../PopUp/PopupManager';
 import { InventoryManager } from '../gameplay/player/inventory/InventoryManager';
 import { SettingManager } from '../core/SettingManager';
@@ -36,6 +36,11 @@ export class PlayerHubController extends Component {
     @property(Label) maxSlotPetActive: Label = null!;
     private showPetRequestId = 0;
     private petUIMap = new Map<string, InventoryClanUIItem>();
+    @property(Button) private btnPetList: Button = null!;
+    private isPetListVisible: boolean = true;
+    @property(Sprite) private sprite: Sprite = null!;
+    @property(SpriteFrame) private iconExpand: SpriteFrame = null!;
+    @property(SpriteFrame) private iconCollapse: SpriteFrame = null!;
 
     onLoad() {
         this.loginEventController.setData();
@@ -74,7 +79,25 @@ export class PlayerHubController extends Component {
             await PopupManager.getInstance().openAnimPopup('UI_ClanShopSlotPet', PopupShopSlotPetClan);
             this.buySlotFarmButton.interactable = true;
         });
+        this.btnPetList.addAsyncListener(async () => {
+            this.btnPetList.interactable = false;
+            this.togglePetList();
+            this.btnPetList.interactable = true;
+        });
+
+        this.btnPetList.node.active  = false;
         this.listPetMyFarm.active = false;
+    }
+
+    private togglePetList() {
+        if (!this.canShowPetFarm()) {
+            this.listPetMyFarm.active = false;
+            this.isPetListVisible = false;
+            return;
+        }
+        this.sprite.spriteFrame = this.isPetListVisible ? this.iconCollapse : this.iconExpand;
+        this.isPetListVisible = !this.isPetListVisible;
+        this.listPetMyFarm.active = this.isPetListVisible;
     }
 
     public async updatePetSlotInfo() {
@@ -82,8 +105,9 @@ export class PlayerHubController extends Component {
             this.listPetMyFarm.active = false;
             return;
         }
-
+        this.btnPetList.node.active = true;
         this.listPetMyFarm.active = true;
+        this.isPetListVisible = true;
         const petSlots = await WebRequestManager.instance.getClanPetAsync( UserMeManager.Get.clan.id, { is_active: true });
         const maxSlot = petSlots.length > 0 ? petSlots[0].max_slot_pet_active : UserMeManager.Get.clan.max_slot_pet_active;
         this.maxSlotPetActive.string = `Pet hoạt động: ${petSlots.length}/${maxSlot} (tối đa)`;
@@ -103,6 +127,8 @@ export class PlayerHubController extends Component {
     public async ShowListPetFarm() {
         const requestId = ++this.showPetRequestId;
         this.listPetMyFarm.active = this.canShowPetFarm();
+        this.isPetListVisible = this.canShowPetFarm();
+        this.btnPetList.node.active = this.canShowPetFarm();
         this.svInvenoryClanPet.content.removeAllChildren();
         this.petUIItems.length = 0;
         const petSlots = await WebRequestManager.instance.getClanPetAsync(UserMeManager.Get.clan.id, { is_active: true });
@@ -120,10 +146,6 @@ export class PlayerHubController extends Component {
             this.petUIItems.push(ui);
             this.petUIMap.set(slot.id, ui);
         }
-    }
-
-    onClickButtonA() {
-
     }
 
     onMissionNotice(isShow: boolean) {

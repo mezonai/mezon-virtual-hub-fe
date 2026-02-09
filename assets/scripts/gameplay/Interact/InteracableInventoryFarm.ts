@@ -16,7 +16,7 @@ export class InteractInventoryFarm extends MapItemController {
         if (this.isOpenPopUp) return;
         if (!UserMeManager.Get.clan || !UserMeManager.Get.clan.id || UserMeManager.Get.clan.id !== UserMeManager.CurrentOffice.idclan) {
             PopupManager.getInstance().closeAllPopups();
-            Constants.showConfirm("Bạn cần thuộc văn phòng để tương tác với cửa hàng của cây trồng");
+            Constants.showConfirm("Bạn cần thuộc văn phòng để tương tác với kho của cây trồng");
             return;
         }
         this.isOpenPopUp = true;

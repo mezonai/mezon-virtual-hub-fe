@@ -595,7 +595,11 @@ export class ServerManager extends Component {
         this.room.onMessage(MessageTypes.ON_HARVEST_STARTED, (data) => {
             const player = UserManager.instance.getPlayerById(data.sessionId);
             if (!player) return;
-
+            const myPlayer = UserManager.instance.GetMyClientPlayer;
+            const isClient = data.sessionId === myPlayer?.myID;
+            if (isClient && myPlayer) {
+                myPlayer.get_MoveAbility.StopMove();
+            }
             player.playerInteractFarm.showHarvestingBar(data.endTime, data.slotId);
             FarmController.instance.UpdateSlotAction(data.slotId, SlotActionType.Harvest, true);
         });
@@ -640,11 +644,18 @@ export class ServerManager extends Component {
                 if (isClient) {
                     const param: PopupHarvestReceiveParam = {
                         baseScore : data.baseScore,
+                        bonusPercent : data.bonusPercent,
+                        finalScore: data.finalScore,
+
+                        catRateBonus: data.catRateBonus,
+                        catGoldBonus: data.catGoldBonus,
+
+                        birdRateBonus: data.birdRateBonus,
+                        birdScoreBonus: data.birdScoreBonus,
+
                         finalPlayerScore : data.finalPlayerScore,
                         finalGold : data.finalGold,
-                        birdBonusRate : data.birdBonusRate,
-                        catBonusRate: data.catBonusRate,
-                        bonusPercent : data.bonusPercent,
+
                         remainingHarvest : data.remainingHarvest,
                         maxHarvest : data.maxHarvest,
                     };

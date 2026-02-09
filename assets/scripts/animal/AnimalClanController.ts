@@ -23,28 +23,41 @@ export class AnimalClanController extends Component {
     private pet: PetClanColysesusObjectData | null = null;
     private tweenAction: Tween<Node> | null = null;
     private hideTimeout: number | null = null;
+  
     private petTalkLines: Record<string, string[]> = {
-        dog: [
-            "Gâu gâu! Có trộm là biết liền",
-            "Để em canh vườn cho",
-            "Ai bén mảng là em sủa đó",
-            "Vườn này có chó canh nha",
-            "Ngủ ngon đi chủ, có em rồi",
+        DogClan1: [
+            "Gâu! Có em canh vườn rồi nha chủ",
+            "Ai bén mảng là em biết liền đó",
+            "Ngủ yên tâm đi, vườn này an toàn lắm",
         ],
-        cat: [
-            "Meo! hôm nay vàng nhiều lắm nè",
-            "Em cảm nhận thấy tài lộc đó",
-            "Cào nhẹ là có thêm vàng nha",
-            "Vàng về vàng về",
-            "Chủ ơi hôm nay hên lắm đó",
+
+        DogClan2: [
+            "Gâu gâu! Em đang canh nè",
+            "Trộm mà tới là em sủa liền",
+            "Vườn có chó canh, không lo nha chủ",
         ],
-        bird: [
-            "Chíp chíp! điểm sắp tăng rồi",
-            "Em thấy điểm bay đầy trời nè",
-            "Cố lên chủ ơi",
-            "Chíp~ chơi nữa là lên điểm đó",
-            "Điểm cao kìa, em thấy rồi",
+        CatClan1: [
+            "Meo~ em ngửi thấy mùi vàng nè",
+            "Hôm nay thu hoạch là có thêm vàng đó",
+            "Mèo ra tay là vàng về liền",
         ],
+
+        CatClan2: [
+            "Meo! Vàng sắp tới rồi chủ ơi",
+            "Cào nhẹ cái là có thêm vàng nha",
+            "Hôm nay vận may đứng về phía mình đó",
+        ],
+        BirdClan1: [
+            "Chíp chíp! Điểm sắp tăng rồi đó",
+            "Em thấy điểm bay lên cao kìa",
+            "Cố thêm chút nữa là điểm cao liền",
+        ],
+
+        BirdClan2: [
+            "Chíp~ chơi tiếp là lên điểm đó",
+            "Điểm nhiều lắm, em thấy rồi nè",
+            "Thu hoạch tốt là điểm tăng liền à",
+        ]
     };
 
     setGuardFarm( pet: PetClanColysesusObjectData, areaRadius: number = 120
@@ -64,8 +77,7 @@ export class AnimalClanController extends Component {
     }
 
     private getRandomPetLine(type: string): string {
-        const key = type.trim().toLowerCase();
-        const lines = this.petTalkLines[key];
+        const lines = this.petTalkLines[type];
 
         if (!lines || lines.length === 0) {
             return "Em đang ở đây trong nông trại nè!";
@@ -79,7 +91,7 @@ export class AnimalClanController extends Component {
         this.schedule(() => {
             if (this.animalType !== AnimalType.GuardFarm || !this.pet) return;
 
-            const line = this.getRandomPetLine(this.pet.petCLanCode);
+            const line = this.getRandomPetLine(Constants.getPetClanType(this.pet.petCLanCode));
             this.showBubbleChat(line, 1500);
 
         }, 6 + Math.random() * 4);

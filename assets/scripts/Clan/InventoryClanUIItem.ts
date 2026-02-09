@@ -5,6 +5,7 @@ import { ItemIconManager } from '../utilities/ItemIconManager';
 import { RichText } from 'cc';
 import { Constants } from '../utilities/Constants';
 import { ClanPetDTO } from '../Model/Item';
+import Utilities from '../utilities/Utilities';
 const { ccclass, property } = _decorator;
 
 @ccclass('InventoryClanUIItem')
@@ -18,6 +19,7 @@ export class InventoryClanUIItem extends Component {
     @property({ type: Toggle }) toggle: Toggle = null;
     @property({ type: Label }) amountLabel: Label;
     @property({ type: Label }) noteItem: Label;
+    @property({ type: Label }) expText: Label;
     @property({ type: Node }) bringNode: Node = null;
     @property({ type: Node }) progressBarExpNode: Node = null;
     @property({ type: Sprite }) progressBarExp: Sprite = null;
@@ -98,9 +100,7 @@ export class InventoryClanUIItem extends Component {
         this.noteItem.node.active = ishowName;
         this.progressBarExpNode.active = ishowName;
         this.slotPositionNode.active = ishowName;
-        this.slotPosition.string = clanPetDTO.level.toString();
         this.updatePetExpProgress(clanPetDTO);
-        this.noteItem.string = `${Constants.getPetClanName(clanPetDTO.pet_clan.type.toString())} [${clanPetDTO.total_rate_affect}%]`;
     }
 
     getPetDisplayTypeByIndex(pet: ClanPetDTO, pets: ClanPetDTO[]): string {
@@ -122,7 +122,10 @@ export class InventoryClanUIItem extends Component {
         }
 
         const progress = Math.min(clanPetDTO.exp / clanPetDTO.required_exp, 1);
+        this.slotPosition.string = `Lv. ${clanPetDTO.level}`;
         this.progressBarExp.fillRange = progress;
+        this.expText.string = `${Utilities.convertBigNumberToStr(clanPetDTO.exp)} / ${Utilities.convertBigNumberToStr(clanPetDTO.required_exp)}`
+        this.noteItem.string = `${Constants.getPetClanName(clanPetDTO.pet_clan.type.toString())} [${clanPetDTO.total_rate_affect}%]`;
     }
 
     onItemClick() {
