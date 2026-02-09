@@ -515,7 +515,7 @@ export class PopupClanShop extends BasePopup {
         }
 
         if (pet.current_pet_quantity >= pet.max_pet_quantity) {
-            Constants.showConfirm('Mỗi nông trại chỉ có tối đa 1 pet cho loại này');
+            Constants.showConfirm('Mỗi nông trại chỉ có thể mua 1 loại pet\n nông trại bạn đã sở hữu!');
             return;
         }
 

@@ -41,7 +41,7 @@ export class PopupHarvestReceive extends BasePopup {
     this.catBonusRate.node.active = param?.catBonusRate != 0;
     this.birdBonusRate.node.active = param?.birdBonusRate != 0;
     this.birdBonusRate.string = `Điểm từ pet nông trại: <outline color=#CE6B00><color=#FFF500> ${param?.birdBonusRate ?? '0'}</size></color></outline>`;
-    this.catBonusRate.string = `Vàng từ pet nông trại:: <outline color=#CE6B00><color=#FFF500> ${param?.catBonusRate ?? '0'}</size></color></outline>`;
+    this.catBonusRate.string = `Vàng từ pet nông trại: <outline color=#CE6B00><color=#FFF500> ${param?.catBonusRate ?? '0'}</size></color></outline>`;
 
     this.totalScore.string = `Điểm: <outline color=#FFFF><color=#0C9EFF> ${param?.finalPlayerScore ?? 'Không rõ'}</size></color></outline>`;
     this.totalGoldReceive.string = `Vàng: <outline color=#CE6B00><color=#FFF500> ${param?.finalGold ?? 'Không rõ'}</size></color></outline>`;
