@@ -595,7 +595,11 @@ export class ServerManager extends Component {
         this.room.onMessage(MessageTypes.ON_HARVEST_STARTED, (data) => {
             const player = UserManager.instance.getPlayerById(data.sessionId);
             if (!player) return;
-
+            const myPlayer = UserManager.instance.GetMyClientPlayer;
+            const isClient = data.sessionId === myPlayer?.myID;
+            if (isClient && myPlayer) {
+                myPlayer.get_MoveAbility.StopMove();
+            }
             player.playerInteractFarm.showHarvestingBar(data.endTime, data.slotId);
             FarmController.instance.UpdateSlotAction(data.slotId, SlotActionType.Harvest, true);
         });
