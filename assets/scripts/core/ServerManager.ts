@@ -640,11 +640,18 @@ export class ServerManager extends Component {
                 if (isClient) {
                     const param: PopupHarvestReceiveParam = {
                         baseScore : data.baseScore,
+                        bonusPercent : data.bonusPercent,
+                        finalScore: data.finalScore,
+
+                        catRateBonus: data.catRateBonus,
+                        catGoldBonus: data.catGoldBonus,
+
+                        birdRateBonus: data.birdRateBonus,
+                        birdScoreBonus: data.birdScoreBonus,
+
                         finalPlayerScore : data.finalPlayerScore,
                         finalGold : data.finalGold,
-                        birdBonusRate : data.birdBonusRate,
-                        catBonusRate: data.catBonusRate,
-                        bonusPercent : data.bonusPercent,
+
                         remainingHarvest : data.remainingHarvest,
                         maxHarvest : data.maxHarvest,
                     };
