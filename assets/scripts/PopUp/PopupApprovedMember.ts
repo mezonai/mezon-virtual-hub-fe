@@ -106,8 +106,8 @@ export class PopupApprovedMember extends Component {
                         Constants.showConfirm(successMsg, "Thông báo"),
                         this.popupClanMemberManager?.onMemberChanged?.(),
                         await this.loadList(1),
-                        PopupManager.getInstance().closePopup(this.node.uuid),
                         PopupManager.getInstance().closePopup(popup.node.uuid),
+                        PopupManager.getInstance().closePopup(this.node.uuid),
                     ]);
                 },
                 onActionButtonRight: () => {
