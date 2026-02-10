@@ -186,6 +186,7 @@ export enum ItemClanType {
 export enum InventoryClanType {
   PLANT = 'Plant',
   TOOLS = 'Tool',
+  PETCLANSLOTCARD = 'pet_clan_slot_card',
 }
 
 export enum FoodType {

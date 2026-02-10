@@ -238,6 +238,7 @@ export class PopupClanInventory extends BasePopup {
         if (!this.toolSlots.length) return;
 
         for (const slot of this.toolSlots) {
+            if(slot.type === InventoryClanType.PETCLANSLOTCARD.toString()) continue;
             const node = instantiate(this.itemPrefab);
             const ui = node.getComponent(InventoryClanUIItem)!;
             ui.initTool(slot, () => this.showToolDetail(ui));
