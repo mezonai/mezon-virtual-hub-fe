@@ -438,10 +438,14 @@ export class ServerManager extends Component {
             const { clanId, item, fund } = data;
             if (UserMeManager.Get && clanId === UserMeManager.Get.clan.id) {
                 SoundManager.instance.playSound(AudioType.ReceiveReward);
-                Constants.showConfirm('Bạn đã mua vật phẩm cho văn phòng thành công');
+               
                 const popupShop = PopupManager.getInstance().getPopupComponent("UI_ClanShop", PopupClanShop);
                 popupShop?.ReloadAfterBuyItem();
             }
+            const myPlayer = UserManager.instance.GetMyClientPlayer;
+            const isClient = data.sessionId === myPlayer?.myID;
+            if(!isClient) return;
+            Constants.showConfirm('Bạn đã mua vật phẩm cho văn phòng thành công');
         });
 
         this.room.onMessage(MessageTypes.ON_BUY_CLAN_UPDATE_FUND, (data) => {
