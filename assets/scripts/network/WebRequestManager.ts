@@ -7,7 +7,7 @@ import { AssignViceLeadersDto as AssignViceLeadersDTO, ClanActivityResponseDTO, 
 import { ServerManager } from '../core/ServerManager';
 import { PopupSelectionMini, SelectionMiniParam } from '../PopUp/PopupSelectionMini';
 import { PopupManager } from '../PopUp/PopupManager';
-import { BuyItemPayload, EventRewardDTO, FragmentDTO, FragmentExchangeResponseDTO, FragmentItemDTO, InventoryDTO, Item, ItemDTO, RecipeDTO, RewardItemDTO, RewardNewbieDTO, StatsConfigDTO, WeeklyRewardDTO, WheelDTO } from '../Model/Item';
+import { BuyClanPetSlotDataDTO, BuyItemPayload, ClanPetDTO, EventRewardDTO, FragmentDTO, FragmentExchangeResponseDTO, FragmentItemDTO, InventoryDTO, Item, ItemDTO, RecipeDTO, RewardItemDTO, RewardNewbieDTO, StatsConfigDTO, WeeklyRewardDTO, WheelDTO } from '../Model/Item';
 import { GameManager } from '../core/GameManager';
 import { UpgradePetResponseDTO, PetDTO } from '../Model/PetDTO';
 import { Constants } from '../utilities/Constants';
@@ -57,7 +57,7 @@ export class WebRequestManager extends Component {
 
     public async getRewardNewbieLoginAsync(): Promise<RewardNewbieDTO[]> {
         return new Promise((resolve, reject) => {
-            WebRequestManager.instance.getNewbieReward(
+            this.getNewbieReward(
                 (response) => {
                     const rewardData = ConvetData.ConvertRewardNewbieList(response.data) ?? [];
                     const hasAvailableReward = rewardData.some(
@@ -79,7 +79,7 @@ export class WebRequestManager extends Component {
 
     public async getEventRewardNoQuestAsync(): Promise<RewardItemDTO[]> {
         return new Promise((resolve, reject) => {
-            WebRequestManager.instance.getEventRewardNoQuest(
+            this.getEventRewardNoQuest(
                 (response) => {
                     const rewardData = ConvetData.ConvertRewards(response.data.rewards) ?? [];
                     resolve(rewardData);
@@ -93,7 +93,7 @@ export class WebRequestManager extends Component {
 
     public async getEventRewardAsync(): Promise<EventRewardDTO> {
         return new Promise((resolve, reject) => {
-            WebRequestManager.instance.getEventReward(
+           this.getEventReward(
                 (response) => {
                     const rewardData = ConvetData.ConvertEventReward(response.data);
                     const hasAvailableReward = rewardData?.rewards.some(
@@ -114,7 +114,7 @@ export class WebRequestManager extends Component {
 
     public async claimRewardAsync(questId: string): Promise<boolean> {
         return new Promise((resolve, reject) => {
-            WebRequestManager.instance.putRecievedReward(
+            this.putRecievedReward(
                 questId,
                 async (response) => {
                     resolve(true);
@@ -128,7 +128,7 @@ export class WebRequestManager extends Component {
 
     public getMyPetAsync(filters?: { rarity?: string; stars?: number }): Promise<PetDTO[]> {
         return new Promise((resolve, reject) => {
-            WebRequestManager.instance.getMyPetData(
+            this.getMyPetData(
                 filters,
                 (response) => resolve(response.data),
                 (error) => {
@@ -140,7 +140,7 @@ export class WebRequestManager extends Component {
 
     public getAllRecipeByTypeAsync(type: string): Promise<RecipeDTO[]> {
         return new Promise((resolve, reject) => {
-            WebRequestManager.instance.getAllRecipeByType(
+            this.getAllRecipeByType(
                 type,
                 (response) => {
                     const recipeData = ConvetData.ConvertRecipesToRecipeDTO(response);
@@ -155,7 +155,7 @@ export class WebRequestManager extends Component {
 
     public checkUnclaimedQuest(): Promise<void> {
         return new Promise((resolve, reject) => {
-            WebRequestManager.instance.getCheckUnclaimedQuest(
+            this.getCheckUnclaimedQuest(
                 (response) => {
                     if (response && response.data) {
                         if (GameManager.instance != null) {
@@ -173,7 +173,7 @@ export class WebRequestManager extends Component {
 
     public postGetRewardAsync(): Promise<RewardItemDTO[]> {
         return new Promise((resolve, reject) => {
-            WebRequestManager.instance.postGetReward(
+            this.postGetReward(
                 (response) => {
                     const rewardData = ConvetData.ConvertRewards(response.data.rewards) ?? [];
                     resolve(rewardData);
@@ -187,7 +187,7 @@ export class WebRequestManager extends Component {
 
     public getRewardClanWeeklyAsync(): Promise<WeeklyRewardDTO> {
         return new Promise((resolve, reject) => {
-            WebRequestManager.instance.getRewardClanWeekly(
+            this.getRewardClanWeekly(
                 (response) => {
                     const rewardData = ConvetData.convertWeeklyRewardClan(response);
                     resolve(rewardData);
@@ -201,7 +201,7 @@ export class WebRequestManager extends Component {
 
     public getConfigRateAsync(): Promise<StatsConfigDTO> {
         return new Promise((resolve, reject) => {
-            WebRequestManager.instance.getConfigRate(
+            this.getConfigRate(
                 (response) => {
                     const statsConfigDTO = ConvetData.parseStatsConfigDTO(response.data);
                     resolve(statsConfigDTO);
@@ -215,7 +215,7 @@ export class WebRequestManager extends Component {
 
     public getUserProfileAsync(): Promise<boolean> {
         return new Promise((resolve, reject) => {
-            WebRequestManager.instance.getUserProfile(
+            this.getUserProfile(
                 (response) => {
                     resolve(true);
                 },
@@ -228,7 +228,7 @@ export class WebRequestManager extends Component {
 
     public postUpgradeStarPetAsync(data): Promise<UpgradePetResponseDTO> {
         return new Promise((resolve, reject) => {
-            WebRequestManager.instance.postUpgradeStarPet(
+            this.postUpgradeStarPet(
                 data,
                 (response) => {
                     const result: UpgradePetResponseDTO = {
@@ -247,7 +247,7 @@ export class WebRequestManager extends Component {
 
     public getItemTypeAsync(type: string): Promise<InventoryDTO[]> {
         return new Promise((resolve) => {
-            WebRequestManager.instance.getItemType(
+            this.getItemType(
                 type,
                 (response) => {
                     const inventoryList = ConvetData.ConvertInventoryDTO(response.data);
@@ -262,7 +262,7 @@ export class WebRequestManager extends Component {
 
     public postUpgradeRarityPetAsync(pet_player_id): Promise<UpgradePetResponseDTO> {
         return new Promise((resolve, reject) => {
-            WebRequestManager.instance.postUpgradeRarityPet(
+            this.postUpgradeRarityPet(
                 pet_player_id,
                 (response) => {
                     const result: UpgradePetResponseDTO = {
@@ -280,7 +280,7 @@ export class WebRequestManager extends Component {
 
     public getAllClansync(isWeekly: boolean, page: number = 1, search?: string, sortby: SortBy = SortBy.CREATED_AT, sortOrder: SortOrder = SortOrder.DESC, limit: number = 30): Promise<ClansResponseDTO> {
         return new Promise((resolve) => {
-            WebRequestManager.instance.getAllClan(
+            this.getAllClan(
                 isWeekly, page, sortby, sortOrder, limit,
                 (response) => {
                     const clans = ConvetData.ConvertClans(response);
@@ -296,7 +296,7 @@ export class WebRequestManager extends Component {
 
     public getAllClanRequestsync(isWeekly: boolean, page: number = 1, search?: string, sortby: SortBy = SortBy.CREATED_AT, sortOrder: SortOrder = SortOrder.DESC, limit: number = 30): Promise<ClansResponseDTO> {
         return new Promise((resolve) => {
-            WebRequestManager.instance.getAllClanRequest(
+            this.getAllClanRequest(
                 isWeekly, page, sortby, sortOrder, limit,
                 (response) => {
                     const clans = ConvetData.ConvertClans(response);
@@ -312,7 +312,7 @@ export class WebRequestManager extends Component {
 
     public postJoinClanAsync(clanId: string): Promise<RequestToJoinDTO> {
         return new Promise((resolve) => {
-            WebRequestManager.instance.postJoinClan(
+            this.postJoinClan(
                 clanId,
                 (response) => {
                     const responseData = ConvetData.ConvertRequestToJoin(response.data);
@@ -327,7 +327,7 @@ export class WebRequestManager extends Component {
 
     public postCancelJoinClanAsync(clanId: string): Promise<string> {
         return new Promise((resolve) => {
-            WebRequestManager.instance.postCancelJoinClan(
+            this.postCancelJoinClan(
                 clanId,
                 (response) => {
                     resolve(response.data);
@@ -341,7 +341,7 @@ export class WebRequestManager extends Component {
 
     public postLeaveClanAsync(clanId: string): Promise<UserDataResponse> {
         return new Promise((resolve) => {
-            WebRequestManager.instance.postLeaveClan(
+            this.postLeaveClan(
                 clanId,
                 (response) => {
                     UserMeManager.UpdateClanUser = response.data;
@@ -356,7 +356,7 @@ export class WebRequestManager extends Component {
 
     public getClanDetailAsync(clanId: string): Promise<ClansData> {
         return new Promise((resolve) => {
-            WebRequestManager.instance.getClanDetail(
+            this.getClanDetail(
                 clanId,
                 (response) => {
                     const clanDetailData = ConvetData.ConvertClanDetail(response);
@@ -371,7 +371,7 @@ export class WebRequestManager extends Component {
 
     public getClanFundAsync(clanId: string): Promise<ClanFundResponseDTO> {
         return new Promise((resolve) => {
-            WebRequestManager.instance.GetClanFund(
+            this.GetClanFund(
                 clanId,
                 (response) => {
                     const clanFundData = ConvetData.convertClanFund(response);
@@ -386,7 +386,7 @@ export class WebRequestManager extends Component {
 
     public postUpdateNoticeAsync(clanId: string, data: ClanDescriptionDTO): Promise<ClanDescriptionDTO> {
         return new Promise((resolve, reject) => {
-            WebRequestManager.instance.postUpdateNoticeOffice(
+            this.postUpdateNoticeOffice(
                 clanId,
                 data,
                 (response) => {
@@ -401,7 +401,7 @@ export class WebRequestManager extends Component {
 
     public getListMemberClanAsync(clanId: String, isWeekly, page: number = 1, search?: string, sortOrder: SortOrder = SortOrder.DESC, sortby: SortBy = SortBy.CREATED_AT, limit: number = 30): Promise<MemberResponseDTO> {
         return new Promise((resolve, reject) => {
-            WebRequestManager.instance.getListMemberClan(
+            this.getListMemberClan(
                 clanId, isWeekly, page, sortOrder, sortby, limit,
                 (response) => {
                     const clans = ConvetData.ConvertMemberClan(response);
@@ -417,7 +417,7 @@ export class WebRequestManager extends Component {
 
     public getClanFundContributorsAsync(clanId: String, page: number = 1, search?: string, sortOrder: SortOrder = SortOrder.DESC, sortby: SortBy = SortBy.TOTAL_AMOUNT, limit: number = 30): Promise<ClanContributorsResponseDTO> {
         return new Promise((resolve, reject) => {
-            WebRequestManager.instance.getClanFundContributors(
+            this.getClanFundContributors(
                 clanId, page, sortOrder, sortby, limit,
                 (response) => {
                     const clans = ConvetData.convertContributorsClan(response);
@@ -433,7 +433,7 @@ export class WebRequestManager extends Component {
 
     public getListMemberClanPendingAsync(clanId: string, page: number = 1, search?: string, sortby: SortBy = SortBy.CREATED_AT, sortOrder: SortOrder = SortOrder.DESC, limit: number = 30): Promise<ClanRequestResponseDTO> {
         return new Promise((resolve) => {
-            WebRequestManager.instance.getListMemberClanPending(
+            this.getListMemberClanPending(
                 clanId, page, sortby, sortOrder, limit,
                 (response) => {
                     const clanDetailData = ConvetData.ConvertClanRequests(response);
@@ -449,7 +449,7 @@ export class WebRequestManager extends Component {
 
     public postApproveMembersAsync(clanId: string, target_user_id: string, is_approved: boolean): Promise<void> {
         return new Promise((resolve, reject) => {
-            WebRequestManager.instance.patchApproveMembers(
+            this.patchApproveMembers(
                 clanId,
                 target_user_id,
                 is_approved,
@@ -465,7 +465,7 @@ export class WebRequestManager extends Component {
 
     public patchTransferLeaderShipAsync(clanId: string, target_user_id: string): Promise<void> {
         return new Promise((resolve, reject) => {
-            WebRequestManager.instance.patchTransferLeaderShip(
+            this.patchTransferLeaderShip(
                 clanId,
                 target_user_id,
                 (response) => {
@@ -480,7 +480,7 @@ export class WebRequestManager extends Component {
 
     public patchAssignViceLeadersAsync(clanId: string, target_user_id: AssignViceLeadersDTO): Promise<void> {
         return new Promise((resolve, reject) => {
-            WebRequestManager.instance.patchAssignViceLeaders(
+            this.patchAssignViceLeaders(
                 clanId,
                 target_user_id,
                 (response) => {
@@ -495,7 +495,7 @@ export class WebRequestManager extends Component {
 
     public patchRemoveViceLeadersAsync(clanId: string, target_user_id: AssignViceLeadersDTO): Promise<void> {
         return new Promise((resolve, reject) => {
-            WebRequestManager.instance.patchRemoveViceLeaders(
+            this.patchRemoveViceLeaders(
                 clanId,
                 target_user_id,
                 (response) => {
@@ -510,7 +510,7 @@ export class WebRequestManager extends Component {
 
     public removeMemberAsync(clanId: string, target_user_id: string[]): Promise<void> {
         return new Promise((resolve, reject) => {
-            WebRequestManager.instance.removeMembers(
+            this.removeMembers(
                 clanId,
                 target_user_id,
                 (response) => {
@@ -525,7 +525,7 @@ export class WebRequestManager extends Component {
 
     public getClanWarehousesAsync(clanId: string, filters?: { type?: string; is_harvested?: boolean }): Promise<ClanWarehouseSlotDTO[]> {
         return new Promise((resolve, reject) => {
-            WebRequestManager.instance.getClanWarehouses(
+            this.getClanWarehouses(
                 clanId, filters,
                 (response) => {
                     const farmData = ConvetData.ConvertWarehouseSlots(response.data.items);
@@ -538,9 +538,24 @@ export class WebRequestManager extends Component {
         });
     }
 
+    public getClanPetAsync(clanId: string, filters?: { is_active?: boolean }): Promise<ClanPetDTO[]> {
+        return new Promise((resolve, reject) => {
+            this.getClanPet(
+                clanId, filters,
+                (response) => {
+                    const clanPet = ConvetData.convertClanPetsToClanPetDTO(response.data);
+                    resolve(clanPet);
+                },
+                (error) => {
+                    reject(error);
+                }
+            );
+        });
+    }
+
     public getShopPlantAsync(): Promise<PlantDataDTO[]> {
         return new Promise((resolve, reject) => {
-            WebRequestManager.instance.getShopPlant(
+            this.getShopPlant(
                 (response) => {
                     const farmData = ConvetData.ConvertPlants(response.data);
                     resolve(farmData);
@@ -554,7 +569,7 @@ export class WebRequestManager extends Component {
 
     public getHarvestCountsAsync(clanId: string): Promise<HarvestCountDTO> {
         return new Promise((resolve, reject) => {
-            WebRequestManager.instance.getHarvestCounts(
+            this.getHarvestCounts(
                 clanId,
                 (response) => {
                     const farmData = ConvetData.convertHarvestCountDTO(response.data);
@@ -569,7 +584,7 @@ export class WebRequestManager extends Component {
 
     public getClanActivityAsync(clanId: string, page: number = 1, sortby: SortBy = SortBy.CREATED_AT, sortOrder: SortOrder = SortOrder.DESC, limit: number = 30): Promise<ClanActivityResponseDTO> {
         return new Promise((resolve) => {
-            WebRequestManager.instance.getClanActivity(
+            this.getClanActivity(
                 clanId, page, sortby, sortOrder, limit,
                 (response) => {
                     const clanActivity = ConvetData.ConvertClanActivity(response);
@@ -613,7 +628,7 @@ export class WebRequestManager extends Component {
 
     public postCombieFragmentAsync(recipeId: string): Promise<PetDTO> {
         return new Promise((resolve) => {
-            WebRequestManager.instance.postCombineFragment(recipeId,
+            this.postCombineFragment(recipeId,
                 (response) => {
                     const petDTO = ConvetData.ConvertPetAssemble(response.data.createdPet);
                    resolve(petDTO);
@@ -624,9 +639,20 @@ export class WebRequestManager extends Component {
 
     public postChangeFragmentAsync(recipeId: string): Promise<FragmentExchangeResponseDTO> {
         return new Promise((resolve) => {
-            WebRequestManager.instance.postChangeFragment(recipeId,
+            this.postChangeFragment(recipeId,
                 (response) => {
                     const data = ConvetData.ConvertFragmentExchangeResponse(response.data);
+                    resolve(data);
+                },
+                () => { resolve(null) });
+        });
+    }
+
+     public postBuyPetClanSlotAsync(recipeId: string): Promise<BuyClanPetSlotDataDTO> {
+        return new Promise((resolve) => {
+            this.postBuyPetClanSlot(recipeId,
+                (response) => {
+                    const data = ConvetData.ConvertBuyClanPetSlot(response);
                     resolve(data);
                 },
                 () => { resolve(null) });
@@ -912,6 +938,15 @@ export class WebRequestManager extends Component {
         APIManager.getData(url, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
+    public getClanPet(clan_id, filters, successCallback, errorCallback) {
+        const params = new URLSearchParams();
+        if (filters?.is_active) {
+            params.append('is_active', filters.is_active);
+        }
+        const url = `${APIConstant.CLAN_ANIMALS}?clan_id=${clan_id}`+ (params.toString() ? `&${params.toString()}` : '');
+        APIManager.getData(url, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    }
+    
     //Farm
     public getShopPlant(successCallback, errorCallback) {
         APIManager.getData(this.combineWithSlash(APIConstant.PLANT), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
@@ -925,6 +960,10 @@ export class WebRequestManager extends Component {
         let url = `${APIConstant.CLAN_ACTIVITYS}/${clan_id}?`;
         url += `page=${page}&sort_by=${sortby.toString()}&order=${sortOrder.toString()}&limit=${limit}`;
         APIManager.getData(url, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    }
+
+    public postBuyPetClanSlot(recipe_id, successCallback, errorCallback) {
+        APIManager.postData(this.combineWithSlash(APIConstant.CLAN_ANIMALS, APIConstant.BUY_SLOT_CLAN_PET, recipe_id), {}, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
 

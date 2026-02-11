@@ -1,6 +1,7 @@
 import { _decorator, Component, Node, Sprite, SpriteFrame, Toggle, Label } from 'cc';
 import { IconItemUIHelper } from '../Reward/IconItemUIHelper';
 import { Item, RecipeDTO, } from '../Model/Item';
+import { Constants } from '../utilities/Constants';
 const { ccclass, property } = _decorator;
 
 @ccclass('ShopClanTool')
@@ -12,13 +13,16 @@ export class ShopClanTool extends Component {
     @property({ type: Toggle }) toggle: Toggle = null;
     @property({ type: Label }) amountLabel: Label;
     public onClick?: (item: ShopClanTool) => void;
-    public farmTool: RecipeDTO = null;
+    public recipe: RecipeDTO = null;
 
-    public initItemFarmTool(farmTool: RecipeDTO, callback?: (item: ShopClanTool) => void) {
-        this.farmTool = farmTool;
+    public initItemToolFarm(recipe: RecipeDTO, callback?: (item: ShopClanTool) => void) {
+        this.recipe = recipe;
         this.onClick = callback;
-        if (farmTool) {
-            this.iconItemUIHelper.setIconByItem(farmTool.item);
+        if (recipe.item) {
+            this.iconItemUIHelper.setIconByItem(recipe.item);
+        }
+        else if (recipe.pet_clan) {
+            this.iconItemUIHelper.setIconByPetClan(Constants.getPetClanType(recipe.pet_clan.pet_clan_code.toString()));
         }
         if (this.toggle) {
             this.toggle.node.on('toggle', () => {

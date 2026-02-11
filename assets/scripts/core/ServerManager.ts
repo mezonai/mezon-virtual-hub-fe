@@ -7,7 +7,7 @@ import { GameManager } from './GameManager';
 import { SceneManagerController } from '../utilities/SceneManagerController';
 import { SceneName } from '../utilities/SceneName';
 import { UIManager } from './UIManager';
-import { ItemColysesusObjectData, PetColysesusObjectData, PlayerColysesusObjectData } from '../Model/Player';
+import { ItemColysesusObjectData, PetClanColysesusObjectData, PetColysesusObjectData, PlayerColysesusObjectData } from '../Model/Player';
 import { MapItemManger } from './MapItemManager';
 import { PopupManager } from '../PopUp/PopupManager';
 import { AudioType, SoundManager } from './SoundManager';
@@ -108,7 +108,6 @@ export class ServerManager extends Component {
         });
 
         this.room.onMessage("onUseItem", (data) => {
-            console.log(data)
             MapItemManger.instance.onUseItem(data);
         });
 
@@ -439,10 +438,14 @@ export class ServerManager extends Component {
             const { clanId, item, fund } = data;
             if (UserMeManager.Get && clanId === UserMeManager.Get.clan.id) {
                 SoundManager.instance.playSound(AudioType.ReceiveReward);
-                Constants.showConfirm('Bạn đã mua vật phẩm cho văn phòng thành công');
+               
                 const popupShop = PopupManager.getInstance().getPopupComponent("UI_ClanShop", PopupClanShop);
                 popupShop?.ReloadAfterBuyItem();
             }
+            const myPlayer = UserManager.instance.GetMyClientPlayer;
+            const isClient = data.sessionId === myPlayer?.myID;
+            if(!isClient) return;
+            Constants.showConfirm('Bạn đã mua vật phẩm cho văn phòng thành công');
         });
 
         this.room.onMessage(MessageTypes.ON_BUY_CLAN_UPDATE_FUND, (data) => {
@@ -455,10 +458,13 @@ export class ServerManager extends Component {
             }
         });
 
-        this.room.onMessage(MessageTypes.ON_BUY_CLAN_ITEM_FAILED, (data) => {
+        this.room.onMessage(MessageTypes.ON_BUY_CLAN_ITEM_FAILED, data => {
             SoundManager.instance.playSound(AudioType.NoReward);
-            Constants.showConfirm(data.message, "Chú Ý");
+            console.log(data.message);
+            const msg = Constants.ERROR_MESSAGE_VI[data.message] ?? Constants.ERROR_MESSAGE_VI.UNKNOWN_ERROR;
+            Constants.showConfirm(msg);
         });
+
 
         this.room.onMessage(MessageTypes.JOIN_CLAN_REQUEST, (data) => {
             SoundManager.instance.playSound(AudioType.NoReward);
@@ -515,6 +521,43 @@ export class ServerManager extends Component {
             FarmController.instance.InitFarmSlot(data.slots);
         });
 
+        this.room.state.guardPets.onRemove((pet) => {
+            if (!OfficeSceneController.instance.currentMap) return;
+            OfficeSceneController.instance.currentMap.AnimalSpawner.removeClanPetById(pet.id);
+            const popupComp = PopupManager.getInstance().getPopupComponent("UI_ClanInventory", PopupClanInventory);
+            popupComp?.updatePetActionButtons(pet.clanAnimalId, pet.isActive);
+        });
+
+        this.room.state.guardPets.onChange((pet) => {
+            if (!pet) return;
+            const popupComp = PopupManager.getInstance().getPopupComponent("UI_ClanInventory", PopupClanInventory);
+            if (!pet.isActive) {
+                OfficeSceneController.instance.currentMap.AnimalSpawner.removeClanPetById(pet.id);
+                popupComp?.updatePetActionButtons(pet.id, false);
+            } else {
+                OfficeSceneController.instance.currentMap.AnimalSpawner.spawnClanGuardPet(pet);
+                popupComp?.updatePetActionButtons(pet.id, true);
+            }
+            GameManager.instance.playerHubController.ShowListPetFarm();
+        });
+
+        this.room.onMessage(MessageTypes.ON_DOG_BITE, async (data) => {
+            const myPlayer = UserManager.instance.GetMyClientPlayer;
+            const isClient = data.sessionId === myPlayer?.myID;
+            if (!isClient) return;
+            GameManager.instance.playerHubController.showBlockInteractHarvest(false);
+            myPlayer.playerInteractFarm.showBiteByDog(data.message);
+            UserManager.instance.GetMyClientPlayer.get_MoveAbility.startMove();
+        });
+
+        this.room.onMessage(MessageTypes.ON_ACTIVATE_PET_FAILED, (data) => {
+            Constants.showConfirm(`${data.message}`);
+        });
+
+        this.room.onMessage(MessageTypes.ON_DEACTIVATE_PET_FAILED, (data) => {
+            Constants.showConfirm(`${data.message}`);
+        });
+
         this.room.state.farmSlotState.onAdd((farmSlotState, key) => {
             const plantValue = farmSlotState.currentPlant
                 ? farmSlotState.currentPlant.toJSON()
@@ -556,7 +599,11 @@ export class ServerManager extends Component {
         this.room.onMessage(MessageTypes.ON_HARVEST_STARTED, (data) => {
             const player = UserManager.instance.getPlayerById(data.sessionId);
             if (!player) return;
-
+            const myPlayer = UserManager.instance.GetMyClientPlayer;
+            const isClient = data.sessionId === myPlayer?.myID;
+            if (isClient && myPlayer) {
+                myPlayer.get_MoveAbility.StopMove();
+            }
             player.playerInteractFarm.showHarvestingBar(data.endTime, data.slotId);
             FarmController.instance.UpdateSlotAction(data.slotId, SlotActionType.Harvest, true);
         });
@@ -600,13 +647,22 @@ export class ServerManager extends Component {
                 );
                 if (isClient) {
                     const param: PopupHarvestReceiveParam = {
-                        baseScore: data.baseScore,
-                        totalScore: data.totalScore,
-                        bonusPercent: data.bonusPercent,
-                        remainingHarvest: data.remainingHarvest,
-                        maxHarvest: data.maxHarvest,
-                    };
+                        baseScore : data.baseScore,
+                        bonusPercent : data.bonusPercent,
+                        finalScore: data.finalScore,
 
+                        catRateBonus: data.catRateBonus,
+                        catGoldBonus: data.catGoldBonus,
+
+                        birdRateBonus: data.birdRateBonus,
+                        birdScoreBonus: data.birdScoreBonus,
+
+                        finalPlayerScore : data.finalPlayerScore,
+                        finalGold : data.finalGold,
+
+                        remainingHarvest : data.remainingHarvest,
+                        maxHarvest : data.maxHarvest,
+                    };
                     PopupManager.getInstance().openAnimPopup("PopupHarvestReceive", PopupHarvestReceive, param);
                 }
 
@@ -897,8 +953,16 @@ export class ServerManager extends Component {
         this.room.send('startHarvest', sendData);
     }
 
-    sendInterruptHarvest(sendData) {
+    public sendInterruptHarvest(sendData) {
         this.room.send('interruptHarvest', sendData);
+    }
+
+    public sendActivateGuardPet(sendData) {
+        this.room.send('activateGuardPet', sendData);
+    }
+
+    public sendDeactivateGuardPet(sendData) {
+        this.room.send('deactivateGuardPet', sendData);
     }
 
     public answerMathQuestion(id, answer) {

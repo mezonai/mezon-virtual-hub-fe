@@ -6,7 +6,7 @@ import { IngredientDTO } from '../Model/Item';
 import { InventoryClanUIItemMini } from '../Clan/InventoryClanUIItemMini';
 const { ccclass, property } = _decorator;
 
-@ccclass('PopupBuyItem')
+@ccclass('PopupBuyQuantityItem')
 export class PopupBuyQuantityItem extends BasePopup {
     @property({ type: Label }) priceBuyQuantity: Label = null;
     @property({ type: Button }) buttonLeft: Button = null

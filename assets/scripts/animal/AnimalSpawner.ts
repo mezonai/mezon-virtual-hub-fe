@@ -3,7 +3,10 @@ import { PetDTO } from '../Model/PetDTO';
 import { ObjectPoolManager } from '../pooling/ObjectPoolManager';
 import { RandomlyMover } from '../utilities/RandomlyMover';
 import { AnimalController, AnimalType } from './AnimalController';
-import { PetColysesusObjectData } from '../Model/Player';
+import { PetClanColysesusObjectData, PetColysesusObjectData } from '../Model/Player';
+import { AnimalClanController } from './AnimalClanController';
+import { ClanPetDTO, PetClanDTO } from '../Model/Item';
+import { Constants } from '../utilities/Constants';
 
 const { ccclass, property } = _decorator;
 
@@ -18,6 +21,9 @@ export class AnimalSpawner extends Component {
     @property({ type: Node }) spawnMap: Node;// Area nguyên map
     @property({ type: [AnimalController] })
     spawnedAnimals: AnimalController[] = [];
+
+    @property({ type: [AnimalClanController] })
+    spawnedClanPets: AnimalClanController[] = [];
 
     public spawnPet(petData: PetDTO[]) {
         for (const pet of petData) {
@@ -36,6 +42,25 @@ export class AnimalSpawner extends Component {
                 }
             }
         }
+    }
+
+    public spawnClanGuardPet(pet: PetClanColysesusObjectData) {
+        if (!pet.isActive) return;
+        const petType = pet.petCLanCode.toString();
+        const petObj = ObjectPoolManager.instance.spawnFromPool(Constants.getPetClanType(petType));
+        if (!petObj) return;
+        const zone = this.getRandomZone();
+        petObj.setParent(zone.node);
+        const area = this.getArea(zone.node);
+        petObj.setPosition(this.getRandomPositionInZone(area));
+        const controller = petObj.getComponent(AnimalClanController);
+        if (!controller) {
+            petObj.destroy();
+            return;
+        }
+
+        controller.setGuardFarm(pet);
+        this.spawnedClanPets.push(controller);
     }
 
     public updatePositionPetOnServer(petData: PetColysesusObjectData) {
@@ -59,6 +84,20 @@ export class AnimalSpawner extends Component {
         }
     }
 
+    public removeClanPetById(petId: string) {
+        const petIndex = this.spawnedClanPets.findIndex(
+            controller => controller?.Pet?.id === petId
+        );
+
+        if (petIndex === -1) {
+            console.warn("Clan pet not found:", petId);
+            return;
+        }
+
+        const controller = this.spawnedClanPets[petIndex];
+        this.spawnedClanPets.splice(petIndex, 1);
+        controller.closeAnimal();
+    }
 
     protected onDisable(): void {
         this.spawnedAnimals.forEach(animal => {
@@ -66,6 +105,11 @@ export class AnimalSpawner extends Component {
                 animal.closeAnimal();
             }
         });
+        this.spawnedAnimals = [];
+        this.spawnedClanPets.forEach(pet => {
+            pet?.closeAnimal();
+        });
+        this.spawnedClanPets = [];
     }
 
     public disappearedPet(id: string, isCaught: boolean) {// trường hợp pet di chuyển giữa các room

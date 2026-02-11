@@ -59,7 +59,7 @@ export class PopupClanDetailInfo extends BasePopup {
         this.ShopClanButton.addAsyncListener(async () => {
             this.ShopClanButton.interactable = false;
             await PopupManager.getInstance().openAnimPopup("UI_ClanShop", PopupClanShop, {
-                clanDetail: this.clanDetail,
+                clanDetailId: this.clanDetail.id,
             });
             this.ShopClanButton.interactable = true;
         });
@@ -68,7 +68,7 @@ export class PopupClanDetailInfo extends BasePopup {
             this.inventoryClanBtn.interactable = false;
             const param: PopupClanInventoryParam =
             {
-                clanDetail: this.clanDetail,
+                clanDetailId: this.clanDetail.id,
                 onUpdateFund: (newFund: number) => {
                     this.clanFund = newFund;
                     this.setDataFundClan(newFund);

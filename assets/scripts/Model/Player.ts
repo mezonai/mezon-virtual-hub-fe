@@ -1,5 +1,6 @@
 import { _decorator, Component, Node, Vec2 } from 'cc';
 import { PetDTO } from './PetDTO';
+import { ClanPetDTO, PetClanDTO } from './Item';
 const { ccclass, property } = _decorator;
 
 @ccclass('Player')
@@ -102,5 +103,22 @@ export class PetColysesusObjectData extends ColysesusObjectData {
         super(sessionId, room, x, y, name);
         this.pet = pet;
         this.angle = angle;
+    }
+}
+
+export class PetClanColysesusObjectData{
+    public petClanId!: string;
+    public id!: string;
+    public name!: string;
+    public petCLanCode!: string;
+    public slotIndex!: number;
+    public isActive!: boolean;
+    constructor(name: string, id: string, petClanId: string, petCLanCode: string, slotIndex: number, isActive: boolean) {
+        this.name = name;
+        this.id = id;
+        this.petClanId = petClanId;
+        this.petCLanCode = petCLanCode;
+        this.slotIndex = slotIndex ?? 0;
+        this.isActive = isActive;
     }
 }

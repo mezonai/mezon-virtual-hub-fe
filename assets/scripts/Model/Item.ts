@@ -3,6 +3,7 @@ import { LocalItemDataConfig } from "./LocalItemConfig";
 import { AnimalRarity, PetDTO, Species, Element } from "./PetDTO";
 import { Enum } from "cc";
 import { PlantDataDTO } from "../Farm/EnumPlant";
+import { ClansData } from "../Interface/DataMapAPI";
 
 export class BaseInventoryDTO {
 
@@ -156,6 +157,8 @@ export enum ItemType {
     PET_FOOD = 'pet_food',
     FARM_TOOL = 'farm_tool',
     FARM_PLANT = 'farm_plant',
+    PET_CLAN = 'pet_clan',
+    PET_CLAN_SLOT = 'pet_clan_slot',
     PETFRAGMENT = 'pet_fragment',
     PET = 'pet',
 }
@@ -177,11 +180,13 @@ export enum ToolCategory {
 export enum ItemClanType {
   PLANT = 'plant',
   TOOL = 'farm_tool',
+  PET_CLAN = 'pet_clan',
 }
 
 export enum InventoryClanType {
   PLANT = 'Plant',
   TOOLS = 'Tool',
+  PETCLANSLOTCARD = 'pet_clan_slot_card',
 }
 
 export enum FoodType {
@@ -307,16 +312,69 @@ export class WheelDTO {
 
 export interface RecipeDTO {
   id: string;
-  type: string; 
+  type: RecipeType; 
   item_id: string | null;
   pet_id: string | null;
   plant_id: string | null;
 
   item?: Item | null;
   pet?: PetDTO | null;
+  pet_clan?: PetClanDTO | null;
   plant?: PlantDataDTO | null;
   ingredients: IngredientDTO[];
+  current_slot_quantity?: number;
 }
+
+export enum RecipeType {
+  PET = 'pet',
+  FARM_TOOL = 'farm_tool',
+  PLANT = 'plant',
+  PET_CLAN = 'pet_clan',
+  MAP = 'map',
+  DECOR_ITEM = 'decor_item',
+  PET_CLAN_SLOT= 'pet_clan_slot',
+}
+
+export interface PetClanDTO {
+    id: string;
+    type: Species;
+    name: string;
+    description: string;
+
+    base_rate_affect: number;
+    base_exp_per_level: number;
+    base_exp_increment_per_level: number;
+    max_level: number;
+    level_up_rate_multiplier: number;
+    current_pet_quantity: number;
+    max_pet_quantity:number;
+    pet_clan_code: PetCLanCode;
+}
+
+export enum PetCLanCode {
+  PET_CLAN_DOG_001 = 'pet_clan_dog_001',
+  PET_CLAN_DOG_002 = 'pet_clan_dog_002',
+  PET_CLAN_CAT_001 = 'pet_clan_cat_001',
+  PET_CLAN_CAT_002 = 'pet_clan_cat_002',
+  PET_CLAN_BIRD_001 = 'pet_clan_bird_001',
+  PET_CLAN_BIRD_002 = 'pet_clan_bird_002',
+}
+
+export interface ClanPetDTO {
+    id: string;
+    clan_id: string;
+    pet_clan_id: string;
+    level: number;
+    exp: number;
+    bonus_rate_affect: number;
+    slot_index: number | null;
+    is_active: boolean;
+    pet_clan: PetClanDTO;
+    required_exp?: number;
+    total_rate_affect?: number;
+    max_slot_pet_active?: number;
+}
+
 
 export interface IngredientDTO {
   id: string;
@@ -330,5 +388,13 @@ export interface IngredientDTO {
   item?: Item | null;
   plant?: PlantDataDTO | null;
   current_quantity: number;
+  total_required_quantity?: number;
+
+}
+
+export interface BuyClanPetSlotDataDTO {
+  clan_id: string;
+  item: ClansData;
+  fund: number;
 }
 
