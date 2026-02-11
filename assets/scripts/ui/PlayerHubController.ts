@@ -102,12 +102,10 @@ export class PlayerHubController extends Component {
 
     public async updatePetSlotInfo() {
         if (!this.canShowPetFarm()) {
-            this.listPetMyFarm.active = false;
             return;
         }
         this.btnPetList.node.active = true;
-        this.listPetMyFarm.active = true;
-        this.isPetListVisible = true;
+        this.listPetMyFarm.active = this.isPetListVisible;
         const petSlots = await WebRequestManager.instance.getClanPetAsync( UserMeManager.Get.clan.id, { is_active: true });
         const maxSlot = petSlots.length > 0 ? petSlots[0].max_slot_pet_active : UserMeManager.Get.clan.max_slot_pet_active;
         this.maxSlotPetActive.string = `Pet hoạt động: ${petSlots.length}/${maxSlot} (tối đa)`;
