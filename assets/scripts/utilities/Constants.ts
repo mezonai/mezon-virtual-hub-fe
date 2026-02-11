@@ -417,9 +417,10 @@ export class Constants {
     }
 
     static ERROR_MESSAGE_VI: Record<string, string> = {
+        'Not enough clan fund':'Quỹ văn phòng không đủ',
+        'Not enough ingredients in clan warehouse': 'Không đủ nguyên liệu',
         'Clan already has this pet': 'Mỗi nông trại chỉ có thể mua 1 loại pet\n nông trại bạn đã sở hữu!',
         'Maximum active pets reached': 'Đã đạt số pet tối đa trong nông trại',
-        'Not enough ingredients in clan warehouse': 'Không đủ nguyên liệu',
         UNKNOWN_ERROR: 'Có lỗi xảy ra, vui lòng thử lại',
     };
 
