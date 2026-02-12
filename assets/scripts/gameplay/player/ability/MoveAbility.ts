@@ -157,7 +157,12 @@ export class MoveAbility extends Ability {
             }
 
             value.normalize();
-            this.currentDirection.x = value.x > 0 ? 1 : -1;
+            if (value.x > 0) {
+                this.currentDirection.x = 1;
+            }
+            else if (value.x < 0) {
+                this.currentDirection.x = -1;
+            }
             const move = value.multiplyScalar(this.moveSpeed * dt);
             this.move(this.node.position.add(move));
             return;
@@ -175,7 +180,12 @@ export class MoveAbility extends Ability {
                 }
 
                 value.normalize();
-                this.currentDirection.x = value.x > 0 ? 1 : -1;
+                if (value.x > 0) {
+                    this.currentDirection.x = 1;
+                }
+                else if (value.x < 0) {
+                    this.currentDirection.x = -1;
+                }
                 const move = value.clone().multiplyScalar(this.moveSpeed * dt);
                 const nextPos = this.node.position.clone().add(move);
                 this.move(nextPos);
@@ -275,7 +285,7 @@ export class MoveAbility extends Ability {
 
         this.lastPosition = target.clone();
         this.currentDirection.x = sX;
-        this.animationController.node.scale = this.currentDirection;
+        this.animationController.node.setScale(this.currentDirection.x, 1, 1);
         this.animationController.play(anim);
     }
 

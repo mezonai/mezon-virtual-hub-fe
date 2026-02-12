@@ -1,4 +1,4 @@
-import { _decorator, Button, RichText } from 'cc';
+import { _decorator, Button, RichText, Node } from 'cc';
 import { BasePopup } from './BasePopup';
 import { AnimalRarity, PetDTO } from '../Model/PetDTO';
 import { PopupManager } from './PopupManager';
@@ -24,6 +24,9 @@ export class PopupUpgradeRarityPet extends BasePopup {
     getConfigRate: StatsConfigDTO;
     upgradeStarsDiamond: number;
     getItemCard: InventoryDTO[];
+    @property({ type: Node }) itemCardRare: Node = null;
+    @property({ type: Node }) itemCardEpic: Node = null;
+    @property({ type: Node }) itemCardLegend: Node = null;
 
     public init(param?: UpgradeRarityPetInitParam): void {
         if (param?.onUpdate) {
@@ -187,6 +190,9 @@ export class PopupUpgradeRarityPet extends BasePopup {
     showDetailPanel(slot: ItemAnimalSlotDrag, pet: PetDTO) {
         this.slotPetDetails[0].showDetailPanel(pet);
         this.SetRateMerge();
+        this.itemCardRare.active   = pet.current_rarity === AnimalRarity.COMMON;
+        this.itemCardEpic.active   = pet.current_rarity === AnimalRarity.RARE;
+        this.itemCardLegend.active = pet.current_rarity === AnimalRarity.EPIC;
     }
 
     hideDetailPanel(slot: ItemAnimalSlotDrag) {
