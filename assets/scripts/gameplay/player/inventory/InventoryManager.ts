@@ -367,7 +367,7 @@ export class InventoryManager extends BaseInventoryManager {
         uiItem.setScaleByItemType();
         uiItem.toggleActive(false);
         this.setUIState(ItemType.PET_FOOD);
-        this.descriptionText.string = `${food.name}: ${food.description || ""}`;
+        if(this.descriptionText.string =='') this.descriptionText.string = `${food.name}: ${food.description || ""}`;
     }
 
     private setupPetCardItem(uiItem: InventoryUIITem, itemData: Item) {
@@ -376,7 +376,7 @@ export class InventoryManager extends BaseInventoryManager {
         uiItem.setScaleByItemType(itemData.type);
         this.setUIState(ItemType.PET_CARD);
         uiItem.toggleActive(false);
-        this.descriptionText.string = `${itemData.name}`;
+        if(this.descriptionText.string =='') this.descriptionText.string = `${itemData.name}`;
     }
 
     private setupPetFragment(uiItem: InventoryUIITem, itemData: Item) {
@@ -385,7 +385,7 @@ export class InventoryManager extends BaseInventoryManager {
         uiItem.setScaleByItemType(itemData.type);
         this.setUIState(ItemType.PET_CARD);
         uiItem.toggleActive(false);
-        this.descriptionText.string = `${itemData.name}`;
+        if(this.descriptionText.string =='') this.descriptionText.string = `${itemData.name}`;
     }
 
     private async setupClothesItem(uiItem: InventoryUIITem, itemData: Item) {
