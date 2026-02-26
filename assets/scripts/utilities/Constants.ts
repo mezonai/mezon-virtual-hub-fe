@@ -3,7 +3,7 @@ import { ServerMapManager } from "../core/ServerMapManager";
 import { OfficePosition, Season } from "../GameMap/OfficePosition";
 import { RoomType } from "../GameMap/RoomType";
 import { ClanActivityActionType, ClanRole, ClansData } from "../Interface/DataMapAPI";
-import { FoodType, InventoryType, ItemType, PetCLanCode, RewardItemDTO, RewardType } from "../Model/Item";
+import { DecorType, FoodType, InventoryType, ItemType, PetCLanCode, RewardItemDTO, RewardType } from "../Model/Item";
 import { ConfirmParam, ConfirmPopup } from "../PopUp/ConfirmPopup";
 import { PopupManager } from "../PopUp/PopupManager";
 import Utilities from "./Utilities";
@@ -340,6 +340,38 @@ export class Constants {
         return matched ? nameMap[matched] : englishName;
     }
 
+    public static getGardenName(englishName: string): string {
+        const nameMap: Record<string, string> = {
+            "Main garden": "Nông trại chính",
+            "Summer garden": "Nông trại hè",
+            "Autumn garden": "Nông trại thu",
+            "Winter garden": "Nông trại đông"
+        };
+
+        const normalized = englishName.trim().toLowerCase();
+        const matched = Object.keys(nameMap).find(
+            key => key.toLowerCase() === normalized
+        );
+        return matched ? nameMap[matched] : englishName;
+    }
+
+    public static getDecoType(englishName: string): string {
+        const nameMap: Record<string, string> = {
+            "TREE": "Cây",
+            "WINDMILL": "Cối xay Gió",
+            "TRUCK_LARGE": "Xe tải lớn",
+            "PLAYGROUND": "Trò Chơi",
+            "POTTED_PLANT": "Chậu Cây",
+            "GREENHOUSE": "Mô Hình Nhà"
+        };
+
+        const normalized = englishName.trim().toLowerCase();
+        const matched = Object.keys(nameMap).find(
+            key => key.toLowerCase() === normalized
+        );
+        return matched ? nameMap[matched] : englishName;
+    }
+
     public static getSearchIfChanged(currentSearch: string, newSearch?: string): string | null {
         const searchKey = newSearch?.trim() ?? '';
         if (searchKey === currentSearch) return null;
@@ -417,6 +449,7 @@ export class Constants {
     }
 
     static ERROR_MESSAGE_VI: Record<string, string> = {
+        "Clan already owns this decor item":'Mỗi nông trại chỉ có thể mua 1 loại trang trí\n nông trại bạn đã sở hữu!',
         'Not enough clan fund':'Quỹ văn phòng không đủ',
         'Not enough ingredients in clan warehouse': 'Không đủ nguyên liệu',
         'Clan already has this pet': 'Mỗi nông trại chỉ có thể mua 1 loại pet\n nông trại bạn đã sở hữu!',

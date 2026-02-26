@@ -24,6 +24,7 @@ export class ItemIconManager extends Component {
     @property({ type: [SpriteFrame] }) iconFarmToolRewards: SpriteFrame[] = [];
     @property({ type: [SpriteFrame] }) iconFarmPlantRewards: SpriteFrame[] = [];
     @property({ type: [SpriteFrame] }) iconFarmPetRewards: SpriteFrame[] = [];
+    @property({ type: [SpriteFrame] }) iconFarmDeco: SpriteFrame[] = [];
     public static getInstance(): ItemIconManager {
         return this.instance;
     }
@@ -104,6 +105,11 @@ export class ItemIconManager extends Component {
     public getIconFarmPet(type: string): SpriteFrame {
         const found = this.iconFarmPetRewards.find(sf => sf && sf.name === type);
         return found || this.iconFarmPetRewards[0];
+    }
+
+    public getIconDeco(type: string): SpriteFrame {
+        const found = this.iconFarmDeco.find(sf => sf && sf.name === type);
+        return found || this.iconFarmDeco[0];
     }
 
     getIconPurchaseMethod(itemType: RewardType): SpriteFrame {

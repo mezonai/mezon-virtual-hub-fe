@@ -1,7 +1,5 @@
 import { _decorator, Component, Node } from 'cc';
 import { CCFloat } from 'cc';
-import { PopupManager } from '../PopUp/PopupManager';
-import { PopupChoosePlant } from '../PopUp/PopupChoosePlant';
 import { FarmSlot } from './FarmSlot';
 const { ccclass, property } = _decorator;
 

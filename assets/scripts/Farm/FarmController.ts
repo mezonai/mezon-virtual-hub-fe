@@ -8,8 +8,9 @@ import { UserManager } from '../core/UserManager';
 import { UserMeManager } from '../core/UserMeManager';
 import { Constants } from '../utilities/Constants';
 import { PopupChooseItem, PopupChooseItemParam } from '../PopUp/PopupChooseItem';
-import { InventoryClanType, ItemClanType } from '../Model/Item';
+import { ClanEstateDTO, InventoryClanType, ItemClanType, ItemType, RecipeDTO } from '../Model/Item';
 import { GameManager } from '../core/GameManager';
+import { MapGateController } from '../GameMap/Map/MapGateController';
 const { ccclass, property } = _decorator;
 
 @ccclass('FarmController')
@@ -18,11 +19,18 @@ export class FarmController extends Component {
   @property(Node) landParent1: Node = null!;
   @property(Node) landParent2: Node = null!;
   private landSlots: FarmSlot[] = [];
+  private mapRecipeDTO: RecipeDTO[] = [];
+  private clanEstateDTO: ClanEstateDTO[] = [];
+  private estateByIndex: Map<number, ClanEstateDTO> = new Map();
   static instance: FarmController;
+  @property([MapGateController]) mapGates: MapGateController[] = [];
+  private pendingDecorSpawns: any[] = [];
+  private pendingDecorRemoves: any[] = [];
+  private isGateReady: boolean = false;
 
   onDestroy(): void {
-     FarmController.instance = null;
-     game.off(Game.EVENT_SHOW, this.onAppResume, this);
+    FarmController.instance = null;
+    game.off(Game.EVENT_SHOW, this.onAppResume, this);
   }
 
   onLoad() {
@@ -32,7 +40,6 @@ export class FarmController extends Component {
 
   private onAppResume() {
     const now = Date.now();
-
     const hasUpdatedPlant = this.landSlots.some(slot => {
       const plant = slot.plant;
       if (!plant) return false;
@@ -43,6 +50,88 @@ export class FarmController extends Component {
     if (hasUpdatedPlant) {
       ServerManager.instance.sendUpdateSlot();
     }
+  }
+
+  async start() {
+    await this.loadData();
+    this.setupMapGates();
+  }
+
+  private async loadData() {
+    const estateRaw = await WebRequestManager.instance.getAllClanEstateAsync(UserMeManager.CurrentOffice.idclan);
+    this.clanEstateDTO = estateRaw ?? [];
+    this.estateByIndex.clear();
+    this.clanEstateDTO.forEach(e => {
+      const key = Number(e.realEstate.index);
+      this.estateByIndex.set(key, e);
+    });
+    this.mapRecipeDTO = await WebRequestManager.instance.getAllRecipeByTypeAsync(ItemType.MAP);
+  }
+
+  private setupMapGates() {
+    this.mapGates.forEach((gate) => {
+      const index = Number(gate.mapIndex);
+      const estate = this.estateByIndex.get(index) ?? null;
+      const recipe = this.mapRecipeDTO.find(r => Number(r.map?.index) === index) ?? null;
+      gate.setup({ estate, recipe });
+    });
+    this.isGateReady = true;
+    this.flushPendingDecors();
+  }
+
+  private flushPendingDecors() {
+
+    this.pendingDecorSpawns.forEach(decor => {
+      this._doSpawnDecor(decor);
+    });
+
+    this.pendingDecorRemoves.forEach(decor => {
+      this._doRemoveDecor(decor);
+    });
+
+    this.pendingDecorSpawns = [];
+    this.pendingDecorRemoves = [];
+  }
+
+  public spawnDecor(decor: any) {
+    if (!this.isGateReady) {
+      this.pendingDecorSpawns.push(decor);
+      return;
+    }
+    this._doSpawnDecor(decor);
+  }
+
+  private _doSpawnDecor(decor: any) {
+
+    const estate = this.clanEstateDTO.find(e => e.id === decor.estateId);
+    if (!estate) return;
+    const mapIndex = Number(estate.realEstate.index);
+    const gate = this.mapGates.find(g => Number(g.mapIndex) === mapIndex);
+    if (!gate) return;
+    const slot = gate.decorSlots.find(s => s.positionIndex === decor.positionIndex);
+    if (!slot) return;
+    slot.spawnDecorPrefab(decor.decorItemName);
+  }
+
+  // =============================
+
+  public removeDecor(decor: any) {
+    if (!this.isGateReady) {
+      this.pendingDecorRemoves.push(decor);
+      return;
+    }
+    this._doRemoveDecor(decor);
+  }
+
+  private _doRemoveDecor(decor: any) {
+    const estate = this.clanEstateDTO.find(e => e.id === decor.estateId);
+    if (!estate) return;
+    const mapIndex = Number(estate.realEstate.index);
+    const gate = this.mapGates.find(g => Number(g.mapIndex) === mapIndex);
+    if (!gate) return;
+    const slot = gate.decorSlots.find(s => s.positionIndex === decor.positionIndex);
+    if (!slot) return;
+    slot.clear();
   }
 
   public InitFarmSlot(data: FarmSlotDTO[]) {
@@ -65,14 +154,13 @@ export class FarmController extends Component {
   }
 
   public async openPlantMenu(slot: FarmSlot) {
-    
     if (!UserMeManager.Get.clan || !UserMeManager.Get.clan.id || UserMeManager.Get.clan.id !== UserMeManager.CurrentOffice.idclan) {
       PopupManager.getInstance().closeAllPopups();
       Constants.showConfirm("Bạn cần thuộc văn phòng để trồng cây tại nông trại của văn phòng");
       return;
     }
 
-    const inventory = await WebRequestManager.instance.getClanWarehousesAsync(UserMeManager.Get.clan.id, { type: InventoryClanType.PLANT, is_harvested: false});
+    const inventory = await WebRequestManager.instance.getClanWarehousesAsync(UserMeManager.Get.clan.id, { type: InventoryClanType.PLANT, is_harvested: false });
     if (!inventory || inventory.length === 0) {
       Constants.showConfirm("Hiện tại bạn không có cây nào trong kho để trồng.");
       return;
@@ -82,9 +170,9 @@ export class FarmController extends Component {
       slotFarm: slot,
       inventory: inventory,
       filterType: ItemClanType.PLANT,
-      titlert:'Danh Sách Cây trồng'
+      titlert: 'Danh Sách Cây trồng'
     };
-    
+
     await UserManager.instance.GetMyClientPlayer.get_MoveAbility.StopMove();
     await PopupManager.getInstance().openAnimPopup('PopupChooseItem', PopupChooseItem, param);
   }
@@ -94,7 +182,7 @@ export class FarmController extends Component {
     return this.landSlots.find(s => s.data?.id === slotId) ?? null;
   }
 
-  public UpdateSlotAction(slotId: string, type: SlotActionType, isDone: boolean = false, typeTool : string='') {
+  public UpdateSlotAction(slotId: string, type: SlotActionType, isDone: boolean = false, typeTool: string = '') {
     const slot = this.findSlotById(slotId);
     if (!slot) return;
     switch (type) {

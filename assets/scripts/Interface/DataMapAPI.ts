@@ -55,7 +55,7 @@ export class ClansData {
     join_status?: ClanStatus;
     rank?: number;
     avatar_url?: string;
-    funds: ClanFund[];
+    funds?: ClanFund[];
 }
 
 export interface ClanFund {

@@ -541,6 +541,23 @@ export class ServerManager extends Component {
             GameManager.instance.playerHubController.ShowListPetFarm();
         });
 
+        this.room.state.estateDecors.onRemove((estateDecors) => {
+            if (!OfficeSceneController.instance.currentMap) return;
+             console.log("remove estateDecors: ", JSON.stringify(estateDecors));
+        });
+
+        this.room.state.estateDecors.onAdd((estateDecors) => {
+            if (!estateDecors) return;
+            console.log("change estateDecors 1: ", JSON.stringify(estateDecors));
+            FarmController.instance.spawnDecor(estateDecors);
+        });
+
+        this.room.state.estateDecors.onChange((estateDecors) => {
+            if (!estateDecors) return;
+            console.log("change estateDecors 2: ", JSON.stringify(estateDecors));
+            FarmController.instance.spawnDecor(estateDecors);
+        });
+
         this.room.onMessage(MessageTypes.ON_DOG_BITE, async (data) => {
             const myPlayer = UserManager.instance.GetMyClientPlayer;
             const isClient = data.sessionId === myPlayer?.myID;
@@ -984,6 +1001,14 @@ export class ServerManager extends Component {
 
     public sendPetFollowPlayer(data) {
         this.room.send("sendPetFollowPlayer", data);
+    }
+
+    public sendPlaceDeco(data) {
+        this.room.send("placeDecor", data);
+    }
+
+    public sendRemoveDeco(data) {
+        this.room.send("removeDecor", data);
     }
 
     public sendInteracDoor(data, isOpen: boolean) {

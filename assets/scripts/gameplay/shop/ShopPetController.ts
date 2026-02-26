@@ -64,6 +64,7 @@ export class ShopPetController extends BaseInventoryManager {
 
             this.isOpenPopUp = true;
             const param: PopupBuyQuantityItemParam = {
+                isNotShowQuantity: false,
                 selectedItemPrice: this.selectingUIItem.dataFood.price,
                 spriteMoneyValue: this.iconItemUIHelper.GetIcon(),
                 textButtonLeft: "Thôi",

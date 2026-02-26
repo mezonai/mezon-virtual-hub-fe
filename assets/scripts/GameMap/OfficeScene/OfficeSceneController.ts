@@ -22,8 +22,9 @@ export class OfficeSceneController extends Component {
     backMapButton: Button;
     @property(Prefab)
     mapOffice: Prefab[] = [];
-    @property(Prefab)
-    mapLunarNewYear: Prefab[] = [];
+    @property([Prefab]) mapNormal: Prefab[] = [];
+    @property(Prefab) mapLunarNewYear: Prefab[] = [];
+    @property([Prefab]) mapDeco: Prefab[] = [];
     @property(Node)
     mapParent: Node = null;
     @property currentMap: MapManagerBase = null;
@@ -69,23 +70,56 @@ export class OfficeSceneController extends Component {
         return true;
     }
 
-    private createMap(nameRoom: string, currentOffice: number) {
+    private getSeasonMap(): Prefab[] {
+        switch (Constants.season) {
+            case Season.LUNARNEWYEAR:
+                return this.mapLunarNewYear;
+            case Season.DECO:
+                return this.mapDeco;
+            default:
+                return this.mapNormal;
+        }
+    }
 
+    // private createMap(nameRoom: string, currentOffice: number) {
+
+    //     const isFarm = nameRoom.includes('-farm');
+    //     const isOffice = nameRoom.includes('-office');
+    //     const isShop = nameRoom.includes('-shop');
+    //     const isLNY = Constants.season === Season.LUNARNEWYEAR;
+    //     this.effectLunaNewYear.active = false;
+    //     if (isLNY && !isShop && !isOffice) {
+    //         this.effectLunaNewYear.active = true;
+    //         return instantiate(
+    //             isFarm
+    //                 ? this.mapLunarNewYear[1]
+    //                 : this.mapLunarNewYear[0]
+    //         );
+    //     }
+    //     return instantiate(
+    //         this.mapOffice[this.getOffice(currentOffice, nameRoom)]
+    //     );
+    // }
+    private createMap(nameRoom: string, currentOffice: number) {
         const isFarm = nameRoom.includes('-farm');
         const isOffice = nameRoom.includes('-office');
         const isShop = nameRoom.includes('-shop');
-        const isLNY = Constants.season === Season.LUNARNEWYEAR;
-        this.effectLunaNewYear.active = false;
-        if (isLNY && !isShop && !isOffice) {
-            this.effectLunaNewYear.active = true;
+        if (isShop || isOffice) {
             return instantiate(
-                isFarm
-                    ? this.mapLunarNewYear[1]
-                    : this.mapLunarNewYear[0]
+                this.mapOffice[this.getOffice(currentOffice, nameRoom)]
             );
         }
+
+        const seasonMap = this.getSeasonMap();
+        this.effectLunaNewYear.active = Constants.season !== Season.NONE;
+        if (!seasonMap || seasonMap.length < 2) {
+            return instantiate(
+                this.mapOffice[this.getOffice(currentOffice, nameRoom)]
+            );
+        }
+
         return instantiate(
-            this.mapOffice[this.getOffice(currentOffice, nameRoom)]
+            isFarm ? seasonMap[1] : seasonMap[0]
         );
     }
 
