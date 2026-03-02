@@ -541,22 +541,38 @@ export class ServerManager extends Component {
             GameManager.instance.playerHubController.ShowListPetFarm();
         });
 
-        this.room.state.estateDecors.onRemove((estateDecors) => {
-            if (!OfficeSceneController.instance.currentMap) return;
-             console.log("remove estateDecors: ", JSON.stringify(estateDecors));
-        });
+        this.room.state.estates.onAdd((estate, estateId) => {
 
-        this.room.state.estateDecors.onAdd((estateDecors) => {
-            if (!estateDecors) return;
-            console.log("change estateDecors 1: ", JSON.stringify(estateDecors));
-            FarmController.instance.spawnDecor(estateDecors);
-        });
+            estate.placeholders.onAdd((placeholder, placeholderId) => {
+                if (placeholder.decor) {
+                    FarmController.instance.spawnDecor(estateId, placeholder);
+                }
+                placeholder.onChange(() => {
+                    if (placeholder.decor) {
+                        FarmController.instance.spawnDecor(estateId, placeholder);
+                    } else {
+                        FarmController.instance.removeDecor(estateId, placeholder.position_index);
+                    }
+                });
+            });
 
-        this.room.state.estateDecors.onChange((estateDecors) => {
-            if (!estateDecors) return;
-            console.log("change estateDecors 2: ", JSON.stringify(estateDecors));
-            FarmController.instance.spawnDecor(estateDecors);
         });
+        // this.room.state.estateDecors.onRemove((estateDecors) => {
+        //     if (!OfficeSceneController.instance.currentMap) return;
+        //      console.log("remove estateDecors: ", JSON.stringify(estateDecors));
+        // });
+
+        // this.room.state.estateDecors.onAdd((estateDecors) => {
+        //     if (!estateDecors) return;
+        //     console.log("change estateDecors 1: ", JSON.stringify(estateDecors));
+        //     FarmController.instance.spawnDecor(estateDecors);
+        // });
+
+        // this.room.state.estateDecors.onChange((estateDecors) => {
+        //     if (!estateDecors) return;
+        //     console.log("change estateDecors 2: ", JSON.stringify(estateDecors));
+        //     FarmController.instance.spawnDecor(estateDecors);
+        // });
 
         this.room.onMessage(MessageTypes.ON_DOG_BITE, async (data) => {
             const myPlayer = UserManager.instance.GetMyClientPlayer;

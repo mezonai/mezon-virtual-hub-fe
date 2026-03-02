@@ -24,6 +24,7 @@ export class FarmController extends Component {
   private estateByIndex: Map<number, ClanEstateDTO> = new Map();
   static instance: FarmController;
   @property([MapGateController]) mapGates: MapGateController[] = [];
+  private currentDecorMap: Map<string, string | null> = new Map();
   private pendingDecorSpawns: any[] = [];
   private pendingDecorRemoves: any[] = [];
   private isGateReady: boolean = false;
@@ -81,56 +82,87 @@ export class FarmController extends Component {
 
   private flushPendingDecors() {
 
-    this.pendingDecorSpawns.forEach(decor => {
-      this._doSpawnDecor(decor);
-    });
-
-    this.pendingDecorRemoves.forEach(decor => {
-      this._doRemoveDecor(decor);
+    this.pendingDecorSpawns.forEach(data => {
+      this._doSpawnDecor(data);
     });
 
     this.pendingDecorSpawns = [];
-    this.pendingDecorRemoves = [];
   }
 
-  public spawnDecor(decor: any) {
+  public spawnDecor(estateId: string, placeholder: any) {
+
+    const data = {
+      estateId,
+      positionIndex: placeholder.position_index,
+      decorName: placeholder.decor?.name ?? null
+    };
+
     if (!this.isGateReady) {
-      this.pendingDecorSpawns.push(decor);
+      this.pendingDecorSpawns.push(data);
       return;
     }
-    this._doSpawnDecor(decor);
+
+    this._doSpawnDecor(data);
   }
 
-  private _doSpawnDecor(decor: any) {
+  private _doSpawnDecor(data: {estateId: string; positionIndex: number; decorName: string | null;}) {
+    const key = `${data.estateId}_${data.positionIndex}`;
+    const current = this.currentDecorMap.get(key);
 
-    const estate = this.clanEstateDTO.find(e => e.id === decor.estateId);
+    if (current === data.decorName) return;
+    this.currentDecorMap.set(key, data.decorName);
+    const estate = this.clanEstateDTO.find(e => e.id === data.estateId);
+
     if (!estate) return;
     const mapIndex = Number(estate.realEstate.index);
     const gate = this.mapGates.find(g => Number(g.mapIndex) === mapIndex);
+
     if (!gate) return;
-    const slot = gate.decorSlots.find(s => s.positionIndex === decor.positionIndex);
+    const slot = gate.decorSlots.find(
+      s => s.positionIndex === data.positionIndex
+    );
+
     if (!slot) return;
-    slot.spawnDecorPrefab(decor.decorItemName);
+    if (data.decorName) {
+      slot.spawnDecorPrefab(data.decorName);
+    } else {
+      slot.clear();
+    }
   }
 
   // =============================
 
-  public removeDecor(decor: any) {
+  public removeDecor(estateId: string, positionIndex: number) {
+
+    const data = {
+      estateId,
+      positionIndex,
+      decorName: null
+    };
+
     if (!this.isGateReady) {
-      this.pendingDecorRemoves.push(decor);
+      this.pendingDecorSpawns.push(data);
       return;
     }
-    this._doRemoveDecor(decor);
+
+    this._doRemoveDecor(data);
   }
 
-  private _doRemoveDecor(decor: any) {
-    const estate = this.clanEstateDTO.find(e => e.id === decor.estateId);
+  private _doRemoveDecor(data: { estateId: string; positionIndex: number }) {
+    const key = `${data.estateId}_${data.positionIndex}`;
+    this.currentDecorMap.set(key, null);
+    const estate = this.clanEstateDTO.find(e => e.id === data.estateId);
     if (!estate) return;
+
     const mapIndex = Number(estate.realEstate.index);
     const gate = this.mapGates.find(g => Number(g.mapIndex) === mapIndex);
     if (!gate) return;
-    const slot = gate.decorSlots.find(s => s.positionIndex === decor.positionIndex);
+
+    const slot = gate.decorSlots.find(
+      s => s.positionIndex === data.positionIndex
+    );
     if (!slot) return;
+
     slot.clear();
   }
 

@@ -113,7 +113,6 @@ export class PopupClanInventoryDeco extends BasePopup {
         this.selectingUIDecoPlace = decoItem;
         this.iconDecoPlace.spriteFrame = ItemIconManager.getInstance().getIconDeco(decoItem.deco.decorItem.name.toString());
         this.nameDecoPlacert.string = `<outline color=#222222 width=1> ${decoItem.deco.decorItem.name}</outline>`;
-        console.log(decoItem.deco.id, "is Use",decoItem.deco.is_used);
         this.updatePetActionButtons(decoItem.deco.is_used);
     }
 
@@ -125,30 +124,31 @@ export class PopupClanInventoryDeco extends BasePopup {
     async onActionDeco(actionType: ActionType) {
         switch (actionType) {
             case ActionType.PLACE:
-                if(this.param.isHaveDeco){
-                    Constants.showConfirm("Vị trí này đã có trang trí rồi! Hãy cất nó đi trước khi đặt trang trí mới.");
-                }
-                this.HandleSendPetInFarm();
+                this.HandleSendPlaceDeco();
                 break;
             case ActionType.REMOVE:
-                this.HandleSendPetOutFarm();
+                this.HandleSendRemoveDeco();
                 break;
         }
     }
 
-    private async HandleSendPetInFarm() {
+    private async HandleSendPlaceDeco() {
         ServerManager.instance.sendPlaceDeco({
             estateId: this.param.estateId,
             placeholderId: this.param.dataDecoPlace.id,
-            decorItemId: this.selectingUIDecoPlace.deco.decorItem.id
+            decorItemId: this.selectingUIDecoPlace.deco.decorItem.id,
+            clanId: UserMeManager.Get.clan.id
         });
+        this.closePopup();
     }
 
-    private async HandleSendPetOutFarm() {
+    private async HandleSendRemoveDeco() {
         ServerManager.instance.sendRemoveDeco({
             estateId: this.param.estateId,
-            placeholderId: this.param.dataDecoPlace.id
+            placeholderId: this.param.dataDecoPlace.id,
+            clanId: UserMeManager.Get.clan.id
         });
+        this.closePopup();
     }
 }
 

@@ -35,14 +35,19 @@ export class MapDecorSlot extends Ability {
     }
 
     public spawnDecorPrefab(name: string) {
-        const prefab = this.decorPrefabs.find(p => p.name === name);
-        if (!prefab) {
-            return;
+
+        if (this.currentDecor) {
+            this.currentDecor.destroy();
+            this.currentDecor = null;
         }
+
+        const prefab = this.decorPrefabs.find(p => p.name === name);
+        if (!prefab) return;
 
         const node = instantiate(prefab);
         node.setParent(this.decoPosition);
         node.setPosition(0, 0, 0);
+
         this.currentDecor = node;
     }
 
@@ -56,7 +61,7 @@ export class MapDecorSlot extends Ability {
             this.targetClicker.active = true;
         }
     }
-  
+
     private get CanShowUI(): boolean {
         if (this.InteractTarget != null) {
             return Math.abs(Vec3.distance(this.InteractTarget.worldPosition, this.node.worldPosition)) <= this.interactDistance;
@@ -80,7 +85,6 @@ export class MapDecorSlot extends Ability {
         if (this.CanShowUI) {
             if (Date.now() - this.lastActionTime > this.interactDelay) {
                 this.lastActionTime = Date.now();
-                console.log("MAP deco slot: ",this.data.type);
                 PopupManager.getInstance().openAnimPopup("UI_ClanInventoryDeco", PopupClanInventoryDeco, {
                     dataDecoPlace: this.data,
                     estateId: this.estateId,

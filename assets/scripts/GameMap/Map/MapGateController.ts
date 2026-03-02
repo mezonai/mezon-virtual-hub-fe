@@ -26,9 +26,6 @@ export class MapGateController extends MapItemController {
 
         this.decorSlots.forEach(slot => {
             this.slotByIndex.set(slot.positionIndex, slot);
-            console.log(
-                `Register slot ${slot.positionIndex} for map ${this.mapIndex}`
-            );
         });
     }
 
@@ -57,11 +54,11 @@ export class MapGateController extends MapItemController {
     }
 
     private setLockedState() {
-        console.log(`Map ${this.mapIndex} LOCKED`);
+         // TODO: setLockedState LOCKED
     }
 
     private setUnlockedState() {
-        console.log(`Map ${this.mapIndex} UNLOCKED`);
+         // TODO: load scene hoặc trigger event Map
     }
 
     private loadPlaceholders(data: DecorPlaceholderDTO[]) {
@@ -129,8 +126,6 @@ export class MapGateController extends MapItemController {
     }
 
     private enterMap() {
-        console.log("Enter map:", this.recipe?.map?.name);
-        // TODO: load scene hoặc trigger event
-        // ServerManager.instance.sendEnterMap(this.recipe.map_id);
+        // TODO: load scene hoặc trigger event Map
     }
 }
