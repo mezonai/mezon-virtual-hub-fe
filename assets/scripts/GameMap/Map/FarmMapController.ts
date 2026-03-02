@@ -8,7 +8,7 @@ const { ccclass, property } = _decorator;
 export class FarmMapController extends MapManagerBase {
 
     getPositionPlayer(office: OfficePosition,roomStart:  RoomType): Vec3 {
-        return new Vec3(-1348, -345, 0);    
+        return new Vec3(-1348, -536, 0);    
     }
 }
 

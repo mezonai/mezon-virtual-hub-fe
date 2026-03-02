@@ -2,7 +2,7 @@
 import { FarmDTO, FarmSlotDTO, PlantState, ClanWarehouseSlotDTO, PlantDataDTO, PlantData, HarvestCountDTO } from "../Farm/EnumPlant";
 import { ClansData, PageInfo, ClansResponseDTO, MemberResponseDTO, UserClan, ClanContributorDTO, ClanContributorsResponseDTO, ClanFundResponseDTO, ClanFund, ClanRequestResponseDTO, MemberClanRequestDTO, ClanStatus, ClanActivityItemDTO, ClanActivityResponseDTO, RequestToJoinDTO } from "../Interface/DataMapAPI";
 
-import { BuyClanPetSlotDataDTO, ClanPetDTO, EventRewardDTO, EventType, Food, FragmentDTO, FragmentExchangeResponseDTO, FragmentItemDTO, InventoryDTO, Item, ItemClanType, ItemType, PetClanDTO, PetReward, QuestType, RecipeDTO, RewardItemDTO, RewardNewbieDTO, RewardType, SpinResultDTO, StatsConfigDTO, WeeklyRewardDTO, WheelDTO } from "../Model/Item";
+import { BuyClanPetSlotDataDTO, BuyMapResponseDTO, ClanDecorInventoryDTO, ClanEstateDTO, ClanPetDTO, DecorPlaceholderDTO, DecorType, EventRewardDTO, EventType, Food, FragmentDTO, FragmentExchangeResponseDTO, FragmentItemDTO, InventoryDTO, Item, ItemClanType, ItemType, PetClanDTO, PetReward, QuestType, RealEstateDTO, RecipeDTO, RewardItemDTO, RewardNewbieDTO, RewardType, SpinResultDTO, StatsConfigDTO, WeeklyRewardDTO, WheelDTO } from "../Model/Item";
 import { AnimalElementString, AnimalRarity, Element, PetBattleInfo, PetDTO, PlayerBattle, SkillBattleInfo, Species, TypeSkill } from "../Model/PetDTO";
 
 export default class ConvetData {
@@ -841,13 +841,52 @@ export default class ConvetData {
             item_id: recipe.item_id,
             pet_id: recipe.pet_id,
             plant_id: recipe.plant_id,
+            map_id: recipe.map_id,
+            decor_item_id: recipe.decor_item_id,
 
             item: recipe.item ?? null,
             pet: recipe.pet ?? null,
             pet_clan: recipe.pet_clan ?? null,
             plant: recipe.plant ?? null,
+            map: recipe.map ?? null,
+            decor_item: recipe.decor_item ?? null,
             ingredients: recipe.ingredients ?? [],
             current_slot_quantity: recipe.current_slot_quantity,
+        };
+    }
+
+    public static convertBuyMapResponse(apiData: any): BuyMapResponseDTO | null {
+        const data = apiData?.data;
+        if (!data) return null;
+
+        return {
+            clan_id: data.clan_id,
+            fund: data.fund,
+            item: {
+                id: data.item.id,
+                created_at: data.item.created_at,
+                updated_at: data.item.updated_at,
+
+                clan: {
+                    id: data.item.clan.id,
+                    name: data.item.clan.name,
+                    description: data.item.clan.description,
+                    fund: data.item.clan.fund,
+                    score: data.item.clan.score,
+                    weekly_score: data.item.clan.weekly_score,
+                    max_members: data.item.clan.max_members,
+                    max_slot_pet_active: data.item.clan.max_slot_pet_active
+                },
+
+                realEstate: {
+                    id: data.item.realEstate.id,
+                    name: data.item.realEstate.name,
+                    description: data.item.realEstate.description,
+                    index: data.item.realEstate.index,
+                    created_at: data.item.realEstate.created_at,
+                    updated_at: data.item.realEstate.updated_at,
+                }
+            }
         };
     }
 
@@ -968,5 +1007,103 @@ export default class ConvetData {
         };
     }
 
+    public static convertClanEstateList(rawList: any[]): ClanEstateDTO[] {
+        if (!rawList || !Array.isArray(rawList)) {
+            console.warn("Invalid clan estate list");
+            return [];
+        }
+        return rawList.map(item => this.convertClanEstate(item));
+    }
 
+    public static convertClanEstate(raw: any): ClanEstateDTO {
+
+        return {
+            id: raw.id ?? "",
+            clan: raw.clan,
+            realEstate: this.convertRealEstate(raw.realEstate)
+        };
+    }
+
+    public static convertRealEstate(raw: any): RealEstateDTO {
+
+        if (!raw) {
+            return {
+                id: "",
+                name: "",
+                description: "",
+                index: 0,
+                decorPlaceholders: []
+            };
+        }
+
+        return {
+            id: raw.id ?? "",
+            name: raw.name ?? "",
+            description: raw.description ?? "",
+            index: raw.index ?? 0,
+            decorPlaceholders: this.convertDecorPlaceholderList(raw.decorPlaceholders)
+        };
+    }
+
+    public static convertClanDecorInventory(raw: any): ClanDecorInventoryDTO {
+        return {
+            id: raw?.id ?? "",
+            is_used: !!raw?.is_used,
+
+            clan: {
+                id: raw?.clan?.id ?? "",
+                name: raw?.clan?.name ?? "",
+                description: raw?.clan?.description ?? "",
+                fund: Number(raw?.clan?.fund ?? 0),
+                score: Number(raw?.clan?.score ?? 0),
+                weekly_score: Number(raw?.clan?.weekly_score ?? 0),
+                max_members: Number(raw?.clan?.max_members ?? 0),
+                max_slot_pet_active: Number(raw?.clan?.max_slot_pet_active ?? 0),
+            },
+            decorItem: {
+                id: raw?.decorItem?.id ?? "",
+                type: raw?.decorItem?.type ?? "",
+                name: raw?.decorItem?.name ?? "",
+            }
+        };
+    }
+
+    public static convertClanDecorInventoryList(rawList: any[]): ClanDecorInventoryDTO[] {
+        if (!Array.isArray(rawList)) return [];
+        return rawList.map(item =>
+            this.convertClanDecorInventory(item)
+        );
+    }
+
+    public static convertDecorPlaceholderList(rawList: any[]): DecorPlaceholderDTO[] {
+
+        if (!rawList || !Array.isArray(rawList)) return [];
+
+        return rawList.map(ph => this.convertDecorPlaceholder(ph));
+    }
+
+    public static convertDecorPlaceholder(raw: any): DecorPlaceholderDTO {
+        return {
+            id: raw.id ?? "",
+            code: raw.code ?? "",
+            type: this.convertDecorType(raw.type),
+            position_index: raw.position_index ?? 0
+        };
+    }
+
+    public static convertDecorType(type: string): DecorType {
+        const DecorTypeMap: Record<string, DecorType> = {
+            TREE: DecorType.TREE,
+            WINDMILL: DecorType.WINDMILL,
+            TRUCK_LARGE: DecorType.TRUCK_LARGE,
+            FOOD_TRUCK: DecorType.FOOD_TRUCK,
+            PLAYGROUND: DecorType.PLAYGROUND,
+            POTTED_PLANT: DecorType.POTTED_PLANT,
+            GREENHOUSE: DecorType.GREENHOUSE
+        };
+        if (DecorTypeMap[type]) {
+            return DecorTypeMap[type];
+        }
+        return DecorType.TREE;
+    }
 }

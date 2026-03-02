@@ -4,11 +4,13 @@ import { PopupManager } from './PopupManager';
 import Utilities from '../utilities/Utilities';
 import { IngredientDTO } from '../Model/Item';
 import { InventoryClanUIItemMini } from '../Clan/InventoryClanUIItemMini';
+import { Color } from 'cc';
 const { ccclass, property } = _decorator;
 
 @ccclass('PopupBuyQuantityItem')
 export class PopupBuyQuantityItem extends BasePopup {
     @property({ type: Label }) priceBuyQuantity: Label = null;
+    @property({ type: Node }) nodeQuantity: Node = null;
     @property({ type: Button }) buttonLeft: Button = null
     @property({ type: RichText }) contentButtonLeft: RichText = null
     @property({ type: Button }) buttonRight: Button = null
@@ -33,13 +35,15 @@ export class PopupBuyQuantityItem extends BasePopup {
             this.closePopup();
             return;
         }
+        this.nodeQuantity.active = !param.isNotShowQuantity;
         const ingredients = param.ingredientDTO ?? [];
-        this.nodeItemExChange.active = ingredients.length > 0;
-        if (ingredients.length > 0 && this.nodeItemExChange.active) {
+        const displayIngredients = ingredients.filter(i => !(i.gold && i.gold > 0));
+        this.nodeItemExChange.active = displayIngredients.length > 0;
+        if (displayIngredients.length > 0 && this.nodeItemExChange.active) {
             this.ingredientNodes = [];
-            this.ingredientData = ingredients;
+            this.ingredientData = displayIngredients;
             this.svShopClanToolExChange.content.removeAllChildren();
-            for (const element of ingredients) {
+            for (const element of displayIngredients) {
                 const itemNode = instantiate(this.itemToolExChange);
                 const farmTool = itemNode.getComponent(InventoryClanUIItemMini);
                 if (farmTool) {
@@ -132,13 +136,22 @@ export class PopupBuyQuantityItem extends BasePopup {
         }
 
         const canBuy = this.checkEnoughIngredients(this.quantity);
+        if (!canBuy) {
+            this.priceBuyQuantity.color = new Color(255, 80, 80);
+        } else {
+            this.priceBuyQuantity.color = new Color(255, 255, 255);
+        }
         this.buttonRight.interactable = canBuy;
     }
 
     private checkEnoughIngredients(quantity: number): boolean {
         if (!this.ingredientData || this.ingredientData.length === 0) return true;
-
         return this.ingredientData.every(ing => {
+            if (ing.gold && ing.gold > 0) {
+                const needGold = ing.gold * quantity;
+                const haveGold = ing.current_quantity ?? 0;
+                return haveGold >= needGold;
+            }
             const need = ing.required_quantity * quantity;
             const have = ing.current_quantity ?? 0;
             return have >= need;
@@ -147,6 +160,7 @@ export class PopupBuyQuantityItem extends BasePopup {
 }
 
 export interface PopupBuyQuantityItemParam {
+    isNotShowQuantity: boolean;
     selectedItemPrice: number;
     ingredientDTO?: IngredientDTO[];
     spriteMoneyValue: SpriteFrame;

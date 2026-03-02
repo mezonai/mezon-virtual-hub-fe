@@ -28,6 +28,6 @@ export enum SubMap  {
 export enum Season {
     NONE = 0,
     LUNARNEWYEAR = 1,
-    CHIRISMAS = 2,
+    DECO = 2,
 }
 

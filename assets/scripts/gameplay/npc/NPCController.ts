@@ -52,8 +52,13 @@ export class NPCController extends Component {
                 .then(() => {
                     this.inited = true;
                 })
-            this.characters[0].active = Constants.season != Season.LUNARNEWYEAR;
-            this.characters[1].active = Constants.season == Season.LUNARNEWYEAR;
+            this.characters.forEach((char) => char.active = false);
+
+            if (this.characters[Constants.season]) {
+                this.characters[Constants.season].active = true;
+            } else {
+                this.characters[0].active = true;
+            }
         }
         else {
             this.node.active = false;

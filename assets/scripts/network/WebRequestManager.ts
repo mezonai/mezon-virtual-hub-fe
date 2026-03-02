@@ -7,7 +7,7 @@ import { AssignViceLeadersDto as AssignViceLeadersDTO, ClanActivityResponseDTO, 
 import { ServerManager } from '../core/ServerManager';
 import { PopupSelectionMini, SelectionMiniParam } from '../PopUp/PopupSelectionMini';
 import { PopupManager } from '../PopUp/PopupManager';
-import { BuyClanPetSlotDataDTO, BuyItemPayload, ClanPetDTO, EventRewardDTO, FragmentDTO, FragmentExchangeResponseDTO, FragmentItemDTO, InventoryDTO, Item, ItemDTO, RecipeDTO, RewardItemDTO, RewardNewbieDTO, StatsConfigDTO, WeeklyRewardDTO, WheelDTO } from '../Model/Item';
+import { BuyClanPetSlotDataDTO, BuyItemPayload, BuyMapResponseDTO, ClanDecorInventoryDTO, ClanEstateDTO, ClanPetDTO, EventRewardDTO, FragmentDTO, FragmentExchangeResponseDTO, FragmentItemDTO, InventoryDTO, Item, ItemDTO, RecipeDTO, RewardItemDTO, RewardNewbieDTO, StatsConfigDTO, WeeklyRewardDTO, WheelDTO } from '../Model/Item';
 import { GameManager } from '../core/GameManager';
 import { UpgradePetResponseDTO, PetDTO } from '../Model/PetDTO';
 import { Constants } from '../utilities/Constants';
@@ -648,7 +648,7 @@ export class WebRequestManager extends Component {
         });
     }
 
-     public postBuyPetClanSlotAsync(recipeId: string): Promise<BuyClanPetSlotDataDTO> {
+    public postBuyPetClanSlotAsync(recipeId: string): Promise<BuyClanPetSlotDataDTO> {
         return new Promise((resolve) => {
             this.postBuyPetClanSlot(recipeId,
                 (response) => {
@@ -659,6 +659,46 @@ export class WebRequestManager extends Component {
         });
     }
 
+    public postBuyMapFarmAsync(recipeId: string): Promise<BuyMapResponseDTO> {
+        return new Promise((resolve) => {
+            this.postBuyMapFarm(recipeId,
+                (response) => {
+                    const data = ConvetData.convertBuyMapResponse(response);
+                    resolve(data);
+                },
+                () => { resolve(null) });
+        });
+    }
+
+    public getAllClanEstateAsync(type: string): Promise<ClanEstateDTO[]> {
+        return new Promise((resolve, reject) => {
+            this.getAllClanEstate(
+                type,
+                (response) => {
+                    const clanEstateDTO = ConvetData.convertClanEstateList(response.data);
+                    resolve(clanEstateDTO);
+                },
+                (error) => {
+                    resolve(null);
+                }
+            );
+        });
+    }
+
+    public getClanDecoInventoryAsync(clan_id: string, type: string): Promise<ClanDecorInventoryDTO[]> {
+        return new Promise((resolve, reject) => {
+            this.getClanDecoInventory(
+                clan_id, type,
+                (response) => {
+                    const clanEstateDTO = ConvetData.convertClanDecorInventoryList(response.data);
+                    resolve(clanEstateDTO);
+                },
+                (error) => {
+                    resolve(null);
+                }
+            );
+        });
+    }
 
     public getQRMezon(successCallback, errorCallback) {
         APIManager.getData(this.combineWithSlash(APIConstant.QR_MEZON), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
@@ -966,6 +1006,19 @@ export class WebRequestManager extends Component {
         APIManager.postData(this.combineWithSlash(APIConstant.CLAN_ANIMALS, APIConstant.BUY_SLOT_CLAN_PET, recipe_id), {}, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
+    public postBuyMapFarm(recipe_id, successCallback, errorCallback) {
+        APIManager.postData(this.combineWithSlash(APIConstant.CLAN_ESTATE, APIConstant.BUY_MAP, recipe_id), {}, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    }
+
+    public getAllClanEstate(clan_id, successCallback, errorCallback) {
+        let url = `${APIConstant.CLAN_ESTATE}?clan_id=${clan_id}`;
+        APIManager.getData(url, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    }
+
+    public getClanDecoInventory(clan_id, type, successCallback, errorCallback) {
+        let url = `${APIConstant.CLAN_DECO_INVENTORY}?clan_id=${clan_id}&type=${type}`;
+        APIManager.getData(url, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    }
 
 
     private errorMessageMap: Map<number, string> = new Map([

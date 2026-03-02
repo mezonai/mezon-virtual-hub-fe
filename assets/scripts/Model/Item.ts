@@ -161,6 +161,8 @@ export enum ItemType {
     PET_CLAN_SLOT = 'pet_clan_slot',
     PETFRAGMENT = 'pet_fragment',
     PET = 'pet',
+    MAP = 'map',
+    DECO_ITEM = 'deco_item',
 }
 
 export enum InventoryType {
@@ -316,13 +318,75 @@ export interface RecipeDTO {
   item_id: string | null;
   pet_id: string | null;
   plant_id: string | null;
+  map_id?: string | null;
+  decor_item_id?: string | null;
 
   item?: Item | null;
   pet?: PetDTO | null;
   pet_clan?: PetClanDTO | null;
   plant?: PlantDataDTO | null;
+  map?: MapDTO | null;
+  decor_item?: DecorItemDTO | null;
   ingredients: IngredientDTO[];
   current_slot_quantity?: number;
+}
+
+export interface ClanDecorInventoryDTO {
+    id: string;
+    is_used: boolean;
+    clan: ClansData;
+    decorItem: DecorItemDTO;
+}
+
+export interface DecorItemDTO
+{
+  id: string;
+  name: string;
+  type: string;
+  current_decor_item_quantity?: number;
+  max_decor_item_quantity?: number;
+}
+
+export interface MapDTO {
+  id: string;
+  name: string;
+  description: string;
+  index: number;
+  current_map_quantity: number;
+  max_map_quantity: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface ClanEstateDTO {
+    id: string;
+    clan: ClansData;
+    realEstate: RealEstateDTO;
+}
+
+export interface RealEstateDTO {
+    id: string;
+    name: string;
+    description: string;
+    index: number;
+    decorPlaceholders: DecorPlaceholderDTO[];
+}
+
+export interface DecorPlaceholderDTO {
+    id: string;
+    code: string;
+    type: DecorType;
+    position_index: number;
+}
+
+export enum DecorType {
+    TREE = "TREE",
+    WINDMILL = "WINDMILL",
+    TRUCK_LARGE = "TRUCK_LARGE",
+    FOOD_TRUCK = "FOOD_TRUCK",
+    PLAYGROUND = "PLAYGROUND",
+    POTTED_PLANT = "POTTED_PLANT",
+    GREENHOUSE = "GREENHOUSE"
 }
 
 export enum RecipeType {
@@ -398,3 +462,26 @@ export interface BuyClanPetSlotDataDTO {
   fund: number;
 }
 
+export interface ClanRealEstateDTO {
+  id: string;
+  name: string;
+  description: string;
+  index: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ClanEstateItemDTO {
+  id: string;
+  created_at: string;
+  updated_at: string;
+
+  clan: ClansData;
+  realEstate: ClanRealEstateDTO;
+}
+
+export interface BuyMapResponseDTO {
+  clan_id: string;
+  fund: number;
+  item: ClanEstateItemDTO;
+}
