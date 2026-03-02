@@ -1099,7 +1099,8 @@ export default class ConvetData {
             FOOD_TRUCK: DecorType.FOOD_TRUCK,
             PLAYGROUND: DecorType.PLAYGROUND,
             POTTED_PLANT: DecorType.POTTED_PLANT,
-            GREENHOUSE: DecorType.GREENHOUSE
+            GREENHOUSE: DecorType.GREENHOUSE,
+            WATERDECO: DecorType.WATERDECO
         };
         if (DecorTypeMap[type]) {
             return DecorTypeMap[type];

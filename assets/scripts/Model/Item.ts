@@ -386,7 +386,8 @@ export enum DecorType {
     FOOD_TRUCK = "FOOD_TRUCK",
     PLAYGROUND = "PLAYGROUND",
     POTTED_PLANT = "POTTED_PLANT",
-    GREENHOUSE = "GREENHOUSE"
+    GREENHOUSE = "GREENHOUSE",
+    WATERDECO = "WATERDECO",
 }
 
 export enum RecipeType {
