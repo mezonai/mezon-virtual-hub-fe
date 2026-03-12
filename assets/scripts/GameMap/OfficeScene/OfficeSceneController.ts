@@ -4,7 +4,7 @@ import { UserManager } from '../../core/UserManager';
 import { SceneManagerController } from '../../utilities/SceneManagerController';
 import { SceneName } from '../../utilities/SceneName';
 import { ServerManager } from '../../core/ServerManager';
-import { OfficePosition, Season } from '../OfficePosition';
+import { FarmSeason, OfficePosition, Season } from '../OfficePosition';
 import { MapManagerBase } from '../Map/MapManagerBase';
 import { ResourceManager } from '../../core/ResourceManager';
 import { UserMeManager } from '../../core/UserMeManager';
@@ -39,11 +39,11 @@ export class OfficeSceneController extends Component {
     protected onDestroy(): void {
         OfficeSceneController._instance = null;
     }
-    public async LoadData(): Promise<boolean> {
+    public async LoadData(farmId?: number): Promise<boolean> {
         const param = SceneManagerController.getSceneParam<OfficeSenenParameter>();
         if (param != null) {
             let nameRoom = this.convertNameRoom(param.idclan, param.roomEnds);
-            const map = this.createMap(nameRoom, param.currentOffice);
+            const map = this.createMap(nameRoom, param.currentOffice, farmId);
             map.setParent(this.mapParent);
             let mapManager = map.getComponent("MapManagerBase") as MapManagerBase;
             if (mapManager) {
@@ -100,7 +100,7 @@ export class OfficeSceneController extends Component {
     //         this.mapOffice[this.getOffice(currentOffice, nameRoom)]
     //     );
     // }
-    private createMap(nameRoom: string, currentOffice: number) {
+    private createMap(nameRoom: string, currentOffice: number, farmId?: number) {
         const isFarm = nameRoom.includes('-farm');
         const isOffice = nameRoom.includes('-office');
         const isShop = nameRoom.includes('-shop');
@@ -119,7 +119,7 @@ export class OfficeSceneController extends Component {
         }
 
         return instantiate(
-            isFarm ? seasonMap[1] : seasonMap[0]
+            isFarm ? (farmId !== undefined ? seasonMap[farmId] : seasonMap[1]) : seasonMap[0]
         );
     }
 
@@ -157,6 +157,21 @@ export class OfficeSceneController extends Component {
         else {
             return 1;
         }
+    }
+
+    getFarm(brach: FarmSeason, nameRoom: string): number {
+    if (nameRoom.includes("-farm")) {
+        switch (brach) {
+            case FarmSeason.SPRING:
+                return 1;
+            case FarmSeason.SUMMER:
+                return 2;
+            case FarmSeason.FALL:
+                return 3;
+            case FarmSeason.WINTER:
+                return 4;
+        }
+    }
     }
 
     convertNameRoom(idclan: string, roomType: RoomType): string {
