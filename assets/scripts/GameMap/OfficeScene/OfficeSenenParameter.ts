@@ -7,13 +7,15 @@ export class OfficeSenenParameter{
     roomEnds: RoomType;
     nameRoomServer: string;
     idclan: string;
+    farmId?: number;
 
-    constructor(currentOffice: OfficePosition, roomStart: RoomType, roomEnds: RoomType, nameRoom: string, idclan: string) {
+    constructor(currentOffice: OfficePosition, roomStart: RoomType, roomEnds: RoomType, nameRoom: string, idclan: string, farmId?: number) {
         this.currentOffice = currentOffice;
         this.roomStart = roomStart;
         this.roomEnds = roomEnds;
         this.nameRoomServer = nameRoom;
         this.idclan = idclan;
+        this.farmId = farmId;
     }   
 }
 
