@@ -30,8 +30,19 @@ export class MapDecorSlot extends Ability {
         if (!this.targetClicker) {
             this.targetClicker = this.node;
         }
-        this.targetClicker.off(Node.EventType.TOUCH_START, this.onTouchStart, this);
-        this.targetClicker.on(Node.EventType.TOUCH_START, this.onTouchStart, this);
+    }
+
+    protected onEnable() {
+        if (this.targetClicker) {
+            this.targetClicker.off(Node.EventType.TOUCH_START, this.onTouchStart, this);
+            this.targetClicker.on(Node.EventType.TOUCH_START, this.onTouchStart, this);
+        }
+    }
+
+    protected onDisable() {
+        if (this.targetClicker) {
+            this.targetClicker.off(Node.EventType.TOUCH_START, this.onTouchStart, this);
+        }
     }
 
     public spawnDecorPrefab(name: string) {
@@ -67,12 +78,6 @@ export class MapDecorSlot extends Ability {
             return Math.abs(Vec3.distance(this.InteractTarget.worldPosition, this.node.worldPosition)) <= this.interactDistance;
         }
         return false;
-    }
-
-    protected onDisable() {
-        if (this.targetClicker) {
-            this.targetClicker.off(Node.EventType.TOUCH_START, this.onTouchStart, this);
-        }
     }
 
     onTouchStart(event) {
