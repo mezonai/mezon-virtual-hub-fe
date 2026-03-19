@@ -1,16 +1,15 @@
-import { _decorator } from 'cc';
+import { _decorator, SpriteFrame, Color, Sprite, IPhysics2DContact, Collider2D } from 'cc';
 import { ClanEstateDTO, DecorPlaceholderDTO, RecipeDTO, RewardType } from '../../Model/Item';
 import { Constants } from '../../utilities/Constants';
 import { WebRequestManager } from '../../network/WebRequestManager';
-import { Collider2D } from 'cc';
 import { InteracterLabel } from '../../PopUp/InteracterLabel';
-import { IPhysics2DContact } from 'cc';
 import { PopupManager } from '../../PopUp/PopupManager';
 import { ItemIconManager } from '../../utilities/ItemIconManager';
 import { PopupBuyQuantityItem, PopupBuyQuantityItemParam } from '../../PopUp/PopupBuyQuantityItem';
 import { UserMeManager } from '../../core/UserMeManager';
 import { MapItemController } from '../../gameplay/MapItem/MapItemController';
 import { MapDecorSlot } from './MapDecorSlot';
+import { OfficeSceneController } from '../OfficeScene/OfficeSceneController';
 const { ccclass, property } = _decorator;
 
 @ccclass('MapGateController')
@@ -21,9 +20,15 @@ export class MapGateController extends MapItemController {
     private estateData: ClanEstateDTO | null = null;
     private slotByIndex: Map<number, MapDecorSlot> = new Map();
 
+    @property(Sprite) gateStatus: Sprite = null;
+    @property(SpriteFrame) unlockedSprite: SpriteFrame = null;
+    @property(SpriteFrame) lockedSprite: SpriteFrame = null;
+
+    private colorLocked = new Color(255, 255, 255);
+    private colorUnlocked = new Color(51, 0, 255);
+
     start() {
         this.slotByIndex.clear();
-
         this.decorSlots.forEach(slot => {
             this.slotByIndex.set(slot.positionIndex, slot);
         });
@@ -54,11 +59,15 @@ export class MapGateController extends MapItemController {
     }
 
     private setLockedState() {
-         // TODO: setLockedState LOCKED
+        // TODO: setLockedState LOCKED
+        this.gateStatus.spriteFrame = this.lockedSprite;
+        this.gateStatus.color = this.colorLocked;
     }
 
     private setUnlockedState() {
-         // TODO: load scene hoặc trigger event Map
+        // TODO: load scene hoặc trigger event Map
+        this.gateStatus.spriteFrame = this.unlockedSprite;
+        this.gateStatus.color = this.colorUnlocked;
     }
 
     private loadPlaceholders(data: DecorPlaceholderDTO[]) {
@@ -71,11 +80,14 @@ export class MapGateController extends MapItemController {
     }
 
     protected override async interact(playerSessionId: string) {
+        console.log("Interact with MapGateController")
+
         if (!UserMeManager.Get.clan || !UserMeManager.Get.clan.id || UserMeManager.Get.clan.id !== UserMeManager.CurrentOffice.idclan) {
             PopupManager.getInstance().closeAllPopups();
             Constants.showConfirm("Bạn cần thuộc văn phòng để tương tác mở rộng nông trại");
             return;
         }
+        
         if (!this.recipe || !this.recipe.map) return;
         const isUnlocked =
             this.recipe.map.current_map_quantity >=
@@ -84,8 +96,10 @@ export class MapGateController extends MapItemController {
             this.enterMap();
             return;
         }
+
         const ingredients = this.recipe.ingredients ?? [];
         const goldIngredient = ingredients.find(i => i.gold && i.gold > 0);
+
         PopupManager.getInstance().openAnimPopup(
             'PopupBuyQuantityItem',
             PopupBuyQuantityItem,
@@ -101,15 +115,16 @@ export class MapGateController extends MapItemController {
                 onActionClose: () => (this.isOpenPopUp = false)
             }
         );
+        
         this.handleEndContact(null, null, null);
     }
 
-    protected async handleBeginContact(selfCollider: Collider2D, otherCollider: Collider2D, contact: IPhysics2DContact | null) {
-        this.noticePopup = await PopupManager.getInstance().openPopup('InteracterLabel', InteracterLabel, {
-            keyBoard: this.interactKey,
-            action: `Để đến nông trại ${Constants.getGardenName(this.recipe.map.name)}`,
-        });
-    }
+    // protected async handleBeginContact(selfCollider: Collider2D, otherCollider: Collider2D, contact: IPhysics2DContact | null) {
+    //     this.noticePopup = await PopupManager.getInstance().openPopup('InteracterLabel', InteracterLabel, {
+    //         keyBoard: this.interactKey,
+    //         action: `Để đến nông trại ${Constants.getGardenName(this.recipe.map.name)}`,
+    //     });
+    // }
 
     private async tryPurchase() {
         if (!this.recipe) return;
@@ -118,6 +133,7 @@ export class MapGateController extends MapItemController {
             Constants.showConfirm("Mở map thành công!");
             if (this.recipe.map) {
                 this.recipe.map.current_map_quantity = this.recipe.map.max_map_quantity;
+                this.setUnlockedState();
             }
 
         } catch (e) {
@@ -126,6 +142,7 @@ export class MapGateController extends MapItemController {
     }
 
     private enterMap() {
-        // TODO: load scene hoặc trigger event Map
+        
+        OfficeSceneController.instance.LoadData();
     }
 }

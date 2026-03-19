@@ -8,9 +8,10 @@ import { UserManager } from '../../core/UserManager';
 import { OfficeSenenParameter } from '../../GameMap/OfficeScene/OfficeSenenParameter';
 import { Constants } from '../../utilities/Constants';
 import { RoomType } from '../../GameMap/RoomType';
-import { OfficePosition } from '../../GameMap/OfficePosition';
+import { FarmSeason, OfficePosition } from '../../GameMap/OfficePosition';
 import { UserMeManager } from '../../core/UserMeManager';
 import { WebRequestManager } from '../../network/WebRequestManager';
+import { OfficeSceneController } from '../../GameMap/OfficeScene/OfficeSceneController';
 const { ccclass, property } = _decorator;
 
 @ccclass('InteractTeleport')
@@ -21,12 +22,22 @@ export class InteractTeleport extends Interactable {
     officeChange: OfficePosition = OfficePosition.NONE;// Office sẽ đến. None = không thay đổi Office
     @property({ type: Enum(RoomType) })
     roomTypeTeleport: RoomType = RoomType.NONE;// Room sẽ được dịch chuyển đến
+    @property({ type: Enum(FarmSeason) })
+    farmSeason: FarmSeason = FarmSeason.SPRING;// Mùa vụ của room
+    
     currentOffice: OfficeSenenParameter;
+
+    
     protected async interact(playerSessionId: string) {
+        console.log("Interact with InteractTeleport");
+
         if (!this.isPlayerNearby) return;
-        await this.moveTeleport();
+        this.moveTeleport();
     }
+
     protected override async handleBeginContact(selfCollider: Collider2D, otherCollider: Collider2D, contact: IPhysics2DContact | null) {
+        this.setNewOfficeSceneParams()
+
         this.noticePopup = await PopupManager.getInstance().openPopup('InteracterLabel', InteracterLabel, {
             keyBoard: this.interactKey,
             action: this.getRoomNameTeleport(this.roomTypeTeleport),
@@ -72,6 +83,7 @@ export class InteractTeleport extends Interactable {
             SceneManagerController.loadScene(SceneName.SCENE_GAME_MAP, param)
             return;
         }
+
         if (this.officeChange == OfficePosition.NONE || this.officeChange == this.currentOffice.currentOffice) {
             this.loadOfficeMap(this.currentOffice.currentOffice);
         }
@@ -107,11 +119,25 @@ export class InteractTeleport extends Interactable {
         this.loadOfficeMap(this.officeChange);
     }
 
-    private loadOfficeMap(officeMoved: OfficePosition) {
+    private async loadOfficeMap(officeMoved: OfficePosition) {
+        let param = this.setNewOfficeSceneParams();
+
+        SceneManagerController.loadScene(SceneName.SCENE_OFFICE, param)
+    }
+
+    public setNewOfficeSceneParams(){
         const previousOffice = UserMeManager.CurrentOffice;
         const previousRoomType = UserMeManager.CurrentRoomType;
-        const param = new OfficeSenenParameter(previousOffice.currentOffice, previousRoomType, this.roomTypeTeleport, Constants.convertNameRoom(previousOffice.currentOffice, this.roomTypeTeleport), UserMeManager.CurrentOffice.idclan);
-        SceneManagerController.loadScene(SceneName.SCENE_OFFICE, param)
+        const param = new OfficeSenenParameter(
+            previousOffice.currentOffice, 
+            previousRoomType, 
+            this.roomTypeTeleport, 
+            Constants.convertNameRoom(previousOffice.currentOffice, this.roomTypeTeleport), 
+            UserMeManager.CurrentOffice.idclan, 
+            this.farmSeason
+        );
+
+        return param;
     }
 }
 

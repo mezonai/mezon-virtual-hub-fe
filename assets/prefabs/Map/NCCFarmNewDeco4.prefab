@@ -1887,7 +1887,7 @@
     "propertyPath": [
       "roomTypeTeleport"
     ],
-    "value": 0
+    "value": 6
   },
   {
     "__type__": "CCPropertyOverrideInfo",
@@ -2335,7 +2335,7 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 41.49963458575054,
+      "width": 41.49936760585305,
       "height": 18.9
     },
     "_anchorPoint": {
@@ -3365,7 +3365,7 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 41.49963458575054,
+      "width": 41.49936760585305,
       "height": 18.9
     },
     "_anchorPoint": {
@@ -8987,13 +8987,13 @@
     "_restitution": 0,
     "_offset": {
       "__type__": "cc.Vec2",
-      "x": 14.5,
-      "y": -7.4
+      "x": -80.6,
+      "y": 4.8
     },
     "_size": {
       "__type__": "cc.Size",
-      "width": 573.7,
-      "height": 15.5
+      "width": 443.9,
+      "height": 34.1
     },
     "_id": ""
   },
@@ -9023,7 +9023,7 @@
       "__id__": 385
     },
     "_children": [],
-    "_active": true,
+    "_active": false,
     "_components": [
       {
         "__id__": 447
@@ -9148,7 +9148,7 @@
       "__id__": 385
     },
     "_children": [],
-    "_active": true,
+    "_active": false,
     "_components": [
       {
         "__id__": 453
@@ -9362,13 +9362,13 @@
     "_restitution": 0,
     "_offset": {
       "__type__": "cc.Vec2",
-      "x": 2,
-      "y": 51.7
+      "x": 10.8,
+      "y": 24.3
     },
     "_size": {
       "__type__": "cc.Size",
-      "width": 356.9,
-      "height": 75.9
+      "width": 374.5,
+      "height": 130.8
     },
     "_id": ""
   },
@@ -9487,12 +9487,12 @@
     "_restitution": 0,
     "_offset": {
       "__type__": "cc.Vec2",
-      "x": 22.2,
+      "x": 281.5,
       "y": 7.7
     },
     "_size": {
       "__type__": "cc.Size",
-      "width": 60.6,
+      "width": 579.2,
       "height": 30.2
     },
     "_id": ""
@@ -9648,7 +9648,7 @@
       "__id__": 385
     },
     "_children": [],
-    "_active": true,
+    "_active": false,
     "_components": [
       {
         "__id__": 477
@@ -10901,6 +10901,7 @@
     "landParent2": {
       "__id__": 10
     },
+    "mapGates": [],
     "_id": ""
   },
   {
@@ -10938,6 +10939,9 @@
       },
       {
         "__id__": 562
+      },
+      {
+        "__id__": 565
       }
     ],
     "nestedPrefabInstanceRoots": [
@@ -11164,6 +11168,36 @@
     "__type__": "cc.TargetInfo",
     "localID": [
       "540bhOEhhHh5X7Wx6StXHh"
+    ]
+  },
+  {
+    "__type__": "cc.TargetOverrideInfo",
+    "source": {
+      "__id__": 38
+    },
+    "sourceInfo": {
+      "__id__": 566
+    },
+    "propertyPath": [
+      "collider"
+    ],
+    "target": {
+      "__id__": 38
+    },
+    "targetInfo": {
+      "__id__": 567
+    }
+  },
+  {
+    "__type__": "cc.TargetInfo",
+    "localID": [
+      "e7But0YnJAlJRlaABsk1dr"
+    ]
+  },
+  {
+    "__type__": "cc.TargetInfo",
+    "localID": [
+      "e9/D6eeQ1EBJGQAL5nnwUF"
     ]
   }
 ]
