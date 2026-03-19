@@ -119,12 +119,12 @@ export class MapGateController extends MapItemController {
         this.handleEndContact(null, null, null);
     }
 
-    // protected async handleBeginContact(selfCollider: Collider2D, otherCollider: Collider2D, contact: IPhysics2DContact | null) {
-    //     this.noticePopup = await PopupManager.getInstance().openPopup('InteracterLabel', InteracterLabel, {
-    //         keyBoard: this.interactKey,
-    //         action: `Để đến nông trại ${Constants.getGardenName(this.recipe.map.name)}`,
-    //     });
-    // }
+    protected async handleBeginContact(selfCollider: Collider2D, otherCollider: Collider2D, contact: IPhysics2DContact | null) {
+        this.noticePopup = await PopupManager.getInstance().openPopup('InteracterLabel', InteracterLabel, {
+            keyBoard: this.interactKey,
+            action: `Để đến nông trại ${Constants.getGardenName(this.recipe.map.name)}`,
+        });
+    }
 
     private async tryPurchase() {
         if (!this.recipe) return;
