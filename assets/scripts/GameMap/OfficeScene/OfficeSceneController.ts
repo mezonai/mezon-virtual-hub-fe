@@ -40,8 +40,10 @@ export class OfficeSceneController extends Component {
         OfficeSceneController._instance = null;
     }
     public async LoadData(): Promise<boolean> {
+
         const param = SceneManagerController.getSceneParam<OfficeSenenParameter>();
         if (param != null) {
+
             let nameRoom = this.convertNameRoom(param.idclan, param.roomEnds);
             const map = this.createMap(nameRoom, param.currentOffice, param.farmId);
             map.setParent(this.mapParent);
@@ -53,6 +55,7 @@ export class OfficeSceneController extends Component {
                 console.error("MapManagerBase not found on instantiated map!");
                 return false;
             }
+
             await ServerManager.instance.init(nameRoom);
         }
         else {

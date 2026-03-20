@@ -102,10 +102,12 @@ export class MapItemController extends Interactable {
 
     protected override async handleBeginContact(selfCollider: Collider2D, otherCollider: Collider2D, contact: IPhysics2DContact | null) {
         if (this.canShowPopup()) {
-            this.noticePopup = await PopupManager.getInstance().openPopup('InteracterLabel', InteracterLabel, {
-                keyBoard: this.interactKey,
-                action: InteractMessageMapping[this.type + MapItemAction.NOTICE]
-            });
+            if(this.type !== MapItemType.NONE){
+                this.noticePopup = await PopupManager.getInstance().openPopup('InteracterLabel', InteracterLabel, {
+                    keyBoard: this.interactKey,
+                    action: InteractMessageMapping[this.type + MapItemAction.NOTICE]
+                });
+            } 
         }
     }
 

@@ -1,4 +1,5 @@
 export enum MapItemType {
+    NONE = 0,
     GOKART = 1,
     DOOR = 2,
     BUY_SHOP = 3,

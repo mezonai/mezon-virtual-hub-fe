@@ -1,4 +1,4 @@
-import { _decorator, SpriteFrame, Color, Sprite, IPhysics2DContact, Collider2D } from 'cc';
+import { _decorator, SpriteFrame, Color, Sprite, IPhysics2DContact, Collider2D, director } from 'cc';
 import { ClanEstateDTO, DecorPlaceholderDTO, RecipeDTO, RewardType } from '../../Model/Item';
 import { Constants } from '../../utilities/Constants';
 import { WebRequestManager } from '../../network/WebRequestManager';
@@ -10,6 +10,8 @@ import { UserMeManager } from '../../core/UserMeManager';
 import { MapItemController } from '../../gameplay/MapItem/MapItemController';
 import { MapDecorSlot } from './MapDecorSlot';
 import { OfficeSceneController } from '../OfficeScene/OfficeSceneController';
+import { SET_OFFICE_PARAM_DONE, WAITING_EVENT_MESSAGE } from '../../gameplay/Interact/InteractTeleport';
+import { FarmController } from '../../Farm/FarmController';
 const { ccclass, property } = _decorator;
 
 @ccclass('MapGateController')
@@ -32,11 +34,15 @@ export class MapGateController extends MapItemController {
         this.decorSlots.forEach(slot => {
             this.slotByIndex.set(slot.positionIndex, slot);
         });
+
+        this.setLockedState();
     }
 
     public setup(param: { estate: ClanEstateDTO | null, recipe: RecipeDTO | null }) {
+
         this.estateData = param.estate;
         this.recipe = param.recipe;
+
         if (this.estateData) {
             this.setUnlockedState();
             this.loadPlaceholders(this.estateData.realEstate.decorPlaceholders);
@@ -59,15 +65,17 @@ export class MapGateController extends MapItemController {
     }
 
     private setLockedState() {
-        // TODO: setLockedState LOCKED
-        this.gateStatus.spriteFrame = this.lockedSprite;
-        this.gateStatus.color = this.colorLocked;
+        if(this.gateStatus && this.lockedSprite){
+            this.gateStatus.spriteFrame = this.lockedSprite;
+            this.gateStatus.color = this.colorLocked;
+        }
     }
 
     private setUnlockedState() {
-        // TODO: load scene hoặc trigger event Map
-        this.gateStatus.spriteFrame = this.unlockedSprite;
-        this.gateStatus.color = this.colorUnlocked;
+        if(this.gateStatus && this.unlockedSprite){
+            this.gateStatus.spriteFrame = this.unlockedSprite;
+            this.gateStatus.color = this.colorUnlocked;
+        }
     }
 
     private loadPlaceholders(data: DecorPlaceholderDTO[]) {
@@ -80,8 +88,6 @@ export class MapGateController extends MapItemController {
     }
 
     protected override async interact(playerSessionId: string) {
-        console.log("Interact with MapGateController")
-
         if (!UserMeManager.Get.clan || !UserMeManager.Get.clan.id || UserMeManager.Get.clan.id !== UserMeManager.CurrentOffice.idclan) {
             PopupManager.getInstance().closeAllPopups();
             Constants.showConfirm("Bạn cần thuộc văn phòng để tương tác mở rộng nông trại");
@@ -92,39 +98,43 @@ export class MapGateController extends MapItemController {
         const isUnlocked =
             this.recipe.map.current_map_quantity >=
             this.recipe.map.max_map_quantity;
-        if (isUnlocked) {
-            this.enterMap();
+
+        if (!isUnlocked) {
+            const ingredients = this.recipe.ingredients ?? [];
+            const goldIngredient = ingredients.find(i => i.gold && i.gold > 0);
+
+            PopupManager.getInstance().openAnimPopup(
+                'PopupBuyQuantityItem',
+                PopupBuyQuantityItem,
+                <PopupBuyQuantityItemParam>{
+                    isNotShowQuantity: true,
+                    selectedItemPrice: goldIngredient.gold,
+                    ingredientDTO: ingredients,
+                    spriteMoneyValue: ItemIconManager.getInstance().getIconPurchaseMethod(RewardType.GOLD),
+                    textButtonLeft: 'Thôi',
+                    textButtonRight: 'Mua',
+                    onActionButtonLeft: () => {/*director.emit(EVENT_GATE_PROCESS)*/},
+                    onActionButtonRight: () => this.tryPurchase(),
+                    onActionClose: () => {
+                        //director.emit(EVENT_GATE_PROCESS);
+                        this.isOpenPopUp = false
+                    }
+                }
+            );
+            
+            this.handleEndContact(null, null, null);
             return;
         }
 
-        const ingredients = this.recipe.ingredients ?? [];
-        const goldIngredient = ingredients.find(i => i.gold && i.gold > 0);
-
-        PopupManager.getInstance().openAnimPopup(
-            'PopupBuyQuantityItem',
-            PopupBuyQuantityItem,
-            <PopupBuyQuantityItemParam>{
-                isNotShowQuantity: true,
-                selectedItemPrice: goldIngredient.gold,
-                ingredientDTO: ingredients,
-                spriteMoneyValue: ItemIconManager.getInstance().getIconPurchaseMethod(RewardType.GOLD),
-                textButtonLeft: 'Thôi',
-                textButtonRight: 'Mua',
-                onActionButtonLeft: () => {},
-                onActionButtonRight: () => this.tryPurchase(),
-                onActionClose: () => (this.isOpenPopUp = false)
-            }
-        );
-        
-        this.handleEndContact(null, null, null);
+        await this.proceedToTeleport();
     }
 
-    protected async handleBeginContact(selfCollider: Collider2D, otherCollider: Collider2D, contact: IPhysics2DContact | null) {
-        this.noticePopup = await PopupManager.getInstance().openPopup('InteracterLabel', InteracterLabel, {
-            keyBoard: this.interactKey,
-            action: `Để đến nông trại ${Constants.getGardenName(this.recipe.map.name)}`,
-        });
-    }
+    // protected async handleBeginContact(selfCollider: Collider2D, otherCollider: Collider2D, contact: IPhysics2DContact | null) {
+    //     this.noticePopup = await PopupManager.getInstance().openPopup('InteracterLabel', InteracterLabel, {
+    //         keyBoard: this.interactKey,
+    //         action: `Để đến nông trại ${Constants.getGardenName(this.recipe.map.name)}`,
+    //     });
+    // }
 
     private async tryPurchase() {
         if (!this.recipe) return;
@@ -134,15 +144,53 @@ export class MapGateController extends MapItemController {
             if (this.recipe.map) {
                 this.recipe.map.current_map_quantity = this.recipe.map.max_map_quantity;
                 this.setUnlockedState();
-            }
 
+                FarmController.instance.CheckUpdateNewUnlockMap();
+            }
         } catch (e) {
             Constants.showConfirm("Có lỗi xảy ra khi mở map!");
         }
     }
 
-    private enterMap() {
-        
+    private async enterMap() {
         OfficeSceneController.instance.LoadData();
     }
+
+    private async proceedToTeleport() {
+        const canEmitEvent = await new Promise<boolean>((resolve) => {
+            const onDone = () => {
+                clearTimeout(timeoutId);
+                resolve(true);
+            };
+
+            director.once(WAITING_EVENT_MESSAGE, onDone);
+
+            const timeoutId = setTimeout(() => {
+                director.off(WAITING_EVENT_MESSAGE, onDone);
+                resolve(false);
+            }, 500);
+        });
+
+        if(canEmitEvent) director.emit(EVENT_GATE_ENTER);
+
+        const canEnterMap = await new Promise<boolean>((resolve) => {
+            const onDone = () => {
+                clearTimeout(timeoutId);
+                resolve(true);
+            };
+
+            director.once(SET_OFFICE_PARAM_DONE, onDone);
+
+            const timeoutId = setTimeout(() => {
+                director.off(SET_OFFICE_PARAM_DONE, onDone);
+                resolve(false);
+            }, 5000);
+        });
+        
+        if(canEnterMap) 
+            this.enterMap();
+    }
 }
+
+export const EVENT_GATE_ENTER = 'EVENT_GATE_ENTER';
+export const EVENT_GATE_PROCESS = 'EVENT_GATE_PROCESS';
