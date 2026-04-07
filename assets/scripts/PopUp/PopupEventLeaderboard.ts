@@ -6,6 +6,8 @@ import { FillterType, LeaderboardItemDTO, LeaderboardResponseDTO } from '../Inte
 import { LoadingManager } from './LoadingManager';
 import { ItemLeaderboardEvent } from '../Event/ItemLeaderboardEvent.ts';
 import { PopupLoginEventsParam } from './PopupLoginEvents';
+import { UserManager } from '../core/UserManager';
+import { UserMeManager } from '../core/UserMeManager';
 
 
 const { ccclass, property } = _decorator;
@@ -23,6 +25,7 @@ export class PopupEventLeaderboard extends BasePopup {
     
     @property(ScrollView) contentClan: ScrollView = null!;
     @property(ScrollView) contentUser: ScrollView = null!;
+    @property(ItemLeaderboardEvent) myRankItem: ItemLeaderboardEvent = null!;
 
     private currentMode: FillterType = FillterType.CLAN;
     private listData: LeaderboardResponseDTO
@@ -111,6 +114,10 @@ export class PopupEventLeaderboard extends BasePopup {
 
                 slot.node.active = true;
                 slot.setData(sortedList[i], isClanMode);
+
+                if (sortedList[i].user_id === UserMeManager.Get.user.id) {
+                    this.myRankItem.setData(sortedList[i], isClanMode);
+                }
             }
 
             for (let i = sortedList.length; i < slots.length; i++) {
