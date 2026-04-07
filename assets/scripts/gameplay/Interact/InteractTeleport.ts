@@ -153,7 +153,7 @@ export class InteractTeleport extends Interactable {
             this.farmSeason
         );
 
-        // director.emit(SET_OFFICE_PARAM_DONE)
+        director.emit(SET_OFFICE_PARAM_DONE)
 
         SceneManagerController.loadScene(SceneName.SCENE_OFFICE, param)
     }

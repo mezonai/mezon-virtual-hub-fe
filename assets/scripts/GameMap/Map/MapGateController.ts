@@ -184,9 +184,9 @@ export class MapGateController extends MapItemController {
             const timeoutId = setTimeout(() => {
                 director.off(SET_OFFICE_PARAM_DONE, onDone);
                 resolve(false);
-            }, 5000);
+            }, 500);
         });
-        
+
         if(canEnterMap) 
             this.enterMap();
     }

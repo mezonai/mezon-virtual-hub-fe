@@ -68,7 +68,9 @@ export default class APIConstant {
     static CLAN_ESTATE = "clan-estate";
     static CLAN_DECO_INVENTORY = "clan-decor-inventory";
     static BUY_MAP = "buy-map";
-    
+    static CLAN = "clan";
+    static LEADERBOARD = "leaderboard";    
+    static ALL_EVENT = "all-event";
 }
 
 export class APIConfig {

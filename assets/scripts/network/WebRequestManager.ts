@@ -792,8 +792,73 @@ export class WebRequestManager extends Component {
         APIManager.getData(this.combineWithSlash(APIConstant.GAME_EVENT, APIConstant.CURRENT), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
     }
 
+    public getAllGameEvent(successCallback, errorCallback) {
+        APIManager.getData(this.combineWithSlash(APIConstant.GAME_EVENT, APIConstant.ALL_EVENT), (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    }
+
     public updateCompletedMission(eventId, data, successCallback, errorCallback) {
         APIManager.putData(this.combineWithSlash(APIConstant.GAME_EVENT, eventId, APIConstant.COMPLETE), data, (data) => { this.onSuccessHandler(data, successCallback, errorCallback); }, (data) => { this.onErrorHandler(data, errorCallback); }, true);
+    }
+
+    public async getAllGameEventAsync(): Promise<any> {
+        return new Promise((resolve) => {
+            this.getAllGameEvent(
+                (response) => {
+                    resolve(response);
+                },
+                (error) => {
+                    resolve(null);
+                }
+            );
+        });
+    }
+
+    public async getLeaderboardEventByUserAsync(eventId: string): Promise<any> {
+        return new Promise((resolve, reject) => {
+            const url = this.combineWithSlash(APIConstant.LEADERBOARD, APIConstant.USER, eventId) + `?event_id=${eventId}`;
+            
+            APIManager.getData(
+                url, 
+                (response) => {
+                    this.onSuccessHandler(
+                        response, 
+                        (data) => resolve(data), 
+                        (errorData) => resolve(null) 
+                    );
+                }, 
+                (error) => { 
+                    this.onErrorHandler(
+                        error, 
+                        () => resolve(null)
+                    ); 
+                }, 
+                true
+            );
+        });
+    }
+
+    public async getLeaderboardEventAsync(eventId: string): Promise<any> {
+        return new Promise((resolve, reject) => {
+            const url = this.combineWithSlash(APIConstant.LEADERBOARD) + `?event_id=${eventId}`;
+            
+            APIManager.getData(
+                url, 
+                (response) => {
+                    this.onSuccessHandler(
+                        response, 
+                        (data) => resolve(data), 
+                        (errorData) => resolve(null)
+                    );
+                }, 
+                (error) => { 
+                    this.onErrorHandler(
+                        error, 
+                        () => resolve(null)
+                    ); 
+                }, 
+                true
+            );
+        });
     }
 
     public getMission(params: { page?: number; limit?: number; sort_by?: string; order?: 'ASC' | 'DESC' } = {}, successCallback?: (data: any) => void, errorCallback?: (error: any) => void) {

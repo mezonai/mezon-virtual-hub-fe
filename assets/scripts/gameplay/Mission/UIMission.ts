@@ -113,10 +113,10 @@ export class UIMission extends Component {
     }
 
     private hasJoinEvent: boolean = false;
-    private showUIMision(respone) {
+    private showUIMision(respone) {        
         MissionEventManager.Set = respone.data;
         let mission = MissionEventManager.Get;
-        if (mission == null) {
+        if (mission == null || mission.target_user == null) {
             this.hideMission();
             return;
         }
