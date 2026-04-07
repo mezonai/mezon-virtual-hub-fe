@@ -100,6 +100,20 @@ export class ClansResponseDTO {
     pageInfo: PageInfo;
 }
 
+export class LeaderboardResponseDTO {
+    data: LeaderboardItemDTO[];
+}
+
+export class LeaderboardItemDTO {
+    clan_id: string;
+    clan_name: string;
+    user_id: string;
+    user_display_name: string;
+    score: number;
+    rank?: number;
+}
+
+
 export class MemberResponseDTO {
     result: UserClan[];
     pageInfo: PageInfo;
@@ -140,6 +154,11 @@ export enum ScoreType {
   TOTAL = 'total',
   WEEKLY = 'weekly',
   ALL = 'all',
+}
+
+export enum FillterType {
+    CLAN = 'clan',
+    USER = 'user'
 }
 
 export class ClanFundPayload {

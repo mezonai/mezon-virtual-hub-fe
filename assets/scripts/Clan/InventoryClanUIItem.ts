@@ -27,7 +27,7 @@ export class InventoryClanUIItem extends Component {
     @property({ type: Label }) slotPosition: Label;
     private amountDefault = 1;
     public plant: ClanWarehouseSlotDTO;
-    public tool: ClanWarehouseSlotDTO;
+    public tool: ClanWarehouseSlotDTO;  
     public pet: ClanPetDTO;
     public onClick?: () => void;
 

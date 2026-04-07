@@ -7,6 +7,7 @@ import { WebRequestManager } from '../../network/WebRequestManager';
 import { PopupLoginQuest, PopupLoginQuestParam } from '../../PopUp/PopupLoginQuest';
 import { PopupManager } from '../../PopUp/PopupManager';
 import { PopupLoginEvents, PopupLoginEventsParam } from '../../PopUp/PopupLoginEvents';
+import { PopupEventLeaderboard } from '../../PopUp/PopupEventLeaderboard';
 const { ccclass, property } = _decorator;
 
 @ccclass('LoginEventController')
@@ -14,25 +15,29 @@ export class LoginEventController extends Component {
     @property(Node) private redDotButtonEventReward: Node = null;
     @property(Node) private redDotLoginNewbieReward: Node = null;
     @property(Node) private redDotLoginEventReward: Node = null;
+    @property(Node) private redDotOfficeDayLeaderboard: Node = null;
     @property(Button) private btn_EventReward: Button = null!;
     @property(Button) private btn_LoginNewbieReward: Button = null!;
     @property(Button) private btn_LoginEventReward: Button = null!;
+    @property(Button) private btn_OfficeDayLeaderboard: Button = null!;
     @property(Node) private panelButtonEvent: Node = null!;
     private isShow = false;
     private hasLoginNewbieReward = false;
     private hasLoginEventReward = false;
 
 
-    setData() {
+    async setData() {
         this.showButtonEventReward(true);
         this.showPanelButton(false);
+        
         this.btn_EventReward.addAsyncListener(async () => {
             this.showPanelButton(!this.isShow);
             this.btn_EventReward.interactable = true;
         });
+
         this.btn_LoginNewbieReward.addAsyncListener(async () => {
             this.btn_LoginNewbieReward.interactable = false;
-            const rewards = await WebRequestManager.instance.getRewardNewbieLoginAsync()
+            const rewards = await WebRequestManager.instance.getRewardNewbieLoginAsync();
             if (rewards != null && rewards.length > 0) {
                 const param: PopupLoginQuestParam = {
                     rewardNewbieDTOs: rewards,
@@ -41,6 +46,7 @@ export class LoginEventController extends Component {
             }
             this.btn_LoginNewbieReward.interactable = true;
         });
+
         this.btn_LoginEventReward.addAsyncListener(async () => {
             this.btn_LoginEventReward.interactable = false;
             const eventReward = await WebRequestManager.instance.getEventRewardAsync();
@@ -53,6 +59,31 @@ export class LoginEventController extends Component {
             }
             this.btn_LoginEventReward.interactable = true;
         });
+        
+
+        const allEventRes = await WebRequestManager.instance.getAllGameEventAsync();
+
+        if (allEventRes && allEventRes.data) {
+            const officeDayEvent = allEventRes.data.find(event => event.name === "Office Day Hour");
+
+            if (officeDayEvent) {    
+                this.btn_OfficeDayLeaderboard.addAsyncListener(async () => {
+                    this.btn_OfficeDayLeaderboard.interactable = false; 
+                    const leaderboard = await WebRequestManager.instance.getLeaderboardEventAsync(officeDayEvent.id);
+
+                    if (leaderboard != null && leaderboard.data) {
+                        const param: PopupLoginEventsParam = {
+                            rewardEvents: officeDayEvent.id,
+                        };
+
+                        await PopupManager.getInstance().openAnimPopup('UI_EventLeaderboard', PopupEventLeaderboard, param);
+                    }
+                    this.btn_OfficeDayLeaderboard.interactable = true; 
+                });
+            } else {
+                console.error("Get all event failed or return null");
+            }
+        }
     }
 
 
@@ -62,16 +93,13 @@ export class LoginEventController extends Component {
         const smallScale = new Vec3(0, 0, 1);
         const largeScale = new Vec3(1, 1, 1);
 
-        // Dừng tween cũ nếu có
         Tween.stopAllByTarget(target);
 
         if (!isShow) {
-            // Thu nhỏ từ top-right
             tween(target)
                 .to(0.25, { scale: smallScale }, { easing: "backIn" })
                 .start();
         } else {
-            // Phóng to từ top-right
             tween(target)
                 .to(0.25, { scale: largeScale }, { easing: "backOut" })
                 .start();

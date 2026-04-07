@@ -8,9 +8,12 @@ import { UserManager } from '../../core/UserManager';
 import { OfficeSenenParameter } from '../../GameMap/OfficeScene/OfficeSenenParameter';
 import { Constants } from '../../utilities/Constants';
 import { RoomType } from '../../GameMap/RoomType';
-import { OfficePosition } from '../../GameMap/OfficePosition';
+import { FarmSeason, OfficePosition } from '../../GameMap/OfficePosition';
 import { UserMeManager } from '../../core/UserMeManager';
 import { WebRequestManager } from '../../network/WebRequestManager';
+import { OfficeSceneController } from '../../GameMap/OfficeScene/OfficeSceneController';
+import { director } from 'cc';
+import { EVENT_GATE_ENTER, EVENT_GATE_PROCESS } from '../../GameMap/Map/MapGateController';
 const { ccclass, property } = _decorator;
 
 @ccclass('InteractTeleport')
@@ -21,11 +24,16 @@ export class InteractTeleport extends Interactable {
     officeChange: OfficePosition = OfficePosition.NONE;// Office sẽ đến. None = không thay đổi Office
     @property({ type: Enum(RoomType) })
     roomTypeTeleport: RoomType = RoomType.NONE;// Room sẽ được dịch chuyển đến
+    @property({ type: Enum(FarmSeason) })
+    farmSeason: FarmSeason = FarmSeason.SPRING;// Mùa vụ của room
+    
     currentOffice: OfficeSenenParameter;
+    
     protected async interact(playerSessionId: string) {
         if (!this.isPlayerNearby) return;
-        await this.moveTeleport();
+        this.moveTeleport();
     }
+
     protected override async handleBeginContact(selfCollider: Collider2D, otherCollider: Collider2D, contact: IPhysics2DContact | null) {
         this.noticePopup = await PopupManager.getInstance().openPopup('InteracterLabel', InteracterLabel, {
             keyBoard: this.interactKey,
@@ -54,24 +62,50 @@ export class InteractTeleport extends Interactable {
         }
     }
 
-    moveTeleport() {
+    async moveTeleport() {
         if (!UserManager.instance.GetMyClientPlayer) return;
         if (!this.currentOffice) {
             this.currentOffice = UserMeManager.CurrentOffice;
         }
         UserMeManager.CurrentOffice = this.currentOffice;
         UserMeManager.CurrentRoomType = this.currentRoomType;
+
+        if(this.currentRoomType === RoomType.FARM && this.roomTypeTeleport === RoomType.FARM){
+            director.emit(WAITING_EVENT_MESSAGE);
+
+            const shouldProceed = await new Promise<boolean>((resolve) => {
+                const onSuccess = () => resolve(true);
+                // const onCancel = () => resolve(false);
+
+                director.once(EVENT_GATE_ENTER, onSuccess);
+                // director.once(EVENT_GATE_PROCESS, onCancel);
+                
+                setTimeout(() => {
+                    director.off(EVENT_GATE_ENTER, onSuccess);
+                    // director.off(EVENT_GATE_PROCESS, onCancel);
+                    resolve(false); 
+                }, 30000); 
+            });
+
+            if (!shouldProceed) return; 
+        }
+        else{
+            console.log("Di chuyển giữa các khu vực khác nhau")
+        }
+        
         UserManager.instance.GetMyClientPlayer.leaveRoom(() => {
             this.teleport();
         });
     }
 
     teleport() {
+
         if (this.officeChange == OfficePosition.OFFICEGENERAL) {
             const param = { isBackMap: true };
             SceneManagerController.loadScene(SceneName.SCENE_GAME_MAP, param)
             return;
         }
+
         if (this.officeChange == OfficePosition.NONE || this.officeChange == this.currentOffice.currentOffice) {
             this.loadOfficeMap(this.currentOffice.currentOffice);
         }
@@ -107,13 +141,26 @@ export class InteractTeleport extends Interactable {
         this.loadOfficeMap(this.officeChange);
     }
 
-    private loadOfficeMap(officeMoved: OfficePosition) {
+    private async loadOfficeMap(officeMoved: OfficePosition) {
         const previousOffice = UserMeManager.CurrentOffice;
         const previousRoomType = UserMeManager.CurrentRoomType;
-        const param = new OfficeSenenParameter(previousOffice.currentOffice, previousRoomType, this.roomTypeTeleport, Constants.convertNameRoom(previousOffice.currentOffice, this.roomTypeTeleport), UserMeManager.CurrentOffice.idclan);
+        const param = new OfficeSenenParameter(
+            previousOffice.currentOffice, 
+            previousRoomType, 
+            this.roomTypeTeleport, 
+            Constants.convertNameRoom(previousOffice.currentOffice, this.roomTypeTeleport), 
+            UserMeManager.CurrentOffice.idclan, 
+            this.farmSeason
+        );
+
+        director.emit(SET_OFFICE_PARAM_DONE)
+
         SceneManagerController.loadScene(SceneName.SCENE_OFFICE, param)
     }
 }
+
+export const SET_OFFICE_PARAM_DONE = 'SET_OFFICE_PARAM_DONE';
+export const WAITING_EVENT_MESSAGE = 'WAITING_EVENT_MESSAGE';
 
 
 

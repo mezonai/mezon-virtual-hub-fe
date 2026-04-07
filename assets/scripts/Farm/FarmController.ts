@@ -11,6 +11,7 @@ import { PopupChooseItem, PopupChooseItemParam } from '../PopUp/PopupChooseItem'
 import { ClanEstateDTO, InventoryClanType, ItemClanType, ItemType, RecipeDTO } from '../Model/Item';
 import { GameManager } from '../core/GameManager';
 import { MapGateController } from '../GameMap/Map/MapGateController';
+import { easing } from 'cc';
 const { ccclass, property } = _decorator;
 
 @ccclass('FarmController')
@@ -54,6 +55,10 @@ export class FarmController extends Component {
   }
 
   async start() {
+    this.CheckUpdateNewUnlockMap();
+  }
+
+  public async CheckUpdateNewUnlockMap() {
     await this.loadData();
     this.setupMapGates();
   }
