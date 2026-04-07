@@ -115,8 +115,19 @@ export class PopupEventLeaderboard extends BasePopup {
                 slot.node.active = true;
                 slot.setData(sortedList[i], isClanMode);
 
-                if (sortedList[i].user_id === UserMeManager.Get.user.id || sortedList[i].clan_id === UserMeManager.Get.clan.id) {
-                    this.myRankItem.setData(sortedList[i], isClanMode);
+                switch (this.currentMode) {
+                    case FillterType.CLAN:
+                        if(sortedList[i].clan_id === UserMeManager.Get?.clan?.id) {
+                            this.myRankItem.setData(sortedList[i], isClanMode);
+                        }
+                        break;
+                    case FillterType.USER:
+                        if(sortedList[i].user_id === UserMeManager.Get?.user?.id) {
+                            this.myRankItem.setData(sortedList[i], isClanMode);
+                        }
+                        break;
+                    default:
+                        break;
                 }
             }
 
